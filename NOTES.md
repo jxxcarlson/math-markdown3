@@ -6,7 +6,7 @@ The app is deployed on Netlify at [focused-hodgkin-3d0fb4.netlify.com](https://f
 
 ## Commands
 
-
+- run (dev): `parcel public/index.html`
 - run (development): `yarn run parcel public/index.html`
 -  build: `yarn run parcel build public/index.html`
     

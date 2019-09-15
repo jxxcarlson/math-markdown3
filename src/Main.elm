@@ -3,14 +3,20 @@ module Main exposing (main)
 import Parse
 import Browser
 import Html exposing (..)
-import Html.Attributes as HA exposing (style)
-import Html.Events exposing (onClick, onInput)
-import Html.Keyed as Keyed
+
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Element.Input as Input
+import Element.Keyed
 import Markdown.Elm
+import Html.Attributes
 import Markdown.Option exposing (Option(..))
 import Random
 import Strings
 import Style exposing (..)
+import Color
 
 
 main : Program Flags Model Msg
@@ -41,6 +47,7 @@ type Msg
     | SelectStandard
     | SelectExtended
     | SelectExtendedMath
+    | InputNotes String
 
 
 type alias Flags =
@@ -126,6 +133,9 @@ update msg model =
             , Cmd.none
             )
 
+        InputNotes str ->
+
+           ( {model | sourceText = str }, Cmd.none )
 
 
 --
@@ -135,63 +145,124 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div outerStyle
-        [ display model
-        ]
+    Element.layout []  (display model)
 
 
-display : Model -> Html Msg
+
+display : Model -> Element Msg
 display model =
-    div []
-        [ h1 [ style "margin-left" "20px", style "margin-bottom" "0px" ] [ text "Pure Elm Markdown Demo (Experimental)" ]
-        , p [ style "margin-left" "20px", style "margin-top" "0" ] [ text "Edit text below; ", text "choose Markdown flavor here: ", standardMarkdownButton model 100, extendedMarkdownButton model 100, extendedMathMarkdownButton model 140 ]
-        , editor model
-        , renderedSource model
-        , p [ style "clear" "left", style "margin-left" "20px", style "margin-top" "-20px" ] [ clearButton 60, restoreTextButton 80 ]
-        , a [ HA.href "https://minilatex.io", style "clear" "left", style "margin-left" "20px", style "margin-top" "0px" ] [ text "minilatex.io" ]
-        , a [ HA.href "https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/", style "clear" "left", style "margin-left" "20px", style "margin-top" "0px" ] [ text "package.elm-lang.org" ]
-        ]
+    column [spacing 10]
+        [ row [spacing 10] [
+              editor model
+            , renderedSource model
+          ]
+          , row [  ] [ clearButton 60, standardMarkdownButton model 100, extendedMarkdownButton model 100, extendedMathMarkdownButton model 140 ]
+         ]
 
+--
+--label text_ =
+--    p labelStyle [ Html.text text_ ]
+--
 
-label text_ =
-    p labelStyle [ text text_ ]
-
-
-editor : Model -> Html Msg
+editor : Model -> Element Msg
 editor model =
-    textarea (editorTextStyle ++ [ onInput GetContent, HA.value model.sourceText ]) []
+    column []
+            [ Element.Keyed.el []
+                ( String.fromInt model.counter
+                , Input.multiline (textInputStyle)
+                    { onChange = InputNotes
+                    , text = model.sourceText
+                    , placeholder = Nothing
+                    , label = Input.labelBelow [ Font.size 0, Font.bold ] (Element.text "")
+                    , spellcheck = False
+                    }
+                )
+            ]
+
+textInputStyle =
+    [ preWrap
+    , height(px 650)
+    , width <| px <| 400
+    , clipX
+    , paddingXY 12 12
+    , Font.size 13
+    , paddingXY 8 20
+    , Background.color lightGrey
+    ,  Border.width 2
+    ]
+
+preWrap =
+    Element.htmlAttribute (Html.Attributes.attribute "white-space" "pre-wrap")
+
+makeGrey g =
+    Element.rgb g g g
 
 
-renderedSource : Model -> Html Msg
+renderedSource : Model -> Element Msg
 renderedSource model =
     let
         token =
             String.fromInt model.counter
     in
-    Keyed.node "div"
-        renderedSourceStyle
-        [ ( token, Markdown.Elm.toHtml model.option model.sourceText ) ]
+    Element.Keyed.column
+        [width (px 500), height (px 650), scrollbarY, Font.size 12, paddingXY 20 0]
+        [ ( token, Markdown.Elm.toHtml ExtendedMath model.sourceText |> Element.html ) ]
 
 
+lightGrey =
+    makeGrey 0.95
 
--- BUTTONS --
+
+---- BUTTONS --
 
 
 clearButton width =
-    button ([ onClick Clear ] ++ buttonStyle colorBlue width) [ text "Clear" ]
-
-
-restoreTextButton width =
-    button ([ onClick RestoreText ] ++ buttonStyle colorBlue width) [ text "Restore" ]
+    Input.button (buttonStyleSelected width False)
+                  { onPress = Just Clear, label = el [] (Element.text "Clear")}
 
 
 standardMarkdownButton model width =
-    button ([ onClick SelectStandard ] ++ buttonStyleSelected (model.option == Standard) colorBlue colorDarkRed width) [ text "Standard" ]
+       let
+                bit = (model.option == ExtendedMath)
+       in
+            Input.button (buttonStyleSelected width bit)
+              { onPress = Just SelectStandard, label = el [] (Element.text "Standard")}
 
 
 extendedMarkdownButton model width =
-    button ([ onClick SelectExtended ] ++ buttonStyleSelected (model.option == Extended) colorBlue colorDarkRed width) [ text "Extended" ]
+    let
+            bit = (model.option == ExtendedMath)
+    in
+        Input.button (buttonStyleSelected width bit)
+          { onPress = Just SelectExtended, label = el [] (Element.text "Extended")}
 
 
 extendedMathMarkdownButton model width =
-    button ([ onClick SelectExtendedMath ] ++ buttonStyleSelected (model.option == ExtendedMath) colorBlue colorDarkRed width) [ text "Extended-Math" ]
+    let
+        bit = (model.option == ExtendedMath)
+    in
+    Input.button (buttonStyleSelected width bit)
+      { onPress = Just SelectExtendedMath, label = el [] (Element.text "ExtendedMath")}
+
+
+
+buttonStyleSelected = buttonStyleSelected_ blue red
+
+buttonStyleSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
+buttonStyleSelected_ color color2 width_ bit =
+    [ case bit of
+        False -> Background.color color
+        True -> Background.color color2
+
+    , Font.color white
+    , width (px width_)
+    , height (px 25)
+    , Font.size 9
+    ]
+
+
+blue = Element.rgb 0 0 255
+
+red =  Element.rgb 200 0 0
+
+white = Element.rgb 255 255 255

@@ -1,5 +1,5 @@
-module Style exposing (buttonStyle, buttonStyleSelected, colorBlue, colorDarkRed, colorDark, colorLight, editorTextStyle, labelStyle, macroPanelStyle, outerStyle, renderedSourceStyle, textStyle)
-
+module Style exposing (buttonStyle, buttonStyleSelected, colorBlue, outerStyle,
+  colorDarkRed, colorDark, colorLight, editorTextStyle, renderedSourceStyle, labelStyle)
 -- import Html exposing (..)
 
 import Html
@@ -76,15 +76,11 @@ outerStyle =
 
 
 editorTextStyle =
-    textStyle "400px" "450px" "#fff"
-
-
-macroPanelStyle =
-    textStyle "300px" "450px" "#fff"
+    textStyle "400px" "550px" "#fff"
 
 
 renderedSourceStyle =
-    textStyle "500px" "450px" "#fff"
+    textStyle "500px" "550px" "#fff"
 
 
 textStyle width height color =
