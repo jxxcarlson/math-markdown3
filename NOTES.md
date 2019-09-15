@@ -4,10 +4,14 @@
 ## Commands
 
 
-    yarn run parcel index.html
+- run (development): `yarn run parcel public/index.html`
+-  build: `yarn run parcel build public/index.html`
+    
 
 
 ## Links
+
+[Domenkozar: Parcel && Elm](https://discourse.elm-lang.org/t/using-elm-and-parcel-for-zero-configuration-web-asset-management/2576)
 
 [yarn](https://yarnpkg.com/en/docs/cli/run)
 
