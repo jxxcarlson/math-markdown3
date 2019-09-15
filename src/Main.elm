@@ -243,7 +243,7 @@ renderedSource model rt =
         hToc = translate (-viewInfo.vInset) model.windowHeight
     in
       row [spacing 10] [
-        Element.Keyed.column [width (px w_), height (px h_), scrollbarY, Font.size 12, paddingXY 20 0]
+        Element.Keyed.column [width (px w_), height (px h_), scrollbarY, clipX, Font.size 12, paddingXY 20 0]
            [ ( token, rt.document |> Element.html ) ]
         , Element.column [width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (makeGrey 0.9)]
                                     [ rt.toc |> Element.html  ]
