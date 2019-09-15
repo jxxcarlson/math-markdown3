@@ -153,7 +153,7 @@ view model =
 display : Model -> Element Msg
 display model =
   let
-      rt = Markdown.Elm.toHtmlWithExternaTOC ExtendedMath model.sourceText
+      rt = Markdown.Elm.toHtmlWithExternaTOC model.option model.sourceText
   in
     column [ paddingXY 30 0]
         [  header model rt
@@ -165,6 +165,7 @@ header : Model -> RenderedDocumentRecord msg -> Element msg
 header model rt =
     row [ height (px 45), width fill, Background.color charcoal, paddingXY 30 0] [
      el [moveRight 400 , Font.size 14, Font.color white, width (px 400)] (rt.title |> Element.html)]
+
 footer : Model -> Element Msg
 footer model =
      row [height (px 30), width fill, spacing 10, Background.color charcoal, paddingXY 30 0]
