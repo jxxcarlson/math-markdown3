@@ -1,6 +1,6 @@
 # example netlify.toml
 [build]
-  command = "yarn run parcel build public/index.html"
+  command = "sh make.sh"
   functions = "functions"
   publish = "public"
 
