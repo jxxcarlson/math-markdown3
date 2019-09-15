@@ -79,11 +79,16 @@ viewInfo = {
   , middle = 0.38
   , right = 0.24
   , vInset = 210.0
+  , hExtra = 20.0
   }
 
 scale : Float -> Int -> Int
 scale factor input =
     factor * (toFloat input) |> round
+
+affine : Float -> Float -> Int -> Int
+affine factor shift input =
+    factor * ((toFloat input) - shift) |> round
 
 translate : Float -> Int -> Int
 translate amount input =
@@ -210,7 +215,7 @@ footer model =
 editor : Model -> Element Msg
 editor model =
    let
-       w_ = scale viewInfo.left model.windowWidth |> toFloat
+       w_ = affine viewInfo.left (viewInfo.hExtra) model.windowWidth |> toFloat
        h_ = translate (-viewInfo.vInset) model.windowHeight |> toFloat
 
    in
@@ -236,10 +241,10 @@ renderedSource model rt =
         token =
             String.fromInt model.counter
 
-        w_ = scale viewInfo.middle model.windowWidth
+        w_ = affine viewInfo.middle (viewInfo.hExtra) model.windowWidth
         h_ = translate (-viewInfo.vInset) model.windowHeight
 
-        wToc = scale viewInfo.right model.windowWidth
+        wToc = affine viewInfo.right (viewInfo.hExtra) model.windowWidth
         hToc = translate (-viewInfo.vInset) model.windowHeight
     in
       row [spacing 10] [

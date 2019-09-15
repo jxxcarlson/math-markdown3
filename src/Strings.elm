@@ -202,7 +202,7 @@ To compile, use
 elm make --output=Main.js
 ```
 
-Then open `index1.html` to run the app.
+Then open `index.html` to run the app.
 
 
 """
