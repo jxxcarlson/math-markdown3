@@ -74,7 +74,20 @@ type alias Flags =
     }
 
 
+viewInfo = {
+    left = 0.38
+  , middle = 0.38
+  , right = 0.24
+  , vInset = 210.0
+  }
 
+scale : Float -> Int -> Int
+scale factor input =
+    factor * (toFloat input) |> round
+
+translate : Float -> Int -> Int
+translate amount input =
+    (toFloat input)  + amount |> round
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -172,12 +185,20 @@ display model =
 
 header : Model -> RenderedDocumentRecord msg -> Element msg
 header model rt =
-    row [ height (px 45), width fill, Background.color charcoal, paddingXY 30 0] [
-     el [moveRight 400 , Font.size 14, Font.color white, width (px 400)] (rt.title |> Element.html)]
+  let
+     left =  scale viewInfo.left model.windowWidth
+     middle =   scale viewInfo.middle model.windowWidth
+     right = scale viewInfo.right model.windowWidth
+  in
+    row [ height (px 45), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
+      column [width (px left)] []
+     , column [width (px middle), Font.size 12, Font.color white] [rt.title |> Element.html]
+     , column [width (px right)] []
+    ]
 
 footer : Model -> Element Msg
 footer model =
-     row [height (px 30), width fill, spacing 10, Background.color charcoal, paddingXY 30 0]
+     row [height (px 30), width (px model.windowWidth), spacing 10, Background.color charcoal, paddingXY 30 0]
        [
                    clearButton 60
                   , standardMarkdownButton model 80
@@ -189,8 +210,8 @@ footer model =
 editor : Model -> Element Msg
 editor model =
    let
-       w_ = 0.4 * (toFloat model.windowWidth)
-       h_ = (toFloat model.windowHeight) - 200.0
+       w_ = scale viewInfo.left model.windowWidth |> toFloat
+       h_ = translate (-viewInfo.vInset) model.windowHeight |> toFloat
 
    in
     column []
@@ -215,11 +236,11 @@ renderedSource model rt =
         token =
             String.fromInt model.counter
 
-        w_ = round <| 0.4 * (toFloat model.windowWidth)
-        h_ = round <| (toFloat model.windowHeight) - 200.0
+        w_ = scale viewInfo.middle model.windowWidth
+        h_ = translate (-viewInfo.vInset) model.windowHeight
 
-        wToc = round <| 0.3 * (toFloat model.windowWidth)
-        hToc = round <| (toFloat model.windowHeight) - 200.0
+        wToc = scale viewInfo.right model.windowWidth
+        hToc = translate (-viewInfo.vInset) model.windowHeight
     in
       row [spacing 10] [
         Element.Keyed.column [width (px w_), height (px h_), scrollbarY, Font.size 12, paddingXY 20 0]
