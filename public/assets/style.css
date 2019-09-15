@@ -1,5 +1,10 @@
 
 
+body {
+  line-height: 1.8;
+ }
+
+
 .mm-paragraph {
 	white-space: normal;
 }
@@ -98,4 +103,8 @@ p.mm-table-cell {
 
 .mm-verbatim {
 	font: 16px courier; background-color: #eee; padding: 8px;
+}
+
+.mm-line-height {
+    line-height: 1.4
 }

@@ -142,6 +142,7 @@ update msg model =
 -- VIEW FUNCTIONS
 ---
 
+type alias RenderedDocumentRecord msg = { document : Html msg, title : Html msg, toc : Html msg }
 
 view : Model -> Html Msg
 view model =
@@ -151,18 +152,28 @@ view model =
 
 display : Model -> Element Msg
 display model =
-    column [spacing 10]
-        [ row [spacing 10] [
-              editor model
-            , renderedSource model
-          ]
-          , row [  ] [ clearButton 60, standardMarkdownButton model 100, extendedMarkdownButton model 100, extendedMathMarkdownButton model 140 ]
+  let
+      rt = Markdown.Elm.toHtmlWithExternaTOC ExtendedMath model.sourceText
+  in
+    column [ paddingXY 30 0]
+        [  header model rt
+         , row [spacing 10] [ editor model, renderedSource model rt ]
+         , footer model
          ]
 
---
---label text_ =
---    p labelStyle [ Html.text text_ ]
---
+header : Model -> RenderedDocumentRecord msg -> Element msg
+header model rt =
+    row [ height (px 45), width fill, Background.color charcoal, paddingXY 30 0] [
+     el [moveRight 400 , Font.size 14, Font.color white, width (px 400)] (rt.title |> Element.html)]
+footer : Model -> Element Msg
+footer model =
+     row [height (px 30), width fill, spacing 10, Background.color charcoal, paddingXY 30 0]
+       [
+                   clearButton 60
+                  , standardMarkdownButton model 80
+                  , extendedMarkdownButton model 80
+                  , extendedMathMarkdownButton model 93 ]
+
 
 editor : Model -> Element Msg
 editor model =
@@ -179,9 +190,78 @@ editor model =
                 )
             ]
 
+
+
+renderedSource : Model -> RenderedDocumentRecord msg -> Element msg
+renderedSource model rt =
+    let
+        token =
+            String.fromInt model.counter
+
+    in
+      row [spacing 10] [
+        Element.Keyed.column [width (px 500), height (px 620), scrollbarY, Font.size 12, paddingXY 20 0]
+           [ ( token, rt.document |> Element.html ) ]
+        , Element.column [width (px 300), height (px 620), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (makeGrey 0.9)]
+                                    [ rt.toc |> Element.html  ]
+      ]
+
+
+lightGrey =
+    makeGrey 0.95
+
+
+---- BUTTONS --
+
+
+clearButton width =
+    Input.button (buttonStyleSelected width False)
+                  { onPress = Just Clear, label = el [centerX] (Element.text "Clear")}
+
+
+standardMarkdownButton model width =
+       let
+                bit = (model.option == Standard)
+       in
+            Input.button (buttonStyleSelected width bit)
+              { onPress = Just SelectStandard, label = el [centerX] (Element.text "Standard")}
+
+
+extendedMarkdownButton model width =
+    let
+            bit = (model.option == Extended)
+    in
+        Input.button (buttonStyleSelected width bit)
+          { onPress = Just SelectExtended, label = el [centerX] (Element.text "Extended")}
+
+
+extendedMathMarkdownButton model width =
+    let
+        bit = (model.option == ExtendedMath)
+    in
+    Input.button (buttonStyleSelected width bit)
+      { onPress = Just SelectExtendedMath, label = el [centerX] (Element.text "ExtendedMath")}
+
+
+
+buttonStyleSelected = buttonStyleSelected_ blue red
+
+buttonStyleSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
+buttonStyleSelected_ color color2 width_ bit =
+    [ case bit of
+        False -> Background.color color
+        True -> Background.color color2
+
+    , Font.color white
+    , width (px width_)
+    , height (px 25)
+    , Font.size 12
+    , centerX
+    ]
+
 textInputStyle =
     [ preWrap
-    , height(px 650)
+    , height(px 620)
     , width <| px <| 400
     , clipX
     , paddingXY 12 12
@@ -198,71 +278,14 @@ makeGrey g =
     Element.rgb g g g
 
 
-renderedSource : Model -> Element Msg
-renderedSource model =
-    let
-        token =
-            String.fromInt model.counter
-    in
-    Element.Keyed.column
-        [width (px 500), height (px 650), scrollbarY, Font.size 12, paddingXY 20 0]
-        [ ( token, Markdown.Elm.toHtml ExtendedMath model.sourceText |> Element.html ) ]
+blue = Element.rgb 0 0 0.7
 
+red =  Element.rgb 0.6 0 0
 
-lightGrey =
-    makeGrey 0.95
+white = Element.rgb 1 1 1
 
+grey g = Element.rgb g g g
 
----- BUTTONS --
+charcoal = grey 0.3
 
-
-clearButton width =
-    Input.button (buttonStyleSelected width False)
-                  { onPress = Just Clear, label = el [] (Element.text "Clear")}
-
-
-standardMarkdownButton model width =
-       let
-                bit = (model.option == ExtendedMath)
-       in
-            Input.button (buttonStyleSelected width bit)
-              { onPress = Just SelectStandard, label = el [] (Element.text "Standard")}
-
-
-extendedMarkdownButton model width =
-    let
-            bit = (model.option == ExtendedMath)
-    in
-        Input.button (buttonStyleSelected width bit)
-          { onPress = Just SelectExtended, label = el [] (Element.text "Extended")}
-
-
-extendedMathMarkdownButton model width =
-    let
-        bit = (model.option == ExtendedMath)
-    in
-    Input.button (buttonStyleSelected width bit)
-      { onPress = Just SelectExtendedMath, label = el [] (Element.text "ExtendedMath")}
-
-
-
-buttonStyleSelected = buttonStyleSelected_ blue red
-
-buttonStyleSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
-buttonStyleSelected_ color color2 width_ bit =
-    [ case bit of
-        False -> Background.color color
-        True -> Background.color color2
-
-    , Font.color white
-    , width (px width_)
-    , height (px 25)
-    , Font.size 9
-    ]
-
-
-blue = Element.rgb 0 0 255
-
-red =  Element.rgb 200 0 0
-
-white = Element.rgb 255 255 255
+black = grey 0
