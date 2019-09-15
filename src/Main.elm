@@ -38,6 +38,8 @@ type alias Model =
     , windowHeight : Int
     }
 
+
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
@@ -46,8 +48,8 @@ init flags =
             , counter = 0
             , seed = 0
             , option = ExtendedMath
-            , windowWidth = 1300
-            , windowHeight = 900
+            , windowWidth = flags.width
+            , windowHeight = flags.height
             }
     in
     ( model, Cmd.none )
@@ -67,7 +69,9 @@ type Msg
 
 
 type alias Flags =
-    {}
+    {  width : Int
+      , height : Int
+    }
 
 
 
@@ -178,15 +182,21 @@ footer model =
                    clearButton 60
                   , standardMarkdownButton model 80
                   , extendedMarkdownButton model 80
-                  , extendedMathMarkdownButton model 93 ]
+                  , extendedMathMarkdownButton model 93
+                  , el [Font.color white, Font.size 12] (Element.text <| "w: " ++ String.fromInt model.windowWidth ++ ", h: " ++ String.fromInt model.windowHeight)]
 
 
 editor : Model -> Element Msg
 editor model =
+   let
+       w_ = 0.4 * (toFloat model.windowWidth)
+       h_ = (toFloat model.windowHeight) - 200.0
+
+   in
     column []
             [ Element.Keyed.el []
                 ( String.fromInt model.counter
-                , Input.multiline (textInputStyle)
+                , Input.multiline (textInputStyle w_ h_)
                     { onChange = InputNotes
                     , text = model.sourceText
                     , placeholder = Nothing
@@ -198,17 +208,23 @@ editor model =
 
 
 
+
 renderedSource : Model -> RenderedDocumentRecord msg -> Element msg
 renderedSource model rt =
     let
         token =
             String.fromInt model.counter
 
+        w_ = round <| 0.4 * (toFloat model.windowWidth)
+        h_ = round <| (toFloat model.windowHeight) - 200.0
+
+        wToc = round <| 0.3 * (toFloat model.windowWidth)
+        hToc = round <| (toFloat model.windowHeight) - 200.0
     in
       row [spacing 10] [
-        Element.Keyed.column [width (px 500), height (px 620), scrollbarY, Font.size 12, paddingXY 20 0]
+        Element.Keyed.column [width (px w_), height (px h_), scrollbarY, Font.size 12, paddingXY 20 0]
            [ ( token, rt.document |> Element.html ) ]
-        , Element.column [width (px 300), height (px 620), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (makeGrey 0.9)]
+        , Element.column [width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (makeGrey 0.9)]
                                     [ rt.toc |> Element.html  ]
       ]
 
@@ -265,10 +281,10 @@ buttonStyleSelected_ color color2 width_ bit =
     , centerX
     ]
 
-textInputStyle =
+textInputStyle w h=
     [ preWrap
-    , height(px 620)
-    , width <| px <| 400
+    , height <| px <| round h
+    , width <| px <| round w
     , clipX
     , paddingXY 12 12
     , Font.size 13
