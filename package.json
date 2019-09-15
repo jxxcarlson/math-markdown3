@@ -1,0 +1,22 @@
+{
+  "name": "math-markdown3",
+  "version": "1.0.0",
+  "description": "pure elm markdown",
+  "main": "public/index.js",
+  "repository": "https://github.com/jxxcarlson/math-markdown3.git",
+  "author": "James Carlson <jxxcarlson@mac.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "elm-hot": "^1.0.1",
+    "node-elm-compiler": "^5.0.4",
+    "parcel-bundler": "^1.12.3"
+  },
+  "scripts": {
+    "build": "elm make src/Main.elm --output=public/Main.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "elm": "^0.19.0-no-deps",
+    "parcel-bundler": "^1.12.3"
+  }
+}
