@@ -34,7 +34,23 @@ type alias Model =
     , counter : Int
     , seed : Int
     , option : Option
+    , windowWidth : Int
+    , windowHeight : Int
     }
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    let
+        model =
+            { sourceText = Strings.initialText
+            , counter = 0
+            , seed = 0
+            , option = ExtendedMath
+            , windowWidth = 1300
+            , windowHeight = 900
+            }
+    in
+    ( model, Cmd.none )
 
 
 type Msg
@@ -54,17 +70,6 @@ type alias Flags =
     {}
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    let
-        model =
-            { sourceText = Strings.initialText
-            , counter = 0
-            , seed = 0
-            , option = ExtendedMath
-            }
-    in
-    ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
