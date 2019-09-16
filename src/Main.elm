@@ -19,7 +19,7 @@ import Document exposing(Document)
 import Time
 import Task
 import Utility exposing (humanTimeHM)
-import Author exposing(Author)
+import User exposing(User)
 
 main : Program Flags Model Msg
 main =
@@ -42,7 +42,7 @@ type alias Model =
     , visibilityOfTools : Visibility
     , zone : Time.Zone
     , time : Time.Posix
-    , currentAuthor : Maybe Author
+    , currentUser : Maybe User
     }
 
 type Visibility = Visible | Invisible
@@ -61,7 +61,7 @@ init flags =
             , visibilityOfTools = Invisible
             , zone = Time.utc
             , time = Time.millisToPosix 0
-            , currentAuthor = Just Author.dummy
+            , currentUser = Just User.dummy
 
             }
     in
@@ -128,14 +128,6 @@ update msg model =
     case msg of
         NoOp ->
             (model, Cmd.none)
-
-        GetContent str ->
-            ( { model
-                | currentDocument  = Maybe.map (Document.setContent str) model.currentDocument
-                , counter = model.counter + 1
-              }
-            , Cmd.none
-            )
 
         GenerateSeed ->
             ( model, Random.generate NewSeed (Random.int 1 10000) )
@@ -210,10 +202,35 @@ update msg model =
               )
 
         -- DOCUMENT --
+
         CreateDocument ->
-           (model, Cmd.none)
+           case model.currentUser of
+               Nothing -> (model, Cmd.none)
+               Just user ->
+                   let
+                      newDocument = Document.create user.id "New Document" model.time "# New Document\n\nWrite something here ..."
+                   in
+                   ({model | currentDocument = Just newDocument
+                            , documentList = newDocument :: model.documentList
+                            , visibilityOfTools = Invisible
+                     }
+                     , Cmd.none
+                   )
 
-
+        GetContent str ->
+            case model.currentDocument of
+                Nothing -> (model, Cmd.none)
+                Just doc ->
+                    let
+                        updatedDoc =  Document.setContent str doc
+                    in
+                    ( { model
+                        | currentDocument = Just <| updatedDoc
+                        , documentList = Document.replace updatedDoc model.documentList
+                        , counter = model.counter + 1
+                      }
+                    , Cmd.none
+                    )
 
 -- MANAGE DOCUMENTS --
 
@@ -311,9 +328,16 @@ toolPanel model =
   in
     column [width (px (scale viewInfo.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
        , paddingXY 10 20, alignTop]
-      [column [Font.size 13, spacing 8]  [el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")]
+      [column [Font.size 13, spacing 8]  [
+          el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")
+        , newDocumentButton
+       ]
   ]
 
+
+newDocumentButton =
+        Input.button [] { onPress = Just (CreateDocument)
+                , label = el [height (px 30), width (px 150),  padding 8, Background.color charcoal, Font.color white, Font.size 12] (Element.text "Create document")}
 
 -- DOCUMENT LIST --
 
@@ -408,6 +432,10 @@ footer model =
         , row [width (px middle), Font.size 12, Font.color white] [flavors model]
         , row [width (px right)] [currentTime model, status model]
        ]
+
+
+-- currentAuthorDixpay
+
 
 currentTime model =
       Element.el [Font.color white, Font.size 12]

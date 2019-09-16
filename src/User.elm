@@ -1,11 +1,11 @@
-module Author exposing (Author, dummy)
+module User exposing (User, dummy)
 
 import Time exposing(Posix)
 
-type alias AuthorID = String
+type alias UserId = String
 
-type alias Author = {
-     id : AuthorID
+type alias User = {
+     id : UserId
     , email : String
     , public : Bool
     , firstName : String

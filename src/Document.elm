@@ -1,7 +1,9 @@
-module Document exposing (Document, setContent, getContent, documentId, newDocument)
+module Document exposing (Document, setContent, getContent, documentId
+  , create, replaceInList)
 
 import Time exposing(Posix)
 import Utility
+import List.Extra
 
 type alias DocumentID = String
 
@@ -47,7 +49,7 @@ documentId authorID title time =
 
 {-|
 
-    > newDocument "jxxcarlson" "Intro to Chromaticity" t "First draft ..."
+    > create "jxxcarlson" "Intro to Chromaticity" t "First draft ..."
     --> {   authorID = "jxxcarlson", children = [], content = "First draft ..."
           , id = "jxxcarlson.intro-to-chromaticity.1568667528"
           , public = False, tags = [], timeCreated = Posix 1568667528000
@@ -55,8 +57,8 @@ documentId authorID title time =
         : Document
 
 -}
-newDocument : String -> String -> Posix -> String -> Document
-newDocument authorID title time content =
+create : String -> String -> Posix -> String -> Document
+create authorID title time content =
      {  id =  documentId authorID title time
       , title = title
       , authorID = authorID
@@ -69,3 +71,12 @@ newDocument authorID title time content =
 
 
      }
+
+{-|
+  Replace by the target document any occurrence of a document in
+  the documentList whose id is the same as taht of the target document.
+  It is assumed, but not enfornced, that document ids are unique.
+-}
+replaceInList : Document -> List Document -> List Document
+replaceInList targetDocument documentList =
+    List.Extra.setIf (\doc -> doc.id == targetDocument.id) targetDocument documentList
