@@ -14,9 +14,8 @@ import Markdown.Elm
 import Html.Attributes
 import Markdown.Option exposing (Option(..))
 import Random
-import Strings
-import Style exposing (..)
-import Color
+import Data
+import Document exposing(Document)
 
 
 main : Program Flags Model Msg
@@ -30,12 +29,13 @@ main =
 
 
 type alias Model =
-    { sourceText : String
-    , counter : Int
+    {  counter : Int
     , seed : Int
     , option : Option
     , windowWidth : Int
     , windowHeight : Int
+    , documentList : List Document
+    , currentDocument : Maybe Document
     }
 
 
@@ -44,12 +44,13 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
         model =
-            { sourceText = Strings.initialText
-            , counter = 0
+            { counter = 0
             , seed = 0
             , option = ExtendedMath
             , windowWidth = flags.width
             , windowHeight = flags.height
+            , documentList = [Data.startupDocument, Data.doc2]
+            , currentDocument = Just Data.startupDocument
             }
     in
     ( model, Cmd.none )
@@ -67,6 +68,7 @@ type Msg
     | SelectExtended
     | SelectExtendedMath
     | InputNotes String
+    | SetCurrentDocument Document
 
 
 type alias Flags =
@@ -76,11 +78,12 @@ type alias Flags =
 
 
 viewInfo = {
-    left = 0.38
-  , middle = 0.38
-  , right = 0.24
+    toc = 0.15
+  , left = 0.325
+  , middle = 0.325
+  , right = 0.2
   , vInset = 210.0
-  , hExtra = 20.0
+  , hExtra = 30.0
   }
 
 scale : Float -> Int -> Int
@@ -105,7 +108,7 @@ update msg model =
     case msg of
         GetContent str ->
             ( { model
-                | sourceText = str
+                | currentDocument  = Maybe.map (Document.setContent str) model.currentDocument
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -119,7 +122,7 @@ update msg model =
 
         Clear ->
             ( { model
-                | sourceText = ""
+                | currentDocument  = Maybe.map (Document.setContent "") model.currentDocument
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -128,7 +131,7 @@ update msg model =
         RestoreText ->
             ( { model
                 | counter = model.counter + 1
-                , sourceText = Strings.initialText
+                , currentDocument = Just Data.startupDocument
               }
             , Cmd.none
             )
@@ -163,7 +166,10 @@ update msg model =
 
         InputNotes str ->
 
-           ( {model | sourceText = str }, Cmd.none )
+           ( {model | currentDocument = Maybe.map (Document.setContent str) model.currentDocument }, Cmd.none )
+
+        SetCurrentDocument document ->
+            ( {model | currentDocument = Just document}, Cmd.none)
 
 
 --
@@ -181,13 +187,38 @@ view model =
 display : Model -> Element Msg
 display model =
   let
-      rt = Markdown.Elm.toHtmlWithExternaTOC model.option model.sourceText
+      rt = Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument)
   in
     column [ paddingXY 30 0]
         [  header model rt
-         , row [spacing 10] [ editor model, renderedSource model rt ]
+         , row [spacing 10] [ docListViewer model, editor model, renderedSource model rt ]
          , footer model
          ]
+
+docListViewer model =
+  let
+      h_ = translate (-viewInfo.vInset) model.windowHeight
+  in
+    column [width (px (scale viewInfo.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.9)
+       , paddingXY 10 20, alignTop]
+      [column [Font.size 13, spacing 8]  (heading::(List.map (tocEntry model.currentDocument) model.documentList))]
+
+
+tocEntry : Maybe Document -> Document -> Element Msg
+tocEntry currentDocument_ document =
+    let
+        color = case currentDocument_ of
+            Nothing ->  blue
+            Just currentDocument ->
+                if currentDocument.id == document.id then
+                   red
+                else
+                   blue
+    in
+    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [Font.color color] (Element.text document.title)}
+
+
+heading = el [Font.size 16, Font.bold] (Element.text "Documents")
 
 header : Model -> RenderedDocumentRecord msg -> Element msg
 header model rt =
@@ -218,7 +249,12 @@ footer model =
 
 wordCount model =
     let
-        wc = List.length (String.words model.sourceText) |> String.fromInt
+         sourceText = case model.currentDocument of
+            Just document ->
+                document.content
+            _ -> ""
+         wc =  List.length (String.words sourceText) |> String.fromInt
+
     in
       Element.el [Font.color white, Font.size 12] (Element.text <| "Word count: " ++ wc)
 
@@ -247,7 +283,7 @@ editor model =
                 ( String.fromInt model.counter
                 , Input.multiline (textInputStyle w_ h_)
                     { onChange = InputNotes
-                    , text = model.sourceText
+                    , text = Document.getContent model.currentDocument
                     , placeholder = Nothing
                     , label = Input.labelBelow [ Font.size 0, Font.bold ] (Element.text "")
                     , spellcheck = False

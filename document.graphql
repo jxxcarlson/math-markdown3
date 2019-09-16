@@ -1,0 +1,15 @@
+type Document {
+   id:ID!
+   title:String!
+   content:String
+   author:ID!
+   tags:[String]
+}
+
+type Query {
+  # Get one document
+  document(id: ID!): Document
+  # Get all documents
+  allDocuments: [Document!]!
+}
+

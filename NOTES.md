@@ -10,8 +10,66 @@ The app is deployed on Netlify at [focused-hodgkin-3d0fb4.netlify.com](https://f
 - run (development): `yarn run parcel public/index.html`
 -  build: `yarn run parcel build public/index.html`
     
+## Fauna DB
+
+[Dashboard](https://dashboard.fauna.com/)
 
 
+[Fauna shell](https://fauna.com/blog/introducing-fauna-shell)
+
+Database name: 7ccf0e66-539e-4cdd-80ae-18b24ae9ae06
+
+To get started, import your GraphQL Schema using a .gql or .graphql file.
+
+### Schema
+
+```
+type Document {
+   id:ID!
+   title:String!
+   content:String
+   author:ID!
+   tags:[String]
+}
+
+type Query {
+  # Get one document
+  document(id: ID!): Document
+  # Get all documents
+  allDocuments: [Document!]!
+}
+```
+
+
+### Mutations
+
+```
+mutation CreateDocument {
+   createDocument(data: {
+   id: 2
+   author: 1
+   title: "Measuring atoms"
+   content: "But they are so small!"
+   }) {
+       title
+       content
+   }
+}
+```
+
+### Queries
+
+``
+query FindAllDocuments {
+  allDocuments {
+    data {
+      _id
+      title
+      content
+    }
+  }
+}
+```
 ## Links
 
 [Math-markdown3 on Netlify](https://focused-hodgkin-3d0fb4.netlify.com/)
