@@ -16,6 +16,9 @@ import Markdown.Option exposing (Option(..))
 import Random
 import Data
 import Document exposing(Document)
+import Time
+import Task
+import Utility exposing (humanTimeHM)
 
 
 main : Program Flags Model Msg
@@ -37,6 +40,8 @@ type alias Model =
     , documentList : List Document
     , currentDocument : Maybe Document
     , visibilityOfTools : Visibility
+    , zone : Time.Zone
+    , time : Time.Posix
     }
 
 type Visibility = Visible | Invisible
@@ -53,9 +58,12 @@ init flags =
             , documentList = [Data.startupDocument, Data.doc2]
             , currentDocument = Just Data.startupDocument
             , visibilityOfTools = Invisible
+            , zone = Time.utc
+            , time = Time.millisToPosix 0
+
             }
     in
-    ( model, Cmd.none )
+    ( model, Task.perform AdjustTimeZone Time.here )
 
 -- MSG --
 
@@ -73,6 +81,8 @@ type Msg
     | InputNotes String
     | SetCurrentDocument Document
     | SetToolPanelState Visibility
+    | Tick Time.Posix
+    | AdjustTimeZone Time.Zone
 
 
 type alias Flags =
@@ -92,16 +102,6 @@ viewInfo = {
   }
 
 
---viewInfo = {
---    toc = 0.15
---  , left = 0.325
---  , middle = 0.325
---  , right = 0.2
---  , vInset = 210.0
---  , hExtra = 30.0
---  }
---
-
 scale : Float -> Int -> Int
 scale factor input =
     factor * (toFloat input) |> round
@@ -116,7 +116,7 @@ translate amount input =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Time.every 1000 Tick
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -192,6 +192,27 @@ update msg model =
 
         SetToolPanelState visibility ->
             ( {model | visibilityOfTools = visibility}, Cmd.none)
+
+        -- TIME --
+
+        Tick newTime ->
+              ( { model | time = newTime }
+              , Cmd.none
+              )
+
+        AdjustTimeZone newZone ->
+              ( { model | zone = newZone }
+              , Cmd.none
+              )
+
+
+
+-- MANAGE DOCUMENTS --
+
+
+
+
+
 
 
 --
@@ -273,6 +294,7 @@ renderedSource model rt =
                                     [ rt.toc |> Element.html  ]
       ]
 
+-- TOOL PANEL --
 
 toolPanel model =
   let
@@ -328,6 +350,7 @@ header model rt =
      , column [width (px right)] []
     ]
 
+-- TAB-STRIP ON LEFT --
 
 tabStrip : { a | visibilityOfTools : Visibility } -> Element Msg
 tabStrip model =
@@ -363,6 +386,7 @@ showDocumentListButton model =
 
 
 
+-- FOOTER --
 
 footer : Model -> Element Msg
 footer model =
@@ -372,10 +396,14 @@ footer model =
         right = scale viewInfo.right model.windowWidth
      in
        row [ height (px 30), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
-         column [width (px left)] [row [centerX, spacing 10] [wordCount model ]]
-        , column [width (px middle), Font.size 12, Font.color white] [flavors model]
-        , column [width (px right)] [status model]
+         row [width (px left)] [row [centerX, spacing 10] [wordCount model ]]
+        , row [width (px middle), Font.size 12, Font.color white] [flavors model]
+        , row [width (px right)] [currentTime model, status model]
        ]
+
+currentTime model =
+      Element.el [Font.color white, Font.size 12]
+        (Element.text <| "Current time: " ++ Utility.humanTimeHM model.zone model.time)
 
 
 wordCount model =
@@ -402,8 +430,6 @@ flavors model =
       , extendedMathMarkdownButton model 93 ]
 
 
-lightGrey =
-    makeGrey 0.95
 
 
 ---- BUTTONS --
@@ -475,9 +501,15 @@ textInputStyle w h=
 preWrap =
     Element.htmlAttribute (Html.Attributes.attribute "white-space" "pre-wrap")
 
+
+-- COLORS --
+
 makeGrey g =
     Element.rgb g g g
 
+
+lightGrey =
+    makeGrey 0.95
 
 blue = grey 0.5
 
