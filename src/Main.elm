@@ -19,7 +19,7 @@ import Document exposing(Document)
 import Time
 import Task
 import Utility exposing (humanTimeHM)
-
+import Author exposing(Author)
 
 main : Program Flags Model Msg
 main =
@@ -42,6 +42,7 @@ type alias Model =
     , visibilityOfTools : Visibility
     , zone : Time.Zone
     , time : Time.Posix
+    , currentAuthor : Maybe Author
     }
 
 type Visibility = Visible | Invisible
@@ -60,6 +61,7 @@ init flags =
             , visibilityOfTools = Invisible
             , zone = Time.utc
             , time = Time.millisToPosix 0
+            , currentAuthor = Just Author.dummy
 
             }
     in
