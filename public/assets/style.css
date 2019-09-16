@@ -17,9 +17,9 @@ p {
   , Courier, monospace; padding: 8px; background-color: #f5f5f5; *An image, just for fun*
 }
 .mm-inline-code {font-family: "Courier New"
-  , Courier, monospace; padding-left: 5px; padding-right: 5px;background-color: #f5f5f5; font-size: 11pt;
+  , Courier, monospace; padding-left: 5px; padding-right: 5px;background-color: #f5f5f5;
 }
-code { font-size: 12pt; }
+code { font-size: 10pt; }
 
 
 .mm-image {width: 100%}
@@ -106,6 +106,8 @@ p.mm-table-cell {
 .mm-verbatim {
 	font: 16px courier; background-color: #eee; padding: 8px;
 }
+
+pre { font-size: 10pt; }
 
 .mm-line-height {
     line-height: 1.4
