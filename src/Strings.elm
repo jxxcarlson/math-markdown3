@@ -6,6 +6,9 @@ initialText =
 
 ## Introduction
 
+![Galaxy-slice](http://noteshare-images.s3.amazonaws.com/galaxy-slice-bw2.png) *An image, just for fun*
+
+
 This document illustrates what one can do with the pure Elm markdown
 library [jxxcarlson/elm-markdown](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/).
 
