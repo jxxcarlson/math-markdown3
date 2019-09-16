@@ -210,10 +210,18 @@ footer model =
         right = scale viewInfo.right model.windowWidth
      in
        row [ height (px 30), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
-         column [width (px left)] [row [centerX, spacing 10] [clearButton 60, restoreButton 60 ]]
+         column [width (px left)] [row [centerX, spacing 10] [wordCount model, clearButton 60, restoreButton 60 ]]
         , column [width (px middle), Font.size 12, Font.color white] [flavors model]
         , column [width (px right)] [status model]
        ]
+
+
+wordCount model =
+    let
+        wc = List.length (String.words model.sourceText) |> String.fromInt
+    in
+      Element.el [Font.color white, Font.size 12] (Element.text <| "Word count: " ++ wc)
+
 
 status model =
   el [Font.color white, Font.size 12, centerX]
