@@ -259,7 +259,7 @@ renderedSource model rt =
         w_ = affine viewInfo.middle (viewInfo.hExtra) model.windowWidth
         h_ = translate (-viewInfo.vInset) model.windowHeight
 
-        w2_ = affine viewInfo.middle (viewInfo.hExtra + 120) model.windowWidth
+        w2_ = affine viewInfo.middle (viewInfo.hExtra + 140) model.windowWidth
 
         wToc = affine viewInfo.right (viewInfo.hExtra) model.windowWidth
         hToc = translate (-viewInfo.vInset) model.windowHeight
