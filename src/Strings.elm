@@ -6,32 +6,56 @@ initialText =
 
 ## Introduction
 
+This document illustrates what one can do with the pure Elm markdown
+library [jxxcarlson/elm-markdown](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/).
+
+
+Here it is used to build an interactive editor. It could also
+be used to buid a content delivery system  Feel free to change the text
+on the left to see how it responds,
+or press the **Clear** button in the footer and write your own text. In the
+not-to-distant future, we will offer this Markdown as a service so that one
+ can create and distribute class notes and other materials via a user-friendly
+ searchable interface.
+
+
+The initial impetus of this project was to have a
+flavor of Markdown which can render
+mathematical formulas written in TeX/LaTeX:
+
 $$
 \\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
 $$
 
-The Markdown used here offers three options: *Standard*,
+This is done using [MathJax](https://mathjax.org).
+
+Once one has a Math Markdown, one can do other things as well. There are three options: *Standard*,
 *Extended* and *ExtendedMath*. The Extended option offers strike-through
 text, verbatim blocks, poetry blocks, and tables.  The ExtendedMath
-option is, in addition, able to render
-formulas written in TeX/LaTeX.  Note that there is an automatically generated
-active table of contents.
+option does this, but in addition offers rendering of formulas, In all flavors
+of the language, one can generate
+an active table of contents.  Depending on the library rendering
+function used, it can be placed at the top
+of the document, on the side, as in this app, or can be absent.
 
 
-The [library](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/)
- with which this demo app is built is suitable for
+The ExtendedMath option is suitable for
 light-weight writing tasks that require
 mathematical notation — problem sets, short class notes, etc.
 
 
 This project is a work in progress: more to to do make
-it adhere as closely as possible to the CommonMark spec.
-Write me at jxxcarlson@gmail.com with comments and bug reports,
-or post an issue on the [GitHub repo](https://github.com/jxxcarlson/elm-markdown).
+it adhere as closely as possible to the CommonMark spec, for example. Write me at jxxcarlson@gmail.com
+with comments and bug reports,
+or post an issue on the
+[GitHub repo](https://github.com/jxxcarlson/elm-markdown). Among the near-term plans
+is addition of a renderer whose output is  LaTeX.  This seemingly retro feature
+will permit one to produce PDF documents and therefore to print.
 
-For installation, see the notes
-at the end. This Markdown package is written in pure Elm.
-It uses MathJax.js to render math formulas.
+For installation and use of the library, see the notes
+at the end or the documentation on the
+[Elm package manager](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/).
+
 
 ## Demo
 

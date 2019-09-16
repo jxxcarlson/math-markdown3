@@ -54,6 +54,7 @@ init flags =
     in
     ( model, Cmd.none )
 
+-- MSG --
 
 type Msg
     = Clear
@@ -203,13 +204,27 @@ header model rt =
 
 footer : Model -> Element Msg
 footer model =
-     row [height (px 30), width (px model.windowWidth), spacing 10, Background.color charcoal, paddingXY 30 0]
-       [
-                   clearButton 60
-                  , standardMarkdownButton model 80
-                  , extendedMarkdownButton model 80
-                  , extendedMathMarkdownButton model 93
-                  , el [Font.color white, Font.size 12] (Element.text <| "w: " ++ String.fromInt model.windowWidth ++ ", h: " ++ String.fromInt model.windowHeight)]
+   let
+        left =  scale viewInfo.left model.windowWidth
+        middle =   scale viewInfo.middle model.windowWidth
+        right = scale viewInfo.right model.windowWidth
+     in
+       row [ height (px 30), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
+         column [width (px left)] [row [centerX, spacing 10] [clearButton 60, restoreButton 60 ]]
+        , column [width (px middle), Font.size 12, Font.color white] [flavors model]
+        , column [width (px right)] [status model]
+       ]
+
+status model =
+  el [Font.color white, Font.size 12, centerX]
+     (Element.text <| "w: " ++ String.fromInt model.windowWidth ++ ", h: " ++ String.fromInt model.windowHeight)
+
+flavors model =
+   row [spacing 10,  centerX] [
+       el [Font.color white, Font.bold] (Element.text "Markdown Flavor")
+      ,  standardMarkdownButton model 80
+      , extendedMarkdownButton model 80
+      , extendedMathMarkdownButton model 93 ]
 
 
 editor : Model -> Element Msg
@@ -244,12 +259,14 @@ renderedSource model rt =
         w_ = affine viewInfo.middle (viewInfo.hExtra) model.windowWidth
         h_ = translate (-viewInfo.vInset) model.windowHeight
 
+        w2_ = affine viewInfo.middle (viewInfo.hExtra + 120) model.windowWidth
+
         wToc = affine viewInfo.right (viewInfo.hExtra) model.windowWidth
         hToc = translate (-viewInfo.vInset) model.windowHeight
     in
       row [spacing 10] [
-        Element.Keyed.column [width (px w_), height (px h_), scrollbarY, clipX, Font.size 12, paddingXY 20 0]
-           [ ( token, rt.document |> Element.html ) ]
+         Element.Keyed.column [width (px w_), height (px h_), scrollbarY, clipX, Font.size 12]
+           [ ( token, column [width (px w2_), centerX, paddingXY 10 20 ] [rt.document |> Element.html] ) ]
         , Element.column [width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (makeGrey 0.9)]
                                     [ rt.toc |> Element.html  ]
       ]
@@ -265,6 +282,12 @@ lightGrey =
 clearButton width =
     Input.button (buttonStyleSelected width False)
                   { onPress = Just Clear, label = el [centerX] (Element.text "Clear")}
+
+restoreButton width =
+    Input.button (buttonStyleSelected width False)
+                  { onPress = Just RestoreText, label = el [centerX] (Element.text "Restore")}
+
+
 
 
 standardMarkdownButton model width =
