@@ -281,7 +281,7 @@ toolPanel model =
   in
     column [width (px (scale viewInfo.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
        , paddingXY 10 20, alignTop]
-      [column [Font.size 13, spacing 8]  [el [Font.size 16, Font.bold] (Element.text "Tools")]
+      [column [Font.size 13, spacing 8]  [el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")]
   ]
 
 
