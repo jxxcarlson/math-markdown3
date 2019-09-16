@@ -3,7 +3,7 @@ module Data exposing (startupDocument, doc2)
 import Time exposing(Posix)
 
 startupDocument = {
-    id = "jxxcarlson.ae791b8",
+    id = "jxxcarlson.pure-elm-markdown-parser",
     title = "A Pure Elm Markdown Parser"
   , authorID = "jxxcarlson"
   , content = startupText
@@ -252,7 +252,7 @@ Then open `index.html` to run the app.
 --- ONE MORE ---
 
 doc2 = {
-    id = "jxxcarlson.ae820164"
+    id = "jxxcarlson.notes-on-futhark"
   ,  title = "Notes on Futhark"
   , authorID = "jxxcarlson"
   , content = text2
