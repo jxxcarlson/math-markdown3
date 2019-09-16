@@ -1,6 +1,7 @@
-module Document exposing (Document, setContent, getContent)
+module Document exposing (Document, setContent, getContent, documentId, newDocument)
 
 import Time exposing(Posix)
+import Utility
 
 type alias DocumentID = String
 
@@ -30,3 +31,41 @@ getContent maybeDocument =
         Nothing -> ""
 
 
+
+{-|
+    > t = Time.millisToPosix (1568667528 * 1000)
+    Posix 1568667528000 : Time.Posix
+    > title = "Introduction to Quantum Mechanics"
+    > documentId "jxxcarlson" title t
+    "jxxcarlson.introduction-to-quantum-mechanics.1568667528"
+
+-}
+documentId : String -> String -> Posix -> String
+documentId authorID title time =
+    [authorID, Utility.normalize title, Utility.stringOfPosix time]
+      |> String.join "."
+
+{-|
+
+    > newDocument "jxxcarlson" "Intro to Chromaticity" t "First draft ..."
+    --> {   authorID = "jxxcarlson", children = [], content = "First draft ..."
+          , id = "jxxcarlson.intro-to-chromaticity.1568667528"
+          , public = False, tags = [], timeCreated = Posix 1568667528000
+          , timeUpdated = Posix 1568667528000, title = "Intro to Chromaticity" }
+        : Document
+
+-}
+newDocument : String -> String -> Posix -> String -> Document
+newDocument authorID title time content =
+     {  id =  documentId authorID title time
+      , title = title
+      , authorID = authorID
+      , content = content
+      , tags  = [ ]
+      , timeCreated = time
+      , timeUpdated = time
+      , public = False
+      , children = []
+
+
+     }

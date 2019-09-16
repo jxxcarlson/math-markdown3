@@ -83,6 +83,8 @@ type Msg
     | SetToolPanelState Visibility
     | Tick Time.Posix
     | AdjustTimeZone Time.Zone
+    -- Document
+    | CreateDocument
 
 
 type alias Flags =
@@ -204,6 +206,10 @@ update msg model =
               ( { model | zone = newZone }
               , Cmd.none
               )
+
+        -- DOCUMENT --
+        CreateDocument ->
+           (model, Cmd.none)
 
 
 
