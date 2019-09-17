@@ -381,10 +381,11 @@ toolPanel viewInfo model =
       heading_ = el [Font.size 16, Font.bold] (Element.text "Report bugs!  ")
   in
     column [width (px (scale viewInfo.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
-       , paddingXY 10 20, alignTop]
-      [column [Font.size 13, spacing 8]  [
+       , paddingXY 20 20, alignTop]
+      [column [Font.size 13, spacing 20]  [
           el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")
         , newDocumentButton
+        , flavors model
        ]
   ]
 
@@ -483,7 +484,7 @@ footer model =
      in
        row [ height (px 30), width (px model.windowWidth), Background.color charcoal] [
          row [width (px editorWidth_ )] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
-        , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] [flavors model]
+        , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] []
         , row [width (px innerTOCWidth_), spacing 25] [currentTime model, status model]
        ]
 
@@ -521,10 +522,10 @@ status model =
      (Element.text <| "w: " ++ String.fromInt model.windowWidth ++ ", h: " ++ String.fromInt model.windowHeight)
 
 flavors model =
-   row [spacing 10,  centerX] [
+   column [spacing 10, Background.color charcoal, padding 22] [
        el [Font.color white, Font.bold] (Element.text "Markdown Flavor")
-      ,  standardMarkdownButton model 80
-      , extendedMarkdownButton model 80
+      ,  standardMarkdownButton model 93
+      , extendedMarkdownButton model 93
       , extendedMathMarkdownButton model 93 ]
 
 
