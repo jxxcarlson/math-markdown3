@@ -35,8 +35,8 @@ getContent maybeDocument =
               footer = "\n\n___\n\n>> Author: "
                 ++ document.authorID ++ "\n"
                 ++ "Document ID: " ++ document.id ++ "\n"
-                ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ "\n"
-                ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ "\n"
+                ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
+                ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ " UTC\n"
                 ++ "Tags: " ++ String.join ", " document.tags
 
            in
