@@ -80,7 +80,7 @@ type Msg
     | SelectStandard
     | SelectExtended
     | SelectExtendedMath
-    | InputNotes String
+    | UpdateDocumentText String
     | SetCurrentDocument Document
     | SetToolPanelState Visibility
     | Tick Time.Posix
@@ -179,12 +179,6 @@ update msg model =
             , Cmd.none
             )
 
-        InputNotes str ->
-
-           ( {model | currentDocument = Maybe.map (Document.setContent str) model.currentDocument }, Cmd.none )
-
-        SetCurrentDocument document ->
-            ( {model | currentDocument = Just document}, Cmd.none)
 
         SetToolPanelState visibility ->
             ( {model | visibilityOfTools = visibility}, Cmd.none)
@@ -231,6 +225,26 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        UpdateDocumentText str ->
+--          case model.currentDocument of
+--                Nothing -> (model, Cmd.none)
+--                Just doc ->
+--                    let
+--                        updatedDoc =  Document.setContent str doc
+--                    in
+--                    ( { model
+--                        | currentDocument = Just <| updatedDoc
+--                        --, documentList = Document.replaceInList updatedDoc model.documentList
+--                        , counter = model.counter + 1
+--                      }
+--                    , Cmd.none
+--                    )
+
+          ( {model | currentDocument = Maybe.map (Document.setContent str) model.currentDocument }, Cmd.none )
+
+        SetCurrentDocument document ->
+            ( {model | currentDocument = Just document}, Cmd.none)
 
 -- MANAGE DOCUMENTS --
 
@@ -286,7 +300,7 @@ editor model =
             [ Element.Keyed.el []
                 ( String.fromInt model.counter
                 , Input.multiline (textInputStyle w_ h_)
-                    { onChange = InputNotes
+                    { onChange = UpdateDocumentText
                     , text = Document.getContent model.currentDocument
                     , placeholder = Nothing
                     , label = Input.labelBelow [ Font.size 0, Font.bold ] (Element.text "")
