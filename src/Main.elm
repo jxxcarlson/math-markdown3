@@ -226,7 +226,7 @@ update msg model =
                     in
                     ( { model
                         | currentDocument = Just <| updatedDoc
-                        , documentList = Document.replace updatedDoc model.documentList
+                        --, documentList = Document.replaceInList updatedDoc model.documentList
                         , counter = model.counter + 1
                       }
                     , Cmd.none
