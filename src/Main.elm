@@ -87,6 +87,7 @@ type Msg
     | SelectExtended
     | SelectExtendedMath
     | SetToolPanelState Visibility
+    | SetAppMode AppMode
     -- Document
     | CreateDocument
     | UpdateDocumentText String
@@ -95,11 +96,23 @@ type Msg
 
 
 
+
 type alias Flags =
     {  width : Int
       , height : Int
     }
 
+
+type alias ViewInfo = {
+      toolStripWidth : Float
+    , docListWidth : Float
+    , editorWidth : Float
+    , renderedDisplayWidth : Float
+    , tocWidth : Float
+    , vInset : Float
+    , hExtra: Float
+
+  }
 
 viewInfoEditing = {
     toolStripWidth = 0.05
@@ -113,10 +126,10 @@ viewInfoEditing = {
 
 viewInfoReading = {
     toolStripWidth = 0.05
-  ,  docListWidth = 0.15
-  , editoWidth = 0.3
-  , renderedDisplayWidth = 0.3
-  , tocWidth = 0.2
+  ,  docListWidth = 0.2
+  , editorWidth = 0
+  , renderedDisplayWidth = 0.45
+  , tocWidth = 0.3
   , vInset = 210.0
   , hExtra = 0
   }
@@ -228,7 +241,15 @@ update msg model =
         SetCurrentDocument document ->
             ( {model | currentDocument = Just document}, Cmd.none)
 
--- MANAGE DOCUMENTS --
+        SetAppMode appMode ->
+           case appMode of
+               Reading ->  ( {model | appMode = Reading}, Cmd.none)
+
+
+               Editing ->  ( {model | appMode =  Editing}, Cmd.none)
+
+
+          -- MANAGE DOCUMENTS --
 
 
 
@@ -244,38 +265,51 @@ type alias RenderedDocumentRecord msg = { document : Html msg, title : Html msg,
 
 view : Model -> Html Msg
 view model =
-    Element.layout []  (display model)
+    case model.appMode of
+        Reading ->  Element.layout []  (readingDisplay viewInfoReading model)
+        Editing ->  Element.layout []  (editingDisplay viewInfoEditing model)
 
 
-
-display : Model -> Element Msg
-display model =
+editingDisplay : ViewInfo -> Model -> Element Msg
+editingDisplay viewInfo model =
   let
       rt : {title: Html msg, toc: Html msg, document: Html msg}
       rt = Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument)
   in
     column [ paddingXY 0 0]
         [
-           header model rt
-         , row [] [ tabStrip model, toolsOrDocs model, editor model, renderedSource model rt ]
+           header viewInfo model rt
+         , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, renderedSource viewInfo model rt ]
          , footer model
          ]
 
+readingDisplay : ViewInfo -> Model -> Element Msg
+readingDisplay viewInfo model =
+  let
+      rt : {title: Html msg, toc: Html msg, document: Html msg}
+      rt = Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument)
+  in
+    column [ paddingXY 0 0]
+        [
+           header viewInfo model rt
+         , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, renderedSource viewInfo  model rt ]
+         , footer model
+         ]
 
-toolsOrDocs model =
+toolsOrDocs viewInfo model =
     case model.visibilityOfTools of
-        Visible ->  toolPanel model
-        Invisible -> docListViewer model
+        Visible ->  toolPanel viewInfo model
+        Invisible -> docListViewer viewInfo model
 
 -- DOCUMENT VIEWS (EDITOR, RENDERED, TOC) --
 
 -- EDITOR --
 
-editor : Model -> Element Msg
-editor model =
+editor : ViewInfo -> Model -> Element Msg
+editor viewInfo model =
    let
-       w_ = affine viewInfoEditing.editorWidth (viewInfoEditing.hExtra) model.windowWidth |> toFloat
-       h_ = translate (-viewInfoEditing.vInset) model.windowHeight |> toFloat
+       w_ = affine viewInfo.editorWidth (viewInfo.hExtra) model.windowWidth |> toFloat
+       h_ = translate (-viewInfo.vInset) model.windowHeight |> toFloat
 
    in
     column []
@@ -292,24 +326,48 @@ editor model =
             ]
 
 
+editingModeButton model =
+  let
+      color = if model.appMode == Editing then
+           red
+        else
+           blue
+  in
+    Input.button [] { onPress = Just (SetAppMode Editing)
+            , label = el [height (px 30), padding 8, Background.color color, Font.color white, Font.size 12]
+            (Element.text "Edit")}
+
+
+readingModeButton model =
+  let
+      color = if model.appMode == Reading then
+           red
+        else
+           blue
+  in
+    Input.button [] { onPress = Just (SetAppMode Reading)
+            , label = el [height (px 30), padding 8, Background.color color, Font.color white, Font.size 12]
+       (Element.text "Read")}
+
+
 -- RENDERED SOURCE --
 
-renderedSource : Model -> RenderedDocumentRecord msg -> Element msg
-renderedSource model rt =
+renderedSource : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element msg
+renderedSource viewInfo model rt =
     let
         token =
             String.fromInt model.counter
 
-        w_ = affine viewInfoEditing.renderedDisplayWidth (viewInfoEditing.hExtra) model.windowWidth
-        h_ = translate (-viewInfoEditing.vInset) model.windowHeight
+        w_ = affine viewInfo.renderedDisplayWidth (viewInfo.hExtra) model.windowWidth
+        h_ = translate (-viewInfo.vInset) model.windowHeight
 
-        w2_ = affine viewInfoEditing.renderedDisplayWidth (viewInfoEditing.hExtra + 160) model.windowWidth
+        w2_ = affine viewInfo.renderedDisplayWidth (viewInfo.hExtra + 160) model.windowWidth
 
-        wToc = affine viewInfoEditing.tocWidth (viewInfoEditing.hExtra) model.windowWidth
-        hToc = translate (-viewInfoEditing.vInset) model.windowHeight
+        wToc = affine viewInfo.tocWidth (viewInfo.hExtra) model.windowWidth
+        hToc = translate (-viewInfo.vInset) model.windowHeight
     in
       row [spacing 10] [
-         Element.Keyed.column [width (px w_), height (px h_), scrollbarY, clipX, Font.size 12]
+         Element.Keyed.column [width (px w_), height (px h_),               clipX, Font.size 12]
            [ ( token, column [width (px w2_), paddingXY 10 20 ] [rt.document |> Element.html] ) ]
         , Element.column [width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (makeGrey 0.9)]
                                     [ rt.toc |> Element.html  ]
@@ -317,12 +375,12 @@ renderedSource model rt =
 
 -- TOOL PANEL --
 
-toolPanel model =
+toolPanel viewInfo model =
   let
-      h_ = translate (-viewInfoEditing.vInset) model.windowHeight
+      h_ = translate (-viewInfo.vInset) model.windowHeight
       heading_ = el [Font.size 16, Font.bold] (Element.text "Report bugs!  ")
   in
-    column [width (px (scale viewInfoEditing.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
+    column [width (px (scale viewInfo.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
        , paddingXY 10 20, alignTop]
       [column [Font.size 13, spacing 8]  [
           el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")
@@ -337,11 +395,11 @@ newDocumentButton =
 
 -- DOCUMENT LIST --
 
-docListViewer model =
+docListViewer viewInfo model =
   let
-      h_ = translate (-viewInfoEditing.vInset) model.windowHeight
+      h_ = translate (-viewInfo.vInset) model.windowHeight
   in
-    column [width (px (scale viewInfoEditing.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.9)
+    column [width (px (scale viewInfo.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.9)
        , paddingXY 10 20, alignTop]
       [column [Font.size 13, spacing 8]  (heading::(List.map (tocEntry model.currentDocument) model.documentList))]
 
@@ -365,23 +423,23 @@ heading = el [Font.size 16, Font.bold] (Element.text "Documents")
 
 -- HEADER AND FOOTER --
 
-header : Model -> RenderedDocumentRecord msg -> Element Msg
-header model rt =
+header : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
+header viewInfo model rt =
   let
-     editorWidth_ =  scale viewInfoEditing.editorWidth model.windowWidth
-     renderedDisplayWidth_ =   scale viewInfoEditing.renderedDisplayWidth model.windowWidth
-     innerTOCWidth_ = scale viewInfoEditing.tocWidth model.windowWidth
+     editorWidth_ =  scale viewInfo.editorWidth model.windowWidth
+     renderedDisplayWidth_ =   scale viewInfo.renderedDisplayWidth model.windowWidth
+     innerTOCWidth_ = scale viewInfo.tocWidth model.windowWidth
   in
     row [ height (px 45), width (px model.windowWidth), Background.color charcoal] [
-      column [width (px editorWidth_ )] []
-     , column [width (px renderedDisplayWidth_), Font.size 12, Font.color white] [rt.title |> Element.html |> Element.map (\_ -> NoOp)]
+      row [width (px editorWidth_ ), spacing 10, paddingXY 30 0] [ editingModeButton model, readingModeButton model]
+     , column [width (px renderedDisplayWidth_), Font.size 12, Font.color white, alignRight, moveUp 8] [rt.title |> Element.html |> Element.map (\_ -> NoOp)]
      , column [width (px innerTOCWidth_)] []
     ]
 
 -- TAB-STRIP ON LEFT --
 
-tabStrip : { a | visibilityOfTools : Visibility } -> Element Msg
-tabStrip model =
+tabStrip : ViewInfo -> { a | visibilityOfTools : Visibility } -> Element Msg
+tabStrip viewInfo model =
     column [width (px 30), height(px 200), Background.color (grey 0.1), alignTop ] [
         row [spacing 15, rotate -1.5708,moveLeft 50, moveDown 70] [showToolsButton model, showDocumentListButton model]
     ]

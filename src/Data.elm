@@ -26,51 +26,51 @@ startupText =
 
 This document illustrates what one can do with the pure Elm markdown
 library [jxxcarlson/elm-markdown](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/).
-
-
-Here it is used to build an interactive editor, and we are on the way
-to turning it into a content managment system for things like
-lecture notes and class assignments in technical fields like math,
-science, and engineering.
-
-Feel free to change the text
-on the left to see how it responds,
-or press the **Clear** button in the footer and write your own text. In the
-not-to-distant future, we will offer this Markdown as a service so that one
- can create and distribute class notes and other materials via a user-friendly
- searchable interface.
-
-
-The initial impetus of this project was to have a
-flavor of Markdown which can render
-mathematical formulas written in TeX/LaTeX:
+The idea is to be able to do Markdown + Math, like this:
 
 $$
 \\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
 $$
 
-This is done using [MathJax](https://mathjax.org).
+Formulas written n TeX/LaTeX are rendered using [MathJax](https://mathjax.org).
 
-Once one has a Math Markdown, one can do other things as well. There are three options: *Standard*,
-*Extended* and *ExtendedMath*. The Extended option offers strike-through
+Here we use the library to build a prototype for an interactive editor
+— try the **Edit** and **Read** buttons. The goal is a content management system for things like
+lecture notes and class assignments in technical fields like math,
+science, and engineering.
+
+
+### Try it out
+
+Feel free to use the **Edit** to change the text. Or press **Tool**, the **Create Document**. In the
+not-to-distant future, we will offer this Markdown as a service so that one
+ can create and distribute class notes and other materials via a user-friendly
+ searchable interface.
+
+
+### Flavors of Markdown
+
+The library provides three flavors of Markdown: *Standard*,
+*Extended* and *ExtendedMath*. The Extended option provides strike-through
 text, verbatim blocks, poetry blocks, and tables.  The ExtendedMath
-option does this, but in addition offers rendering of formulas, In all flavors
+option handles formulas as well,
+
+In all flavors
 of the language, one can generate
 an active table of contents.  Depending on the library rendering
-function used, it can be placed at the top
+function used, the table of contents can be placed at the top
 of the document, on the side, as in this app, or can be absent.
 
 
-The ExtendedMath option is suitable for
-light-weight writing tasks that require
-mathematical notation — problem sets, short class notes, etc.
-
+### A Work in Progress
 
 This project is a work in progress: more to to do make
 it adhere as closely as possible to the CommonMark spec, for example. Write me at jxxcarlson@gmail.com
 with comments and bug reports,
 or post an issue on the
-[GitHub repo](https://github.com/jxxcarlson/elm-markdown). Among the near-term plans
+[GitHub repo](https://github.com/jxxcarlson/elm-markdown).
+
+Among the near-term plans
 is addition of a renderer whose output is  LaTeX.  This seemingly retro feature
 will permit one to produce PDF documents and therefore to print.
 
@@ -81,7 +81,7 @@ at the end or the documentation on the
 
 ## Demo
 
-Below we illustrate some typical Markdown elements: images, links, headings, etc.
+Below we illustrate various features of the present Markdown library — elements: images, links, headings, etc.
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 
