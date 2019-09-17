@@ -42,7 +42,7 @@ science, and engineering.  Stay tuned!
 
 ### Try it out
 
-Feel free to use the **Edit** to change the text. Or press **Tool**, the **Create Document**. In the
+Feel free to use the **Edit** button to change the text. Or press **Tool**, the **Create Document**. In the
 not-to-distant future, we will offer this Markdown as a service so that one
  can create and distribute class notes and other materials via a user-friendly
  searchable interface.
