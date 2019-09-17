@@ -28,8 +28,12 @@ This document illustrates what one can do with the pure Elm markdown
 library [jxxcarlson/elm-markdown](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/).
 
 
-Here it is used to build an interactive editor. It could also
-be used to buid a content delivery system  Feel free to change the text
+Here it is used to build an interactive editor, and we are on the way
+to turning it into a content managment system for things like
+lecture notes and class assignments in technical fields like math,
+science, and engineering.
+
+Feel free to change the text
 on the left to see how it responds,
 or press the **Clear** button in the footer and write your own text. In the
 not-to-distant future, we will offer this Markdown as a service so that one

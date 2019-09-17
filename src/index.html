@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width" />
+
+    <title>Math + MarkDown (Experimenal)</title>
+
+    <!-- Syntax highlighting -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <!-- Style -->
+    <link rel="stylesheet" href="assets/style.css">
+
+    <!-- Load app -->
+    <script src="Main.min.js" charset="utf-8"></script>
+
+    <!-- Set up MathJax -->
+    <script type="text/x-mathjax-config">
+	   // Same as kokoc3
+		MathJax.Hub.Config(
+			{ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+				processEscapes: true,
+				messageStyle: "none",
+				processSectionDelay: 0,
+				processUpdateTime: 0,
+				"fast-preview": {disabled: true},
+				TeX: { equationNumbers: {autoNumber: "AMS"},
+					   noErrors: {disabled: true},
+					   extensions: ["mhchem.js"]
+					  }
+			}
+		);
+	</script>
+    <script src="assets/math-text.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+</head>
+
+<body>
+
+
+<div id="main"></div>
+
+
+<script>
+
+		var root = document.getElementById('main');
+		var app = Elm.Main.init({node: root, flags:  { width:  1450, height: 912 }});
+
+	 </script>
+<script src="./index.js"></script>
+
+
+</body>
+</html>

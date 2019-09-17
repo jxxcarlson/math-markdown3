@@ -1,11 +1,13 @@
-elm-stuff/
-Main.js
+.cache/
 .idea/
-.cache
-node_modules/
-yarn-error.log
-yarn.lock
+.netlify/
+Main.min.js
 dist/
-
-# Local Netlify folder
-.netlify
+elm-stuff/
+node-modules/
+public/Main.js
+public/Main.min.jus
+yarn-error.log
+yarn.loc
+yarn.lock
+node_modules/
