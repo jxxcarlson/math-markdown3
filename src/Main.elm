@@ -227,8 +227,20 @@ update msg model =
                     )
 
         UpdateDocumentText str ->
+            case model.currentDocument of
+                Nothing -> (model, Cmd.none)
+                Just doc ->
+                   let
+                     updatedDoc = Document.setContent str doc
+                   in
+                     ( { model | currentDocument = Just updatedDoc
+                               , documentList = Document.replaceInList updatedDoc model.documentList
+                       }
+                       ,
+                       Cmd.none
+                     )
 --          case model.currentDocument of
---                Nothing -> (model, Cmd.none)
+--                Nothintg -> (model, Cmd.none)
 --                Just doc ->
 --                    let
 --                        updatedDoc =  Document.setContent str doc
@@ -241,7 +253,7 @@ update msg model =
 --                    , Cmd.none
 --                    )
 
-          ( {model | currentDocument = Maybe.map (Document.setContent str) model.currentDocument }, Cmd.none )
+          -- ( {model | currentDocument = Maybe.map (Document.setContent str) model.currentDocument }, Cmd.none )
 
         SetCurrentDocument document ->
             ( {model | currentDocument = Just document}, Cmd.none)
