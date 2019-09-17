@@ -3,6 +3,12 @@
 
 The app is deployed on Netlify at [focused-hodgkin-3d0fb4.netlify.com](https://focused-hodgkin-3d0fb4.netlify.com/)
 
+## Netlify 
+
+[How to use Netlify Functions in Elm](https://www.freecodecamp.org/news/how-to-use-netlify-functions-in-elm/?utm_campaign=Elm%20Weekly&utm_medium=email&utm_source=Revue%20newsletter)
+
+
+elm-graphql https://math-markdown.netlify.com/graphql --header fnADYYvKu5ACB1F7JQBRg9LPpUew3jjVd6VqHu11
 
 ## Commands
 
@@ -45,18 +51,41 @@ type Query {
 
 ### Mutations
 
-```
+```bash
 mutation CreateDocument {
-   createDocument(data: {
-   id: 2
-   author: 1
-   title: "Measuring atoms"
-   content: "But they are so small!"
-   }) {
-       title
-       content
-   }
-}
+    createDocument(data: {
+      identifier: "t2"
+      title: "Measuring atoms"
+      author: 1
+      content: "But they are so small!"
+      tags: []
+      timeCreated: 1568700834
+      timeUpdated: 1568700834
+      public: true
+      children: []
+      
+     }) {
+         title
+         content
+  }}
+    
+```
+
+```bash
+Create(Collection("Document"), { data: {
+    id: 33,
+    identifier: "t1",
+    title: "Measuring atoms",
+    author: 1,
+    content: "But they are so small!",
+    tags: [],
+    timeCreated: 1568700834,
+    timeUpdated: 1568700834,
+    public: true,
+    children: []
+   } 
+ }
+)
 ```
 
 ### Queries
@@ -66,6 +95,7 @@ query FindAllDocuments {
   allDocuments {
     data {
       _id
+      identifier
       title
       content
     }

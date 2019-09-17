@@ -1,20 +1,19 @@
 type Document {
-   id:ID!
    identifier: String!
    title:String!
-   content:String
+   content:String!
    author:ID!
-   tags:[String]
-   timeCreated : Int
-   timeUpdated : Int
-   public : Boolean
-   children: List identifier
+   tags:[String!]!
+   timeCreated : Int!
+   timeUpdated : Int!
+   public : Boolean!
+   children: [String!]!
 }
 
 type Query {
-  # Get one document
-  document(id: ID!): Document
-  # Get all documents
-  allDocuments: [Document!]!
+   # Get one document
+   document(identifier: String!): Document
+   # Get all documents
+   allDocuments: [Document!]!
 }
 
