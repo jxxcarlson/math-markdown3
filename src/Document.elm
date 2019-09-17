@@ -37,6 +37,7 @@ getContent maybeDocument =
                 ++ "Document ID: " ++ document.id ++ "\n"
                 ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ "\n"
                 ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ "\n"
+                ++ "Tags: " ++ String.join ", " document.tags
 
            in
             document.content ++ footer
