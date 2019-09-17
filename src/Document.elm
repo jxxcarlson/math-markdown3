@@ -22,9 +22,10 @@ type alias Document = {
   }
 
 
-setContent : String -> Document -> Document
-setContent str document =
-    { document | content = str }
+setContent : Posix -> String -> Document -> Document
+setContent time str document =
+    { document | content = str, timeUpdated = time }
+    
 
 getContent : Maybe Document -> String
 getContent maybeDocument =

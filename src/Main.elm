@@ -137,7 +137,7 @@ update msg model =
 
         Clear ->
             ( { model
-                | currentDocument  = Maybe.map (Document.setContent "") model.currentDocument
+                | currentDocument  = Maybe.map (Document.setContent model.time "") model.currentDocument
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -201,7 +201,7 @@ update msg model =
                 Nothing -> (model, Cmd.none)
                 Just doc ->
                    let
-                     updatedDoc = Document.setContent str doc
+                     updatedDoc = Document.setContent model.time str doc
                    in
                      ( { model | currentDocument = Just updatedDoc
                                , documentList = Document.replaceInList updatedDoc model.documentList
