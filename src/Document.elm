@@ -25,12 +25,21 @@ type alias Document = {
 setContent : Posix -> String -> Document -> Document
 setContent time str document =
     { document | content = str, timeUpdated = time }
-    
+
 
 getContent : Maybe Document -> String
 getContent maybeDocument =
     case maybeDocument of
-        Just document -> document.content
+        Just document ->
+           let
+              footer = "\n\n___\n\n>> Author: "
+                ++ document.authorID ++ "\n"
+                ++ "Document ID: " ++ document.id ++ "\n"
+                ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ "\n"
+                ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ "\n"
+
+           in
+            document.content ++ footer
         Nothing -> ""
 
 

@@ -1,4 +1,4 @@
-module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix)
+module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC)
 
 import Time exposing(Posix)
 
@@ -21,6 +21,33 @@ humanTimeHMS zone time =
   in
    hour ++ ":" ++ minute ++ ":" ++ second
 
+
+
+humanDateUTC : Posix -> String
+humanDateUTC time =
+  let
+    year   = String.fromInt (Time.toYear   Time.utc time)
+    month = (Time.toMonth Time.utc time) |> monthToString
+    day = String.fromInt (Time.toDay Time.utc time)
+  in
+   day ++ " " ++ month ++ ", " ++ year
+
+
+monthToString : Time.Month -> String
+monthToString month =
+    case month of
+        Time.Jan -> "Jan"
+        Time.Feb -> "Feb"
+        Time.Mar -> "Mar"
+        Time.Apr -> "Apr"
+        Time.May -> "May"
+        Time.Jun -> "Jun"
+        Time.Jul -> "Jul"
+        Time.Aug -> "Aug"
+        Time.Sep -> "Sep"
+        Time.Oct -> "Oct"
+        Time.Nov -> "Nov"
+        Time.Dec -> "Dec"
 
 normalize: String -> String
 normalize str =
