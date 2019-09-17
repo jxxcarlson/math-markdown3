@@ -3,7 +3,7 @@ module Data exposing (startupDocument, doc2)
 import Time exposing(Posix)
 
 startupDocument = {
-    id = "jxxcarlson.pure-elm-markdown-parser.1568700834",
+    identifier = "jxxcarlson.pure-elm-markdown-parser.1568700834",
     title = "A Pure Elm Markdown Parser"
   , authorID = "jxxcarlson"
   , content = startupText
@@ -16,12 +16,12 @@ startupDocument = {
 
 
 doc2 = {
-    id = "jxxcarlson.notes-on-futhark.1568700834"
+    identifier = "jxxcarlson.notes-on-futhark.1568700834"
   , title = "Notes on Futhark"
   , authorID = "jxxcarlson"
   , content = text2
   , timeCreated = Time.millisToPosix 1568700834000
-    , timeUpdated = Time.millisToPosix 1568700834000
+  , timeUpdated = Time.millisToPosix 1568700834000
   , tags = ["futhark", "gpu", "parallel computation"]
   , public = True
   , children = []

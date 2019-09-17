@@ -411,7 +411,7 @@ tocEntry currentDocument_ document =
         color = case currentDocument_ of
             Nothing ->  blue
             Just currentDocument ->
-                if currentDocument.id == document.id then
+                if currentDocument.identifier == document.identifier then
                    red
                 else
                    blue

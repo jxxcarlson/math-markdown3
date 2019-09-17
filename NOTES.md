@@ -12,6 +12,8 @@ The app is deployed on Netlify at [focused-hodgkin-3d0fb4.netlify.com](https://f
     
 ## Fauna DB
 
+[Tutoial](https://docs.fauna.com/fauna/current/start/cloud)
+
 [Dashboard](https://dashboard.fauna.com/)
 
 
@@ -84,3 +86,22 @@ query FindAllDocuments {
 
 
 [Setting up Elm with Parcel](https://kawamurakazushi.com/20190118-setting-up-elm-with-parcel/)
+
+### Fauna tutorial
+
+```
+$ fauna create-database my_db
+creating database my_db
+
+  created database 'my_db'
+
+  To start a shell with your new database, run:
+
+  fauna shell 'my_db'
+
+  Or, to create an application key for your database, run:
+
+  fauna create-key 'my_db'
+ ```$xslt
+
+```

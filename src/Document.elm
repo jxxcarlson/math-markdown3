@@ -8,7 +8,7 @@ import List.Extra
 type alias DocumentID = String
 
 type alias Document = {
-     id : DocumentID
+     identifier : String
    , title : String
    , authorID: String
    , content : String
@@ -32,12 +32,13 @@ getContent maybeDocument =
     case maybeDocument of
         Just document ->
            let
-              footer = "\n\n___\n\n>> Author: "
+              footer = "\n\n___\n\n````\nAuthor: "
                 ++ document.authorID ++ "\n"
-                ++ "Document ID: " ++ document.id ++ "\n"
+                ++ "Document ID: " ++ document.identifier ++ "\n"
                 ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
                 ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ " UTC\n"
                 ++ "Tags: " ++ String.join ", " document.tags
+                ++ "\n" ++ "````" ++ "\n\n"
 
            in
             document.content ++ footer
@@ -70,7 +71,7 @@ documentId authorID title time =
 -}
 create : String -> String -> Posix -> String -> Document
 create authorID title time content =
-     {  id =  documentId authorID title time
+     {  identifier =  documentId authorID title time
       , title = title
       , authorID = authorID
       , content = content
@@ -90,4 +91,4 @@ create authorID title time content =
 -}
 replaceInList : Document -> List Document -> List Document
 replaceInList targetDocument documentList =
-    List.Extra.setIf (\doc -> doc.id == targetDocument.id) targetDocument documentList
+    List.Extra.setIf (\doc -> doc.identifier == targetDocument.identifier) targetDocument documentList
