@@ -72,21 +72,21 @@ init flags =
 type Msg
     = Clear
     | NoOp
-    | GetContent String
+    -- Time
+    | Tick Time.Posix
+    | AdjustTimeZone Time.Zone
+    -- Random
     | GenerateSeed
     | NewSeed Int
-    | RestoreText
-    | RefreshText
+    -- UI
     | SelectStandard
     | SelectExtended
     | SelectExtendedMath
-    | UpdateDocumentText String
-    | SetCurrentDocument Document
     | SetToolPanelState Visibility
-    | Tick Time.Posix
-    | AdjustTimeZone Time.Zone
     -- Document
     | CreateDocument
+    | UpdateDocumentText String
+    | SetCurrentDocument Document
 
 
 type alias Flags =
@@ -139,21 +139,6 @@ update msg model =
             ( { model
                 | currentDocument  = Maybe.map (Document.setContent "") model.currentDocument
                 , counter = model.counter + 1
-              }
-            , Cmd.none
-            )
-
-        RestoreText ->
-            ( { model
-                | counter = model.counter + 1
-                , currentDocument = Just Data.startupDocument
-              }
-            , Cmd.none
-            )
-
-        RefreshText ->
-            ( { model
-                | counter = model.counter + 1
               }
             , Cmd.none
             )
@@ -211,21 +196,6 @@ update msg model =
                      , Cmd.none
                    )
 
-        GetContent str ->
-            case model.currentDocument of
-                Nothing -> (model, Cmd.none)
-                Just doc ->
-                    let
-                        updatedDoc =  Document.setContent str doc
-                    in
-                    ( { model
-                        | currentDocument = Just <| updatedDoc
-                        --, documentList = Document.replaceInList updatedDoc model.documentList
-                        , counter = model.counter + 1
-                      }
-                    , Cmd.none
-                    )
-
         UpdateDocumentText str ->
             case model.currentDocument of
                 Nothing -> (model, Cmd.none)
@@ -239,21 +209,6 @@ update msg model =
                        ,
                        Cmd.none
                      )
---          case model.currentDocument of
---                Nothintg -> (model, Cmd.none)
---                Just doc ->
---                    let
---                        updatedDoc =  Document.setContent str doc
---                    in
---                    ( { model
---                        | currentDocument = Just <| updatedDoc
---                        --, documentList = Document.replaceInList updatedDoc model.documentList
---                        , counter = model.counter + 1
---                      }
---                    , Cmd.none
---                    )
-
-          -- ( {model | currentDocument = Maybe.map (Document.setContent str) model.currentDocument }, Cmd.none )
 
         SetCurrentDocument document ->
             ( {model | currentDocument = Just document}, Cmd.none)
@@ -454,13 +409,21 @@ footer model =
         right = scale viewInfo.right model.windowWidth
      in
        row [ height (px 30), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
-         row [width (px left)] [row [centerX, spacing 10] [wordCount model ]]
+         row [width (px left)] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
         , row [width (px middle), Font.size 12, Font.color white] [flavors model]
-        , row [width (px right)] [currentTime model, status model]
+        , row [width (px right), spacing 25] [currentTime model, status model]
        ]
 
 
--- currentAuthorDixpay
+currentAuthorDisplay model =
+    let
+       message = case model.currentUser of
+          Nothing -> "Not signed in"
+          Just user -> "Signed in as " ++ user.id
+     in
+      Element.el [Font.color white, Font.size 12]
+           (Element.text <| message )
+
 
 
 currentTime model =
@@ -495,16 +458,6 @@ flavors model =
 
 
 ---- BUTTONS --
-
-
-clearButton width =
-    Input.button (buttonStyleSelected width False)
-                  { onPress = Just Clear, label = el [centerX] (Element.text "Clear")}
-
-restoreButton width =
-    Input.button (buttonStyleSelected width False)
-                  { onPress = Just RestoreText, label = el [centerX] (Element.text "Restore")}
-
 
 
 
