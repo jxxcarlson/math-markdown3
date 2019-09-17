@@ -65,7 +65,7 @@ not-to-distant future, we will offer this Markdown as a service so that one
 The library provides three flavors of Markdown: *Standard*,
 *Extended* and *ExtendedMath*. The Extended option provides strike-through
 text, verbatim blocks, poetry blocks, and tables.  The ExtendedMath
-option handles formulas as well,
+option handles formulas as well.
 
 In all flavors
 of the language, one can generate
