@@ -37,7 +37,7 @@ Formulas written n TeX/LaTeX are rendered using [MathJax](https://mathjax.org).
 Here we use the library to build a prototype for an interactive editor
 — try the **Edit** and **Read** buttons. The goal is a content management system for things like
 lecture notes and class assignments in technical fields like math,
-science, and engineering.
+science, and engineering.  Stay tuned!
 
 
 ### Try it out
