@@ -37,15 +37,19 @@ type alias Model =
     , option : Option
     , windowWidth : Int
     , windowHeight : Int
-    , documentList : List Document
-    , currentDocument : Maybe Document
     , visibilityOfTools : Visibility
+    , appMode: AppMode
     , zone : Time.Zone
     , time : Time.Posix
     , currentUser : Maybe User
+    -- documents
+    , documentList : List Document
+    , currentDocument : Maybe Document
     }
 
 type Visibility = Visible | Invisible
+
+type AppMode = Reading | Editing
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
@@ -56,13 +60,14 @@ init flags =
             , option = ExtendedMath
             , windowWidth = flags.width
             , windowHeight = flags.height
-            , documentList = [Data.startupDocument, Data.doc2]
-            , currentDocument = Just Data.startupDocument
             , visibilityOfTools = Invisible
+            , appMode = Reading
             , zone = Time.utc
             , time = Time.millisToPosix 0
             , currentUser = Just User.dummy
-
+            -- documents
+            , documentList = [Data.startupDocument, Data.doc2]
+            , currentDocument = Just Data.startupDocument
             }
     in
     ( model, Task.perform AdjustTimeZone Time.here )
@@ -95,7 +100,17 @@ type alias Flags =
     }
 
 
-viewInfo = {
+viewInfoEditing = {
+    toolStrip = 0.05
+  , toc = 0.15
+  , left = 0.3
+  , middle = 0.3
+  , right = 0.2
+  , vInset = 210.0
+  , hExtra = 0
+  }
+
+viewInfoReading = {
     toolStrip = 0.05
   ,  toc = 0.15
   , left = 0.3
@@ -104,7 +119,6 @@ viewInfo = {
   , vInset = 210.0
   , hExtra = 0
   }
-
 
 scale : Float -> Int -> Int
 scale factor input =
@@ -259,8 +273,8 @@ toolsOrDocs model =
 editor : Model -> Element Msg
 editor model =
    let
-       w_ = affine viewInfo.left (viewInfo.hExtra) model.windowWidth |> toFloat
-       h_ = translate (-viewInfo.vInset) model.windowHeight |> toFloat
+       w_ = affine viewInfoEditing.left (viewInfoEditing.hExtra) model.windowWidth |> toFloat
+       h_ = translate (-viewInfoEditing.vInset) model.windowHeight |> toFloat
 
    in
     column []
@@ -285,13 +299,13 @@ renderedSource model rt =
         token =
             String.fromInt model.counter
 
-        w_ = affine viewInfo.middle (viewInfo.hExtra) model.windowWidth
-        h_ = translate (-viewInfo.vInset) model.windowHeight
+        w_ = affine viewInfoEditing.middle (viewInfoEditing.hExtra) model.windowWidth
+        h_ = translate (-viewInfoEditing.vInset) model.windowHeight
 
-        w2_ = affine viewInfo.middle (viewInfo.hExtra + 160) model.windowWidth
+        w2_ = affine viewInfoEditing.middle (viewInfoEditing.hExtra + 160) model.windowWidth
 
-        wToc = affine viewInfo.right (viewInfo.hExtra) model.windowWidth
-        hToc = translate (-viewInfo.vInset) model.windowHeight
+        wToc = affine viewInfoEditing.right (viewInfoEditing.hExtra) model.windowWidth
+        hToc = translate (-viewInfoEditing.vInset) model.windowHeight
     in
       row [spacing 10] [
          Element.Keyed.column [width (px w_), height (px h_), scrollbarY, clipX, Font.size 12]
@@ -304,10 +318,10 @@ renderedSource model rt =
 
 toolPanel model =
   let
-      h_ = translate (-viewInfo.vInset) model.windowHeight
+      h_ = translate (-viewInfoEditing.vInset) model.windowHeight
       heading_ = el [Font.size 16, Font.bold] (Element.text "Report bugs!  ")
   in
-    column [width (px (scale viewInfo.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
+    column [width (px (scale viewInfoEditing.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
        , paddingXY 10 20, alignTop]
       [column [Font.size 13, spacing 8]  [
           el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")
@@ -324,9 +338,9 @@ newDocumentButton =
 
 docListViewer model =
   let
-      h_ = translate (-viewInfo.vInset) model.windowHeight
+      h_ = translate (-viewInfoEditing.vInset) model.windowHeight
   in
-    column [width (px (scale viewInfo.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.9)
+    column [width (px (scale viewInfoEditing.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.9)
        , paddingXY 10 20, alignTop]
       [column [Font.size 13, spacing 8]  (heading::(List.map (tocEntry model.currentDocument) model.documentList))]
 
@@ -353,9 +367,9 @@ heading = el [Font.size 16, Font.bold] (Element.text "Documents")
 header : Model -> RenderedDocumentRecord msg -> Element Msg
 header model rt =
   let
-     left =  scale viewInfo.left model.windowWidth
-     middle =   scale viewInfo.middle model.windowWidth
-     right = scale viewInfo.right model.windowWidth
+     left =  scale viewInfoEditing.left model.windowWidth
+     middle =   scale viewInfoEditing.middle model.windowWidth
+     right = scale viewInfoEditing.right model.windowWidth
   in
     row [ height (px 45), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
       column [width (px left)] []
@@ -404,9 +418,9 @@ showDocumentListButton model =
 footer : Model -> Element Msg
 footer model =
    let
-        left =  scale viewInfo.left model.windowWidth
-        middle =   scale viewInfo.middle model.windowWidth
-        right = scale viewInfo.right model.windowWidth
+        left =  scale viewInfoEditing.left model.windowWidth
+        middle =   scale viewInfoEditing.middle model.windowWidth
+        right = scale viewInfoEditing.right model.windowWidth
      in
        row [ height (px 30), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
          row [width (px left)] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
