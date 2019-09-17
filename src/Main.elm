@@ -75,8 +75,7 @@ init flags =
 -- MSG --
 
 type Msg
-    = Clear
-    | NoOp
+    = NoOp
     -- Time
     | Tick Time.Posix
     | AdjustTimeZone Time.Zone
@@ -92,6 +91,8 @@ type Msg
     | CreateDocument
     | UpdateDocumentText String
     | SetCurrentDocument Document
+    | Clear
+
 
 
 type alias Flags =
@@ -101,21 +102,21 @@ type alias Flags =
 
 
 viewInfoEditing = {
-    toolStrip = 0.05
-  , toc = 0.15
-  , left = 0.3
-  , middle = 0.3
-  , right = 0.2
+    toolStripWidth = 0.05
+  , docListWidth = 0.15
+  , editorWidth = 0.3
+  , renderedDisplayWidth = 0.3
+  , tocWidth = 0.2
   , vInset = 210.0
   , hExtra = 0
   }
 
 viewInfoReading = {
-    toolStrip = 0.05
-  ,  toc = 0.15
-  , left = 0.3
-  , middle = 0.3
-  , right = 0.2
+    toolStripWidth = 0.05
+  ,  docListWidth = 0.15
+  , editoWidth = 0.3
+  , renderedDisplayWidth = 0.3
+  , tocWidth = 0.2
   , vInset = 210.0
   , hExtra = 0
   }
@@ -273,7 +274,7 @@ toolsOrDocs model =
 editor : Model -> Element Msg
 editor model =
    let
-       w_ = affine viewInfoEditing.left (viewInfoEditing.hExtra) model.windowWidth |> toFloat
+       w_ = affine viewInfoEditing.editorWidth (viewInfoEditing.hExtra) model.windowWidth |> toFloat
        h_ = translate (-viewInfoEditing.vInset) model.windowHeight |> toFloat
 
    in
@@ -299,12 +300,12 @@ renderedSource model rt =
         token =
             String.fromInt model.counter
 
-        w_ = affine viewInfoEditing.middle (viewInfoEditing.hExtra) model.windowWidth
+        w_ = affine viewInfoEditing.renderedDisplayWidth (viewInfoEditing.hExtra) model.windowWidth
         h_ = translate (-viewInfoEditing.vInset) model.windowHeight
 
-        w2_ = affine viewInfoEditing.middle (viewInfoEditing.hExtra + 160) model.windowWidth
+        w2_ = affine viewInfoEditing.renderedDisplayWidth (viewInfoEditing.hExtra + 160) model.windowWidth
 
-        wToc = affine viewInfoEditing.right (viewInfoEditing.hExtra) model.windowWidth
+        wToc = affine viewInfoEditing.tocWidth (viewInfoEditing.hExtra) model.windowWidth
         hToc = translate (-viewInfoEditing.vInset) model.windowHeight
     in
       row [spacing 10] [
@@ -321,7 +322,7 @@ toolPanel model =
       h_ = translate (-viewInfoEditing.vInset) model.windowHeight
       heading_ = el [Font.size 16, Font.bold] (Element.text "Report bugs!  ")
   in
-    column [width (px (scale viewInfoEditing.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
+    column [width (px (scale viewInfoEditing.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
        , paddingXY 10 20, alignTop]
       [column [Font.size 13, spacing 8]  [
           el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")
@@ -340,7 +341,7 @@ docListViewer model =
   let
       h_ = translate (-viewInfoEditing.vInset) model.windowHeight
   in
-    column [width (px (scale viewInfoEditing.toc model.windowWidth)), height (px h_), Background.color (makeGrey 0.9)
+    column [width (px (scale viewInfoEditing.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.9)
        , paddingXY 10 20, alignTop]
       [column [Font.size 13, spacing 8]  (heading::(List.map (tocEntry model.currentDocument) model.documentList))]
 
@@ -367,14 +368,14 @@ heading = el [Font.size 16, Font.bold] (Element.text "Documents")
 header : Model -> RenderedDocumentRecord msg -> Element Msg
 header model rt =
   let
-     left =  scale viewInfoEditing.left model.windowWidth
-     middle =   scale viewInfoEditing.middle model.windowWidth
-     right = scale viewInfoEditing.right model.windowWidth
+     editorWidth_ =  scale viewInfoEditing.editorWidth model.windowWidth
+     renderedDisplayWidth_ =   scale viewInfoEditing.renderedDisplayWidth model.windowWidth
+     innerTOCWidth_ = scale viewInfoEditing.tocWidth model.windowWidth
   in
-    row [ height (px 45), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
-      column [width (px left)] []
-     , column [width (px middle), Font.size 12, Font.color white] [rt.title |> Element.html |> Element.map (\_ -> NoOp)]
-     , column [width (px right)] []
+    row [ height (px 45), width (px model.windowWidth), Background.color charcoal] [
+      column [width (px editorWidth_ )] []
+     , column [width (px renderedDisplayWidth_), Font.size 12, Font.color white] [rt.title |> Element.html |> Element.map (\_ -> NoOp)]
+     , column [width (px innerTOCWidth_)] []
     ]
 
 -- TAB-STRIP ON LEFT --
@@ -418,14 +419,14 @@ showDocumentListButton model =
 footer : Model -> Element Msg
 footer model =
    let
-        left =  scale viewInfoEditing.left model.windowWidth
-        middle =   scale viewInfoEditing.middle model.windowWidth
-        right = scale viewInfoEditing.right model.windowWidth
+        editorWidth_  =  scale viewInfoEditing.editorWidth  model.windowWidth
+        renderedDisplayWidth =   scale viewInfoEditing.renderedDisplayWidth model.windowWidth
+        innerTOCWidth_ = scale viewInfoEditing.tocWidth model.windowWidth
      in
-       row [ height (px 30), width (px model.windowWidth), Background.color charcoal, paddingXY 30 0] [
-         row [width (px left)] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
-        , row [width (px middle), Font.size 12, Font.color white] [flavors model]
-        , row [width (px right), spacing 25] [currentTime model, status model]
+       row [ height (px 30), width (px model.windowWidth), Background.color charcoal] [
+         row [width (px editorWidth_ )] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
+        , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] [flavors model]
+        , row [width (px innerTOCWidth_), spacing 25] [currentTime model, status model]
        ]
 
 
@@ -477,15 +478,15 @@ flavors model =
 
 standardMarkdownButton model width =
        let
-                bit = (model.option == Standard)
+          bit = (model.option == Standard)
        in
-            Input.button (buttonStyleSelected width bit)
+          Input.button (buttonStyleSelected width bit)
               { onPress = Just SelectStandard, label = el [centerX] (Element.text "Standard")}
 
 
 extendedMarkdownButton model width =
     let
-            bit = (model.option == Extended)
+       bit = (model.option == Extended)
     in
         Input.button (buttonStyleSelected width bit)
           { onPress = Just SelectExtended, label = el [centerX] (Element.text "Extended")}
