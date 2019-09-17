@@ -18,7 +18,7 @@ elm-graphql https://math-markdown.netlify.com/graphql --header fnADYYvKu5ACB1F7J
     
 ## Fauna DB
 
-[Tutoial](https://docs.fauna.com/fauna/current/start/cloud)
+[Tutorial](https://docs.fauna.com/fauna/current/start/cloud)
 
 [Dashboard](https://dashboard.fauna.com/)
 
@@ -90,7 +90,10 @@ Create(Collection("Document"), { data: {
 
 ### Queries
 
-``
+
+#### Find all documents
+
+```
 query FindAllDocuments {
   allDocuments {
     data {
@@ -101,6 +104,19 @@ query FindAllDocuments {
     }
   }
 }
+```
+
+#### Find document by author identifier
+
+```
+query FindDocumentByAuthor {
+  documentsByAuthor(author: "1") { 
+      _id
+      identifier
+      title
+      content
+    }
+  }
 ```
 ## Links
 

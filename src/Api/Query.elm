@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Query exposing (AllDocumentsOptionalArguments, DocumentRequiredArguments, FindDocumentByIDRequiredArguments, allDocuments, document, findDocumentByID)
+module Api.Query exposing (AllDocumentsOptionalArguments, DocumentRequiredArguments, DocumentsByAuthorRequiredArguments, FindDocumentByIDRequiredArguments, allDocuments, document, documentsByAuthor, findDocumentByID)
 
 import Api.InputObject
 import Api.Interface
@@ -65,3 +65,12 @@ type alias DocumentRequiredArguments =
 document : DocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootQuery
 document requiredArgs object_ =
     Object.selectionForCompositeField "document" [ Argument.required "identifier" requiredArgs.identifier Encode.string ] object_ (identity >> Decode.nullable)
+
+
+type alias DocumentsByAuthorRequiredArguments =
+    { author : Api.ScalarCodecs.Id }
+
+
+documentsByAuthor : DocumentsByAuthorRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootQuery
+documentsByAuthor requiredArgs object_ =
+    Object.selectionForCompositeField "documentsByAuthor" [ Argument.required "author" requiredArgs.author (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)

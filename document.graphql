@@ -2,7 +2,7 @@ type Document {
    identifier: String!
    title:String!
    content:String!
-   author:ID!
+   author:String!
    tags:[String!]!
    timeCreated : Int!
    timeUpdated : Int!
@@ -13,6 +13,8 @@ type Document {
 type Query {
    # Get one document
    document(identifier: String!): Document
+   # Get all documents of given author
+   documentsByAuthor(author: String!): Document
    # Get all documents
    allDocuments: [Document!]!
 }
