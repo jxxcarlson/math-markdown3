@@ -91,9 +91,9 @@ create authorID title time content =
   It is assumed, but not enfornced, that document ids are unique.
 -}
 replaceInList : Document -> List Document -> List Document
-replaceInList targetDocument_ documentList =
+replaceInList targetDocument documentList =
    let
-       targetDocument = updateTitle targetDocument_
+       targetDocument_ = updateTitle targetDocument
     in
     List.Extra.setIf (\doc -> doc.identifier == targetDocument.identifier) targetDocument documentList
 
