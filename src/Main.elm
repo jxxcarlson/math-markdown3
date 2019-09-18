@@ -275,7 +275,7 @@ update msg model =
                      )
 
         SetCurrentDocument document ->
-            ( {model | currentDocument = Just document}, Cmd.none)
+            ( {model | currentDocument = Just document, counter = model.counter + 1}, Cmd.none)
 
 
         Req requestMsg ->
