@@ -429,6 +429,7 @@ toolPanel viewInfo model =
        , paddingXY 20 20, alignTop]
       [column [Font.size 13, spacing 15]  [
           el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")
+        , getUserDocumentsButton
         , newDocumentButton
         , saveDocumentButton
         , flavors model
@@ -449,7 +450,7 @@ saveDocumentButton =
 
 getUserDocumentsButton =
         Input.button [] { onPress = Just (GetUserDocuments)
-                , label = el toolButtonStyle (Element.text "Get")}
+                , label = el toolButtonStyle (Element.text "Get Documents")}
 
 -- DOCUMENT LIST --
 
