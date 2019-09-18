@@ -96,6 +96,7 @@ type Msg
     | WindowSize Int Int
     -- Document
     | CreateDocument
+    | SaveDocument
     | UpdateDocumentText String
     | SetCurrentDocument Document
     | Clear
@@ -248,6 +249,9 @@ update msg model =
                      , Request.createDocument newDocument |> Cmd.map Req
                    )
 
+
+        SaveDocument -> (model, Cmd.none)
+
         UpdateDocumentText str ->
             case model.currentDocument of
                 Nothing -> (model, Cmd.none)
@@ -274,6 +278,7 @@ update msg model =
                   Loading -> ({model | message = "Remote data: loading"} , Cmd.none)
                   Failure _ -> ({model | message = "Remote data: failed request"} , Cmd.none)
                   Success _ -> ({model | message = "Remote data: new document created"} , Cmd.none)
+              GotUserDocuments remoteData -> (model, Cmd.none)
 
           -- MANAGE DOCUMENTS --
 
@@ -413,17 +418,25 @@ toolPanel viewInfo model =
   in
     column [width (px (scale viewInfo.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
        , paddingXY 20 20, alignTop]
-      [column [Font.size 13, spacing 20]  [
+      [column [Font.size 13, spacing 15]  [
           el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")
         , newDocumentButton
+        , saveDocumentButton
         , flavors model
        ]
   ]
 
 
+toolButtonStyle : List (Element.Attribute msg)
+toolButtonStyle = [height (px 30), width (px 150),  padding 8, Background.color charcoal, Font.color white, Font.size 12]
+
 newDocumentButton =
         Input.button [] { onPress = Just (CreateDocument)
-                , label = el [height (px 30), width (px 150),  padding 8, Background.color charcoal, Font.color white, Font.size 12] (Element.text "Create document")}
+                , label = el toolButtonStyle (Element.text "Create")}
+
+saveDocumentButton =
+        Input.button [] { onPress = Just (SaveDocument)
+                , label = el toolButtonStyle (Element.text "Save")}
 
 -- DOCUMENT LIST --
 
