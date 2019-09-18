@@ -62,6 +62,8 @@ Here is a list of things to be done, not necessarily in this order
 
 1. Implement user sign up and sign in
 
+1. Search: title, tags, text, user (author)
+
 1. Move to MathJax 3 for renderig of math text.  It will be much faster and will
 likely eliminate "jumping text" during editing.
 
