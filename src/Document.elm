@@ -43,7 +43,7 @@ footer document =
     ++ "Document ID: " ++ document.identifier ++ "\n"
     ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
     ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ " UTC\n"
-    ++ "Tags: " ++ String.join ", " document.tags
+    ++ "Tags: " ++ String.join ", " document.tags ++ "\n"
     ++ "Words: " ++ Utility.wordCount document.content
     ++ "\n" ++ "````" ++ "\n\n"
 
