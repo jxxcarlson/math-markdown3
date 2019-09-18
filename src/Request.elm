@@ -9,6 +9,7 @@ import Api.InputObject as InputObject
 import Api.Scalar
 import Api.Object.Document
 import Time
+import Api.Scalar exposing(Id(..))
 
 
 type RequestMsg =
@@ -35,6 +36,7 @@ documentInput document =
           , public = document.public
           , children = document.children
         }
+
 secondsToPosix : Int -> Time.Posix
 secondsToPosix =
     (Time.millisToPosix << ((*) 1000))
@@ -44,8 +46,7 @@ documentSelectionSet =
     SelectionSet.succeed Document
         |> with Api.Object.Document.identifier
         |> with Api.Object.Document.title
-        |> with Api.Object.Document.author
-        -- |> with (SelectionSet.map xx Api.Object.Document.author)
+        |> with (SelectionSet.map stringOfId Api.Object.Document.author)
         |> with Api.Object.Document.content
         |> with Api.Object.Document.tags
         |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeCreated)
@@ -54,9 +55,15 @@ documentSelectionSet =
         |> with Api.Object.Document.children
 
 
+
+stringOfId : Id -> String
+stringOfId (Id str) = str
+
+
 createDocument : Document -> Cmd RequestMsg
 createDocument document =
     Mutation.createDocument (documentRequiredArguments document) documentSelectionSet
          |> Graphql.Http.mutationRequest endpoint
          |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
+
 
