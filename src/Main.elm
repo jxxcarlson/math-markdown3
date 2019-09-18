@@ -88,6 +88,7 @@ type Msg
     | SelectExtendedMath
     | SetToolPanelState Visibility
     | SetAppMode AppMode
+    | WindowSize Int Int
     -- Document
     | CreateDocument
     | UpdateDocumentText String
@@ -148,7 +149,10 @@ translate amount input =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 1000 Tick
+    Sub.batch [
+        Time.every 1000 Tick
+        -- , WindowSize flags.width, flags.height
+      ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -202,6 +206,9 @@ update msg model =
               ( { model | time = newTime }
               , Cmd.none
               )
+
+        WindowSize width height ->
+            ( { model | windowWidth = width, windowHeight = height }, Cmd.none )
 
         AdjustTimeZone newZone ->
               ( { model | zone = newZone }
