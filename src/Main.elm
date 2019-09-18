@@ -104,6 +104,8 @@ type alias Flags =
     }
 
 
+
+
 type alias ViewInfo = {
       toolStripWidth : Float
     , docListWidth : Float
@@ -115,13 +117,15 @@ type alias ViewInfo = {
 
   }
 
+vInset = 75 -- 208
+
 viewInfoEditing = {
     toolStripWidth = 0.05
   , docListWidth = 0.15
   , editorWidth = 0.3
   , renderedDisplayWidth = 0.3
   , tocWidth = 0.2
-  , vInset = 75.0
+  , vInset = vInset
   , hExtra = 0
   }
 
@@ -131,7 +135,7 @@ viewInfoReading = {
   , editorWidth = 0
   , renderedDisplayWidth = 0.45
   , tocWidth = 0.3
-  , vInset = 75.0
+  , vInset = vInset
   , hExtra = 0
   }
 
