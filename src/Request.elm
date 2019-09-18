@@ -37,7 +37,7 @@ documentsByAuthor authorId =
   let
     _ = Debug.log "AUTHOR ID"  authorId
   in
-    Query.documentsByAuthor  { author = Id authorId } (SelectionSet.list [documentSelectionSet])
+    Query.documentsByAuthor  { author = authorId } (SelectionSet.list [documentSelectionSet])
       |> Graphql.Http.queryRequest endpoint
       |> Graphql.Http.withHeader "authorization" authorizationToken
       |> Graphql.Http.send (RemoteData.fromResult >> GotUserDocuments)
@@ -63,7 +63,7 @@ documentInput : Document -> InputObject.DocumentInput  --RequiredFields
 documentInput document =
         {   identifier = document.identifier
           , title = document.title
-          , author = Api.Scalar.Id document.authorID
+          , author = document.authorID
           , content = document.content
           , tags = document.tags
           , timeCreated = Time.posixToMillis document.timeCreated // 1000
@@ -81,7 +81,8 @@ documentSelectionSet =
     SelectionSet.succeed Document
         |> with Api.Object.Document.identifier
         |> with Api.Object.Document.title
-        |> with (SelectionSet.map stringOfId Api.Object.Document.author)
+        -- |> with (SelectionSet.map stringOfId Api.Object.Document.author)
+        |> with Api.Object.Document.author
         |> with Api.Object.Document.content
         |> with Api.Object.Document.tags
         |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeCreated)

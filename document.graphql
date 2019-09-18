@@ -14,7 +14,7 @@ type Query {
    # Get one document
    document(identifier: String!): Document
    # Get all documents of given author
-   documentsByAuthor(author: String!): Document
+   documentsByAuthor(author: String!): [Document!]
    # Get all documents
    allDocuments: [Document!]!
 }

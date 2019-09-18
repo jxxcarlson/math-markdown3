@@ -19,9 +19,9 @@ import Graphql.SelectionSet exposing (SelectionSet)
 import Json.Decode as Decode
 
 
-author : SelectionSet Api.ScalarCodecs.Id Api.Object.Document
+author : SelectionSet String Api.Object.Document
 author =
-    Object.selectionForField "ScalarCodecs.Id" "author" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecId |> .decoder)
+    Object.selectionForField "String" "author" [] Decode.string
 
 
 children : SelectionSet (List String) Api.Object.Document

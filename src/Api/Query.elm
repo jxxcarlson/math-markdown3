@@ -68,9 +68,9 @@ document requiredArgs object_ =
 
 
 type alias DocumentsByAuthorRequiredArguments =
-    { author : Api.ScalarCodecs.Id }
+    { author : String }
 
 
 documentsByAuthor : DocumentsByAuthorRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootQuery
 documentsByAuthor requiredArgs object_ =
-    Object.selectionForCompositeField "documentsByAuthor" [ Argument.required "author" requiredArgs.author (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)
+    Object.selectionForCompositeField "documentsByAuthor" [ Argument.required "author" requiredArgs.author Encode.string ] object_ (identity >> Decode.nullable)

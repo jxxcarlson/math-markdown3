@@ -26,7 +26,7 @@ type alias DocumentInputRequiredFields =
     { identifier : String
     , title : String
     , content : String
-    , author : Api.ScalarCodecs.Id
+    , author : String
     , tags : List String
     , timeCreated : Int
     , timeUpdated : Int
@@ -41,7 +41,7 @@ type alias DocumentInput =
     { identifier : String
     , title : String
     , content : String
-    , author : Api.ScalarCodecs.Id
+    , author : String
     , tags : List String
     , timeCreated : Int
     , timeUpdated : Int
@@ -55,4 +55,4 @@ type alias DocumentInput =
 encodeDocumentInput : DocumentInput -> Value
 encodeDocumentInput input =
     Encode.maybeObject
-        [ ( "identifier", Encode.string input.identifier |> Just ), ( "title", Encode.string input.title |> Just ), ( "content", Encode.string input.content |> Just ), ( "author", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) input.author |> Just ), ( "tags", (Encode.string |> Encode.list) input.tags |> Just ), ( "timeCreated", Encode.int input.timeCreated |> Just ), ( "timeUpdated", Encode.int input.timeUpdated |> Just ), ( "public", Encode.bool input.public |> Just ), ( "children", (Encode.string |> Encode.list) input.children |> Just ) ]
+        [ ( "identifier", Encode.string input.identifier |> Just ), ( "title", Encode.string input.title |> Just ), ( "content", Encode.string input.content |> Just ), ( "author", Encode.string input.author |> Just ), ( "tags", (Encode.string |> Encode.list) input.tags |> Just ), ( "timeCreated", Encode.int input.timeCreated |> Just ), ( "timeUpdated", Encode.int input.timeUpdated |> Just ), ( "public", Encode.bool input.public |> Just ), ( "children", (Encode.string |> Encode.list) input.children |> Just ) ]
