@@ -102,7 +102,11 @@ updateTitle : Document -> Document
 updateTitle document =
     case  getHeading document  of
         Nothing -> document
-        Just newTitle ->  { document | title = newTitle }
+        Just newTitle ->
+         if newTitle /= "" then
+            { document | title = newTitle }
+         else
+            document
 
 
 getHeading: Document -> Maybe String
