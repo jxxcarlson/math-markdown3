@@ -22,7 +22,6 @@ elm-graphql https://math-markdown.netlify.com/graphql --header fnADYYvKu5ACB1F7J
 
 [Dashboard](https://dashboard.fauna.com/)
 
-
 [Fauna shell](https://fauna.com/blog/introducing-fauna-shell)
 
 Database name: 7ccf0e66-539e-4cdd-80ae-18b24ae9ae06

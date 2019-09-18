@@ -1,4 +1,4 @@
-module Request exposing (..)
+module Request exposing (RequestMsg, createDocument)
 
 import Graphql.Http
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)

@@ -21,7 +21,6 @@ type alias Document = {
    , public: Bool
    , children: List DocumentID
 
-
   }
 
 

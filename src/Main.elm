@@ -20,6 +20,7 @@ import Time
 import Task
 import Utility exposing (humanTimeHM)
 import User exposing(User)
+import Request exposing(RequestMsg(..))
 
 main : Program Flags Model Msg
 main =
@@ -94,6 +95,8 @@ type Msg
     | UpdateDocumentText String
     | SetCurrentDocument Document
     | Clear
+    | Req RequestMsg
+
 
 
 
@@ -232,7 +235,7 @@ update msg model =
                             , documentList = newDocument :: model.documentList
                             , visibilityOfTools = Invisible
                      }
-                     , Cmd.none
+                     , Request.createDocument newDocument |> Cmd.map Req
                    )
 
         UpdateDocumentText str ->
@@ -259,6 +262,10 @@ update msg model =
 
                Editing ->  ( {model | appMode =  Editing}, Cmd.none)
 
+
+        Req requestMsg ->
+            case requestMsg of
+                _ -> (model, Cmd.none)
 
           -- MANAGE DOCUMENTS --
 
