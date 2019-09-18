@@ -56,7 +56,7 @@ A great deal of the work is "under the hood."  Here are some visible changes:
 
 ## Roadmap
 
-Here is a list of things to be done, not necessarily in this order
+Here is a list of things to be done, not necessarily in this order:
 
 1. App should read current window dimensions and use them to set its dimensions.
 
