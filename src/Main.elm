@@ -66,7 +66,7 @@ init flags =
             , time = Time.millisToPosix 0
             , currentUser = Just User.dummy
             -- documents
-            , documentList = [Data.startupDocument, Data.doc2]
+            , documentList = [Data.startupDocument, Data.doc2, Data.doc3]
             , currentDocument = Just Data.startupDocument
             }
     in

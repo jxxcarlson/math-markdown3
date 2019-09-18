@@ -1,4 +1,4 @@
-module Data exposing (startupDocument, doc2)
+module Data exposing (startupDocument, doc2, doc3)
 
 import Time exposing(Posix)
 
@@ -27,6 +27,50 @@ doc2 = {
   , children = []
   }
 
+doc3 = {
+    identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568700834"
+  , title = "Math Markdown Progress Roadmap and Report"
+  , authorID = "jxxcarlson"
+  , content = text3
+  , timeCreated = Time.millisToPosix 1568769977000
+  , timeUpdated = Time.millisToPosix 1568769977000
+  , tags = ["markdown", "elm", "mathjax"]
+  , public = True
+  , children = []
+  }
+
+
+text3 = """# Math Markdown Progress Roadmap and Report
+
+## Recent Addtions
+
+A great deal of the work is "under the hood."  Here are some visible changes:
+
+1. Automatically synchonize document title with the first heading of the document body (9/18/2019)
+
+1. Display meta data in footer: author, document identifier, tags, and dates of creation and last update (9/17/2019)
+
+1. Add word count to footer of document; cleaner user interface
+
+1. Add automatically generated table of contents in sidebar (9/17/2019)
+
+## Roadmap
+
+Here is a list of things to be done, not necessarily in this order
+
+1. Attach app to bakend so that documents will be saved
+
+1. Implement user sign up and sign in
+
+1. Move to MathJax 3 for renderig of math text.  It will be much faster and will
+likely eliminate "jumping text" during editing.
+
+1. Configurable "Front page for authors"
+
+1. Document collections and intra-app links betwen documents
+
+1. Better adherence to Commonmark spec
+"""
 
 startupText =
     """# A Pure Elm Markdown Parser
