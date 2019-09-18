@@ -80,6 +80,7 @@ likely eliminate "jumping text" during editing.
 1. Rendering inconsistencies
 
    - handling of space before a period and after a newline.
+   - handling of list numbering (see below, ha ha!)
 
 1. Better adherence to Commonmark spec
 """
