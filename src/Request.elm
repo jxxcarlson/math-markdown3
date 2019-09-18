@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg, createDocument)
+module Request exposing (RequestMsg(..), createDocument)
 
 import Graphql.Http
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -13,10 +13,8 @@ import Api.Scalar exposing(Id(..))
 
 
 type RequestMsg =
-    GotResponse RemoteDataResponse
+    GotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
 
-type alias RemoteDataResponse =
-     RemoteData (Graphql.Http.Error Document) Document
 
 endpoint = "https://graphql.fauna.com/graphql"
 
@@ -25,8 +23,9 @@ createDocument document =
     Mutation.createDocument (documentRequiredArguments document) documentSelectionSet
          |> Graphql.Http.mutationRequest endpoint
          |> Graphql.Http.withHeader "authorization" "Basic Zm5BRFlmWC1wakFDQVJ2a0RoaFU1UmhDaWc5TVVFQUpBNFBpMTFhSDo3Y2NmMGU2Ni01MzllLTRjZGQtODBhZS0xOGIyNGFlOWFlMDY6c2VydmVy"
-         |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
+         |> Graphql.Http.send (RemoteData.fromResult >> GotNewDocument)
 
+-- findAllDocumentsByAuthor : String -> Cmd RequestMsg
 
 -- IMPLEMENTATION
 

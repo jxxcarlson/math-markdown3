@@ -21,6 +21,8 @@ import Task
 import Utility exposing (humanTimeHM)
 import User exposing(User)
 import Request exposing(RequestMsg(..))
+import RemoteData exposing (RemoteData(..))
+import Graphql.Http.GraphqlError
 
 main : Program Flags Model Msg
 main =
@@ -33,7 +35,7 @@ main =
 
 
 type alias Model =
-    {  counter : Int
+    { counter : Int
     , seed : Int
     , option : Option
     , windowWidth : Int
@@ -43,6 +45,7 @@ type alias Model =
     , zone : Time.Zone
     , time : Time.Posix
     , currentUser : Maybe User
+    , message : String
     -- documents
     , documentList : List Document
     , currentDocument : Maybe Document
@@ -66,6 +69,7 @@ init flags =
             , zone = Time.utc
             , time = Time.millisToPosix 0
             , currentUser = Just User.dummy
+            , message = "Starting ..."
             -- documents
             , documentList = [Data.startupDocument, Data.doc2, Data.doc3]
             , currentDocument = Just Data.startupDocument
@@ -207,6 +211,12 @@ update msg model =
         SetToolPanelState visibility ->
             ( {model | visibilityOfTools = visibility}, Cmd.none)
 
+
+        SetAppMode appMode ->
+            case appMode of
+                Reading ->  ( {model | appMode = Reading}, Cmd.none)
+                Editing ->  ( {model | appMode =  Editing}, Cmd.none)
+
         -- TIME --
 
         Tick newTime ->
@@ -255,24 +265,26 @@ update msg model =
         SetCurrentDocument document ->
             ( {model | currentDocument = Just document}, Cmd.none)
 
-        SetAppMode appMode ->
-           case appMode of
-               Reading ->  ( {model | appMode = Reading}, Cmd.none)
-
-
-               Editing ->  ( {model | appMode =  Editing}, Cmd.none)
-
 
         Req requestMsg ->
             case requestMsg of
-                _ -> (model, Cmd.none)
+              GotNewDocument remoteData ->
+                case remoteData of
+                  NotAsked -> ({ model | message = "Remote data: not asked"} , Cmd.none)
+                  Loading -> ({model | message = "Remote data: loading"} , Cmd.none)
+                  Failure _ -> ({model | message = "Remote data: failed request"} , Cmd.none)
+                  Success _ -> ({model | message = "Remote data: new document created"} , Cmd.none)
 
           -- MANAGE DOCUMENTS --
 
 
 
 
-
+--type RemoteData e a
+--    = NotAsked
+--    | Loading
+--    | Failure e
+--    | Success a
 
 
 --
@@ -503,7 +515,7 @@ footer model =
      in
        row [ height (px 30), width (px (model.windowWidth)), Background.color charcoal] [
          row [width (px editorWidth_ )] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
-        , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] []
+        , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] [el [] (Element.text <| model.message) ]
         , row [width (px innerTOCWidth_), spacing 25] [currentTime model, status model]
        ]
 
