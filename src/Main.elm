@@ -257,7 +257,8 @@ update msg model =
             case model.currentUser of
                 Nothing -> ({model | message = "Can't get documents if user is not signed in"}, Cmd.none)
                 Just user ->
-                    ({model | message = "Getting your documents"}, Request.documentsByAuthor user.id |> Cmd.map Req)
+                    ({model | message = "Getting your documents"
+                       , visibilityOfTools = Invisible }, Request.documentsByAuthor user.id |> Cmd.map Req)
 
         UpdateDocumentText str ->
             case model.currentDocument of
