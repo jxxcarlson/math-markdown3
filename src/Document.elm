@@ -42,7 +42,7 @@ getContent maybeDocument =
                 ++ "\n" ++ "````" ++ "\n\n"
 
            in
-            document.content ++ footer
+            document.content -- ++ footer
         Nothing -> ""
 
 
