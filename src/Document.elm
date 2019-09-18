@@ -1,9 +1,10 @@
 module Document exposing (Document, setContent, getContent, documentId
-  , create, replaceInList)
+  , create, replaceInList, getHeading)
 
 import Time exposing(Posix)
 import Utility
 import List.Extra
+import Parser exposing(Parser, getChompedString, succeed, symbol, chompWhile, (|.))
 
 type alias DocumentID = String
 
@@ -90,5 +91,41 @@ create authorID title time content =
   It is assumed, but not enfornced, that document ids are unique.
 -}
 replaceInList : Document -> List Document -> List Document
-replaceInList targetDocument documentList =
+replaceInList targetDocument_ documentList =
+   let
+       targetDocument = updateTitle targetDocument_
+    in
     List.Extra.setIf (\doc -> doc.identifier == targetDocument.identifier) targetDocument documentList
+
+
+updateTitle : Document -> Document
+updateTitle document =
+    case  getHeading document  of
+        Nothing -> document
+        Just newTitle ->  { document | title = newTitle }
+
+
+getHeading: Document -> Maybe String
+getHeading document =
+   case  Parser.run parseHeading document.content of
+       Ok result -> String.dropLeft 1 result |> String.trim |> Just
+       Err _ -> Nothing
+
+parseHeading : Parser String
+parseHeading =
+  (getChompedString <|
+    succeed identity
+        |. parseWhile (\c -> c /= '#')
+        |. symbol "#"
+        |. symbol " "
+        |. parseWhile (\c -> c /= '\n'))
+    |> Parser.map String.trim
+
+parseWhile : (Char -> Bool) -> Parser String
+parseWhile accepting =
+    chompWhile accepting |> getChompedString
+
+
+
+
+
