@@ -1,27 +1,30 @@
 module Request exposing (..)
 
 import Graphql.Http
-import Graphql.Operation exposing (RootMutation)
-import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
+import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Api.Mutation as Mutation
 import RemoteData exposing (RemoteData)
 import Document exposing(Document)
 import Api.InputObject as InputObject
 import Api.Scalar
+import Api.Object.Document
 import Time
 
 
 type RequestMsg =
-   = GotResponse Model
+    GotResponse RemoteDataResponse
 
- type alias Model =
-     RemoteData (Graphql.Http.Error Response) Response
+type alias RemoteDataResponse =
+     RemoteData (Graphql.Http.Error Document) Document
 
 endpoint = "https://graphql.fauna.com/graphql"
 
+documentRequiredArguments : Document -> Mutation.CreateDocumentRequiredArguments
+documentRequiredArguments document =
+    { data = documentInput document }
 
-requiredFieldsOfDocument : Document -> InputObject.DocumentInputRequiredFields
-requiredFieldsOfDocument document =
+documentInput : Document -> InputObject.DocumentInput  --RequiredFields
+documentInput document =
         {   identifier = document.identifier
           , title = document.title
           , author = Api.Scalar.Id document.authorID
@@ -33,12 +36,23 @@ requiredFieldsOfDocument document =
           , children = document.children
         }
 
---
---createDocument : Document -> Cmd RequestMsg
---createDocument document =
---    Mutation.createDocument (InputObject.buildDocumentInput document)
---            |> Graphql.Http.mutationRequest endpoint
---            |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
---
+-- documentSelectionSet : SelectionSet b Document
+documentSelectionSet =
+    SelectionSet.succeed Document
+        |> with Api.Object.Document.identifier
+        |> with Api.Object.Document.title
+        |> with Api.Object.Document.author
+        |> with Api.Object.Document.content
+        |> with Api.Object.Document.tags
+        |> with Api.Object.Document.timeCreated
+        |> with Api.Object.Document.timeUpdated
+        |> with Api.Object.Document.public
+        |> with Api.Object.Document.children
 
+
+createDocument : Document -> Cmd RequestMsg
+createDocument document =
+    Mutation.createDocument (documentRequiredArguments document) documentSelectionSet
+         |> Graphql.Http.mutationRequest endpoint
+         |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
 
