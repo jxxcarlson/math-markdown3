@@ -48,9 +48,9 @@ A great deal of the work is "under the hood."  Here are some visible changes:
 
 1. Automatically synchronize document title with the first heading of the document body (9/18/2019)
 
-1. Display metadata in footer: author, document identifier, tags, and dates of creation and last update (9/17/2019)
+1. Display metadata in footer: author, document identifier, tags, and dates of creation and last update (9/18/2019)
 
-1. Add word count to footer of document; cleaner user interface
+1. Add word count to footer of document; cleaner user interface  (9/17/2019)
 
 1. Add automatically generated table of contents in sidebar (9/17/2019)
 
