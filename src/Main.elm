@@ -97,6 +97,7 @@ type Msg
     -- Document
     | CreateDocument
     | SaveDocument
+    | GetUserDocuments
     | UpdateDocumentText String
     | SetCurrentDocument Document
     | Clear
@@ -252,6 +253,12 @@ update msg model =
 
         SaveDocument -> (model, Cmd.none)
 
+        GetUserDocuments ->
+            case model.currentUser of
+                Nothing -> ({model | message = "Can't get documents if user is not signed in"}, Cmd.none)
+                Just user ->
+                    ({model | message = "Getting your documents"}, Request.documentsByAuthor user.id |> Cmd.map Req)
+
         UpdateDocumentText str ->
             case model.currentDocument of
                 Nothing -> (model, Cmd.none)
@@ -274,22 +281,24 @@ update msg model =
             case requestMsg of
               GotNewDocument remoteData ->
                 case remoteData of
-                  NotAsked -> ({ model | message = "Remote data: not asked"} , Cmd.none)
-                  Loading -> ({model | message = "Remote data: loading"} , Cmd.none)
-                  Failure _ -> ({model | message = "Remote data: failed request"} , Cmd.none)
-                  Success _ -> ({model | message = "Remote data: new document created"} , Cmd.none)
-              GotUserDocuments remoteData -> (model, Cmd.none)
+                   NotAsked -> ({ model | message = "New doc: not asked"} , Cmd.none)
+                   Loading -> ({model | message = "Mew doc: loading"} , Cmd.none)
+                   Failure _ -> ({model | message = "New doc: failed request"} , Cmd.none)
+                   Success _ -> ({model | message = "New document created"} , Cmd.none)
+              GotUserDocuments remoteData  ->
+                case remoteData of
+                   NotAsked -> ({ model | message = "Get author docs: not asked"} , Cmd.none)
+                   Loading -> ({model | message = "Get author docs:: loading"} , Cmd.none)
+                   Failure _ -> ({model | message = "Get author docs:: request failed"} , Cmd.none)
+                   Success maybeDocumentList ->
+                    case maybeDocumentList of
+                      Nothing -> ({model |documentList = [], currentDocument = Nothing,  message = "No documents retuned for author"} , Cmd.none)
+                      Just documentList -> ({model | documentList = documentList
+                                                , currentDocument = List.head documentList
+                                                , message = "Success returning documennt list for authoor!"} , Cmd.none)
 
           -- MANAGE DOCUMENTS --
 
-
-
-
---type RemoteData e a
---    = NotAsked
---    | Loading
---    | Failure e
---    | Success a
 
 
 --
@@ -437,6 +446,10 @@ newDocumentButton =
 saveDocumentButton =
         Input.button [] { onPress = Just (SaveDocument)
                 , label = el toolButtonStyle (Element.text "Save")}
+
+getUserDocumentsButton =
+        Input.button [] { onPress = Just (GetUserDocuments)
+                , label = el toolButtonStyle (Element.text "Get")}
 
 -- DOCUMENT LIST --
 
