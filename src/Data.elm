@@ -40,7 +40,7 @@ doc3 = {
   }
 
 
-text3 = """# Math Markdown Progress Roadmap and Report
+text3 = """# Math Markdown Progress Roadmap & Report
 
 ## Recent Additions
 
