@@ -33,7 +33,7 @@ doc3 = {
   , authorID = "jxxcarlson"
   , content = text3
   , timeCreated = Time.millisToPosix 1568769977000
-  , timeUpdated = Time.millisToPosix 1568769977000
+  , timeUpdated = Time.millisToPosix 1568797318000
   , tags = ["markdown", "elm", "mathjax"]
   , public = True
   , children = []
@@ -68,6 +68,8 @@ Here is a list of things to be done, not necessarily in this order:
 
 1. Move to MathJax 3 for rendering of math text.  It will be much faster and will
 likely eliminate "jumping text" during editing.
+
+1. Auto-detect screen size and present simplified reader-only version for smart phones.
 
 1. Configurable "Front page" for authors.
 
