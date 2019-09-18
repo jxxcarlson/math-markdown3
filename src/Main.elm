@@ -512,7 +512,7 @@ wordCount model =
             Just document ->
                 document.content
             _ -> ""
-         wc =  List.length (String.words sourceText) |> String.fromInt
+         wc =  Utility.wordCount sourceText
 
     in
       Element.el [Font.color white, Font.size 12] (Element.text <| "Word count: " ++ wc)

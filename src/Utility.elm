@@ -1,6 +1,9 @@
-module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC)
+module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount)
 
 import Time exposing(Posix)
+
+
+wordCount str = List.length (String.words str) |> String.fromInt
 
 
 humanTimeHM : Time.Zone -> Posix -> String

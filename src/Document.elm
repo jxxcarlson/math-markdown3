@@ -44,6 +44,7 @@ footer document =
     ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
     ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ " UTC\n"
     ++ "Tags: " ++ String.join ", " document.tags
+    ++ "Words: " ++ Utility.wordCount document.content
     ++ "\n" ++ "````" ++ "\n\n"
 
 {-|
