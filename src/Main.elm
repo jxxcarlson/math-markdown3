@@ -402,7 +402,7 @@ docListViewer viewInfo model =
       h_ = translate (-viewInfo.vInset) model.windowHeight
   in
     column [width (px (scale viewInfo.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.9)
-       , paddingXY 10 20, alignTop]
+       , paddingXY 12 20, alignTop, clipX]
       [column [Font.size 13, spacing 8]  (heading::(List.map (tocEntry model.currentDocument) model.documentList))]
 
 
