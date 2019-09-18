@@ -6,6 +6,8 @@ import Utility
 import List.Extra
 import Parser exposing(Parser, getChompedString, succeed, symbol, chompWhile, (|.))
 
+import Api.Scalar
+
 type alias DocumentID = String
 
 type alias Document = {

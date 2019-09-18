@@ -35,6 +35,9 @@ documentInput document =
           , public = document.public
           , children = document.children
         }
+secondsToPosix : Int -> Time.Posix
+secondsToPosix =
+    (Time.millisToPosix << ((*) 1000))
 
 -- documentSelectionSet : SelectionSet b Document
 documentSelectionSet =
@@ -42,10 +45,11 @@ documentSelectionSet =
         |> with Api.Object.Document.identifier
         |> with Api.Object.Document.title
         |> with Api.Object.Document.author
+        -- |> with (SelectionSet.map xx Api.Object.Document.author)
         |> with Api.Object.Document.content
         |> with Api.Object.Document.tags
-        |> with Api.Object.Document.timeCreated
-        |> with Api.Object.Document.timeUpdated
+        |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeCreated)
+        |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeUpdated)
         |> with Api.Object.Document.public
         |> with Api.Object.Document.children
 
