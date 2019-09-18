@@ -284,19 +284,21 @@ update msg model =
                 case remoteData of
                    NotAsked -> ({ model | message = "New doc: not asked"} , Cmd.none)
                    Loading -> ({model | message = "Mew doc: loading"} , Cmd.none)
-                   Failure _ -> ({model | message = "New doc: failed request"} , Cmd.none)
+                   Failure _ ->
+                        ({model | message = "New doc: failed request"} , Cmd.none)
                    Success _ -> ({model | message = "New document created"} , Cmd.none)
               GotUserDocuments remoteData  ->
                 case remoteData of
                    NotAsked -> ({ model | message = "Get author docs: not asked"} , Cmd.none)
                    Loading -> ({model | message = "Get author docs:: loading"} , Cmd.none)
-                   Failure _ -> ({model | message = "Get author docs:: request failed"} , Cmd.none)
+                   Failure _ ->
+                       ({model | message = "Get author docs:: request failed"} , Cmd.none)
                    Success maybeDocumentList ->
                     case maybeDocumentList of
                       Nothing -> ({model |documentList = [], currentDocument = Nothing,  message = "No documents retuned for author"} , Cmd.none)
                       Just documentList -> ({model | documentList = documentList
                                                 , currentDocument = List.head documentList
-                                                , message = "Success returning documennt list for authoor!"} , Cmd.none)
+                                                , message = "Success returning document list for author!"} , Cmd.none)
 
           -- MANAGE DOCUMENTS --
 
@@ -433,6 +435,7 @@ toolPanel viewInfo model =
         , getUserDocumentsButton
         , newDocumentButton
         , saveDocumentButton
+        , el [Font.color white, Font.size 11] (Element.text "Buttons above this line not yet functional")
         , flavors model
        ]
   ]

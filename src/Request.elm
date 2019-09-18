@@ -19,12 +19,13 @@ type RequestMsg =
 
 
 endpoint = "https://graphql.fauna.com/graphql"
+authorizationToken = "Basic Zm5BRFlteWZIbUFDRW8yNlRVSUI0WXM1cVRqbEpUbVNrci1MQmxIbjo3Y2NmMGU2Ni01MzllLTRjZGQtODBhZS0xOGIyNGFlOWFlMDY6c2VydmVy"
 
 createDocument : Document -> Cmd RequestMsg
 createDocument document =
     Mutation.createDocument (createDocumentRequiredArguments document) documentSelectionSet
          |> Graphql.Http.mutationRequest endpoint
-         |> Graphql.Http.withHeader "authorization" "Basic Zm5BRFlmWC1wakFDQVJ2a0RoaFU1UmhDaWc5TVVFQUpBNFBpMTFhSDo3Y2NmMGU2Ni01MzllLTRjZGQtODBhZS0xOGIyNGFlOWFlMDY6c2VydmVy"
+         |> Graphql.Http.withHeader "authorization" authorizationToken
          |> Graphql.Http.send (RemoteData.fromResult >> GotNewDocument)
 
 
@@ -38,7 +39,7 @@ documentsByAuthor authorId =
   in
     Query.documentsByAuthor  { author = Id authorId } (SelectionSet.list [documentSelectionSet])
       |> Graphql.Http.queryRequest endpoint
-      |> Graphql.Http.withHeader "authorization" "Basic Zm5BRFlmWC1wakFDQVJ2a0RoaFU1UmhDaWc5TVVFQUpBNFBpMTFhSDo3Y2NmMGU2Ni01MzllLTRjZGQtODBhZS0xOGIyNGFlOWFlMDY6c2VydmVy"
+      |> Graphql.Http.withHeader "authorization" authorizationToken
       |> Graphql.Http.send (RemoteData.fromResult >> GotUserDocuments)
 
 --
