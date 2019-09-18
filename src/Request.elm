@@ -20,6 +20,16 @@ type alias RemoteDataResponse =
 
 endpoint = "https://graphql.fauna.com/graphql"
 
+createDocument : Document -> Cmd RequestMsg
+createDocument document =
+    Mutation.createDocument (documentRequiredArguments document) documentSelectionSet
+         |> Graphql.Http.mutationRequest endpoint
+         |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
+
+
+-- IMPLEMENTATION
+
+
 documentRequiredArguments : Document -> Mutation.CreateDocumentRequiredArguments
 documentRequiredArguments document =
     { data = documentInput document }
@@ -41,7 +51,6 @@ secondsToPosix : Int -> Time.Posix
 secondsToPosix =
     (Time.millisToPosix << ((*) 1000))
 
--- documentSelectionSet : SelectionSet b Document
 documentSelectionSet =
     SelectionSet.succeed Document
         |> with Api.Object.Document.identifier
@@ -59,11 +68,5 @@ documentSelectionSet =
 stringOfId : Id -> String
 stringOfId (Id str) = str
 
-
-createDocument : Document -> Cmd RequestMsg
-createDocument document =
-    Mutation.createDocument (documentRequiredArguments document) documentSelectionSet
-         |> Graphql.Http.mutationRequest endpoint
-         |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
 
 
