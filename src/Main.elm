@@ -286,8 +286,9 @@ editingDisplay viewInfo model =
 readingDisplay : ViewInfo -> Model -> Element Msg
 readingDisplay viewInfo model =
   let
+      footerText = Maybe.map Document.footer model.currentDocument |> Maybe.withDefault ""
       rt : {title: Html msg, toc: Html msg, document: Html msg}
-      rt = Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument)
+      rt = Markdown.Elm.toHtmlWithExternaTOC model.option ((Document.getContent model.currentDocument) ++ footerText )
   in
     column [ paddingXY 0 0]
         [

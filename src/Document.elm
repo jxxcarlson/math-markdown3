@@ -1,5 +1,5 @@
 module Document exposing (Document, setContent, getContent, documentId
-  , create, replaceInList, getHeading)
+  , create, replaceInList, getHeading, footer)
 
 import Time exposing(Posix)
 import Utility
@@ -32,20 +32,19 @@ getContent : Maybe Document -> String
 getContent maybeDocument =
     case maybeDocument of
         Just document ->
-           let
-              footer = "\n\n___\n\n````\nAuthor: "
-                ++ document.authorID ++ "\n"
-                ++ "Document ID: " ++ document.identifier ++ "\n"
-                ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
-                ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ " UTC\n"
-                ++ "Tags: " ++ String.join ", " document.tags
-                ++ "\n" ++ "````" ++ "\n\n"
-
-           in
-            document.content -- ++ footer
+            document.content
         Nothing -> ""
 
 
+footer : Document -> String
+footer document =
+    "\n\n___\n\n````\nAuthor: "
+    ++ document.authorID ++ "\n"
+    ++ "Document ID: " ++ document.identifier ++ "\n"
+    ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
+    ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ " UTC\n"
+    ++ "Tags: " ++ String.join ", " document.tags
+    ++ "\n" ++ "````" ++ "\n\n"
 
 {-|
     > t = Time.millisToPosix (1568667528 * 1000)
