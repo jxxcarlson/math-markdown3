@@ -69,7 +69,9 @@ Here is a list of things to be done, not necessarily in this order:
 1. Move to MathJax 3 for rendering of math text.  It will be much faster and will
 likely eliminate "jumping text" during editing.
 
-1. Configurable "Front page for authors"
+1. Configurable "Front page" for authors.
+
+1. Shortcut links for articles.
 
 1. Document collections and intra-app links between documents
 
