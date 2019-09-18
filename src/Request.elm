@@ -24,6 +24,7 @@ createDocument : Document -> Cmd RequestMsg
 createDocument document =
     Mutation.createDocument (documentRequiredArguments document) documentSelectionSet
          |> Graphql.Http.mutationRequest endpoint
+         |> Graphql.Http.withHeader "authorization" "Basic Zm5BRFlmWC1wakFDQVJ2a0RoaFU1UmhDaWc5TVVFQUpBNFBpMTFhSDo3Y2NmMGU2Ni01MzllLTRjZGQtODBhZS0xOGIyNGFlOWFlMDY6c2VydmVy"
          |> Graphql.Http.send (RemoteData.fromResult >> GotResponse)
 
 
