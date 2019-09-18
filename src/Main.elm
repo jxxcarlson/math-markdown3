@@ -120,7 +120,7 @@ viewInfoEditing = {
   , editorWidth = 0.3
   , renderedDisplayWidth = 0.3
   , tocWidth = 0.2
-  , vInset = 210.0
+  , vInset = 75.0
   , hExtra = 0
   }
 
@@ -130,7 +130,7 @@ viewInfoReading = {
   , editorWidth = 0
   , renderedDisplayWidth = 0.45
   , tocWidth = 0.3
-  , vInset = 210.0
+  , vInset = 75.0
   , hExtra = 0
   }
 
@@ -432,7 +432,7 @@ header viewInfo model rt =
      renderedDisplayWidth_ =   scale viewInfo.renderedDisplayWidth model.windowWidth
      innerTOCWidth_ = scale viewInfo.tocWidth model.windowWidth
   in
-    row [ height (px 45), width (px (model.windowWidth - 30)), Background.color charcoal] [
+    row [ height (px 45), width (px (model.windowWidth)), Background.color charcoal] [
       row [width (px editorWidth_ ), spacing 10, paddingXY 30 0] [ editingModeButton model, readingModeButton model]
      , column [width (px renderedDisplayWidth_), Font.size 12, Font.color white, alignRight, moveUp 8] [rt.title |> Element.html |> Element.map (\_ -> NoOp)]
      , column [width (px innerTOCWidth_)] []
@@ -483,7 +483,7 @@ footer model =
         renderedDisplayWidth =   scale viewInfoEditing.renderedDisplayWidth model.windowWidth
         innerTOCWidth_ = scale viewInfoEditing.tocWidth model.windowWidth
      in
-       row [ height (px 30), width (px (model.windowWidth - 30)), Background.color charcoal] [
+       row [ height (px 30), width (px (model.windowWidth)), Background.color charcoal] [
          row [width (px editorWidth_ )] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
         , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] []
         , row [width (px innerTOCWidth_), spacing 25] [currentTime model, status model]
