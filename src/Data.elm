@@ -42,7 +42,7 @@ doc3 = {
 
 text3 = """# Math Markdown Progress Roadmap and Report
 
-## Recent Addtions
+## Recent Additions
 
 A great deal of the work is "under the hood."  Here are some visible changes:
 
@@ -72,6 +72,10 @@ likely eliminate "jumping text" during editing.
 1. Configurable "Front page for authors"
 
 1. Document collections and intra-app links betwen documents
+
+1. Rendering inconsistences
+
+   - handling of space before a period and after a newline.
 
 1. Better adherence to Commonmark spec
 """
