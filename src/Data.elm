@@ -29,7 +29,7 @@ doc2 = {
 
 doc3 = {
     identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568700834"
-  , title = "Math Markdown Progress Roadmap and Report"
+  , title = "Math Markdown Progress Roadmap & Report"
   , authorID = "jxxcarlson"
   , content = text3
   , timeCreated = Time.millisToPosix 1568769977000
@@ -58,7 +58,9 @@ A great deal of the work is "under the hood."  Here are some visible changes:
 
 Here is a list of things to be done, not necessarily in this order
 
-1. Attach app to bakend so that documents will be saved
+1. App should read current window dimensions and use them to set its dimensions.
+
+1. Attach app to backend so that documents will be saved
 
 1. Implement user sign up and sign in
 
