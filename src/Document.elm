@@ -1,4 +1,4 @@
-module Document exposing (Document, setContent, getContent, documentId
+module Document exposing (Document, setContent, getContent, documentIdentifier
   , create, replaceInList, getHeading, footer)
 
 import Time exposing(Posix)
@@ -56,8 +56,8 @@ footer document =
     "jxxcarlson.introduction-to-quantum-mechanics.1568667528"
 
 -}
-documentId : String -> String -> Posix -> String
-documentId authorID title time =
+documentIdentifier : String -> String -> Posix -> String
+documentIdentifier authorID title time =
     [authorID, Utility.normalize title, Utility.stringOfPosix time]
       |> String.join "."
 
@@ -75,7 +75,7 @@ documentId authorID title time =
 -}
 create : String -> String -> Posix -> String -> Document
 create authorID title time content =
-     {  identifier =  documentId authorID title time
+     {  identifier =  documentIdentifier authorID title time
       , title = title
       , authorID = authorID
       , content = content
