@@ -1,4 +1,4 @@
-module Data exposing (startupDocument, doc2, doc3)
+module Data exposing (startupDocument, doc2, doc3, doc4)
 
 import Time exposing(Posix)
 
@@ -39,6 +39,182 @@ doc3 = {
   , children = []
   }
 
+doc4 = {
+    identifier = "jxxcarlson.graphql-queries-and-mutations.1568700834"
+  , title = "GraphQL Queries and Mutations"
+  , authorID = "jxxcarlson"
+  , content = text4
+  , timeCreated = Time.millisToPosix 1568930218000
+  , timeUpdated = Time.millisToPosix 1568930218000
+  , tags = ["graphql"]
+  , public = True
+  , children = []
+  }
+
+text4 = """
+# Queries and Mutations
+
+## Scratch
+
+```
+type Query {
+   # Get user by username (id):
+   user(username: String!): User
+   # Get all users:
+   allUsers: [User!]!
+   # Get one document
+   document(identifier: String!): Document
+   # Get all documents of given author
+   # Get all documents
+   allDocuments: [Document!]!
+}
+```
+
+
+## Users
+
+
+### Create User
+
+```
+mutation {
+  createUser(
+    data: {
+      admin: true
+      email: "jxxcarlson@gmail.com"
+      timeUpdated: 1568894608
+      timeEnrolled: 1568894608
+      public: true
+      documents: []
+      username: "jxxcarlson"
+    }
+  ) {
+    _id
+  }
+}
+```
+
+### Delete user
+
+```
+	mutation DeleteUser {
+	  deleteUser(id: 243941509973410322) {
+	    _id
+	    username
+	  }
+	}
+```
+
+### Find all users
+
+```
+  query FindAllUsers {
+   allUsers {
+     data {
+       _id
+      email
+     }
+   }
+ }
+```
+
+
+### FindUserById
+```
+query FindUserByID {
+  findUserByID (id:"243942680436933139") {
+    username
+    email
+    documents {
+      title
+      identifier
+    }
+  }
+}
+```
+
+### FindUserByUsername
+
+```
+query FindUserByUsername {
+  findUserByUsername (username:"jxxcarlson") {
+    username
+    email
+    documents {
+      title
+      identifier
+    }
+  }
+}
+```
+
+## Documents
+
+### Create document
+
+```
+mutation CreateDocument {
+  createDocument(
+     data: {
+      author: {connect: 243942680436933139}
+      children: []
+      identifier: "jxxcarson.test.1568894608"
+      timeUpdated: 1568894608
+      tags: []
+      timeCreated: 1568894608
+      public: true
+      content: "Ths **is** a test!"
+      title: "Test"
+    }
+  )
+   {
+    author { username }
+    identifier
+    title
+  }
+}
+
+```
+
+### Delete document
+
+```
+mutation DeleteDocument {
+  deleteDocument (id: 243890700844794388) {
+    _id
+    title
+  }
+}
+```
+
+### Find all documents
+
+```
+ query FindAllDocuments {
+   allDocuments {
+     data {
+       _id
+       identifier
+       title
+       content
+     }
+   }
+ }
+```
+
+### Find document by author identifier
+
+```
+query FindDocumentByAuthor {
+  documentsByAuthor(author: "1") {
+      _id
+      identifier
+      title
+      content
+    }
+  }
+```
+"""
 
 text3 = """# Math Markdown Progress Roadmap & Report
 
