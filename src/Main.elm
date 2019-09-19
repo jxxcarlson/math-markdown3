@@ -72,7 +72,7 @@ init flags =
             , currentUser = Just User.dummy
             , message = "Starting ..."
             -- documents
-            , documentList = [Data.startupDocument, Data.doc2, Data.doc3]
+            , documentList = [Data.startupDocument, Data.doc2, Data.doc3, Data.doc4]
             , currentDocument = Just Data.startupDocument
             }
     in
