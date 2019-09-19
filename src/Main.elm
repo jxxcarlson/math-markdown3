@@ -548,7 +548,7 @@ footer model =
        row [ height (px 30), width (px (model.windowWidth)), Background.color charcoal] [
          row [width (px editorWidth_ )] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
         , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] [el [] (Element.text <| model.message) ]
-        , row [width (px innerTOCWidth_), spacing 25] [currentTime model, status model]
+        , row [width (px innerTOCWidth_), spacing 25] [currentTime model]
        ]
 
 

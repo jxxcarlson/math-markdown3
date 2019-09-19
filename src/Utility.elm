@@ -10,7 +10,7 @@ humanTimeHM : Time.Zone -> Posix -> String
 humanTimeHM zone time =
   let
     hour   = String.fromInt (Time.toHour   zone time)
-    minute = String.fromInt (Time.toMinute zone time)
+    minute = String.fromInt (Time.toMinute zone time)  |> String.padLeft 2 '0'
   in
    hour ++ ":" ++ minute
 
@@ -22,7 +22,7 @@ humanTimeHMS zone time =
     minute = String.fromInt (Time.toMinute zone time)
     second = String.fromInt (Time.toSecond zone time)
   in
-   hour ++ ":" ++ minute ++ ":" ++ second
+   hour ++ ":" ++ (minute |> String.padLeft 2 '0') ++ ":" ++ (second |> String.padLeft 2 '0')
 
 
 
