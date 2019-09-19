@@ -3,7 +3,7 @@ module Data exposing (startupDocument, doc2, doc3, doc4)
 import Time exposing(Posix)
 
 startupDocument = {
-    identifier = "jxxcarlson.pure-elm-markdown-parser.1568700834",
+    identifier = "jxxcarlson.pure-elm-markdown-parser.1568-700-834",
     title = "A Pure Elm Markdown Parser"
   , authorID = "jxxcarlson"
   , content = startupText
@@ -16,7 +16,7 @@ startupDocument = {
 
 
 doc2 = {
-    identifier = "jxxcarlson.notes-on-futhark.1568700834"
+    identifier = "jxxcarlson.notes-on-futhark.15687-008-34"
   , title = "Notes on Futhark"
   , authorID = "jxxcarlson"
   , content = text2
@@ -28,7 +28,7 @@ doc2 = {
   }
 
 doc3 = {
-    identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568700834"
+    identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568-700-834"
   , title = "Math Markdown Progress Roadmap & Report"
   , authorID = "jxxcarlson"
   , content = text3
@@ -40,7 +40,7 @@ doc3 = {
   }
 
 doc4 = {
-    identifier = "jxxcarlson.graphql-queries-and-mutations.1568700834"
+    identifier = "jxxcarlson.graphql-queries-and-mutations.1568-700-834"
   , title = "GraphQL Queries and Mutations"
   , authorID = "jxxcarlson"
   , content = text4

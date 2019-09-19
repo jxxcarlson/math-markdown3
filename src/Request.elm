@@ -34,9 +34,6 @@ createDocument document =
 
 documentsByAuthor : String -> Cmd RequestMsg
 documentsByAuthor authorId =
-  let
-    _ = Debug.log "AUTHOR ID"  authorId
-  in
     Query.documentsByAuthor  { author = authorId } (SelectionSet.list [documentSelectionSet])
       |> Graphql.Http.queryRequest endpoint
       |> Graphql.Http.withHeader "authorization" authorizationToken
