@@ -33,7 +33,7 @@ doc3 = {
   , authorID = "jxxcarlson"
   , content = text3
   , timeCreated = Time.millisToPosix 1568769977000
-  , timeUpdated = Time.millisToPosix 1568797318000
+  , timeUpdated = Time.millisToPosix 1568851146000
   , tags = ["markdown", "elm", "mathjax"]
   , public = True
   , children = []
@@ -46,6 +46,8 @@ text3 = """# Math Markdown Progress Roadmap & Report
 
 A great deal of the work is "under the hood."  Here are some visible changes:
 
+1. App should read current window dimensions and use them to set its dimensions (9/19/2019)
+
 1. Automatically synchronize document title with the first heading of the document body (9/18/2019)
 
 1. Display metadata in footer: author, document identifier, tags, and dates of creation and last update (9/18/2019)
@@ -57,8 +59,6 @@ A great deal of the work is "under the hood."  Here are some visible changes:
 ## Roadmap
 
 Here is a list of things to be done, not necessarily in this order:
-
-1. App should read current window dimensions and use them to set its dimensions.
 
 1. Attach app to backend so that documents will be saved
 

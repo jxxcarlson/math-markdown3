@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Parse
 import Browser
+import Browser.Events
 import Html exposing (..)
 
 import Element exposing (..)
@@ -164,7 +165,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch [
         Time.every 1000 Tick
-        -- , WindowSize flags.width, flags.height
+        , Browser.Events.onResize WindowSize
       ]
 
 
