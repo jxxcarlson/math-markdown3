@@ -61,6 +61,8 @@ documentId authorID title time =
     [authorID, Utility.normalize title, Utility.stringOfPosix time]
       |> String.join "."
 
+
+
 {-|
 
     > create "jxxcarlson" "Intro to Chromaticity" t "First draft ..."

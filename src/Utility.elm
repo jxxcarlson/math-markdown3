@@ -1,4 +1,5 @@
-module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount)
+module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress)
+import List.Extra
 
 import Time exposing(Posix)
 
@@ -59,6 +60,69 @@ normalize str =
       |> String.join "-"
       |> String.toLower
 
+compress1: String -> String
+compress1 str =
+  let
+    filteredWords = str
+      |> String.words
+      |> List.map String.toLower
+      |> filterNoise
+    result = List.Extra.uncons filteredWords
+  in
+    case result of
+        Nothing -> String.toLower str
+        Just (first, body) ->
+            body
+              |> List.map (String.left 2)
+              |> Debug.log "(1)"
+              |> fixup
+              |> List.Extra.groupsOf 2
+              |> Debug.log "(2)"
+              |> List.map (\sublist -> sublist |> String.join "")
+              |> (\x -> first::x)
+              |> String.join "-"
+
+compress: String -> String
+compress str =
+   str
+      |> String.words
+      |> List.map String.toLower
+      |> filterNoise
+      |> List.indexedMap shorten
+      |> Debug.log "(1)"
+      |> fixup
+      |> List.Extra.groupsOf 2
+      |> Debug.log "(2)"
+      |> List.indexedMap join
+      |> String.join "-"
+
+
+join : Int -> List String -> String
+join k list =
+    if k < 1 then
+       String.join "-" list
+    else
+       String.join "" list
+
+shorten : Int -> String -> String
+shorten k str =
+    if k < 2 then
+      str
+    else
+      String.left 2 str
+
+fixup : List String -> List String
+fixup list =
+    if modBy 2 (List.length list) == 0 then
+       list
+    else
+        list ++ [""]
+
+filterNoise : List String -> List String
+filterNoise list =
+    List.filter (\word -> not (List.member word lowInfoWords)) list
+
+lowInfoWords = ["a", "the"]
 
 stringOfPosix : Posix -> String
 stringOfPosix posix =
