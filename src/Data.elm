@@ -54,6 +54,17 @@ doc4 = {
 text4 = """
 # Queries and Mutations
 
+## Resources
+
+- [howtographql.com/](https://www.howtographql.com/)
+   - [Intro](https://www.howtographql.com/basics/0-introduction/)
+   - [Core concepts](https://www.howtographql.com/basics/2-core-concepts/)
+   - [Relations](https://www.howtographql.com/graphql-scala/7-relations/)
+
+- Fauna
+   - [Index tutorial](https://docs.fauna.com/fauna/current/tutorials/indexes/)
+   - [Indexes](https://docs.fauna.com/fauna/current/api/fql/indexes)
+
 ## Schema
 
 ```
@@ -100,7 +111,7 @@ type Query {
 
 ## Queries and Mutations
 
-##3 Users
+### Users
 
 
 #### Create User
