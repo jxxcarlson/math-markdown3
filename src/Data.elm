@@ -54,12 +54,40 @@ doc4 = {
 text4 = """
 # Queries and Mutations
 
-## Scratch
+## Schema
 
 ```
+type Document {
+   # format: username.compessedTitle.posix
+   identifier: String!
+   title:String!
+   content:String!
+   author:User!
+   tags:[String!]!
+   timeCreated : Int!
+   timeUpdated : Int!
+   public : Boolean!
+   children: [String!]!
+}
+
+type User {
+   # The username
+   username : String!
+   email : String!
+   public : Boolean!
+   firstName : String
+   lastName : String
+   timeEnrolled : Int!
+   timeUpdated : Int!
+   admin: Boolean!
+   documents: [Document!]!
+}
+
+
+
 type Query {
-   # Get user by username (id):
-   user(username: String!): User
+   # Get user by username :
+   findUserByUsername(username: String!): User
    # Get all users:
    allUsers: [User!]!
    # Get one document
@@ -70,11 +98,12 @@ type Query {
 }
 ```
 
+## Queries and Mutations
 
-## Users
+##3 Users
 
 
-### Create User
+#### Create User
 
 ```
 mutation {
@@ -94,7 +123,7 @@ mutation {
 }
 ```
 
-### Delete user
+#### Delete user
 
 ```
 	mutation DeleteUser {
@@ -105,7 +134,7 @@ mutation {
 	}
 ```
 
-### Find all users
+#### Find all users
 
 ```
   query FindAllUsers {
@@ -119,7 +148,7 @@ mutation {
 ```
 
 
-### FindUserById
+#### FindUserById
 ```
 query FindUserByID {
   findUserByID (id:"243942680436933139") {
@@ -133,7 +162,7 @@ query FindUserByID {
 }
 ```
 
-### FindUserByUsername
+#### FindUserByUsername
 
 ```
 query FindUserByUsername {
@@ -148,9 +177,9 @@ query FindUserByUsername {
 }
 ```
 
-## Documents
+### Documents
 
-### Create document
+#### Create document
 
 ```
 mutation CreateDocument {
@@ -176,7 +205,7 @@ mutation CreateDocument {
 
 ```
 
-### Delete document
+#### Delete document
 
 ```
 mutation DeleteDocument {
@@ -187,7 +216,7 @@ mutation DeleteDocument {
 }
 ```
 
-### Find all documents
+#### Find all documents
 
 ```
  query FindAllDocuments {
@@ -202,7 +231,7 @@ mutation DeleteDocument {
  }
 ```
 
-### Find document by author identifier
+#### Find document by author identifier
 
 ```
 query FindDocumentByAuthor {
