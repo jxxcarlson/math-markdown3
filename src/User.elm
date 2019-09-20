@@ -2,10 +2,9 @@ module User exposing (User, dummy)
 
 import Time exposing(Posix)
 
-type alias UserId = String
 
 type alias User = {
-     id : UserId
+     id : String
     , email : String
     , public : Bool
     , firstName : String

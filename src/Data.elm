@@ -132,6 +132,7 @@ text4 = """
 - Fauna
    - [Index tutorial](https://docs.fauna.com/fauna/current/tutorials/indexes/)
    - [Indexes](https://docs.fauna.com/fauna/current/api/fql/indexes)
+   - [Indexes II](https://dashboard.fauna.com/indexes/documentsByAuthor/@db/7ccf0e66-539e-4cdd-80ae-18b24ae9ae06)
 
 ## Schema
 
