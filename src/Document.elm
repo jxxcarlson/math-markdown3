@@ -42,7 +42,7 @@ footer document =
     "\n\n___\n\n````\nAuthor: "
     ++ document.authorID ++ "\n"
     ++ "Document ID: " ++ document.identifier ++ "\n"
-    ++ "Document slug: " ++ slug document
+    ++ "Document slug: " ++ slug document ++ "\n"
     ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
     ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ " UTC\n"
     ++ "Tags: " ++ String.join ", " document.tags ++ "\n"
