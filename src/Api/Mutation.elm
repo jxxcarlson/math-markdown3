@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Mutation exposing (CreateDocumentRequiredArguments, DeleteDocumentRequiredArguments, UpdateDocumentRequiredArguments, createDocument, deleteDocument, updateDocument)
+module Api.Mutation exposing (CreateDocumentRequiredArguments, CreateUserRequiredArguments, DeleteDocumentRequiredArguments, DeleteUserRequiredArguments, UpdateDocumentRequiredArguments, UpdateUserRequiredArguments, createDocument, createUser, deleteDocument, deleteUser, updateDocument, updateUser)
 
 import Api.InputObject
 import Api.Interface
@@ -19,6 +19,37 @@ import Graphql.SelectionSet exposing (SelectionSet)
 import Json.Decode as Decode exposing (Decoder)
 
 
+type alias UpdateUserRequiredArguments =
+    { id : Api.ScalarCodecs.Id
+    , data : Api.InputObject.UserInput
+    }
+
+
+{-| Update an existing document in the collection of 'User'
+
+  - id - The 'User' document's ID
+  - data - 'User' input values
+
+-}
+updateUser : UpdateUserRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootMutation
+updateUser requiredArgs object_ =
+    Object.selectionForCompositeField "updateUser" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId), Argument.required "data" requiredArgs.data Api.InputObject.encodeUserInput ] object_ (identity >> Decode.nullable)
+
+
+type alias CreateUserRequiredArguments =
+    { data : Api.InputObject.UserInput }
+
+
+{-| Create a new document in the collection of 'User'
+
+  - data - 'User' input values
+
+-}
+createUser : CreateUserRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet decodesTo RootMutation
+createUser requiredArgs object_ =
+    Object.selectionForCompositeField "createUser" [ Argument.required "data" requiredArgs.data Api.InputObject.encodeUserInput ] object_ identity
+
+
 type alias CreateDocumentRequiredArguments =
     { data : Api.InputObject.DocumentInput }
 
@@ -31,6 +62,34 @@ type alias CreateDocumentRequiredArguments =
 createDocument : CreateDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet decodesTo RootMutation
 createDocument requiredArgs object_ =
     Object.selectionForCompositeField "createDocument" [ Argument.required "data" requiredArgs.data Api.InputObject.encodeDocumentInput ] object_ identity
+
+
+type alias DeleteUserRequiredArguments =
+    { id : Api.ScalarCodecs.Id }
+
+
+{-| Delete an existing document in the collection of 'User'
+
+  - id - The 'User' document's ID
+
+-}
+deleteUser : DeleteUserRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootMutation
+deleteUser requiredArgs object_ =
+    Object.selectionForCompositeField "deleteUser" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)
+
+
+type alias DeleteDocumentRequiredArguments =
+    { id : Api.ScalarCodecs.Id }
+
+
+{-| Delete an existing document in the collection of 'Document'
+
+  - id - The 'Document' document's ID
+
+-}
+deleteDocument : DeleteDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootMutation
+deleteDocument requiredArgs object_ =
+    Object.selectionForCompositeField "deleteDocument" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)
 
 
 type alias UpdateDocumentRequiredArguments =
@@ -48,17 +107,3 @@ type alias UpdateDocumentRequiredArguments =
 updateDocument : UpdateDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootMutation
 updateDocument requiredArgs object_ =
     Object.selectionForCompositeField "updateDocument" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId), Argument.required "data" requiredArgs.data Api.InputObject.encodeDocumentInput ] object_ (identity >> Decode.nullable)
-
-
-type alias DeleteDocumentRequiredArguments =
-    { id : Api.ScalarCodecs.Id }
-
-
-{-| Delete an existing document in the collection of 'Document'
-
-  - id - The 'Document' document's ID
-
--}
-deleteDocument : DeleteDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootMutation
-deleteDocument requiredArgs object_ =
-    Object.selectionForCompositeField "deleteDocument" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)

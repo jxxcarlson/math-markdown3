@@ -19,7 +19,6 @@ type alias Document = {
    , timeCreated : Posix
    , timeUpdated: Posix
    , public: Bool
-   , children: List DocumentID
 
   }
 
@@ -87,7 +86,6 @@ create authorID title time content =
       , timeCreated = time
       , timeUpdated = time
       , public = False
-      , children = []
 
 
      }

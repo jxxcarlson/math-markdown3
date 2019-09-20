@@ -21,7 +21,6 @@ type User {
 }
 
 
-dumm
 type Query {
    # Get one document
    document(identifier: String!): Document

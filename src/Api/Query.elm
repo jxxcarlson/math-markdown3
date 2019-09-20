@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Query exposing (AllDocumentsOptionalArguments, DocumentRequiredArguments, DocumentsByAuthorRequiredArguments, FindDocumentByIDRequiredArguments, allDocuments, document, documentsByAuthor, findDocumentByID)
+module Api.Query exposing (AllDocumentsOptionalArguments, AllUsersOptionalArguments, DocumentRequiredArguments, DocumentsByAuthorRequiredArguments, FindDocumentByIDRequiredArguments, FindUserByIDRequiredArguments, FindUserByUsernameRequiredArguments, UserRequiredArguments, allDocuments, allUsers, document, documentsByAuthor, findDocumentByID, findUserByID, findUserByUsername, user)
 
 import Api.InputObject
 import Api.Interface
@@ -19,18 +19,13 @@ import Graphql.SelectionSet exposing (SelectionSet)
 import Json.Decode as Decode exposing (Decoder)
 
 
-type alias FindDocumentByIDRequiredArguments =
-    { id : Api.ScalarCodecs.Id }
+type alias DocumentsByAuthorRequiredArguments =
+    { author : String }
 
 
-{-| Find a document from the collection of 'Document' by its id.
-
-  - id - The 'Document' document's ID
-
--}
-findDocumentByID : FindDocumentByIDRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootQuery
-findDocumentByID requiredArgs object_ =
-    Object.selectionForCompositeField "findDocumentByID" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)
+documentsByAuthor : DocumentsByAuthorRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootQuery
+documentsByAuthor requiredArgs object_ =
+    Object.selectionForCompositeField "documentsByAuthor" [ Argument.required "author" requiredArgs.author Encode.string ] object_ (identity >> Decode.nullable)
 
 
 type alias AllDocumentsOptionalArguments =
@@ -67,10 +62,72 @@ document requiredArgs object_ =
     Object.selectionForCompositeField "document" [ Argument.required "identifier" requiredArgs.identifier Encode.string ] object_ (identity >> Decode.nullable)
 
 
-type alias DocumentsByAuthorRequiredArguments =
-    { author : String }
+type alias AllUsersOptionalArguments =
+    { size_ : OptionalArgument Int
+    , cursor_ : OptionalArgument String
+    }
 
 
-documentsByAuthor : DocumentsByAuthorRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootQuery
-documentsByAuthor requiredArgs object_ =
-    Object.selectionForCompositeField "documentsByAuthor" [ Argument.required "author" requiredArgs.author Encode.string ] object_ (identity >> Decode.nullable)
+{-|
+
+  - size\_ - The number of items to return per page.
+  - cursor\_ - The pagination cursor.
+
+-}
+allUsers : (AllUsersOptionalArguments -> AllUsersOptionalArguments) -> SelectionSet decodesTo Api.Object.UserPage -> SelectionSet decodesTo RootQuery
+allUsers fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { size_ = Absent, cursor_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "_size" filledInOptionals.size_ Encode.int, Argument.optional "_cursor" filledInOptionals.cursor_ Encode.string ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "allUsers" optionalArgs object_ identity
+
+
+type alias FindDocumentByIDRequiredArguments =
+    { id : Api.ScalarCodecs.Id }
+
+
+{-| Find a document from the collection of 'Document' by its id.
+
+  - id - The 'Document' document's ID
+
+-}
+findDocumentByID : FindDocumentByIDRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootQuery
+findDocumentByID requiredArgs object_ =
+    Object.selectionForCompositeField "findDocumentByID" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)
+
+
+type alias FindUserByIDRequiredArguments =
+    { id : Api.ScalarCodecs.Id }
+
+
+{-| Find a document from the collection of 'User' by its id.
+
+  - id - The 'User' document's ID
+
+-}
+findUserByID : FindUserByIDRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootQuery
+findUserByID requiredArgs object_ =
+    Object.selectionForCompositeField "findUserByID" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)
+
+
+type alias FindUserByUsernameRequiredArguments =
+    { username : String }
+
+
+findUserByUsername : FindUserByUsernameRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootQuery
+findUserByUsername requiredArgs object_ =
+    Object.selectionForCompositeField "findUserByUsername" [ Argument.required "username" requiredArgs.username Encode.string ] object_ (identity >> Decode.nullable)
+
+
+type alias UserRequiredArguments =
+    { id : String }
+
+
+user : UserRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootQuery
+user requiredArgs object_ =
+    Object.selectionForCompositeField "user" [ Argument.required "id" requiredArgs.id Encode.string ] object_ (identity >> Decode.nullable)

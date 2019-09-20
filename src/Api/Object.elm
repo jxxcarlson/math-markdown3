@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object exposing (Document(..), DocumentPage(..))
+module Api.Object exposing (Document(..), DocumentPage(..), User(..), UserPage(..))
 
 
 type Document
@@ -11,3 +11,11 @@ type Document
 
 type DocumentPage
     = DocumentPage
+
+
+type User
+    = User
+
+
+type UserPage
+    = UserPage

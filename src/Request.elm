@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), createDocument, documentsByAuthor)
+module Request exposing (RequestMsg(..), createDocument)
 
 import Graphql.Http
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -30,15 +30,6 @@ createDocument document =
 
 
 
-
-
-documentsByAuthor : String -> Cmd RequestMsg
-documentsByAuthor authorId =
-    Query.documentsByAuthor  { author = authorId } (SelectionSet.list [documentSelectionSet])
-      |> Graphql.Http.queryRequest endpoint
-      |> Graphql.Http.withHeader "authorization" authorizationToken
-      |> Graphql.Http.send (RemoteData.fromResult >> GotUserDocuments)
-
 --
 --updateDocument : Document -> Cmd RequestMsg
 --updateDocument document =
@@ -56,7 +47,7 @@ createDocumentRequiredArguments : Document -> Mutation.CreateDocumentRequiredArg
 createDocumentRequiredArguments document =
     { data = documentInput document }
 
-documentInput : Document -> InputObject.DocumentInput  --RequiredFields
+documentInput : Document -> InputObject.DocumentInput
 documentInput document =
         {   identifier = document.identifier
           , title = document.title
@@ -66,7 +57,6 @@ documentInput document =
           , timeCreated = Time.posixToMillis document.timeCreated // 1000
           , timeUpdated = Time.posixToMillis document.timeUpdated // 1000
           , public = document.public
-          , children = document.children
         }
 
 secondsToPosix : Int -> Time.Posix
@@ -78,15 +68,12 @@ documentSelectionSet =
     SelectionSet.succeed Document
         |> with Api.Object.Document.identifier
         |> with Api.Object.Document.title
-        -- |> with (SelectionSet.map stringOfId Api.Object.Document.author)
         |> with Api.Object.Document.author
         |> with Api.Object.Document.content
         |> with Api.Object.Document.tags
         |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeCreated)
         |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeUpdated)
         |> with Api.Object.Document.public
-        |> with Api.Object.Document.children
-
 
 
 stringOfId : Id -> String

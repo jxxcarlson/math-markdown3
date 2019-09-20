@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (author, children, content, id_, identifier, public, tags, timeCreated, timeUpdated, title, ts_)
+module Api.Object.Document exposing (author, content, id_, identifier, public, tags, timeCreated, timeUpdated, title, ts_)
 
 import Api.InputObject
 import Api.Interface
@@ -22,11 +22,6 @@ import Json.Decode as Decode
 author : SelectionSet String Api.Object.Document
 author =
     Object.selectionForField "String" "author" [] Decode.string
-
-
-children : SelectionSet (List String) Api.Object.Document
-children =
-    Object.selectionForField "(List String)" "children" [] (Decode.string |> Decode.list)
 
 
 identifier : SelectionSet String Api.Object.Document
