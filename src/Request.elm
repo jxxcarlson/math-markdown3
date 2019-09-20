@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), createDocument)
+module Request exposing (RequestMsg(..), createDocument, documentsByAuthor)
 
 import Graphql.Http
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -29,6 +29,12 @@ createDocument document =
          |> Graphql.Http.send (RemoteData.fromResult >> GotNewDocument)
 
 
+documentsByAuthor : String -> Cmd RequestMsg
+documentsByAuthor authorId =
+    Query.documentsByAuthor  { author = authorId } (SelectionSet.list [documentSelectionSet])
+      |> Graphql.Http.queryRequest endpoint
+      |> Graphql.Http.withHeader "authorization" authorizationToken
+      |> Graphql.Http.send (RemoteData.fromResult >> GotUserDocuments)
 
 --
 --updateDocument : Document -> Cmd RequestMsg

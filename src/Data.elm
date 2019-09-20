@@ -11,7 +11,6 @@ startupDocument = {
   , timeUpdated = Time.millisToPosix 1568700834000
   , tags = ["elm", "markdown", "math", "mathjax"]
   , public = True
-  , children = []
   }
 
 
@@ -24,7 +23,6 @@ doc2 = {
   , timeUpdated = Time.millisToPosix 1568700834000
   , tags = ["futhark", "gpu", "parallel computation"]
   , public = True
-  , children = []
   }
 
 doc3 = {
@@ -36,7 +34,6 @@ doc3 = {
   , timeUpdated = Time.millisToPosix 1568851146000
   , tags = ["markdown", "elm", "mathjax"]
   , public = True
-  , children = []
   }
 
 doc4 = {
@@ -48,7 +45,6 @@ doc4 = {
   , timeUpdated = Time.millisToPosix 1568930218000
   , tags = ["graphql"]
   , public = True
-  , children = []
   }
 
 doc5= {
@@ -60,7 +56,6 @@ doc5= {
   , timeUpdated = Time.millisToPosix 1568981582000
   , tags = ["elm"]
   , public = True
-  , children = []
   }
 
 
