@@ -1,4 +1,4 @@
-module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress)
+module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug)
 import List.Extra
 
 import Time exposing(Posix)
@@ -123,6 +123,34 @@ filterNoise list =
     List.filter (\word -> not (List.member word lowInfoWords)) list
 
 lowInfoWords = ["a", "the"]
+
+
+msp : Int -> String
+msp seconds =
+    seconds
+      |> (\x -> x // 86400)
+      |> (\x -> modBy 1000 x )
+      |> String.fromInt
+
+lsp : Int -> String
+lsp seconds =
+   let
+      s = modBy 86400 seconds
+      a = s // 1000 |> String.fromInt
+      b = modBy 1000 s |> String.fromInt
+   in
+     a ++ "-" ++ b
+
+posixSlug : Posix -> String
+posixSlug posix =
+    posix
+      |> Time.posixToMillis
+      |> (\x -> x // 1000)
+      |> intSlug
+
+intSlug : Int -> String
+intSlug seconds =
+    msp seconds ++ "-" ++ lsp seconds
 
 stringOfPosix : Posix -> String
 stringOfPosix posix =
