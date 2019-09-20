@@ -547,10 +547,17 @@ footer model =
      in
        row [ height (px 30), width (px (model.windowWidth)), Background.color charcoal] [
          row [width (px editorWidth_ )] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
-        , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] [el [] (Element.text <| model.message) ]
+        , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] [
+             el [] (Element.text <| model.message)
+            , el [] (Element.text <| slug model)]
         , row [width (px innerTOCWidth_), spacing 25] [currentTime model]
        ]
 
+slug : Model -> String
+slug model =
+    case model.currentDocument of
+        Nothing -> ""
+        Just document -> Document.slug document
 
 currentAuthorDisplay model =
     let

@@ -1,5 +1,5 @@
 module Document exposing (Document, setContent, getContent, documentIdentifier
-  , create, replaceInList, getHeading, footer)
+  , create, replaceInList, getHeading, footer, slug)
 
 import Time exposing(Posix)
 import Utility
@@ -64,7 +64,7 @@ documentIdentifier authorID title time =
 
 slug : Document -> String
 slug document =
-    document.authorID ++ Utility.compress document.identifier ++ Utility.posixSlug document.timeCreated
+    document.authorID ++ "." ++ Utility.compress document.title ++ "." ++ Utility.posixSlug document.timeCreated
 
 
 {-|
