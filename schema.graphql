@@ -1,15 +1,27 @@
 type Document {
    identifier: String!
-   title:String!
-   content:String!
-   author:String!
-   tags:[String!]!
+   title: String!
+   content: String!
+   author: String!
+   tags: [String!]!
    timeCreated : Int!
    timeUpdated : Int!
    public : Boolean!
-   children: [String!]!
 }
 
+
+type User {
+   , email : String!
+   , public : Boolean!
+   , firstName : String!
+   , lastName : String!
+   , timeEnrolled : Int!
+   , timeUpdated : Int!
+   , admin : Boolean!
+}
+
+
+dumm
 type Query {
    # Get one document
    document(identifier: String!): Document
