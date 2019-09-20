@@ -1,4 +1,4 @@
-module Data exposing (startupDocument, doc2, doc3, doc4)
+module Data exposing (startupDocument, doc5, doc2, doc3, doc4)
 
 import Time exposing(Posix)
 
@@ -16,7 +16,7 @@ startupDocument = {
 
 
 doc2 = {
-    identifier = "jxxcarlson.notes-on-futhark.15687-008-34"
+    identifier = "jxxcarlson.notes-on-futhark.15687-008-834"
   , title = "Notes on Futhark"
   , authorID = "jxxcarlson"
   , content = text2
@@ -50,6 +50,79 @@ doc4 = {
   , public = True
   , children = []
   }
+
+doc5= {
+    identifier = "jxxcarlson.elm-resources.1568-981-582"
+  , title = "Elm resources"
+  , authorID = "jxxcarlson"
+  , content = text5
+  , timeCreated = Time.millisToPosix 1568981582000
+  , timeUpdated = Time.millisToPosix 1568981582000
+  , tags = ["elm"]
+  , public = True
+  , children = []
+  }
+
+
+text5 = """
+# Elm Resources
+
+This is a work in progress, and only represents resources of which I have made considerable use.
+
+## Books
+
+- [Evan Czaplicki, Elm Guide](https://guide.elm-lang.org/)
+- [Jeremy Fairbank, Programming Elm](https://www.goodreads.com/book/show/37824829-programming-elm)
+- [Richard Feldman, Elm in Action](https://www.manning.com/books/elm-in-action)
+- [Alex Korban, Practical Elm for a Busy Developer](https://korban.net/elm/book/)
+
+
+## Web sites
+
+- [elmprogramming](https://elmprogramming.com)
+- [Teaching Elm (Slides)](https://slides.com/sebbes/the-web-teaching-server-elm-intro#/)
+
+
+## Development Tools
+
+- [Elm-doc-preview/applications](https://github.com/dmy/elm-doc-preview/blob/master/README.md#applications-support)
+- [Elm Greenwood: New Packages RSS](https://elm-greenwood.com/)
+- [Ilias' compilation of Elm tools](https://dev.to/zwilias/elm-tools-571a)
+- [elm-xref](https://github.com/zwilias/elm-xref/blob/master/README.md)
+- [Dmy, Bash completion](https://github.com/dmy/elm-sh-completion)
+
+
+## Videos
+
+[Richard Feldman, Scaling Elm Apps](https://www.youtube.com/watch?v=DoA4Txr4GUs)
+
+## Articles
+
+- [Janiczek: defunctionalization](http://martin.janiczek.cz/clanek/defunctionalization-in-elm/)
+
+
+## Exercises
+
+- [Joël Quenneville, 	Generic types](https://gist.github.com/JoelQ/98c5c6a17fd82d8ddd932a75eceb4276)
+
+
+## Recommended
+
+- [Evan Czaplicki, Structuring Elm Apps](https://guide.elm-lang.org/webapps/structure.html)
+
+
+## Notes
+
+[Tests](https://github.com/klazuka/intellij-elm/blob/1a3d56a9a38b5b8d83d57fe3ce77166061e158e3/src/test/kotlin/org/elm/lang/core/resolve/ElmFunctionResolveTest.kt#L16)
+
+
+
+
+
+
+
+
+"""
 
 text4 = """
 # Queries and Mutations
