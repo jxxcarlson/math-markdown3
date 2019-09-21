@@ -78,7 +78,7 @@ init flags =
             , windowWidth = flags.width
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
-            , appMode = Reading
+            , appMode = UserPage
             , message = "Starting ..."
 
             -- TIME
@@ -160,16 +160,6 @@ viewInfoEditing = {
   }
 
 viewInfoReading = {
-    toolStripWidth = 0.05
-  ,  docListWidth = 0.25
-  , editorWidth = 0
-  , renderedDisplayWidth = 0.45
-  , tocWidth = 0.25
-  , vInset = vInset
-  , hExtra = 0
-  }
-
-viewInfoUserPage = {
     toolStripWidth = 0.05
   ,  docListWidth = 0.25
   , editorWidth = 0
@@ -423,17 +413,50 @@ myFocusStyle =
    }
 
 
-userPageDisplay : ViewInfo -> Model -> Element Msg
+-- USER PAGE --
+
+type alias ViewInfoUserPage =
+    { lhsFraction : Float, rhsFraction : Float, vInset : Float }
+
+viewInfoUserPage = {
+    lhsFraction = 0.7
+  , rhsFraction = 0.3
+  , vInset = vInset
+  }
+
+
+userPageDisplay : ViewInfoUserPage -> Model -> Element Msg
 userPageDisplay viewInfo model =
   let
       h_ = translate (-viewInfo.vInset) model.windowHeight
   in
-    column [ ]
+    column [ Background.color (makeGrey 0.35), Font.color white]
            [
               userPageHeader viewInfo model
-            , row [height (px h_), padding 40] [ Element.text "User Page: WIP" ]
+            , row [height (px h_), Font.size 14] [ lhsViewInfoPage viewInfo model, rhsViewInfoPage viewInfo model ]
             , userPageFooter model
             ]
+
+
+lhsViewInfoPage viewInfo model =
+    let
+          w = scale viewInfo.lhsFraction model.windowWidth
+          h = translate (-viewInfo.vInset) model.windowHeight
+       in
+        column [width (px w), height (px h), padding 100, spacing 24 ] [
+              Element.text "Click on the Read or Edit buttons to experiment."
+            , Element.text "Coming soon: forms to sign up / sign in"
+          ]
+
+rhsViewInfoPage viewInfo model =
+   let
+      w = scale viewInfo.rhsFraction model.windowWidth
+      h = translate (-viewInfo.vInset) model.windowHeight
+      rt = Markdown.Elm.toHtml ExtendedMath Data.rhsUserText
+   in
+    column [width (px w), height (px h), padding 36, scrollbarY, Background.color (makeGrey 0.8), Font.color (makeGrey 0.1) ]
+       [rt |> Element.html ]
+
 
 userPageFooter : Model -> Element Msg
 userPageFooter model =
@@ -441,23 +464,25 @@ userPageFooter model =
             el [] (Element.text <| model.message)
        ]
 
-userPageHeader : ViewInfo -> Model -> Element Msg
+userPageHeader : ViewInfoUserPage -> Model -> Element Msg
 userPageHeader  viewInfo model =
   let
-     editorWidth_ =  scale viewInfo.editorWidth model.windowWidth
-     renderedDisplayWidth_ =   scale viewInfo.renderedDisplayWidth model.windowWidth
-     innerTOCWidth_ = scale viewInfo.tocWidth model.windowWidth
+     lhsWidth =  scale viewInfo.lhsFraction model.windowWidth
+     rhsWidth =   scale viewInfo.rhsFraction model.windowWidth
   in
     row [ height (px 45), width (px (model.windowWidth)), Background.color charcoal] [
       modeButtonStrip model
-      -- row [width (px editorWidth_ ), height (px 45), spacing 10, paddingXY 20 0] [ editTools model,  readingModeButton model, userPageModeButton model]
-     , column [width (px renderedDisplayWidth_), Font.size 12, Font.color white, alignRight, moveUp 8] []
-     , column [width (px innerTOCWidth_)] []
+     , column [width (px lhsWidth), Font.size 12, Font.color white, alignRight, moveUp 8] []
+     , column [width (px rhsWidth)] []
     ]
 
 modeButtonStrip model =
    row [width (px 400 ), height (px 45), spacing 10, paddingXY 20 0] [ editTools model,  readingModeButton model, userPageModeButton model]
 
+
+
+
+-- EDITOR --
 
 editingDisplay : ViewInfo -> Model -> Element Msg
 editingDisplay viewInfo model =
