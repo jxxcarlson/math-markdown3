@@ -339,6 +339,8 @@ text3 = """# Math Markdown Progress Roadmap & Report
 
 A great deal of the work is "under the hood."  Here are some visible changes:
 
+1. Stub for a user page (9/21/2019).
+
 1. Added CRUD features for documents and made improvements to UI.  For the
    moment can only retrieve one user document due to a backend issue. (9/21/2019).
 
@@ -363,6 +365,8 @@ Here is a list of things to be done, not necessarily in this order:
 
 1. Move to MathJax 3 for rendering of math text.  It will be much faster and will
 likely eliminate "jumping text" during editing.
+
+1. Add LaTeX parsing/rendering (MiniLaTeX).
 
 1. Auto-detect screen size and present simplified reader-only version for smart phones.
 
