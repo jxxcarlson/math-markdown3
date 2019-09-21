@@ -1,4 +1,4 @@
-module Utility exposing (unwrapId, humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug)
+module Utility exposing (unwrapId, humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug, intSlug)
 import List.Extra
 
 import Time exposing(Posix)
@@ -122,7 +122,7 @@ filterNoise : List String -> List String
 filterNoise list =
     List.filter (\word -> not (List.member word lowInfoWords)) list
 
-lowInfoWords = ["a", "the"]
+lowInfoWords = ["a", "the", "in", "on", "to", "from", "with", "without", "that", "this", "and", "or"]
 
 
 msp : Int -> String
@@ -130,14 +130,14 @@ msp seconds =
     seconds
       |> (\x -> x // 86400)
       |> (\x -> modBy 1000 x )
-      |> String.fromInt
+      |> String.fromInt |> String.padLeft 3 '0'
 
 lsp : Int -> String
 lsp seconds =
    let
       s = modBy 86400 seconds
-      a = s // 1000 |> String.fromInt
-      b = modBy 1000 s |> String.fromInt
+      a = s // 1000 |> String.fromInt |> String.padLeft 2 '0'
+      b = modBy 1000 s |> String.fromInt |> String.padLeft 3 '0'
    in
      a ++ "-" ++ b
 
