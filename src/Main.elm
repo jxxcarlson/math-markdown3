@@ -760,7 +760,8 @@ footer model =
              currentAuthorDisplay model
            , currentTime model
            , wordCount model
-           , el [] (Element.text <| "Permalink: " ++ slug model)
+           , el [] (Element.text <| slug model)
+           , el [] (Element.text <| idDisplay model )
            , el [] (Element.text <| model.message)
        ]
 
@@ -768,7 +769,13 @@ slug : Model -> String
 slug model =
     case model.currentDocument of
         Nothing -> ""
-        Just document -> Document.slug document ++ ", id = " ++ Utility.unwrapId document.id
+        Just document -> "Permalink: " ++  Document.slug document
+
+idDisplay  : Model -> String
+idDisplay model =
+   case model.currentDocument of
+     Nothing -> ""
+     Just document -> "id = " ++ Utility.unwrapId document.id
 
 
 currentAuthorDisplay model =
