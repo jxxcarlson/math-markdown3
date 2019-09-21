@@ -760,7 +760,7 @@ footer model =
              currentAuthorDisplay model
            , currentTime model
            , wordCount model
-           , el [] (Element.text <| slug model)
+           , el [] (Element.text <| "Short link: " ++ slug model)
            , el [] (Element.text <| model.message)
        ]
 
