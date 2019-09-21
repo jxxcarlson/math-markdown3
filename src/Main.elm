@@ -252,7 +252,13 @@ update msg model =
                    )
 
 
-        SaveDocument -> (model, Cmd.none)
+        SaveDocument ->
+            case model.currentDocument of
+               Nothing -> (model, Cmd.none)
+               Just document ->
+                   ({model | message = "Saving document ..."}
+                     , Request.updateDocument document |> Cmd.map Req
+                   )
 
         GetUserDocuments ->
             case model.currentUser of
@@ -288,6 +294,15 @@ update msg model =
                    Failure _ ->
                         ({model | message = "New doc: failed request"} , Cmd.none)
                    Success _ -> ({model | message = "New document created"} , Cmd.none)
+
+              ConfirmUpdatedDocument remoteData ->
+                  case remoteData of
+                     NotAsked -> ({ model | message = "Update doc: not asked"} , Cmd.none)
+                     Loading -> ({model | message = "Updated doc: loading"} , Cmd.none)
+                     Failure _ ->
+                          ({model | message = "Updated doc: failed request"} , Cmd.none)
+                     Success _ -> ({model | message = "Document update successful"} , Cmd.none)
+
               GotUserDocuments remoteData  ->
                 case remoteData of
                    NotAsked -> ({ model | message = "Get author docs: not asked"} , Cmd.none)
@@ -300,6 +315,8 @@ update msg model =
                       Just documentList -> ({model | documentList = documentList
                                                 , currentDocument = List.head documentList
                                                 , message = "Success returning document list for author!"} , Cmd.none)
+
+
 
           -- MANAGE DOCUMENTS --
 

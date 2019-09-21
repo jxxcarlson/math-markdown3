@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), createDocument, documentsByAuthor)
+module Request exposing (RequestMsg(..), createDocument, documentsByAuthor, updateDocument)
 
 import Graphql.Http
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -14,8 +14,9 @@ import Api.Scalar exposing(Id(..))
 
 
 type RequestMsg =
-      GotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
+       GotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
      | GotUserDocuments (RemoteData (Graphql.Http.Error (Maybe (List Document))) (Maybe (List Document)))
+     | ConfirmUpdatedDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 
 
 endpoint = "https://graphql.fauna.com/graphql"
@@ -36,18 +37,28 @@ documentsByAuthor authorId =
       |> Graphql.Http.withHeader "authorization" authorizationToken
       |> Graphql.Http.send (RemoteData.fromResult >> GotUserDocuments)
 
---
---updateDocument : Document -> Cmd RequestMsg
---updateDocument document =
---    Mutation.updateDocument (createDocumentRequiredArguments document) documentSelectionSet
---         |> Graphql.Http.mutationRequest endpoint
---         |> Graphql.Http.withHeader "authorization" "Basic Zm5BRFlmWC1wakFDQVJ2a0RoaFU1UmhDaWc5TVVFQUpBNFBpMTFhSDo3Y2NmMGU2Ni01MzllLTRjZGQtODBhZS0xOGIyNGFlOWFlMDY6c2VydmVy"
---         |> Graphql.Http.send (RemoteData.fromResult >> GotNewDocument)
+
+updateDocument : Document -> Cmd RequestMsg
+updateDocument document =
+    Mutation.updateDocument (updatedDocumentRequiredArguments document) documentSelectionSet
+         |> Graphql.Http.mutationRequest endpoint
+         |> Graphql.Http.withHeader "authorization" authorizationToken
+         |> Graphql.Http.send (RemoteData.fromResult >> ConfirmUpdatedDocument)
 
 -- findAllDocumentsByAuthor : String -> Cmd RequestMsg
 
 -- IMPLEMENTATION
 
+--type alias UpdateDocumentRequiredArguments =
+--    { id : Api.ScalarCodecs.Id
+--    , data : Api.InputObject.DocumentInput
+--    }
+
+
+updatedDocumentRequiredArguments : Document -> Mutation.UpdateDocumentRequiredArguments
+updatedDocumentRequiredArguments document =
+    { id = document.id
+    , data = documentInput document }
 
 createDocumentRequiredArguments : Document -> Mutation.CreateDocumentRequiredArguments
 createDocumentRequiredArguments document =
