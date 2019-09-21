@@ -34,6 +34,7 @@ main =
         , subscriptions = subscriptions
         }
 
+-- MODEL --
 
 type alias Model =
     { counter : Int
@@ -261,7 +262,13 @@ update msg model =
                      , Request.updateDocument document |> Cmd.map Req
                    )
 
-        DeleteDocument -> (model, Cmd.none)
+        DeleteDocument ->
+            case model.currentDocument of
+               Nothing -> (model, Cmd.none)
+               Just document ->
+                   ({model | message = "Deleting document ..."}
+                     , Request.deleteDocument document |> Cmd.map Req
+                   )
 
         GetUserDocuments ->
             case model.currentUser of
@@ -306,6 +313,15 @@ update msg model =
                           ({model | message = "Updated doc: failed request"} , Cmd.none)
                      Success _ -> ({model | message = "Document update successful"} , Cmd.none)
 
+              ConfirmUDeleteDocument remoteData ->
+                  case remoteData of
+                     NotAsked -> ({ model | message = "Delete doc: not asked"} , Cmd.none)
+                     Loading -> ({model | message = "Delete doc: loading"} , Cmd.none)
+                     Failure _ ->
+                          ({model | message = "Delete doc: failed request"} , Cmd.none)
+                     Success maybeDeletedDocument -> handleDeletedDocument model maybeDeletedDocument
+                       -- ({model | message = "Document delete successful"} , Cmd.none)
+
               GotUserDocuments remoteData  ->
                 case remoteData of
                    NotAsked -> ({ model | message = "Get author docs: not asked"} , Cmd.none)
@@ -321,9 +337,21 @@ update msg model =
 
 
 
+
           -- MANAGE DOCUMENTS --
 
-
+handleDeletedDocument model maybeDeletedDocument =
+    case maybeDeletedDocument  of
+        Nothing -> ({model | message = "Odd, something weird happened in deleting your document"}, Cmd.none)
+        Just deletedDocument ->
+            let
+               newDocumentList = List.filter (\doc -> doc.id /= deletedDocument.id )  model.documentList
+            in
+               ({ model | documentList = newDocumentList
+                  , currentDocument = List.head newDocumentList
+                  , message = "Document " ++ deletedDocument.title ++ " deleted"
+                  , visibilityOfTools = Invisible}
+                , Cmd.none)
 
 --
 -- VIEW FUNCTIONS
@@ -402,9 +430,9 @@ editingModeButton model =
         else
            blue
   in
-    Input.button [] { onPress = Just (SetAppMode Editing)
-            , label = el [height (px 30), padding 8, Background.color color, Font.color white, Font.size 12]
-            (Element.text "Edit")}
+     Input.button [] { onPress = Just (SetAppMode Editing)
+            , label = el (headerButtonStyle color)
+            (el (headerLabelStyle) (Element.text "Edit"))}
 
 
 readingModeButton model =
@@ -415,9 +443,12 @@ readingModeButton model =
            blue
   in
     Input.button [] { onPress = Just (SetAppMode Reading)
-            , label = el [height (px 30), padding 8, Background.color color, Font.color white, Font.size 12]
-       (Element.text "Read")}
+            , label = el (headerButtonStyle color)
+       (el (headerLabelStyle) (Element.text "Read"))}
 
+
+headerButtonStyle color = [ height (px 30), width (px 50), Background.color color, Font.color white, Font.size 12]
+headerLabelStyle = [height (px 30), width (px 80), padding 8]
 
 -- RENDERED SOURCE --
 
@@ -457,7 +488,7 @@ toolPanel viewInfo model =
         , newDocumentButton
         , saveDocumentButton
         , deleteDocumentButton
-        , el [Font.color white, Font.size 11] (Element.text "Buttons above this line not yet functional")
+        , el [Font.color white, Font.size 11] (Element.text "Above: not yet functional")
         , flavors model
        ]
   ]
@@ -466,13 +497,24 @@ toolPanel viewInfo model =
 toolButtonStyle : List (Element.Attribute msg)
 toolButtonStyle = [height (px 30), width (px 150),  padding 8, Background.color charcoal, Font.color white, Font.size 12]
 
+toolButtonStyleInHeader : List (Element.Attribute msg)
+toolButtonStyleInHeader = [height (px 30), width (px 60),  padding 8, Background.color (makeGrey 0.1), Border.color white, Font.color white, Font.size 12]
+
 newDocumentButton =
         Input.button [] { onPress = Just (CreateDocument)
                 , label = el toolButtonStyle (Element.text "Create")}
 
+newDocumentButtonInHeader =
+        Input.button [] { onPress = Just (CreateDocument)
+                , label = el toolButtonStyleInHeader (Element.text "Create")}
+
 saveDocumentButton =
         Input.button [] { onPress = Just (SaveDocument)
                 , label = el toolButtonStyle (Element.text "Save")}
+
+saveDocumentButtonInHeader =
+        Input.button [] { onPress = Just (SaveDocument)
+                , label = el toolButtonStyleInHeader (Element.text "Save")}
 
 getUserDocumentsButton =
         Input.button [] { onPress = Just (GetUserDocuments)
@@ -481,6 +523,10 @@ getUserDocumentsButton =
 deleteDocumentButton =
         Input.button [] { onPress = Just (DeleteDocument)
                 , label = el toolButtonStyle (Element.text "Delete")}
+
+deleteDocumentButtonInHeader =
+        Input.button [] { onPress = Just (DeleteDocument)
+                , label = el toolButtonStyleInHeader (Element.text "Delete")}
 
 -- DOCUMENT LIST --
 
@@ -520,10 +566,18 @@ header viewInfo model rt =
      innerTOCWidth_ = scale viewInfo.tocWidth model.windowWidth
   in
     row [ height (px 45), width (px (model.windowWidth)), Background.color charcoal] [
-      row [width (px editorWidth_ ), spacing 10, paddingXY 30 0] [ editingModeButton model, readingModeButton model]
+      row [width (px editorWidth_ ), spacing 10, paddingXY 20 0] [ editTools model,  readingModeButton model]
      , column [width (px renderedDisplayWidth_), Font.size 12, Font.color white, alignRight, moveUp 8] [rt.title |> Element.html |> Element.map (\_ -> NoOp)]
      , column [width (px innerTOCWidth_)] []
     ]
+
+
+editTools : Model -> Element Msg
+editTools model =
+    if model.appMode == Editing then
+      row [ spacing 6] [ editingModeButton model, newDocumentButtonInHeader, saveDocumentButtonInHeader, deleteDocumentButtonInHeader ]
+    else
+       editingModeButton model
 
 -- TAB-STRIP ON LEFT --
 

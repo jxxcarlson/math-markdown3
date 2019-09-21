@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), createDocument, documentsByAuthor, updateDocument)
+module Request exposing (RequestMsg(..), createDocument, documentsByAuthor, updateDocument, deleteDocument)
 
 import Graphql.Http
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -17,10 +17,14 @@ type RequestMsg =
        GotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
      | GotUserDocuments (RemoteData (Graphql.Http.Error (Maybe (List Document))) (Maybe (List Document)))
      | ConfirmUpdatedDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
+     | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 
 
 endpoint = "https://graphql.fauna.com/graphql"
 authorizationToken = "Basic Zm5BRFlteWZIbUFDRW8yNlRVSUI0WXM1cVRqbEpUbVNrci1MQmxIbjo3Y2NmMGU2Ni01MzllLTRjZGQtODBhZS0xOGIyNGFlOWFlMDY6c2VydmVy"
+
+
+-- DOCUMENT REQUESTS
 
 createDocument : Document -> Cmd RequestMsg
 createDocument document =
@@ -45,14 +49,15 @@ updateDocument document =
          |> Graphql.Http.withHeader "authorization" authorizationToken
          |> Graphql.Http.send (RemoteData.fromResult >> ConfirmUpdatedDocument)
 
--- findAllDocumentsByAuthor : String -> Cmd RequestMsg
+
+deleteDocument : Document -> Cmd RequestMsg
+deleteDocument document =
+    Mutation.deleteDocument { id = document.id } documentSelectionSet
+         |> Graphql.Http.mutationRequest endpoint
+         |> Graphql.Http.withHeader "authorization" authorizationToken
+         |> Graphql.Http.send (RemoteData.fromResult >> ConfirmUDeleteDocument)
 
 -- IMPLEMENTATION
-
---type alias UpdateDocumentRequiredArguments =
---    { id : Api.ScalarCodecs.Id
---    , data : Api.InputObject.DocumentInput
---    }
 
 
 updatedDocumentRequiredArguments : Document -> Mutation.UpdateDocumentRequiredArguments
@@ -80,7 +85,6 @@ secondsToPosix : Int -> Time.Posix
 secondsToPosix =
     (Time.millisToPosix << ((*) 1000))
 
--- documentSelectionSet : SelectionSet Document b
 documentSelectionSet =
     SelectionSet.succeed Document
         |> with Api.Object.Document.id_
@@ -94,8 +98,6 @@ documentSelectionSet =
         |> with Api.Object.Document.public
 
 
-stringOfId : Id -> String
-stringOfId (Id str) = str
 
 
 
