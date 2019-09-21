@@ -72,6 +72,7 @@ secondsToPosix =
 -- documentSelectionSet : SelectionSet Document b
 documentSelectionSet =
     SelectionSet.succeed Document
+        |> with Api.Object.Document.id_
         |> with Api.Object.Document.identifier
         |> with Api.Object.Document.title
         |> with Api.Object.Document.author

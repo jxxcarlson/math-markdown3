@@ -6,12 +6,13 @@ import Utility
 import List.Extra
 import Parser exposing(Parser, getChompedString, succeed, symbol, chompWhile, (|.))
 
-import Api.Scalar
+import Api.Scalar exposing(Id(..))
 
 type alias DocumentID = String
 
 type alias Document = {
-     identifier : String
+     id : Id
+   , identifier : String
    , title : String
    , authorID: String
    , content : String
@@ -78,7 +79,8 @@ slug document =
 -}
 create : String -> String -> Posix -> String -> Document
 create authorID title time content =
-     {  identifier =  documentIdentifier authorID title time
+     {  id = Id "undefined"
+      , identifier =  documentIdentifier authorID title time
       , title = title
       , authorID = authorID
       , content = content

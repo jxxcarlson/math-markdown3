@@ -1,7 +1,11 @@
-module Utility exposing (humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug)
+module Utility exposing (unwrapId, humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug)
 import List.Extra
 
 import Time exposing(Posix)
+import Api.Scalar exposing(Id(..))
+
+unwrapId : Id -> String
+unwrapId (Id str) = str
 
 
 wordCount str = List.length (String.words str) |> String.fromInt

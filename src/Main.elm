@@ -557,7 +557,8 @@ slug : Model -> String
 slug model =
     case model.currentDocument of
         Nothing -> ""
-        Just document -> Document.slug document
+        Just document -> Document.slug document ++ ", id = " ++ Utility.unwrapId document.id
+
 
 currentAuthorDisplay model =
     let

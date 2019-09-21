@@ -2,9 +2,12 @@ module Data exposing (startupDocument, doc5, doc2, doc3, doc4)
 
 import Time exposing(Posix)
 
+import Api.Scalar exposing(Id(..))
+
 startupDocument = {
-    identifier = "jxxcarlson.pure-elm-markdown-parser.1568-700-834",
-    title = "A Pure Elm Markdown Parser"
+     id = Id "undefined"
+  ,  identifier = "jxxcarlson.pure-elm-markdown-parser.1568-700-834"
+  ,  title = "A Pure Elm Markdown Parser"
   , authorID = "jxxcarlson"
   , content = startupText
   , timeCreated = Time.millisToPosix 1568700834000
@@ -15,7 +18,8 @@ startupDocument = {
 
 
 doc2 = {
-    identifier = "jxxcarlson.notes-on-futhark.15687-008-834"
+    id = Id "undefined"
+  , identifier = "jxxcarlson.notes-on-futhark.15687-008-834"
   , title = "Notes on Futhark"
   , authorID = "jxxcarlson"
   , content = text2
@@ -26,7 +30,8 @@ doc2 = {
   }
 
 doc3 = {
-    identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568-700-834"
+    id = Id "undefined"
+  , identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568-700-834"
   , title = "Math Markdown Progress Roadmap & Report"
   , authorID = "jxxcarlson"
   , content = text3
@@ -37,7 +42,8 @@ doc3 = {
   }
 
 doc4 = {
-    identifier = "jxxcarlson.graphql-queries-and-mutations.1568-700-834"
+    id = Id "undefined"
+  ,  identifier = "jxxcarlson.graphql-queries-and-mutations.1568-700-834"
   , title = "GraphQL Queries and Mutations"
   , authorID = "jxxcarlson"
   , content = text4
@@ -48,7 +54,8 @@ doc4 = {
   }
 
 doc5= {
-    identifier = "jxxcarlson.elm-resources.1568-981-582"
+    id = Id "undefined"
+  , identifier = "jxxcarlson.elm-resources.1568-981-582"
   , title = "Elm resources"
   , authorID = "jxxcarlson"
   , content = text5
