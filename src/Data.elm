@@ -376,6 +376,8 @@ likely eliminate "jumping text" during editing.
 
 1. Document collections and intra-app links between documents
 
+1. Active documents (e.g, collect docs based on tags)
+
 1. Better adherence to Commonmark spec
 
 1. Rendering inconsistencies
