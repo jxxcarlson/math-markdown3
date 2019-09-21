@@ -99,6 +99,7 @@ type Msg
     | CreateDocument
     | SaveDocument
     | GetUserDocuments
+    | DeleteDocument
     | UpdateDocumentText String
     | SetCurrentDocument Document
     | Clear
@@ -259,6 +260,8 @@ update msg model =
                    ({model | message = "Saving document ..."}
                      , Request.updateDocument document |> Cmd.map Req
                    )
+
+        DeleteDocument -> (model, Cmd.none)
 
         GetUserDocuments ->
             case model.currentUser of
@@ -449,10 +452,11 @@ toolPanel viewInfo model =
     column [width (px (scale viewInfo.docListWidth model.windowWidth)), height (px h_), Background.color (makeGrey 0.5)
        , paddingXY 20 20, alignTop]
       [column [Font.size 13, spacing 15]  [
-          el [Font.size 16, Font.bold, Font.color white] (Element.text "Tools")
+          el [Font.size 16, Font.bold, Font.color white] (Element.text "Document tools")
         , getUserDocumentsButton
         , newDocumentButton
         , saveDocumentButton
+        , deleteDocumentButton
         , el [Font.color white, Font.size 11] (Element.text "Buttons above this line not yet functional")
         , flavors model
        ]
@@ -472,7 +476,11 @@ saveDocumentButton =
 
 getUserDocumentsButton =
         Input.button [] { onPress = Just (GetUserDocuments)
-                , label = el toolButtonStyle (Element.text "Get Documents")}
+                , label = el toolButtonStyle (Element.text "Get")}
+
+deleteDocumentButton =
+        Input.button [] { onPress = Just (DeleteDocument)
+                , label = el toolButtonStyle (Element.text "Delete")}
 
 -- DOCUMENT LIST --
 
