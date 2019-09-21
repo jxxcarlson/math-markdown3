@@ -141,10 +141,10 @@ viewInfoEditing = {
 
 viewInfoReading = {
     toolStripWidth = 0.05
-  ,  docListWidth = 0.2
+  ,  docListWidth = 0.25
   , editorWidth = 0
   , renderedDisplayWidth = 0.45
-  , tocWidth = 0.3
+  , tocWidth = 0.25
   , vInset = vInset
   , hExtra = 0
   }
@@ -545,12 +545,12 @@ footer model =
         renderedDisplayWidth =   scale viewInfoEditing.renderedDisplayWidth model.windowWidth
         innerTOCWidth_ = scale viewInfoEditing.tocWidth model.windowWidth
      in
-       row [ height (px 30), width (px (model.windowWidth)), Background.color charcoal] [
-         row [width (px editorWidth_ )] [row [centerX, spacing 25] [currentAuthorDisplay model, wordCount model ]]
-        , row [width (px renderedDisplayWidth), Font.size 12, Font.color white] [
-             el [] (Element.text <| model.message)
-            , el [] (Element.text <| slug model)]
-        , row [width (px innerTOCWidth_), spacing 25] [currentTime model]
+       row [ paddingXY 20 0, height (px 30), width (px (model.windowWidth)), Background.color charcoal, Font.color white, spacing 24, Font.size 12] [
+             currentAuthorDisplay model
+           , currentTime model
+           , wordCount model
+           , el [] (Element.text <| slug model)
+           , el [] (Element.text <| model.message)
        ]
 
 slug : Model -> String

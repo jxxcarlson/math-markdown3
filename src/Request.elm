@@ -25,8 +25,7 @@ createDocument : Document -> Cmd RequestMsg
 createDocument document =
     Mutation.createDocument (createDocumentRequiredArguments document) documentSelectionSet
          |> Graphql.Http.mutationRequest endpoint
-         |> Graphql.Http.withHeader "authorization" authorizationToken
-         -- |> Graphql.Http.withHeader "Access-Control-Allow-Origin:" "*"
+         |> Graphql.Http.withHeader "authorization" authorizationToken         -- |> Graphql.Http.withHeader "Access-Control-Allow-Origin:" "*"
          |> Graphql.Http.send (RemoteData.fromResult >> GotNewDocument)
 
 
@@ -35,7 +34,6 @@ documentsByAuthor authorId =
     Query.documentsByAuthor  { author = authorId } (SelectionSet.list [documentSelectionSet])
       |> Graphql.Http.queryRequest endpoint
       |> Graphql.Http.withHeader "authorization" authorizationToken
-      --|> Graphql.Http.withHeader "Access-Control-Allow-Origin:" "*"
       |> Graphql.Http.send (RemoteData.fromResult >> GotUserDocuments)
 
 --
