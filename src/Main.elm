@@ -37,42 +37,58 @@ main =
 -- MODEL --
 
 type alias Model =
-    { counter : Int
-    , seed : Int
+    {
+      seed : Int
+    -- UI
     , option : Option
     , windowWidth : Int
     , windowHeight : Int
     , visibilityOfTools : Visibility
     , appMode: AppMode
+    , message : String
+    -- TIME
     , zone : Time.Zone
     , time : Time.Posix
+    -- USER
     , currentUser : Maybe User
-    , message : String
-    -- documents
+    -- DOCUMENT
+    , counter : Int
+    , documentDeleteState : DocumentDeleteState
     , documentList : List Document
     , currentDocument : Maybe Document
     }
+
+type DocumentDeleteState = SafetyOn | Armed
+
 
 type Visibility = Visible | Invisible
 
 type AppMode = Reading | Editing
 
+-- INIT --
+
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
         model =
-            { counter = 0
-            , seed = 0
+            {
+             seed = 0
+             -- UI
             , option = ExtendedMath
             , windowWidth = flags.width
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
             , appMode = Reading
+            , message = "Starting ..."
+
+            -- TIME
             , zone = Time.utc
             , time = Time.millisToPosix 0
+            -- USER
             , currentUser = Just User.dummy
-            , message = "Starting ..."
             -- documents
+            , counter = 0
+            , documentDeleteState = SafetyOn
             , documentList = [Data.startupDocument, Data.doc5, Data.doc2, Data.doc3, Data.doc4]
             , currentDocument = Just Data.startupDocument
             }
@@ -100,7 +116,9 @@ type Msg
     | CreateDocument
     | SaveDocument
     | GetUserDocuments
+    | ArmForDelete
     | DeleteDocument
+    | CancelDeleteDocument
     | UpdateDocumentText String
     | SetCurrentDocument Document
     | Clear
@@ -262,13 +280,23 @@ update msg model =
                      , Request.updateDocument document |> Cmd.map Req
                    )
 
+        ArmForDelete ->
+            ({ model | documentDeleteState = Armed, message = "Armed for delete.  Caution!"}, Cmd.none)
+
+        CancelDeleteDocument ->
+            ({ model | documentDeleteState = SafetyOn, message = "Delete cancelled"}, Cmd.none)
+
         DeleteDocument ->
             case model.currentDocument of
                Nothing -> (model, Cmd.none)
                Just document ->
-                   ({model | message = "Deleting document ..."}
-                     , Request.deleteDocument document |> Cmd.map Req
-                   )
+                   case model.documentDeleteState of
+                       SafetyOn ->
+                           ({model | message = "Turning safety off.  Press again to delete document.", documentDeleteState = Armed}
+                             , Cmd.none)
+                       Armed ->
+                         ({model | message = "Deleting document ...", documentDeleteState = SafetyOn}
+                             , Request.deleteDocument document |> Cmd.map Req)
 
         GetUserDocuments ->
             case model.currentUser of
@@ -362,9 +390,23 @@ type alias RenderedDocumentRecord msg = { document : Html msg, title : Html msg,
 view : Model -> Html Msg
 view model =
     case model.appMode of
-        Reading ->  Element.layout []  (readingDisplay viewInfoReading model)
-        Editing ->  Element.layout []  (editingDisplay viewInfoEditing model)
+        Reading ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (readingDisplay viewInfoReading model)
+        Editing ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (editingDisplay viewInfoEditing model)
 
+-- layoutWith {options = [focusStyle Focusstyle] }
+
+{-
+
+and there is also the hack of conditionally add
+ html <| layoutWith {options}
+
+-}
+
+myFocusStyle =
+   { borderColor = Nothing
+   , backgroundColor = Nothing
+   , shadow = Nothing
+   }
 
 editingDisplay : ViewInfo -> Model -> Element Msg
 editingDisplay viewInfo model =
@@ -428,7 +470,7 @@ editingModeButton model =
       color = if model.appMode == Editing then
            red
         else
-           blue
+           buttonGrey
   in
      Input.button [] { onPress = Just (SetAppMode Editing)
             , label = el (headerButtonStyle color)
@@ -440,7 +482,7 @@ readingModeButton model =
       color = if model.appMode == Reading then
            red
         else
-           blue
+           buttonGrey
   in
     Input.button [] { onPress = Just (SetAppMode Reading)
             , label = el (headerButtonStyle color)
@@ -487,7 +529,7 @@ toolPanel viewInfo model =
         , getUserDocumentsButton
         , newDocumentButton
         , saveDocumentButton
-        , deleteDocumentButton
+        , deleteDocumentButton model
         , el [Font.color white, Font.size 11] (Element.text "Above: not yet functional")
         , flavors model
        ]
@@ -520,13 +562,32 @@ getUserDocumentsButton =
         Input.button [] { onPress = Just (GetUserDocuments)
                 , label = el toolButtonStyle (Element.text "Get")}
 
-deleteDocumentButton =
-        Input.button [] { onPress = Just (DeleteDocument)
-                , label = el toolButtonStyle (Element.text "Delete")}
+deleteDocumentButton model =
+    case model.documentDeleteState of
+       Armed ->
+         Input.button [] { onPress = Just (DeleteDocument)
+                , label = el (toolButtonStyle ++ [Background.color red]) (Element.text "Delete!")}
+       SafetyOn ->
+          Input.button [] { onPress = Just ArmForDelete
+                          , label = el toolButtonStyle (Element.text "Delete?")}
 
-deleteDocumentButtonInHeader =
-        Input.button [] { onPress = Just (DeleteDocument)
-                , label = el toolButtonStyleInHeader (Element.text "Delete")}
+deleteDocumentButtonInHeader model =
+      case model.documentDeleteState of
+         Armed ->
+           Input.button [] { onPress = Just (DeleteDocument)
+                  , label = el (toolButtonStyleInHeader ++ [Background.color red]) (Element.text "Delete!")}
+         SafetyOn ->
+            Input.button [] { onPress = Just ArmForDelete
+                            , label = el toolButtonStyleInHeader (Element.text "Delete?")}
+
+cancelDeleteDocumentButtonInHeader model =
+      case model.documentDeleteState of
+         Armed ->
+           Input.button [] { onPress = Just (CancelDeleteDocument)
+                  , label = el (toolButtonStyleInHeader ++ [Background.color blue]) (Element.text "Cancel")}
+         SafetyOn ->
+            Element.none
+
 
 -- DOCUMENT LIST --
 
@@ -543,12 +604,12 @@ tocEntry : Maybe Document -> Document -> Element Msg
 tocEntry currentDocument_ document =
     let
         color = case currentDocument_ of
-            Nothing ->  blue
+            Nothing ->  buttonGrey
             Just currentDocument ->
                 if currentDocument.identifier == document.identifier then
                    red
                 else
-                   blue
+                   buttonGrey
     in
     Input.button [] { onPress = Just (SetCurrentDocument document), label = el [Font.color color] (Element.text document.title)}
 
@@ -575,7 +636,13 @@ header viewInfo model rt =
 editTools : Model -> Element Msg
 editTools model =
     if model.appMode == Editing then
-      row [ spacing 6] [ editingModeButton model, newDocumentButtonInHeader, saveDocumentButtonInHeader, deleteDocumentButtonInHeader ]
+      row [ spacing 6] [
+         editingModeButton model
+       , newDocumentButtonInHeader
+       , saveDocumentButtonInHeader
+       , deleteDocumentButtonInHeader model
+       , cancelDeleteDocumentButtonInHeader model
+       ]
     else
        editingModeButton model
 
@@ -596,7 +663,7 @@ showToolsButton model =
       color = if model.visibilityOfTools == Visible then
            red
         else
-           blue
+           buttonGrey
   in
     Input.button [] { onPress = Just (SetToolPanelState Visible)
             , label = el [height (px 30), padding 8, Background.color color, Font.color white, Font.size 12] (Element.text "Tools")}
@@ -608,7 +675,7 @@ showDocumentListButton model =
       color = if model.visibilityOfTools == Invisible then
            red
         else
-           blue
+           buttonGrey
   in
    Input.button [ ] { onPress = Just (SetToolPanelState Invisible)
             , label = el [height (px 30), padding 8, Background.color color, Font.color white, Font.size 12] (Element.text "Documents")}
@@ -710,7 +777,7 @@ extendedMathMarkdownButton model width =
 
 
 
-buttonStyleSelected = buttonStyleSelected_ blue red
+buttonStyleSelected = buttonStyleSelected_ buttonGrey red
 
 buttonStyleSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
 buttonStyleSelected_ color color2 width_ bit =
@@ -750,11 +817,13 @@ makeGrey g =
 lightGrey =
     makeGrey 0.95
 
-blue = grey 0.5
+buttonGrey = grey 0.5
 
 red =  Element.rgb 0.4 0.1 0.1
 
 white = Element.rgb 1 1 1
+
+blue = Element.rgb 0.1 0.1 0.4
 
 grey g = Element.rgb g g g
 

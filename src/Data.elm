@@ -92,6 +92,7 @@ This is a work in progress, and only represents resources of which I have made c
 - [Ilias' compilation of Elm tools](https://dev.to/zwilias/elm-tools-571a)
 - [elm-xref](https://github.com/zwilias/elm-xref/blob/master/README.md)
 - [Dmy, Bash completion](https://github.com/dmy/elm-sh-completion)
+- [Stöffel, Elm-verify-examples](https://github.com/stoeffel/elm-verify-examples)
 
 
 ## Videos
