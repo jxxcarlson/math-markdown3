@@ -372,16 +372,18 @@ likely eliminate "jumping text" during editing.
 
 1. Configurable "Front page" for authors.
 
-1. Shortcut links for articles.
+1. Functional shortcut links for articles.
 
 1. Document collections and intra-app links between documents
+
+1. Better adherence to Commonmark spec
 
 1. Rendering inconsistencies
 
    - handling of space before a period and after a newline.
-   - handling of list numbering (see below, ha ha!)
+   - handling of list numbering
 
-1. Better adherence to Commonmark spec
+
 """
 
 startupText =
