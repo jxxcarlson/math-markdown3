@@ -1,102 +1,83 @@
-module Style exposing (buttonStyle, buttonStyleSelected, colorBlue, outerStyle,
-  colorDarkRed, colorDark, colorLight, editorTextStyle, renderedSourceStyle, labelStyle)
--- import Html exposing (..)
-
-import Html
-import Html.Attributes exposing (style)
+module Style exposing (..)
 
 
-
--- import Html.Events exposing (onClick, onInput)
--- import Html.Keyed as Keyed
-
-
-colorBlue =
-    "rgb(100,100,200)"
-
-colorDarkRed =
-    "rgb(180,0,0)"
-
-colorLight =
-    "#88a"
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Html.Attributes
 
 
-colorDark =
-    "#444"
+mainColumn w h =
+    [ paddingXY 8 8, spacing 12, width w, height h, clipY, clipX ]
 
 
-buttonStyle : String -> Int -> List (Html.Attribute msg)
-buttonStyle color width =
-    let
-        realWidth =
-            width + 0 |> String.fromInt |> (\x -> x ++ "px")
-    in
-    [ style "backgroundColor" color
-    , style "color" "white"
-    , style "width" realWidth
-    , style "height" "25px"
-    , style "margin-top" "20px"
-    , style "margin-right" "12px"
-    , style "font-size" "9pt"
-    , style "text-align" "center"
-    , style "border" "none"
+mainColumnX =
+    mainColumn fill fill ++ [ spacing 12, padding 12, Background.color (makeGrey 0.9) ]
+
+-- INPUT --
+
+
+inputStyle w =
+    [ width (px w)
+    , height (px 30)
+    , Background.color (makeGrey 0.8)
+    , Font.color black
+    , Font.size 12
+    , Border.width 2
     ]
 
 
-buttonStyleSelected : Bool -> String -> String -> Int -> List (Html.Attribute msg)
-buttonStyleSelected bit color color2 width =
-    let
-        realWidth =
-            width + 0 |> String.fromInt |> (\x -> x ++ "px")
-    in
-    [ case bit of
-        False -> style "backgroundColor" color
-        True -> style "backgroundColor" color2
-    , style "color" "white"
-    , style "width" realWidth
-    , style "height" "25px"
-    , style "margin-top" "20px"
-    , style "margin-right" "12px"
-    , style "font-size" "9pt"
-    , style "text-align" "center"
-    , style "border" "none"
+multiline w h =
+    [ width (px w)
+    , height (px h)
+    , Background.color (makeGrey 0.8)
+    , Font.color black
+    , Font.size 12
+    , Border.width 2
+    , scrollbarY
     ]
 
 
--- STYLE FUNCTIONS
+-- BUTTONS --
+
+headerButton : List (Element.Attr () msg)
+headerButton =
+    [ Background.color white, Font.color black, paddingXY 10 6 ] ++ basicButtonsStyle
 
 
-outerStyle =
-    [ style "margin-top" "20px"
-    , style "background-color" "#e1e6e8"
-    , style "padding" "20px"
-    , style "width" "1430px"
-    , style "height" "710px"
+basicButtonsStyle =
+    [ buttonFontSize
+    , pointer
+    , mouseDown [ buttonFontSize, Background.color mouseDownColor ]
     ]
 
 
-editorTextStyle =
-    textStyle "400px" "550px" "#fff"
+activeButtonStyle : List (Element.Attr () msg)
+activeButtonStyle =
+    [ Background.color darkBlue, Font.color white, Element.paddingXY 10 6 ] ++ basicButtonsStyle
+
+buttonFontSize =
+    Font.size 16
+
+mouseDownColor =
+    Element.rgb 0.7 0.1 0.1
+
+-- COLOR --
+
+white =
+    Element.rgb 1 1 1
 
 
-renderedSourceStyle =
-    textStyle "500px" "550px" "#fff"
+darkRed =
+    Element.rgb 0.5 0.0 0.0
 
 
-textStyle width height color =
-    [ style "width" width
-    , style "height" height
-    , style "padding" "15px"
-    , style "margin-left" "20px"
-    , style "background-color" color
-    , style "overflow" "scroll"
-    , style "float" "left"
-    ]
+darkBlue =
+    Element.rgb 0.0 0.0 0.6
 
+black =
+    Element.rgb 0.1 0.1 0.1
 
-labelStyle =
-    [ style "margin-top" "5px"
-    , style "margin-bottom" "0px"
-    , style "margin-left" "20px"
-    , style "font-weight" "bold"
-    ]
+makeGrey g =
+    Element.rgb g g g

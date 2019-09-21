@@ -23,7 +23,8 @@ import Utility exposing (humanTimeHM)
 import User exposing(User)
 import Request exposing(RequestMsg(..))
 import RemoteData exposing (RemoteData(..))
-import Graphql.Http.GraphqlError
+import Style
+import Api.Scalar exposing(Id(..))
 
 main : Program Flags Model Msg
 main =
@@ -51,6 +52,11 @@ type alias Model =
     , time : Time.Posix
     -- USER
     , currentUser : Maybe User
+    , username : String
+    , email : String
+    , password : String
+    , newPassword1 : String
+    , newPassword2 : String
     -- DOCUMENT
     , counter : Int
     , documentDeleteState : DocumentDeleteState
@@ -58,12 +64,20 @@ type alias Model =
     , currentDocument : Maybe Document
     }
 
-type DocumentDeleteState = SafetyOn | Armed
+type AppMode = Reading | Editing | UserMode UserState
 
+type UserState
+    = SignInState
+    | SignUpState
+    | ChangePasswordState
+    | BrowsingState
+
+
+type DocumentDeleteState = SafetyOn | Armed
 
 type Visibility = Visible | Invisible
 
-type AppMode = Reading | Editing | UserPage
+
 
 -- INIT --
 
@@ -78,7 +92,7 @@ init flags =
             , windowWidth = flags.width
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
-            , appMode = UserPage
+            , appMode = UserMode BrowsingState
             , message = "Starting ..."
 
             -- TIME
@@ -86,6 +100,11 @@ init flags =
             , time = Time.millisToPosix 0
             -- USER
             , currentUser = Just User.dummy
+            , username = ""
+            , email = ""
+            , password = ""
+            , newPassword1 = ""
+            , newPassword2 = ""
             -- documents
             , counter = 0
             , documentDeleteState = SafetyOn
@@ -112,6 +131,16 @@ type Msg
     | SetToolPanelState Visibility
     | SetAppMode AppMode
     | WindowSize Int Int
+    -- User
+    | GotUserName String
+    | GotPassword String
+    | GotNewPassword1 String
+    | GotNewPassword2 String
+    | ChangePassword
+    | GotEmail String
+    | SignIn
+    | SignUp
+    | SignOut
     -- Document
     | CreateDocument
     | SaveDocument
@@ -123,6 +152,7 @@ type Msg
     | SetCurrentDocument Document
     | Clear
     | Req RequestMsg
+
 
 
 
@@ -239,7 +269,7 @@ update msg model =
             case appMode of
                 Reading ->  ( {model | appMode = Reading}, Cmd.none)
                 Editing ->  ( {model | appMode =  Editing}, Cmd.none)
-                UserPage ->  ( {model | appMode =  UserPage}, Cmd.none)
+                UserMode _ ->  ( {model | appMode =  UserMode BrowsingState}, Cmd.none)
 
 
         -- TIME --
@@ -257,6 +287,18 @@ update msg model =
               , Cmd.none
               )
 
+        -- USER --
+
+        GotUserName _ -> (model, Cmd.none)
+        GotPassword _ -> (model, Cmd.none)
+        GotNewPassword1 _ -> (model, Cmd.none)
+        GotNewPassword2 _ -> (model, Cmd.none)
+        ChangePassword -> (model, Cmd.none)
+        GotEmail _ -> (model, Cmd.none)
+        SignIn -> (model, Cmd.none)
+        SignUp -> (model, Cmd.none)
+        SignOut -> (model, Cmd.none)
+
         -- DOCUMENT --
 
         CreateDocument ->
@@ -264,7 +306,7 @@ update msg model =
                Nothing -> (model, Cmd.none)
                Just user ->
                    let
-                      newDocument = Document.create user.id "New Document" model.time "# New Document\n\nWrite something here ..."
+                      newDocument = Document.create user.username "New Document" model.time "# New Document\n\nWrite something here ..."
                    in
                    ({model | currentDocument = Just newDocument
                             , documentList = newDocument :: model.documentList
@@ -305,7 +347,7 @@ update msg model =
                 Nothing -> ({model | message = "Can't get documents if user is not signed in"}, Cmd.none)
                 Just user ->
                     ({model | message = "Getting your documents"
-                       , visibilityOfTools = Invisible }, Request.documentsByAuthor user.id |> Cmd.map Req)
+                       , visibilityOfTools = Invisible }, Request.documentsByAuthor user.username |> Cmd.map Req)
 
         UpdateDocumentText str ->
             case model.currentDocument of
@@ -394,7 +436,7 @@ view model =
     case model.appMode of
         Reading ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (readingDisplay viewInfoReading model)
         Editing ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (editingDisplay viewInfoEditing model)
-        UserPage ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (userPageDisplay viewInfoUserPage model)
+        UserMode _ ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (userPageDisplay viewInfoUserPage model)
 
 
 -- layoutWith {options = [focusStyle Focusstyle] }
@@ -445,8 +487,8 @@ lhsViewInfoPage viewInfo model =
        in
         column [width (px w), height (px h), padding 100, spacing 24 ] [
               Element.text "Click on the Read or Edit buttons to experiment."
-            , Element.text "Coming soon: forms to sign up / sign in"
-          ]
+            , Element.text "Coming soon: forms to sign up / sign in"]
+
 
 rhsViewInfoPage viewInfo model =
    let
@@ -480,7 +522,278 @@ modeButtonStrip model =
    row [width (px 400 ), height (px 45), spacing 10, paddingXY 20 0] [ editTools model,  readingModeButton model, userPageModeButton model]
 
 
+-- SIGN-IN
 
+
+
+userValidationView : Model -> Element Msg
+userValidationView model =
+    case model.currentUser of
+        Nothing ->
+            noUserView model
+
+        Just user ->
+            signedInUserView model user
+
+
+noUserView : Model -> Element Msg
+noUserView model =
+    row [ spacing 12 ]
+        [ noUserLHS model
+        , noUserRHS model
+        ]
+
+
+noUserLHS model =
+    column Style.mainColumnX
+        [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Welcome!")
+        , inputUserName model
+        , inputPassword model
+        , showIf (model.appMode == UserMode SignUpState) (inputEmail model)
+        , showIf (model.appMode == UserMode SignUpState) (el [ Font.size 12 ] (Element.text "A real email address is only needed for password recovery in real production."))
+        , row [ spacing 12, paddingXY 0 12 ]
+            [ showIf (model.appMode == UserMode SignInState) (signInButton)
+            , row [ spacing 12 ]
+                [ signUpButton model
+                , showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
+                ]
+            ]
+        , el [ Font.size 16, Font.color Style.darkRed ] (Element.text model.message)
+        ]
+
+
+noUserRHS model =
+    column [ padding 40, spacing 18, Font.size 16 ]
+        [ el [ Font.bold, Font.size 24 ]
+            (Element.text "Screenshot of app")
+        , image
+            [ width (px config.panelWidth) ]
+            { src = "http://noteimages.s3.amazonaws.com/jim_images/notes-screen.png"
+            , description = "screenshot of app"
+            }
+        , Element.paragraph []
+            [ el [ Font.bold ] (Element.text "Features. ")
+            , Element.text "Searchable note repository. Supports Markdown. Filter notes by title, tags, full text. "
+            , Element.text "Active links to the most-used tags. Notes are automatically saved every 0.5 second."
+            ]
+        , Element.paragraph []
+            [ el [ Font.bold ] (Element.text "Coming soon. ")
+            , Element.text "Filter by date, options to sort note list; export."
+            ]
+        ]
+
+
+signedInUserView : Model -> User -> Element Msg
+signedInUserView model user =
+    column Style.mainColumnX
+        [ el [] (Element.text <| "Signed in as " ++ user.username)
+        , signOutButton model
+        , showIf (model.appMode == UserMode ChangePasswordState) (passwordPanel model)
+        , row [ spacing 12 ]
+            [ changePasswordButton model
+            , showIf (model.appMode == UserMode ChangePasswordState) (cancelChangePasswordButton model)
+            ]
+        , adminStatus model
+        ]
+
+
+passwordPanel model =
+    column [ spacing 12, paddingXY 0 18 ]
+        [ inputCurrentPassword model
+        , inputNewPassword1 model
+        , inputNewPassword2 model
+        , el [ Font.size 16, Font.color Style.darkRed ] (Element.text model.message)
+        ]
+
+
+inputCurrentPassword model =
+    Input.currentPassword (Style.inputStyle 200)
+        { onChange = GotPassword
+        , text = model.password
+        , placeholder = Nothing
+        , show = False
+
+        ---, show = False
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 110) ] (Element.text "Old password: ")
+        }
+
+
+inputNewPassword1 model =
+    Input.newPassword (Style.inputStyle 200)
+        { onChange = GotNewPassword1
+        , show = False
+        , text = model.newPassword1
+        , placeholder = Nothing
+
+        ---, show = False
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 110) ] (Element.text "New password: ")
+        }
+
+
+inputNewPassword2 model =
+    Input.newPassword (Style.inputStyle 200)
+        { onChange = GotNewPassword2
+        , text = model.newPassword2
+        , placeholder = Nothing
+        , show = False
+
+        ---, show = False
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 110) ] (Element.text "Password again: ")
+        }
+
+
+changePasswordButton : Model -> Element Msg
+changePasswordButton model =
+    Input.button Style.headerButton
+        { onPress =
+            case model.appMode of
+                UserMode ChangePasswordState ->
+                    Just ChangePassword
+
+                _ ->
+                    Just <| SetAppMode (UserMode ChangePasswordState)
+        , label = Element.text "Change password"
+        }
+
+
+adminStatus : Model -> Element Msg
+adminStatus model =
+    case model.currentUser of
+        Nothing ->
+            Element.none
+
+        Just user ->
+            case user.admin of
+                False ->
+                    Element.none
+
+                True ->
+                    el [ Font.size 12 ] (Element.text "Admin")
+
+
+inputUserName model =
+    Input.text (Style.inputStyle 200)
+        { onChange = GotUserName
+        , text = model.username
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Username")
+        }
+
+
+inputEmail model =
+    Input.text (Style.inputStyle 200)
+        { onChange = GotEmail
+        , text = model.email
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Email")
+        }
+
+
+inputPassword model =
+    Input.currentPassword (Style.inputStyle 200)
+        { onChange = GotPassword
+        , text = model.password
+        , placeholder = Nothing
+        , show = False
+
+        ---, show = False
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Password")
+        }
+
+
+signInButton :  Element Msg
+signInButton  =
+    Input.button Style.headerButton
+        { onPress = Just SignIn
+        , label = Element.text "Sign in"
+        }
+
+
+signUpButton : Model -> Element Msg
+signUpButton model =
+    Input.button Style.headerButton
+        { onPress =
+            case model.appMode of
+                UserMode SignUpState ->
+                    Just SignUp
+
+                _ ->
+                    Just (SetAppMode (UserMode SignUpState))
+        , label = Element.text "Sign Up"
+        }
+
+
+cancelSignUpButton : Model -> Element Msg
+cancelSignUpButton model =
+    Input.button Style.headerButton
+        { onPress =
+            case model.appMode of
+                UserMode SignUpState ->
+                    Just (SetAppMode (UserMode SignInState))
+
+                _ ->
+                    Just NoOp
+        , label = Element.text "Cancel"
+        }
+
+
+cancelChangePasswordButton : Model -> Element Msg
+cancelChangePasswordButton model =
+    Input.button Style.headerButton
+        { onPress =
+            case model.appMode of
+                UserMode ChangePasswordState ->
+                    Just (SetAppMode (UserMode SignInState))
+
+                _ ->
+                    Just NoOp
+        , label = Element.text "Cancel"
+        }
+
+
+signOutButton : Model -> Element Msg
+signOutButton model =
+    Input.button Style.headerButton
+        { onPress = Just SignOut
+        , label = Element.text "Sign out"
+        }
+
+
+
+
+showIf : Bool -> Element Msg -> Element Msg
+showIf bit element =
+    if bit then
+        element
+
+    else
+        Element.none
+
+
+hideIf : Bool -> Element Msg -> Element Msg
+hideIf bit element =
+    if not bit then
+        element
+
+    else
+        Element.none
+
+
+showOne : Bool -> String -> String -> String
+showOne bit str1 str2 =
+    case bit of
+        True ->
+            str1
+
+        False ->
+            str2
+
+config =
+    { debounceInterval = 500
+    , timeoutInMs = 5 * 1000
+    , panelHeight = 550
+    , panelWidth = 450
+    }
 
 -- EDITOR --
 
@@ -543,12 +856,13 @@ editor viewInfo model =
 
 userPageModeButton model =
   let
-      color = if model.appMode == UserPage then
-           red
-        else
-           buttonGrey
+      color =
+          case model.appMode of
+              UserMode _ -> red
+              _ -> buttonGrey
+
   in
-     Input.button [] { onPress = Just (SetAppMode UserPage)
+     Input.button [] { onPress = Just (SetAppMode (UserMode BrowsingState))
             , label = el (headerButtonStyle color)
             (el (headerLabelStyle) (Element.text "User"))}
 
@@ -807,11 +1121,10 @@ currentAuthorDisplay model =
     let
        message = case model.currentUser of
           Nothing -> "Not signed in"
-          Just user -> "Signed in as " ++ user.id
+          Just user -> "Signed in as " ++ user.username
      in
       Element.el [Font.color white, Font.size 12]
            (Element.text <| message )
-
 
 
 currentTime model =

@@ -4,7 +4,7 @@ import Time exposing(Posix)
 
 
 type alias User = {
-     id : String
+     username : String
     , email : String
     , public : Bool
     , firstName : String
@@ -15,7 +15,7 @@ type alias User = {
   }
 
 dummy = {
-     id = "jxxcarlson"
+     username = "jxxcarlson"
    , email = "jxxcarlson@gmail.com"
    , public = True
    , firstName = "James"
