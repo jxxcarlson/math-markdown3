@@ -63,7 +63,7 @@ type DocumentDeleteState = SafetyOn | Armed
 
 type Visibility = Visible | Invisible
 
-type AppMode = Reading | Editing
+type AppMode = Reading | Editing | UserPage
 
 -- INIT --
 
@@ -169,6 +169,16 @@ viewInfoReading = {
   , hExtra = 0
   }
 
+viewInfoUserPage = {
+    toolStripWidth = 0.05
+  ,  docListWidth = 0.25
+  , editorWidth = 0
+  , renderedDisplayWidth = 0.45
+  , tocWidth = 0.25
+  , vInset = vInset
+  , hExtra = 0
+  }
+
 scale : Float -> Int -> Int
 scale factor input =
     factor * (toFloat input) |> round
@@ -239,6 +249,8 @@ update msg model =
             case appMode of
                 Reading ->  ( {model | appMode = Reading}, Cmd.none)
                 Editing ->  ( {model | appMode =  Editing}, Cmd.none)
+                UserPage ->  ( {model | appMode =  UserPage}, Cmd.none)
+
 
         -- TIME --
 
@@ -392,6 +404,8 @@ view model =
     case model.appMode of
         Reading ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (readingDisplay viewInfoReading model)
         Editing ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (editingDisplay viewInfoEditing model)
+        UserPage ->  Element.layoutWith {options = [focusStyle myFocusStyle] }  []  (userPageDisplay viewInfoUserPage model)
+
 
 -- layoutWith {options = [focusStyle Focusstyle] }
 
@@ -408,13 +422,50 @@ myFocusStyle =
    , shadow = Nothing
    }
 
+
+userPageDisplay : ViewInfo -> Model -> Element Msg
+userPageDisplay viewInfo model =
+  let
+      h_ = translate (-viewInfo.vInset) model.windowHeight
+  in
+    column [ ]
+           [
+              userPageHeader viewInfo model
+            , row [height (px h_), padding 40] [ Element.text "User Page: WIP" ]
+            , userPageFooter model
+            ]
+
+userPageFooter : Model -> Element Msg
+userPageFooter model =
+       row [ paddingXY 20 0, height (px 30), width (px (model.windowWidth)), Background.color charcoal, Font.color white, spacing 24, Font.size 12] [
+            el [] (Element.text <| model.message)
+       ]
+
+userPageHeader : ViewInfo -> Model -> Element Msg
+userPageHeader  viewInfo model =
+  let
+     editorWidth_ =  scale viewInfo.editorWidth model.windowWidth
+     renderedDisplayWidth_ =   scale viewInfo.renderedDisplayWidth model.windowWidth
+     innerTOCWidth_ = scale viewInfo.tocWidth model.windowWidth
+  in
+    row [ height (px 45), width (px (model.windowWidth)), Background.color charcoal] [
+      modeButtonStrip model
+      -- row [width (px editorWidth_ ), height (px 45), spacing 10, paddingXY 20 0] [ editTools model,  readingModeButton model, userPageModeButton model]
+     , column [width (px renderedDisplayWidth_), Font.size 12, Font.color white, alignRight, moveUp 8] []
+     , column [width (px innerTOCWidth_)] []
+    ]
+
+modeButtonStrip model =
+   row [width (px 400 ), height (px 45), spacing 10, paddingXY 20 0] [ editTools model,  readingModeButton model, userPageModeButton model]
+
+
 editingDisplay : ViewInfo -> Model -> Element Msg
 editingDisplay viewInfo model =
   let
       rt : {title: Html msg, toc: Html msg, document: Html msg}
       rt = Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument)
   in
-    column [ paddingXY 0 0]
+    column []
         [
            header viewInfo model rt
          , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, renderedSource viewInfo model rt ]
@@ -463,6 +514,19 @@ editor viewInfo model =
                     }
                 )
             ]
+
+
+userPageModeButton model =
+  let
+      color = if model.appMode == UserPage then
+           red
+        else
+           buttonGrey
+  in
+     Input.button [] { onPress = Just (SetAppMode UserPage)
+            , label = el (headerButtonStyle color)
+            (el (headerLabelStyle) (Element.text "User"))}
+
 
 
 editingModeButton model =
@@ -530,6 +594,7 @@ toolPanel viewInfo model =
         , newDocumentButton
         , saveDocumentButton
         , deleteDocumentButton model
+         , editTools model,  readingModeButton model, userPageModeButton model
         , el [Font.color white, Font.size 11] (Element.text "Above: not yet functional")
         , flavors model
        ]
@@ -627,7 +692,7 @@ header viewInfo model rt =
      innerTOCWidth_ = scale viewInfo.tocWidth model.windowWidth
   in
     row [ height (px 45), width (px (model.windowWidth)), Background.color charcoal] [
-      row [width (px editorWidth_ ), spacing 10, paddingXY 20 0] [ editTools model,  readingModeButton model]
+      modeButtonStrip model
      , column [width (px renderedDisplayWidth_), Font.size 12, Font.color white, alignRight, moveUp 8] [rt.title |> Element.html |> Element.map (\_ -> NoOp)]
      , column [width (px innerTOCWidth_)] []
     ]
