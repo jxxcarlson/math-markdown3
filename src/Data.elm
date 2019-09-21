@@ -339,6 +339,9 @@ text3 = """# Math Markdown Progress Roadmap & Report
 
 A great deal of the work is "under the hood."  Here are some visible changes:
 
+1. Added CRUD features for documents and made improvements to UI.  For the
+   moment can only retrieve one user document due to a backend issue. (9/21/2019).
+
 1. App should read current window dimensions and use them to set its dimensions (9/19/2019)
 
 1. Automatically synchronize document title with the first heading of the document body (9/18/2019)
@@ -353,7 +356,6 @@ A great deal of the work is "under the hood."  Here are some visible changes:
 
 Here is a list of things to be done, not necessarily in this order:
 
-1. Attach app to backend so that documents will be saved
 
 1. Implement user sign up and sign in
 
