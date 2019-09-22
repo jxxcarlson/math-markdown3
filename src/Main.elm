@@ -927,11 +927,6 @@ toolPanel viewInfo model =
       [column [Font.size 13, spacing 15]  [
           el [Font.size 16, Font.bold, Font.color white] (Element.text "Document tools")
         , getUserDocumentsButton
-        , newDocumentButton
-        , saveDocumentButton
-        , deleteDocumentButton model
-         , editTools model,  readingModeButton model, userPageModeButton model
-        , el [Font.color white, Font.size 11] (Element.text "Above: not yet functional")
         , flavors model
        ]
   ]

@@ -361,6 +361,10 @@ Here is a list of things to be done, not necessarily in this order:
 
 1. Implement user sign up and sign in
 
+1. Entry form for tags
+
+1. Document should have field for markup lamguage / flavor
+
 1. Search: title, tags, text, user (author)
 
 1. Move to MathJax 3 for rendering of math text.  It will be much faster and will
