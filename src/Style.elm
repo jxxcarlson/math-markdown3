@@ -13,7 +13,7 @@ mainColumn w h =
 
 
 mainColumnX =
-    mainColumn fill fill ++ [ spacing 12, padding 12, Background.color (makeGrey 0.9) ]
+    mainColumn fill fill ++ [ spacing 12, padding 12, Background.color (makeGrey 0.4) ]
 
 -- INPUT --
 
@@ -21,10 +21,11 @@ mainColumnX =
 inputStyle w =
     [ width (px w)
     , height (px 30)
-    , Background.color (makeGrey 0.8)
-    , Font.color black
-    , Font.size 12
-    , Border.width 2
+    , moveUp 4
+    , Background.color (makeGrey 0.9)
+    , Font.color (makeGrey 0.1)
+    , Font.size 14
+    , Border.width 1
     ]
 
 

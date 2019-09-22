@@ -14,13 +14,14 @@ type alias User = {
     , admin : Bool
   }
 
+
 dummy = {
-     username = "jxxcarlson"
-   , email = "jxxcarlson@gmail.com"
+     username = "demo"
+   , email = "demo@gmail.com"
    , public = True
    , firstName = "James"
    , lastName = "Carlson"
    , timeEnrolled = Time.millisToPosix (1568667528 * 1000)
    , timeUpdated = Time.millisToPosix (1568667528 * 1000)
-   , admin = True
+   , admin = False
   }

@@ -70,7 +70,19 @@ type UserState
     = SignInState
     | SignUpState
     | ChangePasswordState
-    | BrowsingState
+    | SignedInState
+
+
+
+appStateAsString : Model -> String
+appStateAsString model =
+    case model.appMode of
+        Reading -> "Reading"
+        Editing -> "Editing"
+        UserMode SignInState -> "Signing in"
+        UserMode SignUpState -> "Signing up"
+        UserMode ChangePasswordState -> "Changing Password"
+        UserMode SignedInState -> "Signed in"
 
 
 type DocumentDeleteState = SafetyOn | Armed
@@ -92,14 +104,14 @@ init flags =
             , windowWidth = flags.width
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
-            , appMode = UserMode BrowsingState
+            , appMode = UserMode SignInState
             , message = "Starting ..."
 
             -- TIME
             , zone = Time.utc
             , time = Time.millisToPosix 0
             -- USER
-            , currentUser = Just User.dummy
+            , currentUser = Nothing
             , username = ""
             , email = ""
             , password = ""
@@ -269,7 +281,7 @@ update msg model =
             case appMode of
                 Reading ->  ( {model | appMode = Reading}, Cmd.none)
                 Editing ->  ( {model | appMode =  Editing}, Cmd.none)
-                UserMode _ ->  ( {model | appMode =  UserMode BrowsingState}, Cmd.none)
+                UserMode s ->  ( {model | appMode =  UserMode s}, Cmd.none)
 
 
         -- TIME --
@@ -289,15 +301,27 @@ update msg model =
 
         -- USER --
 
-        GotUserName _ -> (model, Cmd.none)
-        GotPassword _ -> (model, Cmd.none)
+        GotUserName str -> ({ model | username = str} , Cmd.none)
+
+        GotPassword str -> ({ model | password = str}, Cmd.none)
+
         GotNewPassword1 _ -> (model, Cmd.none)
         GotNewPassword2 _ -> (model, Cmd.none)
         ChangePassword -> (model, Cmd.none)
         GotEmail _ -> (model, Cmd.none)
-        SignIn -> (model, Cmd.none)
-        SignUp -> (model, Cmd.none)
-        SignOut -> (model, Cmd.none)
+
+        SignIn ->
+          if model.username == "demo" && model.password == "demo" then
+            ({ model | currentUser = Just User.dummy, appMode = Reading }, Cmd.none)
+           else
+            ({model | currentUser = Nothing, appMode = UserMode SignInState, password = ""} , Cmd.none)
+
+
+
+        SignUp -> ({model | appMode = UserMode SignUpState, message = "At SignUp msg"} , Cmd.none)
+
+
+        SignOut -> ({model | currentUser = Nothing, appMode = UserMode SignInState} , Cmd.none)
 
         -- DOCUMENT --
 
@@ -485,9 +509,15 @@ lhsViewInfoPage viewInfo model =
           w = scale viewInfo.lhsFraction model.windowWidth
           h = translate (-viewInfo.vInset) model.windowHeight
        in
-        column [width (px w), height (px h), padding 100, spacing 24 ] [
-              Element.text "Click on the Read or Edit buttons to experiment."
-            , Element.text "Coming soon: forms to sign up / sign in"]
+        column [width (px w), height (px h), padding 12, spacing 24 ] [
+
+          if model.appMode == UserMode SignInState then
+             signInUpView model
+          else
+             case model.currentUser of
+                 Nothing -> signInUpView model
+                 Just user ->  signedInUserView model user
+           ]
 
 
 rhsViewInfoPage viewInfo model =
@@ -503,7 +533,8 @@ rhsViewInfoPage viewInfo model =
 userPageFooter : Model -> Element Msg
 userPageFooter model =
        row [ paddingXY 20 0, height (px 30), width (px (model.windowWidth)), Background.color charcoal, Font.color white, spacing 24, Font.size 12] [
-            el [] (Element.text <| model.message)
+             el [] (Element.text <| appStateAsString model)
+           , el [] (Element.text <| model.message)
        ]
 
 userPageHeader : ViewInfoUserPage -> Model -> Element Msg
@@ -525,28 +556,14 @@ modeButtonStrip model =
 -- SIGN-IN
 
 
-
-userValidationView : Model -> Element Msg
-userValidationView model =
-    case model.currentUser of
-        Nothing ->
-            noUserView model
-
-        Just user ->
-            signedInUserView model user
-
-
-noUserView : Model -> Element Msg
 noUserView model =
-    row [ spacing 12 ]
-        [ noUserLHS model
-        , noUserRHS model
-        ]
+    column [] [Element.text "Now one signed in"]
 
 
-noUserLHS model =
+signInUpView model =
     column Style.mainColumnX
         [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Welcome!")
+        , el [ Font.size 14, Font.bold, paddingXY 0 12 ] (Element.text "For now, please sign in as 'demo' with password 'demo'.")
         , inputUserName model
         , inputPassword model
         , showIf (model.appMode == UserMode SignUpState) (inputEmail model)
@@ -558,29 +575,9 @@ noUserLHS model =
                 , showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
                 ]
             ]
-        , el [ Font.size 16, Font.color Style.darkRed ] (Element.text model.message)
+        , el [ Font.size 16, Font.color Style.white ] (Element.text model.message)
         ]
 
-
-noUserRHS model =
-    column [ padding 40, spacing 18, Font.size 16 ]
-        [ el [ Font.bold, Font.size 24 ]
-            (Element.text "Screenshot of app")
-        , image
-            [ width (px config.panelWidth) ]
-            { src = "http://noteimages.s3.amazonaws.com/jim_images/notes-screen.png"
-            , description = "screenshot of app"
-            }
-        , Element.paragraph []
-            [ el [ Font.bold ] (Element.text "Features. ")
-            , Element.text "Searchable note repository. Supports Markdown. Filter notes by title, tags, full text. "
-            , Element.text "Active links to the most-used tags. Notes are automatically saved every 0.5 second."
-            ]
-        , Element.paragraph []
-            [ el [ Font.bold ] (Element.text "Coming soon. ")
-            , Element.text "Filter by date, options to sort note list; export."
-            ]
-        ]
 
 
 signedInUserView : Model -> User -> Element Msg
@@ -719,7 +716,7 @@ signUpButton model =
 
                 _ ->
                     Just (SetAppMode (UserMode SignUpState))
-        , label = Element.text "Sign Up"
+        , label = Element.text "Sign Up!!"
         }
 
 
@@ -862,7 +859,7 @@ userPageModeButton model =
               _ -> buttonGrey
 
   in
-     Input.button [] { onPress = Just (SetAppMode (UserMode BrowsingState))
+     Input.button [] { onPress = Just (SetAppMode (UserMode SignedInState))
             , label = el (headerButtonStyle color)
             (el (headerLabelStyle) (Element.text "User"))}
 
