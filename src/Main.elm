@@ -345,7 +345,7 @@ update msg model =
                Nothing -> (model, Cmd.none)
                Just document ->
                    ({model | message = "Saving document ..."}
-                     , Request.updateDocument document |> Cmd.map Req
+                     , Request.update_document document |> Cmd.map Req
                    )
 
         ArmForDelete ->
@@ -364,7 +364,7 @@ update msg model =
                              , Cmd.none)
                        Armed ->
                          ({model | message = "Deleting document ...", documentDeleteState = SafetyOn}
-                             , Request.deleteDocument document |> Cmd.map Req)
+                             , Request.delete_document document |> Cmd.map Req)
 
         GetUserDocuments ->
             case model.currentUser of

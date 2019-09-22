@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Query exposing (DocumentAggregateOptionalArguments, DocumentByPkRequiredArguments, DocumentOptionalArguments, UserAggregateOptionalArguments, UserByPkRequiredArguments, UserOptionalArguments, document, document_aggregate, document_by_pk, user, user_aggregate, user_by_pk)
+module Api.Subscription exposing (DocumentAggregateOptionalArguments, DocumentByPkRequiredArguments, DocumentOptionalArguments, UserAggregateOptionalArguments, UserByPkRequiredArguments, UserOptionalArguments, document, document_aggregate, document_by_pk, user, user_aggregate, user_by_pk)
 
 import Api.Enum.Document_select_column
 import Api.Enum.User_select_column
@@ -39,7 +39,7 @@ type alias DocumentOptionalArguments =
   - where\_ - filter the rows returned
 
 -}
-document : (DocumentOptionalArguments -> DocumentOptionalArguments) -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (List decodesTo) RootQuery
+document : (DocumentOptionalArguments -> DocumentOptionalArguments) -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (List decodesTo) RootSubscription
 document fillInOptionals object_ =
     let
         filledInOptionals =
@@ -70,7 +70,7 @@ type alias DocumentAggregateOptionalArguments =
   - where\_ - filter the rows returned
 
 -}
-document_aggregate : (DocumentAggregateOptionalArguments -> DocumentAggregateOptionalArguments) -> SelectionSet decodesTo Api.Object.Document_aggregate -> SelectionSet decodesTo RootQuery
+document_aggregate : (DocumentAggregateOptionalArguments -> DocumentAggregateOptionalArguments) -> SelectionSet decodesTo Api.Object.Document_aggregate -> SelectionSet decodesTo RootSubscription
 document_aggregate fillInOptionals object_ =
     let
         filledInOptionals =
@@ -89,7 +89,7 @@ type alias DocumentByPkRequiredArguments =
 
 {-| fetch data from the table: "document" using primary key columns
 -}
-document_by_pk : DocumentByPkRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootQuery
+document_by_pk : DocumentByPkRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootSubscription
 document_by_pk requiredArgs object_ =
     Object.selectionForCompositeField "document_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
 
@@ -112,7 +112,7 @@ type alias UserOptionalArguments =
   - where\_ - filter the rows returned
 
 -}
-user : (UserOptionalArguments -> UserOptionalArguments) -> SelectionSet decodesTo Api.Object.User -> SelectionSet (List decodesTo) RootQuery
+user : (UserOptionalArguments -> UserOptionalArguments) -> SelectionSet decodesTo Api.Object.User -> SelectionSet (List decodesTo) RootSubscription
 user fillInOptionals object_ =
     let
         filledInOptionals =
@@ -143,7 +143,7 @@ type alias UserAggregateOptionalArguments =
   - where\_ - filter the rows returned
 
 -}
-user_aggregate : (UserAggregateOptionalArguments -> UserAggregateOptionalArguments) -> SelectionSet decodesTo Api.Object.User_aggregate -> SelectionSet decodesTo RootQuery
+user_aggregate : (UserAggregateOptionalArguments -> UserAggregateOptionalArguments) -> SelectionSet decodesTo Api.Object.User_aggregate -> SelectionSet decodesTo RootSubscription
 user_aggregate fillInOptionals object_ =
     let
         filledInOptionals =
@@ -162,6 +162,6 @@ type alias UserByPkRequiredArguments =
 
 {-| fetch data from the table: "user" using primary key columns
 -}
-user_by_pk : UserByPkRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootQuery
+user_by_pk : UserByPkRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootSubscription
 user_by_pk requiredArgs object_ =
     Object.selectionForCompositeField "user_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)

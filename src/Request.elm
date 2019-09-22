@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), createDocument, documentsByAuthor, updateDocument, deleteDocument)
+module Request exposing (RequestMsg(..), createDocument, documentsByAuthor, update_document, delete_document)
 
 import Graphql.Http
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
@@ -20,15 +20,14 @@ type RequestMsg =
      | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 
 
-endpoint = "https://graphql.fauna.com/graphql"
-authorizationToken = "Basic Zm5BRFlteWZIbUFDRW8yNlRVSUI0WXM1cVRqbEpUbVNrci1MQmxIbjo3Y2NmMGU2Ni01MzllLTRjZGQtODBhZS0xOGIyNGFlOWFlMDY6c2VydmVy"
-
+endpoint = "https://math-markdown-heroku.herokuapp.com/v1/graphql"
+authorizationToken =  "x-hasura-admin-secret: abc"
 
 -- DOCUMENT REQUESTS
 
 createDocument : Document -> Cmd RequestMsg
 createDocument document =
-    Mutation.createDocument (createDocumentRequiredArguments document) documentSelectionSet
+    Mutation.insert_document (createDocumentRequiredArguments document) documentSelectionSet
          |> Graphql.Http.mutationRequest endpoint
          |> Graphql.Http.withHeader "authorization" authorizationToken         -- |> Graphql.Http.withHeader "Access-Control-Allow-Origin:" "*"
          |> Graphql.Http.send (RemoteData.fromResult >> GotNewDocument)
@@ -42,17 +41,17 @@ documentsByAuthor authorId =
       |> Graphql.Http.send (RemoteData.fromResult >> GotUserDocuments)
 
 
-updateDocument : Document -> Cmd RequestMsg
-updateDocument document =
-    Mutation.updateDocument (updatedDocumentRequiredArguments document) documentSelectionSet
+update_document : Document -> Cmd RequestMsg
+update_document document =
+    Mutation.update_document (updatedDocumentRequiredArguments document) documentSelectionSet
          |> Graphql.Http.mutationRequest endpoint
          |> Graphql.Http.withHeader "authorization" authorizationToken
          |> Graphql.Http.send (RemoteData.fromResult >> ConfirmUpdatedDocument)
 
 
-deleteDocument : Document -> Cmd RequestMsg
-deleteDocument document =
-    Mutation.deleteDocument { id = document.id } documentSelectionSet
+delete_document : Document -> Cmd RequestMsg
+delete_document document =
+    Mutation.delete_document { id = document.id } documentSelectionSet
          |> Graphql.Http.mutationRequest endpoint
          |> Graphql.Http.withHeader "authorization" authorizationToken
          |> Graphql.Http.send (RemoteData.fromResult >> ConfirmUDeleteDocument)
@@ -73,7 +72,7 @@ documentInput : Document -> InputObject.DocumentInput
 documentInput document =
         {   identifier = document.identifier
           , title = document.title
-          , author = document.authorID
+          , author = document.authorIdentifier
           , content = document.content
           , tags = document.tags
           , timeCreated = Time.posixToMillis document.timeCreated // 1000
@@ -87,17 +86,14 @@ secondsToPosix =
 
 documentSelectionSet =
     SelectionSet.succeed Document
-        |> with Api.Object.Document.id_
+        |> with Api.Object.Document.id
         |> with Api.Object.Document.identifier
         |> with Api.Object.Document.title
-        |> with Api.Object.Document.author
+        |> with Api.Object.Document.authorIdentifier
         |> with Api.Object.Document.content
         |> with Api.Object.Document.tags
         |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeCreated)
         |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeUpdated)
         |> with Api.Object.Document.public
-
-
-
 
 

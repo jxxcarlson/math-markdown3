@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Scalar exposing (Codecs, Date(..), Id(..), Long(..), Time(..), defaultCodecs, defineCodecs, unwrapCodecs, unwrapEncoder)
+module Api.Scalar exposing (Codecs, Id(..), Jsonb(..), defaultCodecs, defineCodecs, unwrapCodecs, unwrapEncoder)
 
 import Graphql.Codec exposing (Codec)
 import Graphql.Internal.Builder.Object as Object
@@ -11,40 +11,28 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
 
-type Date
-    = Date String
-
-
 type Id
     = Id String
 
 
-type Long
-    = Long String
-
-
-type Time
-    = Time String
+type Jsonb
+    = Jsonb String
 
 
 defineCodecs :
-    { codecDate : Codec valueDate
-    , codecId : Codec valueId
-    , codecLong : Codec valueLong
-    , codecTime : Codec valueTime
+    { codecId : Codec valueId
+    , codecJsonb : Codec valueJsonb
     }
-    -> Codecs valueDate valueId valueLong valueTime
+    -> Codecs valueId valueJsonb
 defineCodecs definitions =
     Codecs definitions
 
 
 unwrapCodecs :
-    Codecs valueDate valueId valueLong valueTime
+    Codecs valueId valueJsonb
     ->
-        { codecDate : Codec valueDate
-        , codecId : Codec valueId
-        , codecLong : Codec valueLong
-        , codecTime : Codec valueTime
+        { codecId : Codec valueId
+        , codecJsonb : Codec valueJsonb
         }
 unwrapCodecs (Codecs unwrappedCodecs) =
     unwrappedCodecs
@@ -54,34 +42,24 @@ unwrapEncoder getter (Codecs unwrappedCodecs) =
     (unwrappedCodecs |> getter |> .encoder) >> Graphql.Internal.Encode.fromJson
 
 
-type Codecs valueDate valueId valueLong valueTime
-    = Codecs (RawCodecs valueDate valueId valueLong valueTime)
+type Codecs valueId valueJsonb
+    = Codecs (RawCodecs valueId valueJsonb)
 
 
-type alias RawCodecs valueDate valueId valueLong valueTime =
-    { codecDate : Codec valueDate
-    , codecId : Codec valueId
-    , codecLong : Codec valueLong
-    , codecTime : Codec valueTime
+type alias RawCodecs valueId valueJsonb =
+    { codecId : Codec valueId
+    , codecJsonb : Codec valueJsonb
     }
 
 
-defaultCodecs : RawCodecs Date Id Long Time
+defaultCodecs : RawCodecs Id Jsonb
 defaultCodecs =
-    { codecDate =
-        { encoder = \(Date raw) -> Encode.string raw
-        , decoder = Object.scalarDecoder |> Decode.map Date
-        }
-    , codecId =
+    { codecId =
         { encoder = \(Id raw) -> Encode.string raw
         , decoder = Object.scalarDecoder |> Decode.map Id
         }
-    , codecLong =
-        { encoder = \(Long raw) -> Encode.string raw
-        , decoder = Object.scalarDecoder |> Decode.map Long
-        }
-    , codecTime =
-        { encoder = \(Time raw) -> Encode.string raw
-        , decoder = Object.scalarDecoder |> Decode.map Time
+    , codecJsonb =
+        { encoder = \(Jsonb raw) -> Encode.string raw
+        , decoder = Object.scalarDecoder |> Decode.map Jsonb
         }
     }

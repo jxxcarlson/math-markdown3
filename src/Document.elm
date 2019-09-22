@@ -11,10 +11,10 @@ import Api.Scalar exposing(Id(..))
 type alias DocumentID = String
 
 type alias Document = {
-     id : Id
+     id : Int
    , identifier : String
    , title : String
-   , authorID: String
+   , authorIdentifier: String
    , content : String
    , tags : List String
    , timeCreated : Posix
@@ -40,7 +40,7 @@ getContent maybeDocument =
 footer : Document -> String
 footer document =
     "\n\n___\n\n````\nAuthor: "
-    ++ document.authorID ++ "\n"
+    ++ document.authorIdentifier ++ "\n"
     -- ++ "Document ID: " ++ document.identifier ++ "\n"
     ++ "Document slug: " ++ slug document ++ "\n"
     ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
@@ -58,19 +58,19 @@ footer document =
 
 -}
 documentIdentifier : String -> String -> Posix -> String
-documentIdentifier authorID title time =
-    [authorID, Utility.normalize title, Utility.stringOfPosix time]
+documentIdentifier authorIdentifier title time =
+    [authorIdentifier, Utility.normalize title, Utility.stringOfPosix time]
       |> String.join "."
 
 slug : Document -> String
 slug document =
-    document.authorID ++ "." ++ Utility.compress document.title ++ "." ++ Utility.posixSlug document.timeCreated
+    document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ Utility.posixSlug document.timeCreated
 
 
 {-|
 
     > create "jxxcarlson" "Intro to Chromaticity" t "First draft ..."
-    --> {   authorID = "jxxcarlson", children = [], content = "First draft ..."
+    --> {   authorIdentifier = "jxxcarlson", children = [], content = "First draft ..."
           , id = "jxxcarlson.intro-to-chromaticity.1568667528"
           , public = False, tags = [], timeCreated = Posix 1568667528000
           , timeUpdated = Posix 1568667528000, title = "Intro to Chromaticity" }
@@ -78,11 +78,11 @@ slug document =
 
 -}
 create : String -> String -> Posix -> String -> Document
-create authorID title time content =
-     {  id = Id "undefined"
-      , identifier =  documentIdentifier authorID title time
+create authorIdentifier title time content =
+     {  id = 0
+      , identifier =  documentIdentifier authorIdentifier title time
       , title = title
-      , authorID = authorID
+      , authorIdentifier = authorIdentifier
       , content = content
       , tags  = [ ]
       , timeCreated = time

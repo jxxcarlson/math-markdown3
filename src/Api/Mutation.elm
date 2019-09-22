@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Mutation exposing (CreateDocumentRequiredArguments, CreateUserRequiredArguments, DeleteDocumentRequiredArguments, DeleteUserRequiredArguments, UpdateDocumentRequiredArguments, UpdateUserRequiredArguments, createDocument, createUser, deleteDocument, deleteUser, updateDocument, updateUser)
+module Api.Mutation exposing (DeleteDocumentRequiredArguments, DeleteUserRequiredArguments, InsertDocumentOptionalArguments, InsertDocumentRequiredArguments, InsertUserOptionalArguments, InsertUserRequiredArguments, UpdateDocumentOptionalArguments, UpdateDocumentRequiredArguments, UpdateUserOptionalArguments, UpdateUserRequiredArguments, delete_document, delete_user, insert_document, insert_user, update_document, update_user)
 
 import Api.InputObject
 import Api.Interface
@@ -19,91 +19,153 @@ import Graphql.SelectionSet exposing (SelectionSet)
 import Json.Decode as Decode exposing (Decoder)
 
 
-type alias UpdateUserRequiredArguments =
-    { id : Api.ScalarCodecs.Id
-    , data : Api.InputObject.UserInput
-    }
+type alias DeleteDocumentRequiredArguments =
+    { where_ : Api.InputObject.Document_bool_exp }
 
 
-{-| Update an existing document in the collection of 'User'
+{-| delete data from the table: "document"
 
-  - id - The 'User' document's ID
-  - data - 'User' input values
+  - where\_ - filter the rows which have to be deleted
 
 -}
-updateUser : UpdateUserRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootMutation
-updateUser requiredArgs object_ =
-    Object.selectionForCompositeField "updateUser" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId), Argument.required "data" requiredArgs.data Api.InputObject.encodeUserInput ] object_ (identity >> Decode.nullable)
-
-
-type alias CreateUserRequiredArguments =
-    { data : Api.InputObject.UserInput }
-
-
-{-| Create a new document in the collection of 'User'
-
-  - data - 'User' input values
-
--}
-createUser : CreateUserRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet decodesTo RootMutation
-createUser requiredArgs object_ =
-    Object.selectionForCompositeField "createUser" [ Argument.required "data" requiredArgs.data Api.InputObject.encodeUserInput ] object_ identity
-
-
-type alias CreateDocumentRequiredArguments =
-    { data : Api.InputObject.DocumentInput }
-
-
-{-| Create a new document in the collection of 'Document'
-
-  - data - 'Document' input values
-
--}
-createDocument : CreateDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet decodesTo RootMutation
-createDocument requiredArgs object_ =
-    Object.selectionForCompositeField "createDocument" [ Argument.required "data" requiredArgs.data Api.InputObject.encodeDocumentInput ] object_ identity
+delete_document : DeleteDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+delete_document requiredArgs object_ =
+    Object.selectionForCompositeField "delete_document" [ Argument.required "where" requiredArgs.where_ Api.InputObject.encodeDocument_bool_exp ] object_ (identity >> Decode.nullable)
 
 
 type alias DeleteUserRequiredArguments =
-    { id : Api.ScalarCodecs.Id }
+    { where_ : Api.InputObject.User_bool_exp }
 
 
-{-| Delete an existing document in the collection of 'User'
+{-| delete data from the table: "user"
 
-  - id - The 'User' document's ID
-
--}
-deleteUser : DeleteUserRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootMutation
-deleteUser requiredArgs object_ =
-    Object.selectionForCompositeField "deleteUser" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)
-
-
-type alias DeleteDocumentRequiredArguments =
-    { id : Api.ScalarCodecs.Id }
-
-
-{-| Delete an existing document in the collection of 'Document'
-
-  - id - The 'Document' document's ID
+  - where\_ - filter the rows which have to be deleted
 
 -}
-deleteDocument : DeleteDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootMutation
-deleteDocument requiredArgs object_ =
-    Object.selectionForCompositeField "deleteDocument" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId) ] object_ (identity >> Decode.nullable)
+delete_user : DeleteUserRequiredArguments -> SelectionSet decodesTo Api.Object.User_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+delete_user requiredArgs object_ =
+    Object.selectionForCompositeField "delete_user" [ Argument.required "where" requiredArgs.where_ Api.InputObject.encodeUser_bool_exp ] object_ (identity >> Decode.nullable)
 
 
-type alias UpdateDocumentRequiredArguments =
-    { id : Api.ScalarCodecs.Id
-    , data : Api.InputObject.DocumentInput
+type alias InsertDocumentOptionalArguments =
+    { on_conflict : OptionalArgument Api.InputObject.Document_on_conflict }
+
+
+type alias InsertDocumentRequiredArguments =
+    { objects : List Api.InputObject.Document_insert_input }
+
+
+{-| insert data into the table: "document"
+
+  - objects - the rows to be inserted
+  - on\_conflict - on conflict condition
+
+-}
+insert_document : (InsertDocumentOptionalArguments -> InsertDocumentOptionalArguments) -> InsertDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+insert_document fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { on_conflict = Absent }
+
+        optionalArgs =
+            [ Argument.optional "on_conflict" filledInOptionals.on_conflict Api.InputObject.encodeDocument_on_conflict ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "insert_document" (optionalArgs ++ [ Argument.required "objects" requiredArgs.objects (Api.InputObject.encodeDocument_insert_input |> Encode.list) ]) object_ (identity >> Decode.nullable)
+
+
+type alias InsertUserOptionalArguments =
+    { on_conflict : OptionalArgument Api.InputObject.User_on_conflict }
+
+
+type alias InsertUserRequiredArguments =
+    { objects : List Api.InputObject.User_insert_input }
+
+
+{-| insert data into the table: "user"
+
+  - objects - the rows to be inserted
+  - on\_conflict - on conflict condition
+
+-}
+insert_user : (InsertUserOptionalArguments -> InsertUserOptionalArguments) -> InsertUserRequiredArguments -> SelectionSet decodesTo Api.Object.User_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+insert_user fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { on_conflict = Absent }
+
+        optionalArgs =
+            [ Argument.optional "on_conflict" filledInOptionals.on_conflict Api.InputObject.encodeUser_on_conflict ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "insert_user" (optionalArgs ++ [ Argument.required "objects" requiredArgs.objects (Api.InputObject.encodeUser_insert_input |> Encode.list) ]) object_ (identity >> Decode.nullable)
+
+
+type alias UpdateDocumentOptionalArguments =
+    { append_ : OptionalArgument Api.InputObject.Document_append_input
+    , delete_at_path_ : OptionalArgument Api.InputObject.Document_delete_at_path_input
+    , delete_elem_ : OptionalArgument Api.InputObject.Document_delete_elem_input
+    , delete_key_ : OptionalArgument Api.InputObject.Document_delete_key_input
+    , inc_ : OptionalArgument Api.InputObject.Document_inc_input
+    , prepend_ : OptionalArgument Api.InputObject.Document_prepend_input
+    , set_ : OptionalArgument Api.InputObject.Document_set_input
     }
 
 
-{-| Update an existing document in the collection of 'Document'
+type alias UpdateDocumentRequiredArguments =
+    { where_ : Api.InputObject.Document_bool_exp }
 
-  - id - The 'Document' document's ID
-  - data - 'Document' input values
+
+{-| update data of the table: "document"
+
+  - append\_ - append existing jsonb value of filtered columns with new jsonb value
+  - delete\_at\_path\_ - delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  - delete\_elem\_ - delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  - delete\_key\_ - delete key/value pair or string element. key/value pairs are matched based on their key value
+  - inc\_ - increments the integer columns with given value of the filtered values
+  - prepend\_ - prepend existing jsonb value of filtered columns with new jsonb value
+  - set\_ - sets the columns of the filtered rows to the given values
+  - where\_ - filter the rows which have to be updated
 
 -}
-updateDocument : UpdateDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootMutation
-updateDocument requiredArgs object_ =
-    Object.selectionForCompositeField "updateDocument" [ Argument.required "id" requiredArgs.id (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecId), Argument.required "data" requiredArgs.data Api.InputObject.encodeDocumentInput ] object_ (identity >> Decode.nullable)
+update_document : (UpdateDocumentOptionalArguments -> UpdateDocumentOptionalArguments) -> UpdateDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+update_document fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { append_ = Absent, delete_at_path_ = Absent, delete_elem_ = Absent, delete_key_ = Absent, inc_ = Absent, prepend_ = Absent, set_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "_append" filledInOptionals.append_ Api.InputObject.encodeDocument_append_input, Argument.optional "_delete_at_path" filledInOptionals.delete_at_path_ Api.InputObject.encodeDocument_delete_at_path_input, Argument.optional "_delete_elem" filledInOptionals.delete_elem_ Api.InputObject.encodeDocument_delete_elem_input, Argument.optional "_delete_key" filledInOptionals.delete_key_ Api.InputObject.encodeDocument_delete_key_input, Argument.optional "_inc" filledInOptionals.inc_ Api.InputObject.encodeDocument_inc_input, Argument.optional "_prepend" filledInOptionals.prepend_ Api.InputObject.encodeDocument_prepend_input, Argument.optional "_set" filledInOptionals.set_ Api.InputObject.encodeDocument_set_input ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "update_document" (optionalArgs ++ [ Argument.required "where" requiredArgs.where_ Api.InputObject.encodeDocument_bool_exp ]) object_ (identity >> Decode.nullable)
+
+
+type alias UpdateUserOptionalArguments =
+    { inc_ : OptionalArgument Api.InputObject.User_inc_input
+    , set_ : OptionalArgument Api.InputObject.User_set_input
+    }
+
+
+type alias UpdateUserRequiredArguments =
+    { where_ : Api.InputObject.User_bool_exp }
+
+
+{-| update data of the table: "user"
+
+  - inc\_ - increments the integer columns with given value of the filtered values
+  - set\_ - sets the columns of the filtered rows to the given values
+  - where\_ - filter the rows which have to be updated
+
+-}
+update_user : (UpdateUserOptionalArguments -> UpdateUserOptionalArguments) -> UpdateUserRequiredArguments -> SelectionSet decodesTo Api.Object.User_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+update_user fillInOptionals requiredArgs object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { inc_ = Absent, set_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "_inc" filledInOptionals.inc_ Api.InputObject.encodeUser_inc_input, Argument.optional "_set" filledInOptionals.set_ Api.InputObject.encodeUser_set_input ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "update_user" (optionalArgs ++ [ Argument.required "where" requiredArgs.where_ Api.InputObject.encodeUser_bool_exp ]) object_ (identity >> Decode.nullable)

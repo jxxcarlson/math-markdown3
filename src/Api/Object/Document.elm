@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (author, content, id_, identifier, public, tags, timeCreated, timeUpdated, title, ts_)
+module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, id, identifier, public, tags, timeCreated, timeUpdated, title)
 
 import Api.InputObject
 import Api.Interface
@@ -19,41 +19,9 @@ import Graphql.SelectionSet exposing (SelectionSet)
 import Json.Decode as Decode
 
 
-author : SelectionSet String Api.Object.Document
-author =
-    Object.selectionForField "String" "author" [] Decode.string
-
-
-identifier : SelectionSet String Api.Object.Document
-identifier =
-    Object.selectionForField "String" "identifier" [] Decode.string
-
-
-timeUpdated : SelectionSet Int Api.Object.Document
-timeUpdated =
-    Object.selectionForField "Int" "timeUpdated" [] Decode.int
-
-
-{-| The document's ID.
--}
-id_ : SelectionSet Api.ScalarCodecs.Id Api.Object.Document
-id_ =
-    Object.selectionForField "ScalarCodecs.Id" "_id" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecId |> .decoder)
-
-
-tags : SelectionSet (List String) Api.Object.Document
-tags =
-    Object.selectionForField "(List String)" "tags" [] (Decode.string |> Decode.list)
-
-
-timeCreated : SelectionSet Int Api.Object.Document
-timeCreated =
-    Object.selectionForField "Int" "timeCreated" [] Decode.int
-
-
-public : SelectionSet Bool Api.Object.Document
-public =
-    Object.selectionForField "Bool" "public" [] Decode.bool
+authorIdentifier : SelectionSet String Api.Object.Document
+authorIdentifier =
+    Object.selectionForField "String" "authorIdentifier" [] Decode.string
 
 
 content : SelectionSet String Api.Object.Document
@@ -61,13 +29,53 @@ content =
     Object.selectionForField "String" "content" [] Decode.string
 
 
+id : SelectionSet Int Api.Object.Document
+id =
+    Object.selectionForField "Int" "id" [] Decode.int
+
+
+identifier : SelectionSet String Api.Object.Document
+identifier =
+    Object.selectionForField "String" "identifier" [] Decode.string
+
+
+public : SelectionSet Bool Api.Object.Document
+public =
+    Object.selectionForField "Bool" "public" [] Decode.bool
+
+
+type alias TagsOptionalArguments =
+    { path : OptionalArgument String }
+
+
+{-|
+
+  - path - JSON select path
+
+-}
+tags : (TagsOptionalArguments -> TagsOptionalArguments) -> SelectionSet Api.ScalarCodecs.Jsonb Api.Object.Document
+tags fillInOptionals =
+    let
+        filledInOptionals =
+            fillInOptionals { path = Absent }
+
+        optionalArgs =
+            [ Argument.optional "path" filledInOptionals.path Encode.string ]
+                |> List.filterMap identity
+    in
+    Object.selectionForField "ScalarCodecs.Jsonb" "tags" optionalArgs (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
+
+
+timeCreated : SelectionSet Int Api.Object.Document
+timeCreated =
+    Object.selectionForField "Int" "timeCreated" [] Decode.int
+
+
+timeUpdated : SelectionSet Int Api.Object.Document
+timeUpdated =
+    Object.selectionForField "Int" "timeUpdated" [] Decode.int
+
+
 title : SelectionSet String Api.Object.Document
 title =
     Object.selectionForField "String" "title" [] Decode.string
-
-
-{-| The document's timestamp.
--}
-ts_ : SelectionSet Api.ScalarCodecs.Long Api.Object.Document
-ts_ =
-    Object.selectionForField "ScalarCodecs.Long" "_ts" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecLong |> .decoder)

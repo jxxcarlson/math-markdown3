@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.User exposing (admin, email, firstName, id_, lastName, public, timeEnrolled, timeUpdated, ts_)
+module Api.Object.User exposing (admin, email, firstName, id, lastName, timeEnrolled, timeUpdated, username)
 
 import Api.InputObject
 import Api.Interface
@@ -29,26 +29,14 @@ email =
     Object.selectionForField "String" "email" [] Decode.string
 
 
-timeUpdated : SelectionSet Int Api.Object.User
-timeUpdated =
-    Object.selectionForField "Int" "timeUpdated" [] Decode.int
+firstName : SelectionSet String Api.Object.User
+firstName =
+    Object.selectionForField "String" "firstName" [] Decode.string
 
 
-{-| The document's ID.
--}
-id_ : SelectionSet Api.ScalarCodecs.Id Api.Object.User
-id_ =
-    Object.selectionForField "ScalarCodecs.Id" "_id" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecId |> .decoder)
-
-
-public : SelectionSet Bool Api.Object.User
-public =
-    Object.selectionForField "Bool" "public" [] Decode.bool
-
-
-timeEnrolled : SelectionSet Int Api.Object.User
-timeEnrolled =
-    Object.selectionForField "Int" "timeEnrolled" [] Decode.int
+id : SelectionSet Int Api.Object.User
+id =
+    Object.selectionForField "Int" "id" [] Decode.int
 
 
 lastName : SelectionSet String Api.Object.User
@@ -56,13 +44,16 @@ lastName =
     Object.selectionForField "String" "lastName" [] Decode.string
 
 
-firstName : SelectionSet String Api.Object.User
-firstName =
-    Object.selectionForField "String" "firstName" [] Decode.string
+timeEnrolled : SelectionSet Int Api.Object.User
+timeEnrolled =
+    Object.selectionForField "Int" "timeEnrolled" [] Decode.int
 
 
-{-| The document's timestamp.
--}
-ts_ : SelectionSet Api.ScalarCodecs.Long Api.Object.User
-ts_ =
-    Object.selectionForField "ScalarCodecs.Long" "_ts" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecLong |> .decoder)
+timeUpdated : SelectionSet Int Api.Object.User
+timeUpdated =
+    Object.selectionForField "Int" "timeUpdated" [] Decode.int
+
+
+username : SelectionSet String Api.Object.User
+username =
+    Object.selectionForField "String" "username" [] Decode.string
