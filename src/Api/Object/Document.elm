@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, id, identifier, public, tags, timeCreated, timeUpdated, title)
+module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, id, identifier, public, tags, timeCreated, timeUpdated, title, user)
 
 import Api.InputObject
 import Api.Interface
@@ -79,3 +79,10 @@ timeUpdated =
 title : SelectionSet String Api.Object.Document
 title =
     Object.selectionForField "String" "title" [] Decode.string
+
+
+{-| An object relationship
+-}
+user : SelectionSet decodesTo Api.Object.User -> SelectionSet decodesTo Api.Object.Document
+user object_ =
+    Object.selectionForCompositeField "user" [] object_ identity

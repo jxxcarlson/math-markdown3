@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.InputObject exposing (Boolean_comparison_exp, Boolean_comparison_expOptionalFields, Document_aggregate_order_by, Document_aggregate_order_byOptionalFields, Document_append_input, Document_append_inputOptionalFields, Document_arr_rel_insert_input, Document_arr_rel_insert_inputOptionalFields, Document_arr_rel_insert_inputRequiredFields, Document_avg_order_by, Document_avg_order_byOptionalFields, Document_bool_exp(..), Document_bool_expOptionalFields, Document_bool_expRaw, Document_delete_at_path_input, Document_delete_at_path_inputOptionalFields, Document_delete_elem_input, Document_delete_elem_inputOptionalFields, Document_delete_key_input, Document_delete_key_inputOptionalFields, Document_inc_input, Document_inc_inputOptionalFields, Document_insert_input, Document_insert_inputOptionalFields, Document_max_order_by, Document_max_order_byOptionalFields, Document_min_order_by, Document_min_order_byOptionalFields, Document_obj_rel_insert_input, Document_obj_rel_insert_inputOptionalFields, Document_obj_rel_insert_inputRequiredFields, Document_on_conflict, Document_on_conflictRequiredFields, Document_order_by, Document_order_byOptionalFields, Document_prepend_input, Document_prepend_inputOptionalFields, Document_set_input, Document_set_inputOptionalFields, Document_stddev_order_by, Document_stddev_order_byOptionalFields, Document_stddev_pop_order_by, Document_stddev_pop_order_byOptionalFields, Document_stddev_samp_order_by, Document_stddev_samp_order_byOptionalFields, Document_sum_order_by, Document_sum_order_byOptionalFields, Document_var_pop_order_by, Document_var_pop_order_byOptionalFields, Document_var_samp_order_by, Document_var_samp_order_byOptionalFields, Document_variance_order_by, Document_variance_order_byOptionalFields, Int_comparison_exp, Int_comparison_expOptionalFields, Jsonb_comparison_exp, Jsonb_comparison_expOptionalFields, String_comparison_exp, String_comparison_expOptionalFields, User_aggregate_order_by, User_aggregate_order_byOptionalFields, User_arr_rel_insert_input, User_arr_rel_insert_inputOptionalFields, User_arr_rel_insert_inputRequiredFields, User_avg_order_by, User_avg_order_byOptionalFields, User_bool_exp(..), User_bool_expOptionalFields, User_bool_expRaw, User_inc_input, User_inc_inputOptionalFields, User_insert_input, User_insert_inputOptionalFields, User_max_order_by, User_max_order_byOptionalFields, User_min_order_by, User_min_order_byOptionalFields, User_obj_rel_insert_input, User_obj_rel_insert_inputOptionalFields, User_obj_rel_insert_inputRequiredFields, User_on_conflict, User_on_conflictRequiredFields, User_order_by, User_order_byOptionalFields, User_set_input, User_set_inputOptionalFields, User_stddev_order_by, User_stddev_order_byOptionalFields, User_stddev_pop_order_by, User_stddev_pop_order_byOptionalFields, User_stddev_samp_order_by, User_stddev_samp_order_byOptionalFields, User_sum_order_by, User_sum_order_byOptionalFields, User_var_pop_order_by, User_var_pop_order_byOptionalFields, User_var_samp_order_by, User_var_samp_order_byOptionalFields, User_variance_order_by, User_variance_order_byOptionalFields, buildBoolean_comparison_exp, buildDocument_aggregate_order_by, buildDocument_append_input, buildDocument_arr_rel_insert_input, buildDocument_avg_order_by, buildDocument_bool_exp, buildDocument_delete_at_path_input, buildDocument_delete_elem_input, buildDocument_delete_key_input, buildDocument_inc_input, buildDocument_insert_input, buildDocument_max_order_by, buildDocument_min_order_by, buildDocument_obj_rel_insert_input, buildDocument_on_conflict, buildDocument_order_by, buildDocument_prepend_input, buildDocument_set_input, buildDocument_stddev_order_by, buildDocument_stddev_pop_order_by, buildDocument_stddev_samp_order_by, buildDocument_sum_order_by, buildDocument_var_pop_order_by, buildDocument_var_samp_order_by, buildDocument_variance_order_by, buildInt_comparison_exp, buildJsonb_comparison_exp, buildString_comparison_exp, buildUser_aggregate_order_by, buildUser_arr_rel_insert_input, buildUser_avg_order_by, buildUser_bool_exp, buildUser_inc_input, buildUser_insert_input, buildUser_max_order_by, buildUser_min_order_by, buildUser_obj_rel_insert_input, buildUser_on_conflict, buildUser_order_by, buildUser_set_input, buildUser_stddev_order_by, buildUser_stddev_pop_order_by, buildUser_stddev_samp_order_by, buildUser_sum_order_by, buildUser_var_pop_order_by, buildUser_var_samp_order_by, buildUser_variance_order_by, encodeBoolean_comparison_exp, encodeDocument_aggregate_order_by, encodeDocument_append_input, encodeDocument_arr_rel_insert_input, encodeDocument_avg_order_by, encodeDocument_bool_exp, encodeDocument_delete_at_path_input, encodeDocument_delete_elem_input, encodeDocument_delete_key_input, encodeDocument_inc_input, encodeDocument_insert_input, encodeDocument_max_order_by, encodeDocument_min_order_by, encodeDocument_obj_rel_insert_input, encodeDocument_on_conflict, encodeDocument_order_by, encodeDocument_prepend_input, encodeDocument_set_input, encodeDocument_stddev_order_by, encodeDocument_stddev_pop_order_by, encodeDocument_stddev_samp_order_by, encodeDocument_sum_order_by, encodeDocument_var_pop_order_by, encodeDocument_var_samp_order_by, encodeDocument_variance_order_by, encodeInt_comparison_exp, encodeJsonb_comparison_exp, encodeString_comparison_exp, encodeUser_aggregate_order_by, encodeUser_arr_rel_insert_input, encodeUser_avg_order_by, encodeUser_bool_exp, encodeUser_inc_input, encodeUser_insert_input, encodeUser_max_order_by, encodeUser_min_order_by, encodeUser_obj_rel_insert_input, encodeUser_on_conflict, encodeUser_order_by, encodeUser_set_input, encodeUser_stddev_order_by, encodeUser_stddev_pop_order_by, encodeUser_stddev_samp_order_by, encodeUser_sum_order_by, encodeUser_var_pop_order_by, encodeUser_var_samp_order_by, encodeUser_variance_order_by)
+module Api.InputObject exposing (Boolean_comparison_exp, Boolean_comparison_expOptionalFields, Document_aggregate_order_by, Document_aggregate_order_byOptionalFields, Document_append_input, Document_append_inputOptionalFields, Document_arr_rel_insert_input(..), Document_arr_rel_insert_inputOptionalFields, Document_arr_rel_insert_inputRaw, Document_arr_rel_insert_inputRequiredFields, Document_avg_order_by, Document_avg_order_byOptionalFields, Document_bool_exp(..), Document_bool_expOptionalFields, Document_bool_expRaw, Document_delete_at_path_input, Document_delete_at_path_inputOptionalFields, Document_delete_elem_input, Document_delete_elem_inputOptionalFields, Document_delete_key_input, Document_delete_key_inputOptionalFields, Document_inc_input, Document_inc_inputOptionalFields, Document_insert_input(..), Document_insert_inputOptionalFields, Document_insert_inputRaw, Document_max_order_by, Document_max_order_byOptionalFields, Document_min_order_by, Document_min_order_byOptionalFields, Document_obj_rel_insert_input(..), Document_obj_rel_insert_inputOptionalFields, Document_obj_rel_insert_inputRaw, Document_obj_rel_insert_inputRequiredFields, Document_on_conflict, Document_on_conflictRequiredFields, Document_order_by(..), Document_order_byOptionalFields, Document_order_byRaw, Document_prepend_input, Document_prepend_inputOptionalFields, Document_set_input, Document_set_inputOptionalFields, Document_stddev_order_by, Document_stddev_order_byOptionalFields, Document_stddev_pop_order_by, Document_stddev_pop_order_byOptionalFields, Document_stddev_samp_order_by, Document_stddev_samp_order_byOptionalFields, Document_sum_order_by, Document_sum_order_byOptionalFields, Document_var_pop_order_by, Document_var_pop_order_byOptionalFields, Document_var_samp_order_by, Document_var_samp_order_byOptionalFields, Document_variance_order_by, Document_variance_order_byOptionalFields, Int_comparison_exp, Int_comparison_expOptionalFields, Jsonb_comparison_exp, Jsonb_comparison_expOptionalFields, String_comparison_exp, String_comparison_expOptionalFields, User_aggregate_order_by, User_aggregate_order_byOptionalFields, User_arr_rel_insert_input(..), User_arr_rel_insert_inputOptionalFields, User_arr_rel_insert_inputRaw, User_arr_rel_insert_inputRequiredFields, User_avg_order_by, User_avg_order_byOptionalFields, User_bool_exp(..), User_bool_expOptionalFields, User_bool_expRaw, User_inc_input, User_inc_inputOptionalFields, User_insert_input(..), User_insert_inputOptionalFields, User_insert_inputRaw, User_max_order_by, User_max_order_byOptionalFields, User_min_order_by, User_min_order_byOptionalFields, User_obj_rel_insert_input(..), User_obj_rel_insert_inputOptionalFields, User_obj_rel_insert_inputRaw, User_obj_rel_insert_inputRequiredFields, User_on_conflict, User_on_conflictRequiredFields, User_order_by, User_order_byOptionalFields, User_set_input, User_set_inputOptionalFields, User_stddev_order_by, User_stddev_order_byOptionalFields, User_stddev_pop_order_by, User_stddev_pop_order_byOptionalFields, User_stddev_samp_order_by, User_stddev_samp_order_byOptionalFields, User_sum_order_by, User_sum_order_byOptionalFields, User_var_pop_order_by, User_var_pop_order_byOptionalFields, User_var_samp_order_by, User_var_samp_order_byOptionalFields, User_variance_order_by, User_variance_order_byOptionalFields, buildBoolean_comparison_exp, buildDocument_aggregate_order_by, buildDocument_append_input, buildDocument_arr_rel_insert_input, buildDocument_avg_order_by, buildDocument_bool_exp, buildDocument_delete_at_path_input, buildDocument_delete_elem_input, buildDocument_delete_key_input, buildDocument_inc_input, buildDocument_insert_input, buildDocument_max_order_by, buildDocument_min_order_by, buildDocument_obj_rel_insert_input, buildDocument_on_conflict, buildDocument_order_by, buildDocument_prepend_input, buildDocument_set_input, buildDocument_stddev_order_by, buildDocument_stddev_pop_order_by, buildDocument_stddev_samp_order_by, buildDocument_sum_order_by, buildDocument_var_pop_order_by, buildDocument_var_samp_order_by, buildDocument_variance_order_by, buildInt_comparison_exp, buildJsonb_comparison_exp, buildString_comparison_exp, buildUser_aggregate_order_by, buildUser_arr_rel_insert_input, buildUser_avg_order_by, buildUser_bool_exp, buildUser_inc_input, buildUser_insert_input, buildUser_max_order_by, buildUser_min_order_by, buildUser_obj_rel_insert_input, buildUser_on_conflict, buildUser_order_by, buildUser_set_input, buildUser_stddev_order_by, buildUser_stddev_pop_order_by, buildUser_stddev_samp_order_by, buildUser_sum_order_by, buildUser_var_pop_order_by, buildUser_var_samp_order_by, buildUser_variance_order_by, encodeBoolean_comparison_exp, encodeDocument_aggregate_order_by, encodeDocument_append_input, encodeDocument_arr_rel_insert_input, encodeDocument_avg_order_by, encodeDocument_bool_exp, encodeDocument_delete_at_path_input, encodeDocument_delete_elem_input, encodeDocument_delete_key_input, encodeDocument_inc_input, encodeDocument_insert_input, encodeDocument_max_order_by, encodeDocument_min_order_by, encodeDocument_obj_rel_insert_input, encodeDocument_on_conflict, encodeDocument_order_by, encodeDocument_prepend_input, encodeDocument_set_input, encodeDocument_stddev_order_by, encodeDocument_stddev_pop_order_by, encodeDocument_stddev_samp_order_by, encodeDocument_sum_order_by, encodeDocument_var_pop_order_by, encodeDocument_var_samp_order_by, encodeDocument_variance_order_by, encodeInt_comparison_exp, encodeJsonb_comparison_exp, encodeString_comparison_exp, encodeUser_aggregate_order_by, encodeUser_arr_rel_insert_input, encodeUser_avg_order_by, encodeUser_bool_exp, encodeUser_inc_input, encodeUser_insert_input, encodeUser_max_order_by, encodeUser_min_order_by, encodeUser_obj_rel_insert_input, encodeUser_on_conflict, encodeUser_order_by, encodeUser_set_input, encodeUser_stddev_order_by, encodeUser_stddev_pop_order_by, encodeUser_stddev_samp_order_by, encodeUser_sum_order_by, encodeUser_var_pop_order_by, encodeUser_var_samp_order_by, encodeUser_variance_order_by)
 
 import Api.Enum.Document_constraint
 import Api.Enum.Document_update_column
@@ -153,7 +153,7 @@ buildDocument_arr_rel_insert_input required fillOptionals =
             fillOptionals
                 { on_conflict = Absent }
     in
-    { data = required.data, on_conflict = optionals.on_conflict }
+    Document_arr_rel_insert_input { data = required.data, on_conflict = optionals.on_conflict }
 
 
 type alias Document_arr_rel_insert_inputRequiredFields =
@@ -164,18 +164,27 @@ type alias Document_arr_rel_insert_inputOptionalFields =
     { on_conflict : OptionalArgument Document_on_conflict }
 
 
-{-| Type for the Document\_arr\_rel\_insert\_input input object.
+{-| Type alias for the `Document_arr_rel_insert_input` attributes. Note that this type
+needs to use the `Document_arr_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
-type alias Document_arr_rel_insert_input =
+type alias Document_arr_rel_insert_inputRaw =
     { data : List Document_insert_input
     , on_conflict : OptionalArgument Document_on_conflict
     }
 
 
+{-| Type for the Document\_arr\_rel\_insert\_input input object.
+-}
+type Document_arr_rel_insert_input
+    = Document_arr_rel_insert_input Document_arr_rel_insert_inputRaw
+
+
 {-| Encode a Document\_arr\_rel\_insert\_input into a value that can be used as an argument.
 -}
 encodeDocument_arr_rel_insert_input : Document_arr_rel_insert_input -> Value
-encodeDocument_arr_rel_insert_input input =
+encodeDocument_arr_rel_insert_input (Document_arr_rel_insert_input input) =
     Encode.maybeObject
         [ ( "data", (encodeDocument_insert_input |> Encode.list) input.data |> Just ), ( "on_conflict", encodeDocument_on_conflict |> Encode.optional input.on_conflict ) ]
 
@@ -219,9 +228,9 @@ buildDocument_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent, user = Absent }
     in
-    Document_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title }
+    Document_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title, user = optionals.user }
 
 
 type alias Document_bool_expOptionalFields =
@@ -237,6 +246,7 @@ type alias Document_bool_expOptionalFields =
     , timeCreated : OptionalArgument Int_comparison_exp
     , timeUpdated : OptionalArgument Int_comparison_exp
     , title : OptionalArgument String_comparison_exp
+    , user : OptionalArgument User_bool_exp
     }
 
 
@@ -258,6 +268,7 @@ type alias Document_bool_expRaw =
     , timeCreated : OptionalArgument Int_comparison_exp
     , timeUpdated : OptionalArgument Int_comparison_exp
     , title : OptionalArgument String_comparison_exp
+    , user : OptionalArgument User_bool_exp
     }
 
 
@@ -272,7 +283,7 @@ type Document_bool_exp
 encodeDocument_bool_exp : Document_bool_exp -> Value
 encodeDocument_bool_exp (Document_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeDocument_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "authorIdentifier", encodeString_comparison_exp |> Encode.optional input.authorIdentifier ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "identifier", encodeString_comparison_exp |> Encode.optional input.identifier ), ( "public", encodeBoolean_comparison_exp |> Encode.optional input.public ), ( "tags", encodeJsonb_comparison_exp |> Encode.optional input.tags ), ( "timeCreated", encodeInt_comparison_exp |> Encode.optional input.timeCreated ), ( "timeUpdated", encodeInt_comparison_exp |> Encode.optional input.timeUpdated ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ) ]
+        [ ( "_and", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeDocument_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "authorIdentifier", encodeString_comparison_exp |> Encode.optional input.authorIdentifier ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "identifier", encodeString_comparison_exp |> Encode.optional input.identifier ), ( "public", encodeBoolean_comparison_exp |> Encode.optional input.public ), ( "tags", encodeJsonb_comparison_exp |> Encode.optional input.tags ), ( "timeCreated", encodeInt_comparison_exp |> Encode.optional input.timeCreated ), ( "timeUpdated", encodeInt_comparison_exp |> Encode.optional input.timeUpdated ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ), ( "user", encodeUser_bool_exp |> Encode.optional input.user ) ]
 
 
 buildDocument_delete_at_path_input : (Document_delete_at_path_inputOptionalFields -> Document_delete_at_path_inputOptionalFields) -> Document_delete_at_path_input
@@ -398,9 +409,9 @@ buildDocument_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent }
+                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent, user = Absent }
     in
-    { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title }
+    Document_insert_input { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title, user = optionals.user }
 
 
 type alias Document_insert_inputOptionalFields =
@@ -413,12 +424,16 @@ type alias Document_insert_inputOptionalFields =
     , timeCreated : OptionalArgument Int
     , timeUpdated : OptionalArgument Int
     , title : OptionalArgument String
+    , user : OptionalArgument User_obj_rel_insert_input
     }
 
 
-{-| Type for the Document\_insert\_input input object.
+{-| Type alias for the `Document_insert_input` attributes. Note that this type
+needs to use the `Document_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
-type alias Document_insert_input =
+type alias Document_insert_inputRaw =
     { authorIdentifier : OptionalArgument String
     , content : OptionalArgument String
     , id : OptionalArgument Int
@@ -428,15 +443,22 @@ type alias Document_insert_input =
     , timeCreated : OptionalArgument Int
     , timeUpdated : OptionalArgument Int
     , title : OptionalArgument String
+    , user : OptionalArgument User_obj_rel_insert_input
     }
+
+
+{-| Type for the Document\_insert\_input input object.
+-}
+type Document_insert_input
+    = Document_insert_input Document_insert_inputRaw
 
 
 {-| Encode a Document\_insert\_input into a value that can be used as an argument.
 -}
 encodeDocument_insert_input : Document_insert_input -> Value
-encodeDocument_insert_input input =
+encodeDocument_insert_input (Document_insert_input input) =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeCreated", Encode.int |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ), ( "title", Encode.string |> Encode.optional input.title ) ]
+        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeCreated", Encode.int |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ), ( "title", Encode.string |> Encode.optional input.title ), ( "user", encodeUser_obj_rel_insert_input |> Encode.optional input.user ) ]
 
 
 buildDocument_max_order_by : (Document_max_order_byOptionalFields -> Document_max_order_byOptionalFields) -> Document_max_order_by
@@ -530,7 +552,7 @@ buildDocument_obj_rel_insert_input required fillOptionals =
             fillOptionals
                 { on_conflict = Absent }
     in
-    { data = required.data, on_conflict = optionals.on_conflict }
+    Document_obj_rel_insert_input { data = required.data, on_conflict = optionals.on_conflict }
 
 
 type alias Document_obj_rel_insert_inputRequiredFields =
@@ -541,18 +563,27 @@ type alias Document_obj_rel_insert_inputOptionalFields =
     { on_conflict : OptionalArgument Document_on_conflict }
 
 
-{-| Type for the Document\_obj\_rel\_insert\_input input object.
+{-| Type alias for the `Document_obj_rel_insert_input` attributes. Note that this type
+needs to use the `Document_obj_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
-type alias Document_obj_rel_insert_input =
+type alias Document_obj_rel_insert_inputRaw =
     { data : Document_insert_input
     , on_conflict : OptionalArgument Document_on_conflict
     }
 
 
+{-| Type for the Document\_obj\_rel\_insert\_input input object.
+-}
+type Document_obj_rel_insert_input
+    = Document_obj_rel_insert_input Document_obj_rel_insert_inputRaw
+
+
 {-| Encode a Document\_obj\_rel\_insert\_input into a value that can be used as an argument.
 -}
 encodeDocument_obj_rel_insert_input : Document_obj_rel_insert_input -> Value
-encodeDocument_obj_rel_insert_input input =
+encodeDocument_obj_rel_insert_input (Document_obj_rel_insert_input input) =
     Encode.maybeObject
         [ ( "data", encodeDocument_insert_input input.data |> Just ), ( "on_conflict", encodeDocument_on_conflict |> Encode.optional input.on_conflict ) ]
 
@@ -589,9 +620,9 @@ buildDocument_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent }
+                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent, user = Absent }
     in
-    { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title }
+    Document_order_by { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title, user = optionals.user }
 
 
 type alias Document_order_byOptionalFields =
@@ -604,12 +635,16 @@ type alias Document_order_byOptionalFields =
     , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
     , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
     , title : OptionalArgument Api.Enum.Order_by.Order_by
+    , user : OptionalArgument User_order_by
     }
 
 
-{-| Type for the Document\_order\_by input object.
+{-| Type alias for the `Document_order_by` attributes. Note that this type
+needs to use the `Document_order_by` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
-type alias Document_order_by =
+type alias Document_order_byRaw =
     { authorIdentifier : OptionalArgument Api.Enum.Order_by.Order_by
     , content : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
@@ -619,15 +654,22 @@ type alias Document_order_by =
     , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
     , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
     , title : OptionalArgument Api.Enum.Order_by.Order_by
+    , user : OptionalArgument User_order_by
     }
+
+
+{-| Type for the Document\_order\_by input object.
+-}
+type Document_order_by
+    = Document_order_by Document_order_byRaw
 
 
 {-| Encode a Document\_order\_by into a value that can be used as an argument.
 -}
 encodeDocument_order_by : Document_order_by -> Value
-encodeDocument_order_by input =
+encodeDocument_order_by (Document_order_by input) =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "identifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.identifier ), ( "public", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.public ), ( "tags", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.tags ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ) ]
+        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "identifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.identifier ), ( "public", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.public ), ( "tags", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.tags ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ), ( "user", encodeUser_order_by |> Encode.optional input.user ) ]
 
 
 buildDocument_prepend_input : (Document_prepend_inputOptionalFields -> Document_prepend_inputOptionalFields) -> Document_prepend_input
@@ -1159,7 +1201,7 @@ buildUser_arr_rel_insert_input required fillOptionals =
             fillOptionals
                 { on_conflict = Absent }
     in
-    { data = required.data, on_conflict = optionals.on_conflict }
+    User_arr_rel_insert_input { data = required.data, on_conflict = optionals.on_conflict }
 
 
 type alias User_arr_rel_insert_inputRequiredFields =
@@ -1170,18 +1212,27 @@ type alias User_arr_rel_insert_inputOptionalFields =
     { on_conflict : OptionalArgument User_on_conflict }
 
 
-{-| Type for the User\_arr\_rel\_insert\_input input object.
+{-| Type alias for the `User_arr_rel_insert_input` attributes. Note that this type
+needs to use the `User_arr_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
-type alias User_arr_rel_insert_input =
+type alias User_arr_rel_insert_inputRaw =
     { data : List User_insert_input
     , on_conflict : OptionalArgument User_on_conflict
     }
 
 
+{-| Type for the User\_arr\_rel\_insert\_input input object.
+-}
+type User_arr_rel_insert_input
+    = User_arr_rel_insert_input User_arr_rel_insert_inputRaw
+
+
 {-| Encode a User\_arr\_rel\_insert\_input into a value that can be used as an argument.
 -}
 encodeUser_arr_rel_insert_input : User_arr_rel_insert_input -> Value
-encodeUser_arr_rel_insert_input input =
+encodeUser_arr_rel_insert_input (User_arr_rel_insert_input input) =
     Encode.maybeObject
         [ ( "data", (encodeUser_insert_input |> Encode.list) input.data |> Just ), ( "on_conflict", encodeUser_on_conflict |> Encode.optional input.on_conflict ) ]
 
@@ -1225,9 +1276,9 @@ buildUser_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, admin = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
     in
-    User_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, admin = optionals.admin, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    User_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
 
 
 type alias User_bool_expOptionalFields =
@@ -1235,6 +1286,7 @@ type alias User_bool_expOptionalFields =
     , not_ : OptionalArgument User_bool_exp
     , or_ : OptionalArgument (List (Maybe User_bool_exp))
     , admin : OptionalArgument Boolean_comparison_exp
+    , documents : OptionalArgument Document_bool_exp
     , email : OptionalArgument String_comparison_exp
     , firstName : OptionalArgument String_comparison_exp
     , id : OptionalArgument Int_comparison_exp
@@ -1255,6 +1307,7 @@ type alias User_bool_expRaw =
     , not_ : OptionalArgument User_bool_exp
     , or_ : OptionalArgument (List (Maybe User_bool_exp))
     , admin : OptionalArgument Boolean_comparison_exp
+    , documents : OptionalArgument Document_bool_exp
     , email : OptionalArgument String_comparison_exp
     , firstName : OptionalArgument String_comparison_exp
     , id : OptionalArgument Int_comparison_exp
@@ -1276,7 +1329,7 @@ type User_bool_exp
 encodeUser_bool_exp : User_bool_exp -> Value
 encodeUser_bool_exp (User_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUser_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "admin", encodeBoolean_comparison_exp |> Encode.optional input.admin ), ( "email", encodeString_comparison_exp |> Encode.optional input.email ), ( "firstName", encodeString_comparison_exp |> Encode.optional input.firstName ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "lastName", encodeString_comparison_exp |> Encode.optional input.lastName ), ( "timeEnrolled", encodeInt_comparison_exp |> Encode.optional input.timeEnrolled ), ( "timeUpdated", encodeInt_comparison_exp |> Encode.optional input.timeUpdated ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
+        [ ( "_and", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUser_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "admin", encodeBoolean_comparison_exp |> Encode.optional input.admin ), ( "documents", encodeDocument_bool_exp |> Encode.optional input.documents ), ( "email", encodeString_comparison_exp |> Encode.optional input.email ), ( "firstName", encodeString_comparison_exp |> Encode.optional input.firstName ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "lastName", encodeString_comparison_exp |> Encode.optional input.lastName ), ( "timeEnrolled", encodeInt_comparison_exp |> Encode.optional input.timeEnrolled ), ( "timeUpdated", encodeInt_comparison_exp |> Encode.optional input.timeUpdated ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
 
 
 buildUser_inc_input : (User_inc_inputOptionalFields -> User_inc_inputOptionalFields) -> User_inc_input
@@ -1318,13 +1371,32 @@ buildUser_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { admin = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
     in
-    { admin = optionals.admin, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    User_insert_input { admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
 
 
 type alias User_insert_inputOptionalFields =
     { admin : OptionalArgument Bool
+    , documents : OptionalArgument Document_arr_rel_insert_input
+    , email : OptionalArgument String
+    , firstName : OptionalArgument String
+    , id : OptionalArgument Int
+    , lastName : OptionalArgument String
+    , timeEnrolled : OptionalArgument Int
+    , timeUpdated : OptionalArgument Int
+    , username : OptionalArgument String
+    }
+
+
+{-| Type alias for the `User_insert_input` attributes. Note that this type
+needs to use the `User_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
+-}
+type alias User_insert_inputRaw =
+    { admin : OptionalArgument Bool
+    , documents : OptionalArgument Document_arr_rel_insert_input
     , email : OptionalArgument String
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
@@ -1337,24 +1409,16 @@ type alias User_insert_inputOptionalFields =
 
 {-| Type for the User\_insert\_input input object.
 -}
-type alias User_insert_input =
-    { admin : OptionalArgument Bool
-    , email : OptionalArgument String
-    , firstName : OptionalArgument String
-    , id : OptionalArgument Int
-    , lastName : OptionalArgument String
-    , timeEnrolled : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
-    , username : OptionalArgument String
-    }
+type User_insert_input
+    = User_insert_input User_insert_inputRaw
 
 
 {-| Encode a User\_insert\_input into a value that can be used as an argument.
 -}
 encodeUser_insert_input : User_insert_input -> Value
-encodeUser_insert_input input =
+encodeUser_insert_input (User_insert_input input) =
     Encode.maybeObject
-        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.int |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ), ( "username", Encode.string |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "documents", encodeDocument_arr_rel_insert_input |> Encode.optional input.documents ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.int |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ), ( "username", Encode.string |> Encode.optional input.username ) ]
 
 
 buildUser_max_order_by : (User_max_order_byOptionalFields -> User_max_order_byOptionalFields) -> User_max_order_by
@@ -1448,7 +1512,7 @@ buildUser_obj_rel_insert_input required fillOptionals =
             fillOptionals
                 { on_conflict = Absent }
     in
-    { data = required.data, on_conflict = optionals.on_conflict }
+    User_obj_rel_insert_input { data = required.data, on_conflict = optionals.on_conflict }
 
 
 type alias User_obj_rel_insert_inputRequiredFields =
@@ -1459,18 +1523,27 @@ type alias User_obj_rel_insert_inputOptionalFields =
     { on_conflict : OptionalArgument User_on_conflict }
 
 
-{-| Type for the User\_obj\_rel\_insert\_input input object.
+{-| Type alias for the `User_obj_rel_insert_input` attributes. Note that this type
+needs to use the `User_obj_rel_insert_input` type (not just a plain type alias) because it has
+references to itself either directly (recursive) or indirectly (circular). See
+<https://github.com/dillonkearns/elm-graphql/issues/33>.
 -}
-type alias User_obj_rel_insert_input =
+type alias User_obj_rel_insert_inputRaw =
     { data : User_insert_input
     , on_conflict : OptionalArgument User_on_conflict
     }
 
 
+{-| Type for the User\_obj\_rel\_insert\_input input object.
+-}
+type User_obj_rel_insert_input
+    = User_obj_rel_insert_input User_obj_rel_insert_inputRaw
+
+
 {-| Encode a User\_obj\_rel\_insert\_input into a value that can be used as an argument.
 -}
 encodeUser_obj_rel_insert_input : User_obj_rel_insert_input -> Value
-encodeUser_obj_rel_insert_input input =
+encodeUser_obj_rel_insert_input (User_obj_rel_insert_input input) =
     Encode.maybeObject
         [ ( "data", encodeUser_insert_input input.data |> Just ), ( "on_conflict", encodeUser_on_conflict |> Encode.optional input.on_conflict ) ]
 
@@ -1507,13 +1580,14 @@ buildUser_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { admin = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { admin = Absent, documents_aggregate = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
     in
-    { admin = optionals.admin, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    { admin = optionals.admin, documents_aggregate = optionals.documents_aggregate, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
 
 
 type alias User_order_byOptionalFields =
     { admin : OptionalArgument Api.Enum.Order_by.Order_by
+    , documents_aggregate : OptionalArgument Document_aggregate_order_by
     , email : OptionalArgument Api.Enum.Order_by.Order_by
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
@@ -1528,6 +1602,7 @@ type alias User_order_byOptionalFields =
 -}
 type alias User_order_by =
     { admin : OptionalArgument Api.Enum.Order_by.Order_by
+    , documents_aggregate : OptionalArgument Document_aggregate_order_by
     , email : OptionalArgument Api.Enum.Order_by.Order_by
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
@@ -1543,7 +1618,7 @@ type alias User_order_by =
 encodeUser_order_by : User_order_by -> Value
 encodeUser_order_by input =
     Encode.maybeObject
-        [ ( "admin", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.admin ), ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.admin ), ( "documents_aggregate", encodeDocument_aggregate_order_by |> Encode.optional input.documents_aggregate ), ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
 
 
 buildUser_set_input : (User_set_inputOptionalFields -> User_set_inputOptionalFields) -> User_set_input

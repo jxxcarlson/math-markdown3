@@ -17,8 +17,6 @@ type alias Document = {
    , authorIdentifier: String
    , content : String
    , tags : List String
-   , timeCreated : Posix
-   , timeUpdated: Posix
    , public: Bool
 
   }
@@ -26,7 +24,7 @@ type alias Document = {
 
 setContent : Posix -> String -> Document -> Document
 setContent time str document =
-    { document | content = str, timeUpdated = time }
+    { document | content = str }
 
 
 getContent : Maybe Document -> String
@@ -43,8 +41,6 @@ footer document =
     ++ document.authorIdentifier ++ "\n"
     -- ++ "Document ID: " ++ document.identifier ++ "\n"
     ++ "Document slug: " ++ slug document ++ "\n"
-    ++ "Created: " ++ Utility.humanDateUTC document.timeCreated ++ " UTC\n"
-    ++ "Last modified: " ++ Utility.humanDateUTC document.timeUpdated ++ " UTC\n"
     ++ "Tags: " ++ String.join ", " document.tags ++ "\n"
     ++ "Words: " ++ Utility.wordCount document.content
     ++ "\n" ++ "````" ++ "\n\n"
@@ -55,7 +51,7 @@ footer document =
     > title = "Introduction to Quantum Mechanics"
     > documentId "jxxcarlson" title t
     "jxxcarlson.introduction-to-quantum-mechanics.1568667528"
-
+44
 -}
 documentIdentifier : String -> String -> Posix -> String
 documentIdentifier authorIdentifier title time =
@@ -64,7 +60,15 @@ documentIdentifier authorIdentifier title time =
 
 slug : Document -> String
 slug document =
-    document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ Utility.posixSlug document.timeCreated
+    let
+      timeCreated = String.split "." document.identifier
+        |> List.reverse
+        |> List.head
+        |> Maybe.andThen String.toInt
+        |> Maybe.withDefault 0
+
+    in
+    document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ Utility.intSlug timeCreated
 
 
 {-|
@@ -85,8 +89,6 @@ create authorIdentifier title time content =
       , authorIdentifier = authorIdentifier
       , content = content
       , tags  = [ ]
-      , timeCreated = time
-      , timeUpdated = time
       , public = False
 
 

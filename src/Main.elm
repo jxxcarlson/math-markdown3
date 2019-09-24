@@ -325,46 +325,46 @@ update msg model =
 
         -- DOCUMENT --
 
-        CreateDocument ->
-           case model.currentUser of
-               Nothing -> (model, Cmd.none)
-               Just user ->
-                   let
-                      newDocument = Document.create user.username "New Document" model.time "# New Document\n\nWrite something here ..."
-                   in
-                   ({model | currentDocument = Just newDocument
-                            , documentList = newDocument :: model.documentList
-                            , visibilityOfTools = Invisible
-                     }
-                     , Request.createDocument newDocument |> Cmd.map Req
-                   )
-
-
-        SaveDocument ->
-            case model.currentDocument of
-               Nothing -> (model, Cmd.none)
-               Just document ->
-                   ({model | message = "Saving document ..."}
-                     , Request.update_document document |> Cmd.map Req
-                   )
+--        CreateDocument ->
+--           case model.currentUser of
+--               Nothing -> (model, Cmd.none)
+--               Just user ->
+--                   let
+--                      newDocument = Document.create user.username "New Document" model.time "# New Document\n\nWrite something here ..."
+--                   in
+--                   ({model | currentDocument = Just newDocument
+--                            , documentList = newDocument :: model.documentList
+--                            , visibilityOfTools = Invisible
+--                     }
+--                     , Request.createDocument newDocument |> Cmd.map Req
+--                   )
+--
+--
+--        SaveDocument ->
+--            case model.currentDocument of
+--               Nothing -> (model, Cmd.none)
+--               Just document ->
+--                   ({model | message = "Saving document ..."}
+--                     , Request.update_document document |> Cmd.map Req
+--                   )
 
         ArmForDelete ->
             ({ model | documentDeleteState = Armed, message = "Armed for delete.  Caution!"}, Cmd.none)
 
         CancelDeleteDocument ->
             ({ model | documentDeleteState = SafetyOn, message = "Delete cancelled"}, Cmd.none)
-
-        DeleteDocument ->
-            case model.currentDocument of
-               Nothing -> (model, Cmd.none)
-               Just document ->
-                   case model.documentDeleteState of
-                       SafetyOn ->
-                           ({model | message = "Turning safety off.  Press again to delete document.", documentDeleteState = Armed}
-                             , Cmd.none)
-                       Armed ->
-                         ({model | message = "Deleting document ...", documentDeleteState = SafetyOn}
-                             , Request.delete_document document |> Cmd.map Req)
+--
+--        DeleteDocument ->
+--            case model.currentDocument of
+--               Nothing -> (model, Cmd.none)
+--               Just document ->
+--                   case model.documentDeleteState of
+--                       SafetyOn ->
+--                           ({model | message = "Turning safety off.  Press again to delete document.", documentDeleteState = Armed}
+--                             , Cmd.none)
+--                       Armed ->
+--                         ({model | message = "Deleting document ...", documentDeleteState = SafetyOn}
+--                             , Request.delete_document document |> Cmd.map Req)
 
         GetUserDocuments ->
             case model.currentUser of
@@ -393,30 +393,30 @@ update msg model =
 
         Req requestMsg ->
             case requestMsg of
-              GotNewDocument remoteData ->
-                case remoteData of
-                   NotAsked -> ({ model | message = "New doc: not asked"} , Cmd.none)
-                   Loading -> ({model | message = "Mew doc: loading"} , Cmd.none)
-                   Failure _ ->
-                        ({model | message = "New doc: failed request"} , Cmd.none)
-                   Success _ -> ({model | message = "New document created"} , Cmd.none)
-
-              ConfirmUpdatedDocument remoteData ->
-                  case remoteData of
-                     NotAsked -> ({ model | message = "Update doc: not asked"} , Cmd.none)
-                     Loading -> ({model | message = "Updated doc: loading"} , Cmd.none)
-                     Failure _ ->
-                          ({model | message = "Updated doc: failed request"} , Cmd.none)
-                     Success _ -> ({model | message = "Document update successful"} , Cmd.none)
-
-              ConfirmUDeleteDocument remoteData ->
-                  case remoteData of
-                     NotAsked -> ({ model | message = "Delete doc: not asked"} , Cmd.none)
-                     Loading -> ({model | message = "Delete doc: loading"} , Cmd.none)
-                     Failure _ ->
-                          ({model | message = "Delete doc: failed request"} , Cmd.none)
-                     Success maybeDeletedDocument -> handleDeletedDocument model maybeDeletedDocument
-                       -- ({model | message = "Document delete successful"} , Cmd.none)
+--              GotNewDocument remoteData ->
+--                case remoteData of
+--                   NotAsked -> ({ model | message = "New doc: not asked"} , Cmd.none)
+--                   Loading -> ({model | message = "Mew doc: loading"} , Cmd.none)
+--                   Failure _ ->
+--                        ({model | message = "New doc: failed request"} , Cmd.none)
+--                   Success _ -> ({model | message = "New document created"} , Cmd.none)
+--
+--              ConfirmUpdatedDocument remoteData ->
+--                  case remoteData of
+--                     NotAsked -> ({ model | message = "Update doc: not asked"} , Cmd.none)
+--                     Loading -> ({model | message = "Updated doc: loading"} , Cmd.none)
+--                     Failure _ ->
+--                          ({model | message = "Updated doc: failed request"} , Cmd.none)
+--                     Success _ -> ({model | message = "Document update successful"} , Cmd.none)
+--
+--              ConfirmUDeleteDocument remoteData ->
+--                  case remoteData of
+--                     NotAsked -> ({ model | message = "Delete doc: not asked"} , Cmd.none)
+--                     Loading -> ({model | message = "Delete doc: loading"} , Cmd.none)
+--                     Failure _ ->
+--                          ({model | message = "Delete doc: failed request"} , Cmd.none)
+--                     Success maybeDeletedDocument -> handleDeletedDocument model maybeDeletedDocument
+--                       -- ({model | message = "Document delete successful"} , Cmd.none)
 
               GotUserDocuments remoteData  ->
                 case remoteData of

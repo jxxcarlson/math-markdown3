@@ -2,8 +2,9 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.User exposing (admin, email, firstName, id, lastName, timeEnrolled, timeUpdated, username)
+module Api.Object.User exposing (DocumentsAggregateOptionalArguments, DocumentsOptionalArguments, admin, documents, documents_aggregate, email, firstName, id, lastName, timeEnrolled, timeUpdated, username)
 
+import Api.Enum.Document_select_column
 import Api.InputObject
 import Api.Interface
 import Api.Object
@@ -22,6 +23,68 @@ import Json.Decode as Decode
 admin : SelectionSet Bool Api.Object.User
 admin =
     Object.selectionForField "Bool" "admin" [] Decode.bool
+
+
+type alias DocumentsOptionalArguments =
+    { distinct_on : OptionalArgument (List Api.Enum.Document_select_column.Document_select_column)
+    , limit : OptionalArgument Int
+    , offset : OptionalArgument Int
+    , order_by : OptionalArgument (List Api.InputObject.Document_order_by)
+    , where_ : OptionalArgument Api.InputObject.Document_bool_exp
+    }
+
+
+{-| An array relationship
+
+  - distinct\_on - distinct select on columns
+  - limit - limit the nuber of rows returned
+  - offset - skip the first n rows. Use only with order\_by
+  - order\_by - sort the rows by one or more columns
+  - where\_ - filter the rows returned
+
+-}
+documents : (DocumentsOptionalArguments -> DocumentsOptionalArguments) -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (List decodesTo) Api.Object.User
+documents fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { distinct_on = Absent, limit = Absent, offset = Absent, order_by = Absent, where_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "distinct_on" filledInOptionals.distinct_on (Encode.enum Api.Enum.Document_select_column.toString |> Encode.list), Argument.optional "limit" filledInOptionals.limit Encode.int, Argument.optional "offset" filledInOptionals.offset Encode.int, Argument.optional "order_by" filledInOptionals.order_by (Api.InputObject.encodeDocument_order_by |> Encode.list), Argument.optional "where" filledInOptionals.where_ Api.InputObject.encodeDocument_bool_exp ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "documents" optionalArgs object_ (identity >> Decode.list)
+
+
+type alias DocumentsAggregateOptionalArguments =
+    { distinct_on : OptionalArgument (List Api.Enum.Document_select_column.Document_select_column)
+    , limit : OptionalArgument Int
+    , offset : OptionalArgument Int
+    , order_by : OptionalArgument (List Api.InputObject.Document_order_by)
+    , where_ : OptionalArgument Api.InputObject.Document_bool_exp
+    }
+
+
+{-| An aggregated array relationship
+
+  - distinct\_on - distinct select on columns
+  - limit - limit the nuber of rows returned
+  - offset - skip the first n rows. Use only with order\_by
+  - order\_by - sort the rows by one or more columns
+  - where\_ - filter the rows returned
+
+-}
+documents_aggregate : (DocumentsAggregateOptionalArguments -> DocumentsAggregateOptionalArguments) -> SelectionSet decodesTo Api.Object.Document_aggregate -> SelectionSet decodesTo Api.Object.User
+documents_aggregate fillInOptionals object_ =
+    let
+        filledInOptionals =
+            fillInOptionals { distinct_on = Absent, limit = Absent, offset = Absent, order_by = Absent, where_ = Absent }
+
+        optionalArgs =
+            [ Argument.optional "distinct_on" filledInOptionals.distinct_on (Encode.enum Api.Enum.Document_select_column.toString |> Encode.list), Argument.optional "limit" filledInOptionals.limit Encode.int, Argument.optional "offset" filledInOptionals.offset Encode.int, Argument.optional "order_by" filledInOptionals.order_by (Api.InputObject.encodeDocument_order_by |> Encode.list), Argument.optional "where" filledInOptionals.where_ Api.InputObject.encodeDocument_bool_exp ]
+                |> List.filterMap identity
+    in
+    Object.selectionForCompositeField "documents_aggregate" optionalArgs object_ identity
 
 
 email : SelectionSet String Api.Object.User

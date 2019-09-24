@@ -10,8 +10,6 @@ type alias User = {
     , public : Bool
     , firstName : String
     , lastName : String
-    , timeEnrolled : Posix
-    , timeUpdated : Posix
     , admin : Bool
   }
 
@@ -22,7 +20,5 @@ dummy = {
    , public = True
    , firstName = "James"
    , lastName = "Carlson"
-   , timeEnrolled = Time.millisToPosix (1568667528 * 1000)
-   , timeUpdated = Time.millisToPosix (1568667528 * 1000)
    , admin = False
   }
