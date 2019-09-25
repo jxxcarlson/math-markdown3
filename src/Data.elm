@@ -1,8 +1,46 @@
-module Data exposing (startupDocument, doc5, doc2, doc3, doc4, rhsUserText)
+module Data exposing (startupDocument, doc5, doc2, doc3, doc4, rhsUserText,
+     startupDocumentSummary, doc5Summary, doc2Summary, doc3Summary, doc4Summary
+  )
 
 import Time exposing(Posix)
 
 import Api.Scalar exposing(Id(..))
+
+startupDocumentSummary = {
+     id = Id "undefined"
+  ,  identifier = "jxxcarlson.pure-elm-markdown-parser.1568-700-834"
+  ,  title = "A Pure Elm Markdown Parser"
+  , authorIdentifier = "jxxcarlson"
+  }
+
+
+doc2Summary = {
+    id = Id "undefined"
+  , identifier = "jxxcarlson.notes-on-futhark.15687-008-834"
+  , title = "Notes on Futhark"
+  , authorIdentifier = "jxxcarlson"
+  }
+
+doc3Summary = {
+    id = Id "undefined"
+  , identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568-700-834"
+  , title = "Math Markdown Progress Roadmap & Report"
+  , authorIdentifier = "jxxcarlson"
+  }
+
+doc4Summary = {
+    id = Id "undefined"
+  ,  identifier = "jxxcarlson.graphql-queries-and-mutations.1568-700-834"
+  , title = "GraphQL Queries and Mutations"
+  , authorIdentifier = "jxxcarlson"
+  }
+
+doc5Summary= {
+    id = Id "undefined"
+  , identifier = "jxxcarlson.elm-resources.1568-981-582"
+  , title = "Elm resources"
+  , authorIdentifier = "jxxcarlson"
+  }
 
 startupDocument = {
      id = Id "undefined"

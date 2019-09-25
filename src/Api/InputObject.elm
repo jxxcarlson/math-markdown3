@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.InputObject exposing (Boolean_comparison_exp, Boolean_comparison_expOptionalFields, Document_aggregate_order_by, Document_aggregate_order_byOptionalFields, Document_append_input, Document_append_inputOptionalFields, Document_arr_rel_insert_input(..), Document_arr_rel_insert_inputOptionalFields, Document_arr_rel_insert_inputRaw, Document_arr_rel_insert_inputRequiredFields, Document_avg_order_by, Document_avg_order_byOptionalFields, Document_bool_exp(..), Document_bool_expOptionalFields, Document_bool_expRaw, Document_delete_at_path_input, Document_delete_at_path_inputOptionalFields, Document_delete_elem_input, Document_delete_elem_inputOptionalFields, Document_delete_key_input, Document_delete_key_inputOptionalFields, Document_inc_input, Document_inc_inputOptionalFields, Document_insert_input(..), Document_insert_inputOptionalFields, Document_insert_inputRaw, Document_max_order_by, Document_max_order_byOptionalFields, Document_min_order_by, Document_min_order_byOptionalFields, Document_obj_rel_insert_input(..), Document_obj_rel_insert_inputOptionalFields, Document_obj_rel_insert_inputRaw, Document_obj_rel_insert_inputRequiredFields, Document_on_conflict, Document_on_conflictRequiredFields, Document_order_by(..), Document_order_byOptionalFields, Document_order_byRaw, Document_prepend_input, Document_prepend_inputOptionalFields, Document_set_input, Document_set_inputOptionalFields, Document_stddev_order_by, Document_stddev_order_byOptionalFields, Document_stddev_pop_order_by, Document_stddev_pop_order_byOptionalFields, Document_stddev_samp_order_by, Document_stddev_samp_order_byOptionalFields, Document_sum_order_by, Document_sum_order_byOptionalFields, Document_var_pop_order_by, Document_var_pop_order_byOptionalFields, Document_var_samp_order_by, Document_var_samp_order_byOptionalFields, Document_variance_order_by, Document_variance_order_byOptionalFields, Int_comparison_exp, Int_comparison_expOptionalFields, Jsonb_comparison_exp, Jsonb_comparison_expOptionalFields, String_comparison_exp, String_comparison_expOptionalFields, User_aggregate_order_by, User_aggregate_order_byOptionalFields, User_arr_rel_insert_input(..), User_arr_rel_insert_inputOptionalFields, User_arr_rel_insert_inputRaw, User_arr_rel_insert_inputRequiredFields, User_avg_order_by, User_avg_order_byOptionalFields, User_bool_exp(..), User_bool_expOptionalFields, User_bool_expRaw, User_inc_input, User_inc_inputOptionalFields, User_insert_input(..), User_insert_inputOptionalFields, User_insert_inputRaw, User_max_order_by, User_max_order_byOptionalFields, User_min_order_by, User_min_order_byOptionalFields, User_obj_rel_insert_input(..), User_obj_rel_insert_inputOptionalFields, User_obj_rel_insert_inputRaw, User_obj_rel_insert_inputRequiredFields, User_on_conflict, User_on_conflictRequiredFields, User_order_by, User_order_byOptionalFields, User_set_input, User_set_inputOptionalFields, User_stddev_order_by, User_stddev_order_byOptionalFields, User_stddev_pop_order_by, User_stddev_pop_order_byOptionalFields, User_stddev_samp_order_by, User_stddev_samp_order_byOptionalFields, User_sum_order_by, User_sum_order_byOptionalFields, User_var_pop_order_by, User_var_pop_order_byOptionalFields, User_var_samp_order_by, User_var_samp_order_byOptionalFields, User_variance_order_by, User_variance_order_byOptionalFields, buildBoolean_comparison_exp, buildDocument_aggregate_order_by, buildDocument_append_input, buildDocument_arr_rel_insert_input, buildDocument_avg_order_by, buildDocument_bool_exp, buildDocument_delete_at_path_input, buildDocument_delete_elem_input, buildDocument_delete_key_input, buildDocument_inc_input, buildDocument_insert_input, buildDocument_max_order_by, buildDocument_min_order_by, buildDocument_obj_rel_insert_input, buildDocument_on_conflict, buildDocument_order_by, buildDocument_prepend_input, buildDocument_set_input, buildDocument_stddev_order_by, buildDocument_stddev_pop_order_by, buildDocument_stddev_samp_order_by, buildDocument_sum_order_by, buildDocument_var_pop_order_by, buildDocument_var_samp_order_by, buildDocument_variance_order_by, buildInt_comparison_exp, buildJsonb_comparison_exp, buildString_comparison_exp, buildUser_aggregate_order_by, buildUser_arr_rel_insert_input, buildUser_avg_order_by, buildUser_bool_exp, buildUser_inc_input, buildUser_insert_input, buildUser_max_order_by, buildUser_min_order_by, buildUser_obj_rel_insert_input, buildUser_on_conflict, buildUser_order_by, buildUser_set_input, buildUser_stddev_order_by, buildUser_stddev_pop_order_by, buildUser_stddev_samp_order_by, buildUser_sum_order_by, buildUser_var_pop_order_by, buildUser_var_samp_order_by, buildUser_variance_order_by, encodeBoolean_comparison_exp, encodeDocument_aggregate_order_by, encodeDocument_append_input, encodeDocument_arr_rel_insert_input, encodeDocument_avg_order_by, encodeDocument_bool_exp, encodeDocument_delete_at_path_input, encodeDocument_delete_elem_input, encodeDocument_delete_key_input, encodeDocument_inc_input, encodeDocument_insert_input, encodeDocument_max_order_by, encodeDocument_min_order_by, encodeDocument_obj_rel_insert_input, encodeDocument_on_conflict, encodeDocument_order_by, encodeDocument_prepend_input, encodeDocument_set_input, encodeDocument_stddev_order_by, encodeDocument_stddev_pop_order_by, encodeDocument_stddev_samp_order_by, encodeDocument_sum_order_by, encodeDocument_var_pop_order_by, encodeDocument_var_samp_order_by, encodeDocument_variance_order_by, encodeInt_comparison_exp, encodeJsonb_comparison_exp, encodeString_comparison_exp, encodeUser_aggregate_order_by, encodeUser_arr_rel_insert_input, encodeUser_avg_order_by, encodeUser_bool_exp, encodeUser_inc_input, encodeUser_insert_input, encodeUser_max_order_by, encodeUser_min_order_by, encodeUser_obj_rel_insert_input, encodeUser_on_conflict, encodeUser_order_by, encodeUser_set_input, encodeUser_stddev_order_by, encodeUser_stddev_pop_order_by, encodeUser_stddev_samp_order_by, encodeUser_sum_order_by, encodeUser_var_pop_order_by, encodeUser_var_samp_order_by, encodeUser_variance_order_by)
+module Api.InputObject exposing (Boolean_comparison_exp, Boolean_comparison_expOptionalFields, Document_aggregate_order_by, Document_aggregate_order_byOptionalFields, Document_append_input, Document_append_inputOptionalFields, Document_arr_rel_insert_input(..), Document_arr_rel_insert_inputOptionalFields, Document_arr_rel_insert_inputRaw, Document_arr_rel_insert_inputRequiredFields, Document_avg_order_by, Document_avg_order_byOptionalFields, Document_bool_exp(..), Document_bool_expOptionalFields, Document_bool_expRaw, Document_delete_at_path_input, Document_delete_at_path_inputOptionalFields, Document_delete_elem_input, Document_delete_elem_inputOptionalFields, Document_delete_key_input, Document_delete_key_inputOptionalFields, Document_inc_input, Document_inc_inputOptionalFields, Document_insert_input(..), Document_insert_inputOptionalFields, Document_insert_inputRaw, Document_max_order_by, Document_max_order_byOptionalFields, Document_min_order_by, Document_min_order_byOptionalFields, Document_obj_rel_insert_input(..), Document_obj_rel_insert_inputOptionalFields, Document_obj_rel_insert_inputRaw, Document_obj_rel_insert_inputRequiredFields, Document_on_conflict, Document_on_conflictRequiredFields, Document_order_by(..), Document_order_byOptionalFields, Document_order_byRaw, Document_prepend_input, Document_prepend_inputOptionalFields, Document_set_input, Document_set_inputOptionalFields, Document_stddev_order_by, Document_stddev_order_byOptionalFields, Document_stddev_pop_order_by, Document_stddev_pop_order_byOptionalFields, Document_stddev_samp_order_by, Document_stddev_samp_order_byOptionalFields, Document_sum_order_by, Document_sum_order_byOptionalFields, Document_var_pop_order_by, Document_var_pop_order_byOptionalFields, Document_var_samp_order_by, Document_var_samp_order_byOptionalFields, Document_variance_order_by, Document_variance_order_byOptionalFields, Int_comparison_exp, Int_comparison_expOptionalFields, Jsonb_comparison_exp, Jsonb_comparison_expOptionalFields, String_comparison_exp, String_comparison_expOptionalFields, Timestamptz_comparison_exp, Timestamptz_comparison_expOptionalFields, User_aggregate_order_by, User_aggregate_order_byOptionalFields, User_arr_rel_insert_input(..), User_arr_rel_insert_inputOptionalFields, User_arr_rel_insert_inputRaw, User_arr_rel_insert_inputRequiredFields, User_avg_order_by, User_avg_order_byOptionalFields, User_bool_exp(..), User_bool_expOptionalFields, User_bool_expRaw, User_inc_input, User_inc_inputOptionalFields, User_insert_input(..), User_insert_inputOptionalFields, User_insert_inputRaw, User_max_order_by, User_max_order_byOptionalFields, User_min_order_by, User_min_order_byOptionalFields, User_obj_rel_insert_input(..), User_obj_rel_insert_inputOptionalFields, User_obj_rel_insert_inputRaw, User_obj_rel_insert_inputRequiredFields, User_on_conflict, User_on_conflictRequiredFields, User_order_by, User_order_byOptionalFields, User_set_input, User_set_inputOptionalFields, User_stddev_order_by, User_stddev_order_byOptionalFields, User_stddev_pop_order_by, User_stddev_pop_order_byOptionalFields, User_stddev_samp_order_by, User_stddev_samp_order_byOptionalFields, User_sum_order_by, User_sum_order_byOptionalFields, User_var_pop_order_by, User_var_pop_order_byOptionalFields, User_var_samp_order_by, User_var_samp_order_byOptionalFields, User_variance_order_by, User_variance_order_byOptionalFields, buildBoolean_comparison_exp, buildDocument_aggregate_order_by, buildDocument_append_input, buildDocument_arr_rel_insert_input, buildDocument_avg_order_by, buildDocument_bool_exp, buildDocument_delete_at_path_input, buildDocument_delete_elem_input, buildDocument_delete_key_input, buildDocument_inc_input, buildDocument_insert_input, buildDocument_max_order_by, buildDocument_min_order_by, buildDocument_obj_rel_insert_input, buildDocument_on_conflict, buildDocument_order_by, buildDocument_prepend_input, buildDocument_set_input, buildDocument_stddev_order_by, buildDocument_stddev_pop_order_by, buildDocument_stddev_samp_order_by, buildDocument_sum_order_by, buildDocument_var_pop_order_by, buildDocument_var_samp_order_by, buildDocument_variance_order_by, buildInt_comparison_exp, buildJsonb_comparison_exp, buildString_comparison_exp, buildTimestamptz_comparison_exp, buildUser_aggregate_order_by, buildUser_arr_rel_insert_input, buildUser_avg_order_by, buildUser_bool_exp, buildUser_inc_input, buildUser_insert_input, buildUser_max_order_by, buildUser_min_order_by, buildUser_obj_rel_insert_input, buildUser_on_conflict, buildUser_order_by, buildUser_set_input, buildUser_stddev_order_by, buildUser_stddev_pop_order_by, buildUser_stddev_samp_order_by, buildUser_sum_order_by, buildUser_var_pop_order_by, buildUser_var_samp_order_by, buildUser_variance_order_by, encodeBoolean_comparison_exp, encodeDocument_aggregate_order_by, encodeDocument_append_input, encodeDocument_arr_rel_insert_input, encodeDocument_avg_order_by, encodeDocument_bool_exp, encodeDocument_delete_at_path_input, encodeDocument_delete_elem_input, encodeDocument_delete_key_input, encodeDocument_inc_input, encodeDocument_insert_input, encodeDocument_max_order_by, encodeDocument_min_order_by, encodeDocument_obj_rel_insert_input, encodeDocument_on_conflict, encodeDocument_order_by, encodeDocument_prepend_input, encodeDocument_set_input, encodeDocument_stddev_order_by, encodeDocument_stddev_pop_order_by, encodeDocument_stddev_samp_order_by, encodeDocument_sum_order_by, encodeDocument_var_pop_order_by, encodeDocument_var_samp_order_by, encodeDocument_variance_order_by, encodeInt_comparison_exp, encodeJsonb_comparison_exp, encodeString_comparison_exp, encodeTimestamptz_comparison_exp, encodeUser_aggregate_order_by, encodeUser_arr_rel_insert_input, encodeUser_avg_order_by, encodeUser_bool_exp, encodeUser_inc_input, encodeUser_insert_input, encodeUser_max_order_by, encodeUser_min_order_by, encodeUser_obj_rel_insert_input, encodeUser_on_conflict, encodeUser_order_by, encodeUser_set_input, encodeUser_stddev_order_by, encodeUser_stddev_pop_order_by, encodeUser_stddev_samp_order_by, encodeUser_sum_order_by, encodeUser_var_pop_order_by, encodeUser_var_samp_order_by, encodeUser_variance_order_by)
 
 import Api.Enum.Document_constraint
 import Api.Enum.Document_update_column
@@ -194,25 +194,19 @@ buildDocument_avg_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_avg_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the Document\_avg\_order\_by input object.
 -}
 type alias Document_avg_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a Document\_avg\_order\_by into a value that can be used as an argument.
@@ -220,7 +214,7 @@ type alias Document_avg_order_by =
 encodeDocument_avg_order_by : Document_avg_order_by -> Value
 encodeDocument_avg_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildDocument_bool_exp : (Document_bool_expOptionalFields -> Document_bool_expOptionalFields) -> Document_bool_exp
@@ -228,9 +222,9 @@ buildDocument_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent, user = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
     in
-    Document_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title, user = optionals.user }
+    Document_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
 
 
 type alias Document_bool_expOptionalFields =
@@ -243,8 +237,7 @@ type alias Document_bool_expOptionalFields =
     , identifier : OptionalArgument String_comparison_exp
     , public : OptionalArgument Boolean_comparison_exp
     , tags : OptionalArgument Jsonb_comparison_exp
-    , timeCreated : OptionalArgument Int_comparison_exp
-    , timeUpdated : OptionalArgument Int_comparison_exp
+    , timeStamp : OptionalArgument Timestamptz_comparison_exp
     , title : OptionalArgument String_comparison_exp
     , user : OptionalArgument User_bool_exp
     }
@@ -265,8 +258,7 @@ type alias Document_bool_expRaw =
     , identifier : OptionalArgument String_comparison_exp
     , public : OptionalArgument Boolean_comparison_exp
     , tags : OptionalArgument Jsonb_comparison_exp
-    , timeCreated : OptionalArgument Int_comparison_exp
-    , timeUpdated : OptionalArgument Int_comparison_exp
+    , timeStamp : OptionalArgument Timestamptz_comparison_exp
     , title : OptionalArgument String_comparison_exp
     , user : OptionalArgument User_bool_exp
     }
@@ -283,7 +275,7 @@ type Document_bool_exp
 encodeDocument_bool_exp : Document_bool_exp -> Value
 encodeDocument_bool_exp (Document_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeDocument_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "authorIdentifier", encodeString_comparison_exp |> Encode.optional input.authorIdentifier ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "identifier", encodeString_comparison_exp |> Encode.optional input.identifier ), ( "public", encodeBoolean_comparison_exp |> Encode.optional input.public ), ( "tags", encodeJsonb_comparison_exp |> Encode.optional input.tags ), ( "timeCreated", encodeInt_comparison_exp |> Encode.optional input.timeCreated ), ( "timeUpdated", encodeInt_comparison_exp |> Encode.optional input.timeUpdated ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ), ( "user", encodeUser_bool_exp |> Encode.optional input.user ) ]
+        [ ( "_and", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeDocument_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "authorIdentifier", encodeString_comparison_exp |> Encode.optional input.authorIdentifier ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "identifier", encodeString_comparison_exp |> Encode.optional input.identifier ), ( "public", encodeBoolean_comparison_exp |> Encode.optional input.public ), ( "tags", encodeJsonb_comparison_exp |> Encode.optional input.tags ), ( "timeStamp", encodeTimestamptz_comparison_exp |> Encode.optional input.timeStamp ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ), ( "user", encodeUser_bool_exp |> Encode.optional input.user ) ]
 
 
 buildDocument_delete_at_path_input : (Document_delete_at_path_inputOptionalFields -> Document_delete_at_path_inputOptionalFields) -> Document_delete_at_path_input
@@ -375,25 +367,19 @@ buildDocument_inc_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_inc_inputOptionalFields =
-    { id : OptionalArgument Int
-    , timeCreated : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
-    }
+    { id : OptionalArgument Int }
 
 
 {-| Type for the Document\_inc\_input input object.
 -}
 type alias Document_inc_input =
-    { id : OptionalArgument Int
-    , timeCreated : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
-    }
+    { id : OptionalArgument Int }
 
 
 {-| Encode a Document\_inc\_input into a value that can be used as an argument.
@@ -401,7 +387,7 @@ type alias Document_inc_input =
 encodeDocument_inc_input : Document_inc_input -> Value
 encodeDocument_inc_input input =
     Encode.maybeObject
-        [ ( "id", Encode.int |> Encode.optional input.id ), ( "timeCreated", Encode.int |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.int |> Encode.optional input.id ) ]
 
 
 buildDocument_insert_input : (Document_insert_inputOptionalFields -> Document_insert_inputOptionalFields) -> Document_insert_input
@@ -409,9 +395,9 @@ buildDocument_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent, user = Absent }
+                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
     in
-    Document_insert_input { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title, user = optionals.user }
+    Document_insert_input { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
 
 
 type alias Document_insert_inputOptionalFields =
@@ -421,8 +407,7 @@ type alias Document_insert_inputOptionalFields =
     , identifier : OptionalArgument String
     , public : OptionalArgument Bool
     , tags : OptionalArgument Api.ScalarCodecs.Jsonb
-    , timeCreated : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
+    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
     , title : OptionalArgument String
     , user : OptionalArgument User_obj_rel_insert_input
     }
@@ -440,8 +425,7 @@ type alias Document_insert_inputRaw =
     , identifier : OptionalArgument String
     , public : OptionalArgument Bool
     , tags : OptionalArgument Api.ScalarCodecs.Jsonb
-    , timeCreated : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
+    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
     , title : OptionalArgument String
     , user : OptionalArgument User_obj_rel_insert_input
     }
@@ -458,7 +442,7 @@ type Document_insert_input
 encodeDocument_insert_input : Document_insert_input -> Value
 encodeDocument_insert_input (Document_insert_input input) =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeCreated", Encode.int |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ), ( "title", Encode.string |> Encode.optional input.title ), ( "user", encodeUser_obj_rel_insert_input |> Encode.optional input.user ) ]
+        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ), ( "user", encodeUser_obj_rel_insert_input |> Encode.optional input.user ) ]
 
 
 buildDocument_max_order_by : (Document_max_order_byOptionalFields -> Document_max_order_byOptionalFields) -> Document_max_order_by
@@ -466,9 +450,9 @@ buildDocument_max_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent }
+                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, timeStamp = Absent, title = Absent }
     in
-    { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title }
+    { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, timeStamp = optionals.timeStamp, title = optionals.title }
 
 
 type alias Document_max_order_byOptionalFields =
@@ -476,8 +460,7 @@ type alias Document_max_order_byOptionalFields =
     , content : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , identifier : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , title : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -489,8 +472,7 @@ type alias Document_max_order_by =
     , content : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , identifier : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , title : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -500,7 +482,7 @@ type alias Document_max_order_by =
 encodeDocument_max_order_by : Document_max_order_by -> Value
 encodeDocument_max_order_by input =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "identifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.identifier ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ) ]
+        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "identifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.identifier ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ) ]
 
 
 buildDocument_min_order_by : (Document_min_order_byOptionalFields -> Document_min_order_byOptionalFields) -> Document_min_order_by
@@ -508,9 +490,9 @@ buildDocument_min_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent }
+                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, timeStamp = Absent, title = Absent }
     in
-    { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title }
+    { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, timeStamp = optionals.timeStamp, title = optionals.title }
 
 
 type alias Document_min_order_byOptionalFields =
@@ -518,8 +500,7 @@ type alias Document_min_order_byOptionalFields =
     , content : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , identifier : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , title : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -531,8 +512,7 @@ type alias Document_min_order_by =
     , content : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , identifier : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , title : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -542,7 +522,7 @@ type alias Document_min_order_by =
 encodeDocument_min_order_by : Document_min_order_by -> Value
 encodeDocument_min_order_by input =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "identifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.identifier ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ) ]
+        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "identifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.identifier ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ) ]
 
 
 buildDocument_obj_rel_insert_input : Document_obj_rel_insert_inputRequiredFields -> (Document_obj_rel_insert_inputOptionalFields -> Document_obj_rel_insert_inputOptionalFields) -> Document_obj_rel_insert_input
@@ -620,9 +600,9 @@ buildDocument_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent, user = Absent }
+                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
     in
-    Document_order_by { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title, user = optionals.user }
+    Document_order_by { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
 
 
 type alias Document_order_byOptionalFields =
@@ -632,8 +612,7 @@ type alias Document_order_byOptionalFields =
     , identifier : OptionalArgument Api.Enum.Order_by.Order_by
     , public : OptionalArgument Api.Enum.Order_by.Order_by
     , tags : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , title : OptionalArgument Api.Enum.Order_by.Order_by
     , user : OptionalArgument User_order_by
     }
@@ -651,8 +630,7 @@ type alias Document_order_byRaw =
     , identifier : OptionalArgument Api.Enum.Order_by.Order_by
     , public : OptionalArgument Api.Enum.Order_by.Order_by
     , tags : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , title : OptionalArgument Api.Enum.Order_by.Order_by
     , user : OptionalArgument User_order_by
     }
@@ -669,7 +647,7 @@ type Document_order_by
 encodeDocument_order_by : Document_order_by -> Value
 encodeDocument_order_by (Document_order_by input) =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "identifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.identifier ), ( "public", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.public ), ( "tags", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.tags ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ), ( "user", encodeUser_order_by |> Encode.optional input.user ) ]
+        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "identifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.identifier ), ( "public", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.public ), ( "tags", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.tags ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ), ( "user", encodeUser_order_by |> Encode.optional input.user ) ]
 
 
 buildDocument_prepend_input : (Document_prepend_inputOptionalFields -> Document_prepend_inputOptionalFields) -> Document_prepend_input
@@ -705,9 +683,9 @@ buildDocument_set_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeCreated = Absent, timeUpdated = Absent, title = Absent }
+                { authorIdentifier = Absent, content = Absent, id = Absent, identifier = Absent, public = Absent, tags = Absent, timeStamp = Absent, title = Absent }
     in
-    { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated, title = optionals.title }
+    { authorIdentifier = optionals.authorIdentifier, content = optionals.content, id = optionals.id, identifier = optionals.identifier, public = optionals.public, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title }
 
 
 type alias Document_set_inputOptionalFields =
@@ -717,8 +695,7 @@ type alias Document_set_inputOptionalFields =
     , identifier : OptionalArgument String
     , public : OptionalArgument Bool
     , tags : OptionalArgument Api.ScalarCodecs.Jsonb
-    , timeCreated : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
+    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
     , title : OptionalArgument String
     }
 
@@ -732,8 +709,7 @@ type alias Document_set_input =
     , identifier : OptionalArgument String
     , public : OptionalArgument Bool
     , tags : OptionalArgument Api.ScalarCodecs.Jsonb
-    , timeCreated : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
+    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
     , title : OptionalArgument String
     }
 
@@ -743,7 +719,7 @@ type alias Document_set_input =
 encodeDocument_set_input : Document_set_input -> Value
 encodeDocument_set_input input =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeCreated", Encode.int |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ), ( "title", Encode.string |> Encode.optional input.title ) ]
+        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
 
 buildDocument_stddev_order_by : (Document_stddev_order_byOptionalFields -> Document_stddev_order_byOptionalFields) -> Document_stddev_order_by
@@ -751,25 +727,19 @@ buildDocument_stddev_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_stddev_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the Document\_stddev\_order\_by input object.
 -}
 type alias Document_stddev_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a Document\_stddev\_order\_by into a value that can be used as an argument.
@@ -777,7 +747,7 @@ type alias Document_stddev_order_by =
 encodeDocument_stddev_order_by : Document_stddev_order_by -> Value
 encodeDocument_stddev_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildDocument_stddev_pop_order_by : (Document_stddev_pop_order_byOptionalFields -> Document_stddev_pop_order_byOptionalFields) -> Document_stddev_pop_order_by
@@ -785,25 +755,19 @@ buildDocument_stddev_pop_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_stddev_pop_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the Document\_stddev\_pop\_order\_by input object.
 -}
 type alias Document_stddev_pop_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a Document\_stddev\_pop\_order\_by into a value that can be used as an argument.
@@ -811,7 +775,7 @@ type alias Document_stddev_pop_order_by =
 encodeDocument_stddev_pop_order_by : Document_stddev_pop_order_by -> Value
 encodeDocument_stddev_pop_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildDocument_stddev_samp_order_by : (Document_stddev_samp_order_byOptionalFields -> Document_stddev_samp_order_byOptionalFields) -> Document_stddev_samp_order_by
@@ -819,25 +783,19 @@ buildDocument_stddev_samp_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_stddev_samp_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the Document\_stddev\_samp\_order\_by input object.
 -}
 type alias Document_stddev_samp_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a Document\_stddev\_samp\_order\_by into a value that can be used as an argument.
@@ -845,7 +803,7 @@ type alias Document_stddev_samp_order_by =
 encodeDocument_stddev_samp_order_by : Document_stddev_samp_order_by -> Value
 encodeDocument_stddev_samp_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildDocument_sum_order_by : (Document_sum_order_byOptionalFields -> Document_sum_order_byOptionalFields) -> Document_sum_order_by
@@ -853,25 +811,19 @@ buildDocument_sum_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_sum_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the Document\_sum\_order\_by input object.
 -}
 type alias Document_sum_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a Document\_sum\_order\_by into a value that can be used as an argument.
@@ -879,7 +831,7 @@ type alias Document_sum_order_by =
 encodeDocument_sum_order_by : Document_sum_order_by -> Value
 encodeDocument_sum_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildDocument_var_pop_order_by : (Document_var_pop_order_byOptionalFields -> Document_var_pop_order_byOptionalFields) -> Document_var_pop_order_by
@@ -887,25 +839,19 @@ buildDocument_var_pop_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_var_pop_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the Document\_var\_pop\_order\_by input object.
 -}
 type alias Document_var_pop_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a Document\_var\_pop\_order\_by into a value that can be used as an argument.
@@ -913,7 +859,7 @@ type alias Document_var_pop_order_by =
 encodeDocument_var_pop_order_by : Document_var_pop_order_by -> Value
 encodeDocument_var_pop_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildDocument_var_samp_order_by : (Document_var_samp_order_byOptionalFields -> Document_var_samp_order_byOptionalFields) -> Document_var_samp_order_by
@@ -921,25 +867,19 @@ buildDocument_var_samp_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_var_samp_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the Document\_var\_samp\_order\_by input object.
 -}
 type alias Document_var_samp_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a Document\_var\_samp\_order\_by into a value that can be used as an argument.
@@ -947,7 +887,7 @@ type alias Document_var_samp_order_by =
 encodeDocument_var_samp_order_by : Document_var_samp_order_by -> Value
 encodeDocument_var_samp_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildDocument_variance_order_by : (Document_variance_order_byOptionalFields -> Document_variance_order_byOptionalFields) -> Document_variance_order_by
@@ -955,25 +895,19 @@ buildDocument_variance_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeCreated = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeCreated = optionals.timeCreated, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias Document_variance_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the Document\_variance\_order\_by input object.
 -}
 type alias Document_variance_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeCreated : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a Document\_variance\_order\_by into a value that can be used as an argument.
@@ -981,7 +915,7 @@ type alias Document_variance_order_by =
 encodeDocument_variance_order_by : Document_variance_order_by -> Value
 encodeDocument_variance_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeCreated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeCreated ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildInt_comparison_exp : (Int_comparison_expOptionalFields -> Int_comparison_expOptionalFields) -> Int_comparison_exp
@@ -1144,6 +1078,52 @@ encodeString_comparison_exp input =
         [ ( "_eq", Encode.string |> Encode.optional input.eq_ ), ( "_gt", Encode.string |> Encode.optional input.gt_ ), ( "_gte", Encode.string |> Encode.optional input.gte_ ), ( "_ilike", Encode.string |> Encode.optional input.ilike_ ), ( "_in", (Encode.string |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_like", Encode.string |> Encode.optional input.like_ ), ( "_lt", Encode.string |> Encode.optional input.lt_ ), ( "_lte", Encode.string |> Encode.optional input.lte_ ), ( "_neq", Encode.string |> Encode.optional input.neq_ ), ( "_nilike", Encode.string |> Encode.optional input.nilike_ ), ( "_nin", (Encode.string |> Encode.list) |> Encode.optional input.nin_ ), ( "_nlike", Encode.string |> Encode.optional input.nlike_ ), ( "_nsimilar", Encode.string |> Encode.optional input.nsimilar_ ), ( "_similar", Encode.string |> Encode.optional input.similar_ ) ]
 
 
+buildTimestamptz_comparison_exp : (Timestamptz_comparison_expOptionalFields -> Timestamptz_comparison_expOptionalFields) -> Timestamptz_comparison_exp
+buildTimestamptz_comparison_exp fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { eq_ = Absent, gt_ = Absent, gte_ = Absent, in_ = Absent, is_null_ = Absent, lt_ = Absent, lte_ = Absent, neq_ = Absent, nin_ = Absent }
+    in
+    { eq_ = optionals.eq_, gt_ = optionals.gt_, gte_ = optionals.gte_, in_ = optionals.in_, is_null_ = optionals.is_null_, lt_ = optionals.lt_, lte_ = optionals.lte_, neq_ = optionals.neq_, nin_ = optionals.nin_ }
+
+
+type alias Timestamptz_comparison_expOptionalFields =
+    { eq_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , gt_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , gte_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , in_ : OptionalArgument (List Api.ScalarCodecs.Timestamptz)
+    , is_null_ : OptionalArgument Bool
+    , lt_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , lte_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , neq_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , nin_ : OptionalArgument (List Api.ScalarCodecs.Timestamptz)
+    }
+
+
+{-| Type for the Timestamptz\_comparison\_exp input object.
+-}
+type alias Timestamptz_comparison_exp =
+    { eq_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , gt_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , gte_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , in_ : OptionalArgument (List Api.ScalarCodecs.Timestamptz)
+    , is_null_ : OptionalArgument Bool
+    , lt_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , lte_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , neq_ : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , nin_ : OptionalArgument (List Api.ScalarCodecs.Timestamptz)
+    }
+
+
+{-| Encode a Timestamptz\_comparison\_exp into a value that can be used as an argument.
+-}
+encodeTimestamptz_comparison_exp : Timestamptz_comparison_exp -> Value
+encodeTimestamptz_comparison_exp input =
+    Encode.maybeObject
+        [ ( "_eq", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.eq_ ), ( "_gt", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.gt_ ), ( "_gte", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.gte_ ), ( "_in", ((Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_lt", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.lt_ ), ( "_lte", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.lte_ ), ( "_neq", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.neq_ ), ( "_nin", ((Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.list) |> Encode.optional input.nin_ ) ]
+
+
 buildUser_aggregate_order_by : (User_aggregate_order_byOptionalFields -> User_aggregate_order_byOptionalFields) -> User_aggregate_order_by
 buildUser_aggregate_order_by fillOptionals =
     let
@@ -1242,25 +1222,19 @@ buildUser_avg_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_avg_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the User\_avg\_order\_by input object.
 -}
 type alias User_avg_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a User\_avg\_order\_by into a value that can be used as an argument.
@@ -1268,7 +1242,7 @@ type alias User_avg_order_by =
 encodeUser_avg_order_by : User_avg_order_by -> Value
 encodeUser_avg_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildUser_bool_exp : (User_bool_expOptionalFields -> User_bool_expOptionalFields) -> User_bool_exp
@@ -1276,9 +1250,9 @@ buildUser_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
     in
-    User_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    User_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_bool_expOptionalFields =
@@ -1291,8 +1265,7 @@ type alias User_bool_expOptionalFields =
     , firstName : OptionalArgument String_comparison_exp
     , id : OptionalArgument Int_comparison_exp
     , lastName : OptionalArgument String_comparison_exp
-    , timeEnrolled : OptionalArgument Int_comparison_exp
-    , timeUpdated : OptionalArgument Int_comparison_exp
+    , timeStamp : OptionalArgument Timestamptz_comparison_exp
     , username : OptionalArgument String_comparison_exp
     }
 
@@ -1312,8 +1285,7 @@ type alias User_bool_expRaw =
     , firstName : OptionalArgument String_comparison_exp
     , id : OptionalArgument Int_comparison_exp
     , lastName : OptionalArgument String_comparison_exp
-    , timeEnrolled : OptionalArgument Int_comparison_exp
-    , timeUpdated : OptionalArgument Int_comparison_exp
+    , timeStamp : OptionalArgument Timestamptz_comparison_exp
     , username : OptionalArgument String_comparison_exp
     }
 
@@ -1329,7 +1301,7 @@ type User_bool_exp
 encodeUser_bool_exp : User_bool_exp -> Value
 encodeUser_bool_exp (User_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUser_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "admin", encodeBoolean_comparison_exp |> Encode.optional input.admin ), ( "documents", encodeDocument_bool_exp |> Encode.optional input.documents ), ( "email", encodeString_comparison_exp |> Encode.optional input.email ), ( "firstName", encodeString_comparison_exp |> Encode.optional input.firstName ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "lastName", encodeString_comparison_exp |> Encode.optional input.lastName ), ( "timeEnrolled", encodeInt_comparison_exp |> Encode.optional input.timeEnrolled ), ( "timeUpdated", encodeInt_comparison_exp |> Encode.optional input.timeUpdated ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
+        [ ( "_and", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUser_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "admin", encodeBoolean_comparison_exp |> Encode.optional input.admin ), ( "documents", encodeDocument_bool_exp |> Encode.optional input.documents ), ( "email", encodeString_comparison_exp |> Encode.optional input.email ), ( "firstName", encodeString_comparison_exp |> Encode.optional input.firstName ), ( "id", encodeInt_comparison_exp |> Encode.optional input.id ), ( "lastName", encodeString_comparison_exp |> Encode.optional input.lastName ), ( "timeStamp", encodeTimestamptz_comparison_exp |> Encode.optional input.timeStamp ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
 
 
 buildUser_inc_input : (User_inc_inputOptionalFields -> User_inc_inputOptionalFields) -> User_inc_input
@@ -1337,25 +1309,19 @@ buildUser_inc_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_inc_inputOptionalFields =
-    { id : OptionalArgument Int
-    , timeEnrolled : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
-    }
+    { id : OptionalArgument Int }
 
 
 {-| Type for the User\_inc\_input input object.
 -}
 type alias User_inc_input =
-    { id : OptionalArgument Int
-    , timeEnrolled : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
-    }
+    { id : OptionalArgument Int }
 
 
 {-| Encode a User\_inc\_input into a value that can be used as an argument.
@@ -1363,7 +1329,7 @@ type alias User_inc_input =
 encodeUser_inc_input : User_inc_input -> Value
 encodeUser_inc_input input =
     Encode.maybeObject
-        [ ( "id", Encode.int |> Encode.optional input.id ), ( "timeEnrolled", Encode.int |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.int |> Encode.optional input.id ) ]
 
 
 buildUser_insert_input : (User_insert_inputOptionalFields -> User_insert_inputOptionalFields) -> User_insert_input
@@ -1371,9 +1337,9 @@ buildUser_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
     in
-    User_insert_input { admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    User_insert_input { admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_insert_inputOptionalFields =
@@ -1383,8 +1349,7 @@ type alias User_insert_inputOptionalFields =
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
     , lastName : OptionalArgument String
-    , timeEnrolled : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
+    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
 
@@ -1401,8 +1366,7 @@ type alias User_insert_inputRaw =
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
     , lastName : OptionalArgument String
-    , timeEnrolled : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
+    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
 
@@ -1418,7 +1382,7 @@ type User_insert_input
 encodeUser_insert_input : User_insert_input -> Value
 encodeUser_insert_input (User_insert_input input) =
     Encode.maybeObject
-        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "documents", encodeDocument_arr_rel_insert_input |> Encode.optional input.documents ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.int |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ), ( "username", Encode.string |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "documents", encodeDocument_arr_rel_insert_input |> Encode.optional input.documents ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeStamp", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
 
 
 buildUser_max_order_by : (User_max_order_byOptionalFields -> User_max_order_byOptionalFields) -> User_max_order_by
@@ -1426,9 +1390,9 @@ buildUser_max_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
     in
-    { email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    { email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_max_order_byOptionalFields =
@@ -1436,8 +1400,7 @@ type alias User_max_order_byOptionalFields =
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , lastName : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , username : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -1449,8 +1412,7 @@ type alias User_max_order_by =
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , lastName : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , username : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -1460,7 +1422,7 @@ type alias User_max_order_by =
 encodeUser_max_order_by : User_max_order_by -> Value
 encodeUser_max_order_by input =
     Encode.maybeObject
-        [ ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
+        [ ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
 
 
 buildUser_min_order_by : (User_min_order_byOptionalFields -> User_min_order_byOptionalFields) -> User_min_order_by
@@ -1468,9 +1430,9 @@ buildUser_min_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
     in
-    { email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    { email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_min_order_byOptionalFields =
@@ -1478,8 +1440,7 @@ type alias User_min_order_byOptionalFields =
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , lastName : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , username : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -1491,8 +1452,7 @@ type alias User_min_order_by =
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , lastName : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , username : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -1502,7 +1462,7 @@ type alias User_min_order_by =
 encodeUser_min_order_by : User_min_order_by -> Value
 encodeUser_min_order_by input =
     Encode.maybeObject
-        [ ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
+        [ ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
 
 
 buildUser_obj_rel_insert_input : User_obj_rel_insert_inputRequiredFields -> (User_obj_rel_insert_inputOptionalFields -> User_obj_rel_insert_inputOptionalFields) -> User_obj_rel_insert_input
@@ -1580,9 +1540,9 @@ buildUser_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { admin = Absent, documents_aggregate = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { admin = Absent, documents_aggregate = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
     in
-    { admin = optionals.admin, documents_aggregate = optionals.documents_aggregate, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    { admin = optionals.admin, documents_aggregate = optionals.documents_aggregate, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_order_byOptionalFields =
@@ -1592,8 +1552,7 @@ type alias User_order_byOptionalFields =
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , lastName : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , username : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -1607,8 +1566,7 @@ type alias User_order_by =
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , lastName : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
+    , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , username : OptionalArgument Api.Enum.Order_by.Order_by
     }
 
@@ -1618,7 +1576,7 @@ type alias User_order_by =
 encodeUser_order_by : User_order_by -> Value
 encodeUser_order_by input =
     Encode.maybeObject
-        [ ( "admin", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.admin ), ( "documents_aggregate", encodeDocument_aggregate_order_by |> Encode.optional input.documents_aggregate ), ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.admin ), ( "documents_aggregate", encodeDocument_aggregate_order_by |> Encode.optional input.documents_aggregate ), ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
 
 
 buildUser_set_input : (User_set_inputOptionalFields -> User_set_inputOptionalFields) -> User_set_input
@@ -1626,9 +1584,9 @@ buildUser_set_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { admin = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeEnrolled = Absent, timeUpdated = Absent, username = Absent }
+                { admin = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
     in
-    { admin = optionals.admin, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated, username = optionals.username }
+    { admin = optionals.admin, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_set_inputOptionalFields =
@@ -1637,8 +1595,7 @@ type alias User_set_inputOptionalFields =
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
     , lastName : OptionalArgument String
-    , timeEnrolled : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
+    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
 
@@ -1651,8 +1608,7 @@ type alias User_set_input =
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
     , lastName : OptionalArgument String
-    , timeEnrolled : OptionalArgument Int
-    , timeUpdated : OptionalArgument Int
+    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
 
@@ -1662,7 +1618,7 @@ type alias User_set_input =
 encodeUser_set_input : User_set_input -> Value
 encodeUser_set_input input =
     Encode.maybeObject
-        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeEnrolled", Encode.int |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.int |> Encode.optional input.timeUpdated ), ( "username", Encode.string |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeStamp", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
 
 
 buildUser_stddev_order_by : (User_stddev_order_byOptionalFields -> User_stddev_order_byOptionalFields) -> User_stddev_order_by
@@ -1670,25 +1626,19 @@ buildUser_stddev_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_stddev_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the User\_stddev\_order\_by input object.
 -}
 type alias User_stddev_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a User\_stddev\_order\_by into a value that can be used as an argument.
@@ -1696,7 +1646,7 @@ type alias User_stddev_order_by =
 encodeUser_stddev_order_by : User_stddev_order_by -> Value
 encodeUser_stddev_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildUser_stddev_pop_order_by : (User_stddev_pop_order_byOptionalFields -> User_stddev_pop_order_byOptionalFields) -> User_stddev_pop_order_by
@@ -1704,25 +1654,19 @@ buildUser_stddev_pop_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_stddev_pop_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the User\_stddev\_pop\_order\_by input object.
 -}
 type alias User_stddev_pop_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a User\_stddev\_pop\_order\_by into a value that can be used as an argument.
@@ -1730,7 +1674,7 @@ type alias User_stddev_pop_order_by =
 encodeUser_stddev_pop_order_by : User_stddev_pop_order_by -> Value
 encodeUser_stddev_pop_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildUser_stddev_samp_order_by : (User_stddev_samp_order_byOptionalFields -> User_stddev_samp_order_byOptionalFields) -> User_stddev_samp_order_by
@@ -1738,25 +1682,19 @@ buildUser_stddev_samp_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_stddev_samp_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the User\_stddev\_samp\_order\_by input object.
 -}
 type alias User_stddev_samp_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a User\_stddev\_samp\_order\_by into a value that can be used as an argument.
@@ -1764,7 +1702,7 @@ type alias User_stddev_samp_order_by =
 encodeUser_stddev_samp_order_by : User_stddev_samp_order_by -> Value
 encodeUser_stddev_samp_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildUser_sum_order_by : (User_sum_order_byOptionalFields -> User_sum_order_byOptionalFields) -> User_sum_order_by
@@ -1772,25 +1710,19 @@ buildUser_sum_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_sum_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the User\_sum\_order\_by input object.
 -}
 type alias User_sum_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a User\_sum\_order\_by into a value that can be used as an argument.
@@ -1798,7 +1730,7 @@ type alias User_sum_order_by =
 encodeUser_sum_order_by : User_sum_order_by -> Value
 encodeUser_sum_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildUser_var_pop_order_by : (User_var_pop_order_byOptionalFields -> User_var_pop_order_byOptionalFields) -> User_var_pop_order_by
@@ -1806,25 +1738,19 @@ buildUser_var_pop_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_var_pop_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the User\_var\_pop\_order\_by input object.
 -}
 type alias User_var_pop_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a User\_var\_pop\_order\_by into a value that can be used as an argument.
@@ -1832,7 +1758,7 @@ type alias User_var_pop_order_by =
 encodeUser_var_pop_order_by : User_var_pop_order_by -> Value
 encodeUser_var_pop_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildUser_var_samp_order_by : (User_var_samp_order_byOptionalFields -> User_var_samp_order_byOptionalFields) -> User_var_samp_order_by
@@ -1840,25 +1766,19 @@ buildUser_var_samp_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_var_samp_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the User\_var\_samp\_order\_by input object.
 -}
 type alias User_var_samp_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a User\_var\_samp\_order\_by into a value that can be used as an argument.
@@ -1866,7 +1786,7 @@ type alias User_var_samp_order_by =
 encodeUser_var_samp_order_by : User_var_samp_order_by -> Value
 encodeUser_var_samp_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]
 
 
 buildUser_variance_order_by : (User_variance_order_byOptionalFields -> User_variance_order_byOptionalFields) -> User_variance_order_by
@@ -1874,25 +1794,19 @@ buildUser_variance_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { id = Absent, timeEnrolled = Absent, timeUpdated = Absent }
+                { id = Absent }
     in
-    { id = optionals.id, timeEnrolled = optionals.timeEnrolled, timeUpdated = optionals.timeUpdated }
+    { id = optionals.id }
 
 
 type alias User_variance_order_byOptionalFields =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Type for the User\_variance\_order\_by input object.
 -}
 type alias User_variance_order_by =
-    { id : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeEnrolled : OptionalArgument Api.Enum.Order_by.Order_by
-    , timeUpdated : OptionalArgument Api.Enum.Order_by.Order_by
-    }
+    { id : OptionalArgument Api.Enum.Order_by.Order_by }
 
 
 {-| Encode a User\_variance\_order\_by into a value that can be used as an argument.
@@ -1900,4 +1814,4 @@ type alias User_variance_order_by =
 encodeUser_variance_order_by : User_variance_order_by -> Value
 encodeUser_variance_order_by input =
     Encode.maybeObject
-        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "timeEnrolled", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeEnrolled ), ( "timeUpdated", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeUpdated ) ]
+        [ ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ) ]

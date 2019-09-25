@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Scalar exposing (Codecs, Id(..), Jsonb(..), defaultCodecs, defineCodecs, unwrapCodecs, unwrapEncoder)
+module Api.Scalar exposing (Codecs, Id(..), Jsonb(..), Timestamptz(..), defaultCodecs, defineCodecs, unwrapCodecs, unwrapEncoder)
 
 import Graphql.Codec exposing (Codec)
 import Graphql.Internal.Builder.Object as Object
@@ -19,20 +19,26 @@ type Jsonb
     = Jsonb String
 
 
+type Timestamptz
+    = Timestamptz String
+
+
 defineCodecs :
     { codecId : Codec valueId
     , codecJsonb : Codec valueJsonb
+    , codecTimestamptz : Codec valueTimestamptz
     }
-    -> Codecs valueId valueJsonb
+    -> Codecs valueId valueJsonb valueTimestamptz
 defineCodecs definitions =
     Codecs definitions
 
 
 unwrapCodecs :
-    Codecs valueId valueJsonb
+    Codecs valueId valueJsonb valueTimestamptz
     ->
         { codecId : Codec valueId
         , codecJsonb : Codec valueJsonb
+        , codecTimestamptz : Codec valueTimestamptz
         }
 unwrapCodecs (Codecs unwrappedCodecs) =
     unwrappedCodecs
@@ -42,17 +48,18 @@ unwrapEncoder getter (Codecs unwrappedCodecs) =
     (unwrappedCodecs |> getter |> .encoder) >> Graphql.Internal.Encode.fromJson
 
 
-type Codecs valueId valueJsonb
-    = Codecs (RawCodecs valueId valueJsonb)
+type Codecs valueId valueJsonb valueTimestamptz
+    = Codecs (RawCodecs valueId valueJsonb valueTimestamptz)
 
 
-type alias RawCodecs valueId valueJsonb =
+type alias RawCodecs valueId valueJsonb valueTimestamptz =
     { codecId : Codec valueId
     , codecJsonb : Codec valueJsonb
+    , codecTimestamptz : Codec valueTimestamptz
     }
 
 
-defaultCodecs : RawCodecs Id Jsonb
+defaultCodecs : RawCodecs Id Jsonb Timestamptz
 defaultCodecs =
     { codecId =
         { encoder = \(Id raw) -> Encode.string raw
@@ -61,5 +68,9 @@ defaultCodecs =
     , codecJsonb =
         { encoder = \(Jsonb raw) -> Encode.string raw
         , decoder = Object.scalarDecoder |> Decode.map Jsonb
+        }
+    , codecTimestamptz =
+        { encoder = \(Timestamptz raw) -> Encode.string raw
+        , decoder = Object.scalarDecoder |> Decode.map Timestamptz
         }
     }

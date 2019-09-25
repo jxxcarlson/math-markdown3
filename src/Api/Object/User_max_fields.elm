@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.User_max_fields exposing (email, firstName, id, lastName, timeEnrolled, timeUpdated, username)
+module Api.Object.User_max_fields exposing (email, firstName, id, lastName, timeStamp, username)
 
 import Api.InputObject
 import Api.Interface
@@ -39,14 +39,9 @@ lastName =
     Object.selectionForField "(Maybe String)" "lastName" [] (Decode.string |> Decode.nullable)
 
 
-timeEnrolled : SelectionSet (Maybe Int) Api.Object.User_max_fields
-timeEnrolled =
-    Object.selectionForField "(Maybe Int)" "timeEnrolled" [] (Decode.int |> Decode.nullable)
-
-
-timeUpdated : SelectionSet (Maybe Int) Api.Object.User_max_fields
-timeUpdated =
-    Object.selectionForField "(Maybe Int)" "timeUpdated" [] (Decode.int |> Decode.nullable)
+timeStamp : SelectionSet (Maybe Api.ScalarCodecs.Timestamptz) Api.Object.User_max_fields
+timeStamp =
+    Object.selectionForField "(Maybe ScalarCodecs.Timestamptz)" "timeStamp" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder |> Decode.nullable)
 
 
 username : SelectionSet (Maybe String) Api.Object.User_max_fields

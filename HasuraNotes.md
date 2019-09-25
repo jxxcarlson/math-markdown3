@@ -7,11 +7,18 @@
 #### Get list of a particular user's documents 
 
 ```
-{
-  document (where: {authorIdentifier: {_eq: "jxxcarlson"}}){
+query ($author: String!){
+  document(where: {authorIdentifier: {_eq: $author}}) {
     id
     title
+    tags
   }
+}
+
+# Query variable:
+
+{
+  "author" : "jxxcarlson"
 }
 ```
 

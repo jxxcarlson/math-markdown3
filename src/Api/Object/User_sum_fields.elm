@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.User_sum_fields exposing (id, timeEnrolled, timeUpdated)
+module Api.Object.User_sum_fields exposing (id)
 
 import Api.InputObject
 import Api.Interface
@@ -22,13 +22,3 @@ import Json.Decode as Decode
 id : SelectionSet (Maybe Int) Api.Object.User_sum_fields
 id =
     Object.selectionForField "(Maybe Int)" "id" [] (Decode.int |> Decode.nullable)
-
-
-timeEnrolled : SelectionSet (Maybe Int) Api.Object.User_sum_fields
-timeEnrolled =
-    Object.selectionForField "(Maybe Int)" "timeEnrolled" [] (Decode.int |> Decode.nullable)
-
-
-timeUpdated : SelectionSet (Maybe Int) Api.Object.User_sum_fields
-timeUpdated =
-    Object.selectionForField "(Maybe Int)" "timeUpdated" [] (Decode.int |> Decode.nullable)

@@ -15,8 +15,7 @@ import Json.Decode as Decode exposing (Decoder)
   - Identifier - column name
   - Public - column name
   - Tags - column name
-  - TimeCreated - column name
-  - TimeUpdated - column name
+  - TimeStamp - column name
   - Title - column name
 
 -}
@@ -27,14 +26,13 @@ type Document_update_column
     | Identifier
     | Public
     | Tags
-    | TimeCreated
-    | TimeUpdated
+    | TimeStamp
     | Title
 
 
 list : List Document_update_column
 list =
-    [ AuthorIdentifier, Content, Id, Identifier, Public, Tags, TimeCreated, TimeUpdated, Title ]
+    [ AuthorIdentifier, Content, Id, Identifier, Public, Tags, TimeStamp, Title ]
 
 
 decoder : Decoder Document_update_column
@@ -61,11 +59,8 @@ decoder =
                     "tags" ->
                         Decode.succeed Tags
 
-                    "timeCreated" ->
-                        Decode.succeed TimeCreated
-
-                    "timeUpdated" ->
-                        Decode.succeed TimeUpdated
+                    "timeStamp" ->
+                        Decode.succeed TimeStamp
 
                     "title" ->
                         Decode.succeed Title
@@ -98,11 +93,8 @@ toString enum =
         Tags ->
             "tags"
 
-        TimeCreated ->
-            "timeCreated"
-
-        TimeUpdated ->
-            "timeUpdated"
+        TimeStamp ->
+            "timeStamp"
 
         Title ->
             "title"
@@ -140,11 +132,8 @@ fromString enumString =
         "tags" ->
             Just Tags
 
-        "timeCreated" ->
-            Just TimeCreated
-
-        "timeUpdated" ->
-            Just TimeUpdated
+        "timeStamp" ->
+            Just TimeStamp
 
         "title" ->
             Just Title

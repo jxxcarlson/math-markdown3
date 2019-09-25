@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, id, identifier, public, tags, timeCreated, timeUpdated, title, user)
+module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, id, identifier, public, tags, timeStamp, title, user)
 
 import Api.InputObject
 import Api.Interface
@@ -66,14 +66,9 @@ tags fillInOptionals =
     Object.selectionForField "ScalarCodecs.Jsonb" "tags" optionalArgs (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
 
 
-timeCreated : SelectionSet Int Api.Object.Document
-timeCreated =
-    Object.selectionForField "Int" "timeCreated" [] Decode.int
-
-
-timeUpdated : SelectionSet Int Api.Object.Document
-timeUpdated =
-    Object.selectionForField "Int" "timeUpdated" [] Decode.int
+timeStamp : SelectionSet Api.ScalarCodecs.Timestamptz Api.Object.Document
+timeStamp =
+    Object.selectionForField "ScalarCodecs.Timestamptz" "timeStamp" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder)
 
 
 title : SelectionSet String Api.Object.Document

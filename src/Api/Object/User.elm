@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.User exposing (DocumentsAggregateOptionalArguments, DocumentsOptionalArguments, admin, documents, documents_aggregate, email, firstName, id, lastName, timeEnrolled, timeUpdated, username)
+module Api.Object.User exposing (DocumentsAggregateOptionalArguments, DocumentsOptionalArguments, admin, documents, documents_aggregate, email, firstName, id, lastName, timeStamp, username)
 
 import Api.Enum.Document_select_column
 import Api.InputObject
@@ -107,14 +107,9 @@ lastName =
     Object.selectionForField "String" "lastName" [] Decode.string
 
 
-timeEnrolled : SelectionSet Int Api.Object.User
-timeEnrolled =
-    Object.selectionForField "Int" "timeEnrolled" [] Decode.int
-
-
-timeUpdated : SelectionSet Int Api.Object.User
-timeUpdated =
-    Object.selectionForField "Int" "timeUpdated" [] Decode.int
+timeStamp : SelectionSet Api.ScalarCodecs.Timestamptz Api.Object.User
+timeStamp =
+    Object.selectionForField "ScalarCodecs.Timestamptz" "timeStamp" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder)
 
 
 username : SelectionSet String Api.Object.User

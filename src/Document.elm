@@ -1,4 +1,4 @@
-module Document exposing (Document, setContent, getContent, documentIdentifier
+module Document exposing (Document, SummaryDocument, setContent, getContent, documentIdentifier
   , create, replaceInList, getHeading, footer, slug)
 
 import Time exposing(Posix)
@@ -6,9 +6,7 @@ import Utility
 import List.Extra
 import Parser exposing(Parser, getChompedString, succeed, symbol, chompWhile, (|.))
 
-import Api.Scalar exposing(Id(..))
 
-type alias DocumentID = String
 
 type alias Document = {
      id : Int
@@ -21,9 +19,15 @@ type alias Document = {
 
   }
 
+type alias SummaryDocument = {
+    id : Int
+  , identifier : String
+  , title : String
+  , authorIdentifier : String
+  }
 
-setContent : Posix -> String -> Document -> Document
-setContent time str document =
+setContent : String -> Document -> Document
+setContent str document =
     { document | content = str }
 
 

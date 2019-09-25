@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.ScalarCodecs exposing (Id, Jsonb, codecs)
+module Api.ScalarCodecs exposing (Id, Jsonb, Timestamptz, codecs)
 
 import Api.Scalar exposing (defaultCodecs)
 import Json.Decode as Decode exposing (Decoder)
@@ -16,9 +16,14 @@ type alias Jsonb =
     Api.Scalar.Jsonb
 
 
-codecs : Api.Scalar.Codecs Id Jsonb
+type alias Timestamptz =
+    Api.Scalar.Timestamptz
+
+
+codecs : Api.Scalar.Codecs Id Jsonb Timestamptz
 codecs =
     Api.Scalar.defineCodecs
         { codecId = defaultCodecs.codecId
         , codecJsonb = defaultCodecs.codecJsonb
+        , codecTimestamptz = defaultCodecs.codecTimestamptz
         }

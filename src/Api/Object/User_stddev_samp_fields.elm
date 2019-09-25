@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.User_stddev_samp_fields exposing (id, timeEnrolled, timeUpdated)
+module Api.Object.User_stddev_samp_fields exposing (id)
 
 import Api.InputObject
 import Api.Interface
@@ -22,13 +22,3 @@ import Json.Decode as Decode
 id : SelectionSet (Maybe Float) Api.Object.User_stddev_samp_fields
 id =
     Object.selectionForField "(Maybe Float)" "id" [] (Decode.float |> Decode.nullable)
-
-
-timeEnrolled : SelectionSet (Maybe Float) Api.Object.User_stddev_samp_fields
-timeEnrolled =
-    Object.selectionForField "(Maybe Float)" "timeEnrolled" [] (Decode.float |> Decode.nullable)
-
-
-timeUpdated : SelectionSet (Maybe Float) Api.Object.User_stddev_samp_fields
-timeUpdated =
-    Object.selectionForField "(Maybe Float)" "timeUpdated" [] (Decode.float |> Decode.nullable)
