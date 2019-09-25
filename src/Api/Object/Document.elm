@@ -8,8 +8,8 @@ import Api.InputObject
 import Api.Interface
 import Api.Object
 import Api.Scalar
-import Api.ScalarCodecs
 import Api.Union
+import CustomScalarCodecs
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
 import Graphql.Internal.Encode as Encode exposing (Value)
@@ -53,7 +53,7 @@ type alias TagsOptionalArguments =
   - path - JSON select path
 
 -}
-tags : (TagsOptionalArguments -> TagsOptionalArguments) -> SelectionSet Api.ScalarCodecs.Jsonb Api.Object.Document
+tags : (TagsOptionalArguments -> TagsOptionalArguments) -> SelectionSet CustomScalarCodecs.Jsonb Api.Object.Document
 tags fillInOptionals =
     let
         filledInOptionals =
@@ -63,12 +63,12 @@ tags fillInOptionals =
             [ Argument.optional "path" filledInOptionals.path Encode.string ]
                 |> List.filterMap identity
     in
-    Object.selectionForField "ScalarCodecs.Jsonb" "tags" optionalArgs (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
+    Object.selectionForField "CustomScalarCodecs.Jsonb" "tags" optionalArgs (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
 
 
-timeStamp : SelectionSet Api.ScalarCodecs.Timestamptz Api.Object.Document
+timeStamp : SelectionSet CustomScalarCodecs.Timestamptz Api.Object.Document
 timeStamp =
-    Object.selectionForField "ScalarCodecs.Timestamptz" "timeStamp" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder)
+    Object.selectionForField "CustomScalarCodecs.Timestamptz" "timeStamp" [] (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder)
 
 
 title : SelectionSet String Api.Object.Document

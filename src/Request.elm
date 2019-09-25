@@ -1,34 +1,49 @@
-module Request exposing (RequestMsg(..), fetchUserSummaryDocuments)
+module Request exposing (RequestMsg(..), documentsByAuthor)
 
 import RemoteData exposing(RemoteData)
 import Graphql.Http
-import Graphql.Operation exposing (RootQuery)
+import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
-import Document exposing(Document, SummaryDocument)
+import Document exposing(Document, Document)
+import CustomScalarCodecs exposing(Jsonb(..))
 
 import Api.Enum.Order_by exposing (Order_by(..))
 
-import Api.InputObject exposing (Boolean_comparison_exp, Document_bool_exp(..), Document_bool_expOptionalFields, String_comparison_exp, buildBoolean_comparison_exp, buildString_comparison_exp, buildDocument_bool_exp)
+import Api.InputObject exposing (
+   Boolean_comparison_exp
+ , Document_bool_exp(..)
+ , Document_bool_expOptionalFields
+ , String_comparison_exp
+ , buildBoolean_comparison_exp
+ , buildString_comparison_exp
+ , buildDocument_bool_exp
+ , Document_insert_input
+ , buildDocument_insert_input )
 
 import Api.Object
 import Api.Object.User
 import Api.Object.Document exposing (authorIdentifier)
 import Api.Query as Query exposing (DocumentOptionalArguments)
+import Api.Mutation as Mutation
+import Api.Object.Document_mutation_response as DocumentMutation
+
+import CustomScalarCodecs
 
 
 
 
 
 type RequestMsg =
---       GotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
-       -- GotUserDocuments (RemoteData (Graphql.Http.Error (Maybe (List Document))) (Maybe (List Document)))
-        GotUserSummaryDocuments (RemoteData (Graphql.Http.Error (List SummaryDocument)) (List SummaryDocument))
+        GotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
+       | GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
 --     | ConfirmUpdatedDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 --     | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 
 
 -- GENERAL --
+
+endpoint = "https://math-markdown-heroku.herokuapp.com/v1/graphql"
 
 graphql_url : String
 graphql_url =
@@ -36,8 +51,7 @@ graphql_url =
 
 getAuthHeader : String -> (Graphql.Http.Request decodesTo -> Graphql.Http.Request decodesTo)
 getAuthHeader token =
-
-    Graphql.Http.withHeader "Authorization" ("Bearer " ++ token)
+    Graphql.Http.withHeader "x-hasura-admin-secret" token
 
 
 makeGraphQLQuery : String -> SelectionSet decodesTo RootQuery -> (Result (Graphql.Http.Error decodesTo) decodesTo -> msg) -> Cmd msg
@@ -52,19 +66,32 @@ makeGraphQLQuery authToken query decodesTo =
         |> getAuthHeader authToken
         |> Graphql.Http.send decodesTo
 
+
+makeGraphQLMutation : String -> SelectionSet decodesTo RootMutation -> (Result (Graphql.Http.Error decodesTo) decodesTo -> msg) -> Cmd msg
+makeGraphQLMutation authToken query decodesTo =
+    query
+        |> Graphql.Http.mutationRequest graphql_url
+        {-
+           mutationRequest signature is of the form
+               String -> SelectionSet decodesTo RootMutation -> Request decodesTo
+               url    -> SelectionSet TasksWUser RootMutation -> Request TasksWUser
+        -}
+        |> getAuthHeader authToken
+        |> Graphql.Http.send decodesTo
+
 -- Cmd RequestMsg --
 
-fetchUserSummaryDocuments: String -> String -> Cmd RequestMsg
-fetchUserSummaryDocuments authToken authorIdentifier =
+documentsByAuthor: String -> String -> Cmd RequestMsg
+documentsByAuthor authToken authorIdentifier =
     makeGraphQLQuery authToken
         (fetchUserSummaryDocumentsQuery authorIdentifier)
-        (RemoteData.fromResult >> GotUserSummaryDocuments)
+        (RemoteData.fromResult >> GotUserDocuments)
 
 
 -- Summary Document Helpers --
 
 
-fetchUserSummaryDocumentsQuery : String -> SelectionSet (List SummaryDocument) RootQuery
+fetchUserSummaryDocumentsQuery : String -> SelectionSet (List Document) RootQuery
 fetchUserSummaryDocumentsQuery author =
     Query.document (documentListOptionalArgument author) documentListSelection
 
@@ -93,102 +120,57 @@ equalToBoolean : Bool -> OptionalArgument Boolean_comparison_exp
 equalToBoolean isPublic =
     Present <| buildBoolean_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present isPublic })
 
-
--- C --
-
-documentListSelection : SelectionSet SummaryDocument Api.Object.Document
+documentListSelection: SelectionSet Document Api.Object.Document
 documentListSelection =
-    SelectionSet.map4 SummaryDocument
+    SelectionSet.map7  Document
         Api.Object.Document.id
         Api.Object.Document.identifier
         Api.Object.Document.title
         Api.Object.Document.authorIdentifier
+        Api.Object.Document.content
+        Api.Object.Document.public
+        (Api.Object.Document.tags identity |> SelectionSet.map (\(Jsonb x) -> x))
 
 
--- C --
-
-endpoint = "https://math-markdown-heroku.herokuapp.com/v1/graphql"
-authorizationToken =  "x-hasura-admin-secret: abc"
-
--- DOCUMENT REQUESTS
-
---createDocument : Document -> Cmd RequestMsg
---createDocument document =
---    Mutation.insert_document identity documentSelectionSet
---         |> Graphql.Http.mutationRequest endpoint
---         |> Graphql.Http.withHeader "authorization" authorizationToken         -- |> Graphql.Http.withHeader "Access-Control-Allow-Origin:" "*"
---         |> Graphql.Http.send (RemoteData.fromResult >> GotNewDocument)
-
-
---documentsByAuthor : String -> Cmd RequestMsg
---documentsByAuthor author =
---    Query.document  { author = author } (SelectionSet.list [documentSelectionSet])
---      |> Graphql.Http.queryRequest endpoint
---      |> Graphql.Http.withHeader "authorization" authorizationToken
---      |> Graphql.Http.send (RemoteData.fromResult >> GotUserDocuments)
+---- D --
 --
-
---equalToString : String -> OptionalArgument Boolean_comparison_exp
---equalToString str =
---    Present <| buildBoolean_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str })
-
-
-
+--insertDocument : Document -> Document_insert_input
+--insertDocument newDocument =
+--    buildDocument_insert_input
+--        (\args ->
+--            { args
+--                | id = Present newDocument.id
+--                , identifier = Present newDocument.identifier
+--                , title = Present newDocument.title
+--                , authorIdentifier = Present newDocument.authorIdentifier
+--                , content = Present newDocument.content
+--                , public = Present newDocument.public
+--                , tags = Present newDocument.tags
+--            }
+--        )
 --
---update_document : Document -> Cmd RequestMsg
---update_document document =
---    Mutation.update_document (updatedDocumentRequiredArguments document) documentSelectionSet
---         |> Graphql.Http.mutationRequest endpoint
---         |> Graphql.Http.withHeader "authorization" authorizationToken
---         |> Graphql.Http.send (RemoteData.fromResult >> ConfirmUpdatedDocument)
+--insertArgs : String -> Bool -> InsertTodosRequiredArguments
+--insertArgs newTodo isPublic =
 --
+--    InsertTodosRequiredArguments [ insertTodoObjects newTodo isPublic ]
 --
---delete_document : Document -> Cmd RequestMsg
---delete_document document =
---    Mutation.delete_document { id = document.id } documentSelectionSet
---         |> Graphql.Http.mutationRequest endpoint
---         |> Graphql.Http.withHeader "authorization" authorizationToken
---         |> Graphql.Http.send (RemoteData.fromResult >> ConfirmUDeleteDocument)
-
--- IMPLEMENTATION
-
+--getTodoListInsertObject : String -> Bool -> SelectionSet (Maybe MutationResponse) RootMutation
 --
---updatedDocumentRequiredArguments : Document -> Mutation.UpdateDocumentRequiredArguments
---updatedDocumentRequiredArguments document =
---    { id = document.id
---    , data = documentInput document }
+--getTodoListInsertObject newTodo isPublic =
 --
---createDocumentRequiredArguments : Document -> Mutation.InsertDocumentRequiredArguments
---createDocumentRequiredArguments document =
---    { data = documentInput document }
+--    insert_todos identity (insertArgs newTodo isPublic) mutationResponseSelection
 --
---documentInput : Document -> InputObject.Document_insert_input
---documentInput document =
---        {   id = document.id
---          , identifier = document.identifier
---          , title = document.title
---          , authorIdentifier = document.authorIdentifier
---          , content = document.content
---          , tags = document.tags
---          , timeCreated = Time.posixToMillis document.timeCreated // 1000
---          , timeUpdated = Time.posixToMillis document.timeUpdated // 1000
---          , public = document.public
---        }
+--mutationResponseSelection : SelectionSet MutationResponse Hasura.Object.Todos_mutation_response
 --
---secondsToPosix : Int -> Time.Posix
---secondsToPosix =
---    (Time.millisToPosix << ((*) 1000))
+--mutationResponseSelection =
 --
---documentSelectionSet =
---    SelectionSet.succeed Document
---        |> with Api.Object.Document.id
---        |> with Api.Object.Document.identifier
---        |> with Api.Object.Document.title
---        |> with Api.Object.Document.authorIdentifier
---        |> with Api.Object.Document.content
---        |> with Api.Object.Document.tags
---        |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeCreated)
---        |> with (SelectionSet.map secondsToPosix Api.Object.Document.timeUpdated)
---        |> with Api.Object.Document.public
+--    SelectionSet.map MutationResponse
 --
+--        TodosMutation.affected_rows
 --
+--makeMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd Msg
+--
+--makeMutation mutation authToken =
+--
+--    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> InsertPrivateTodoResponse)
+----

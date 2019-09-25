@@ -2,9 +2,17 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.VerifyScalarCodecs exposing (placeholder)
+module Api.VerifyScalarCodecs exposing (verify)
+
+{-
+   This file is intended to be used to ensure that custom scalar decoder
+   files are valid. It is compiled using `elm make` by the CLI.
+-}
+
+import Api.Scalar
+import CustomScalarCodecs
 
 
-placeholder : String
-placeholder =
-    ""
+verify : Api.Scalar.Codecs CustomScalarCodecs.Id CustomScalarCodecs.Jsonb CustomScalarCodecs.Timestamptz
+verify =
+    CustomScalarCodecs.codecs

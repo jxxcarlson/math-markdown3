@@ -1,104 +1,57 @@
-module Data exposing (startupDocument, doc5, doc2, doc3, doc4, rhsUserText,
-     startupDocumentSummary, doc5Summary, doc2Summary, doc3Summary, doc4Summary
-  )
+module Data exposing (startupDocument, doc5, doc2, doc3, doc4, rhsUserText  )
 
 import Time exposing(Posix)
 
 import Api.Scalar exposing(Id(..))
 
-startupDocumentSummary = {
-     id = Id "undefined"
-  ,  identifier = "jxxcarlson.pure-elm-markdown-parser.1568-700-834"
-  ,  title = "A Pure Elm Markdown Parser"
-  , authorIdentifier = "jxxcarlson"
-  }
-
-
-doc2Summary = {
-    id = Id "undefined"
-  , identifier = "jxxcarlson.notes-on-futhark.15687-008-834"
-  , title = "Notes on Futhark"
-  , authorIdentifier = "jxxcarlson"
-  }
-
-doc3Summary = {
-    id = Id "undefined"
-  , identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568-700-834"
-  , title = "Math Markdown Progress Roadmap & Report"
-  , authorIdentifier = "jxxcarlson"
-  }
-
-doc4Summary = {
-    id = Id "undefined"
-  ,  identifier = "jxxcarlson.graphql-queries-and-mutations.1568-700-834"
-  , title = "GraphQL Queries and Mutations"
-  , authorIdentifier = "jxxcarlson"
-  }
-
-doc5Summary= {
-    id = Id "undefined"
-  , identifier = "jxxcarlson.elm-resources.1568-981-582"
-  , title = "Elm resources"
-  , authorIdentifier = "jxxcarlson"
-  }
 
 startupDocument = {
-     id = Id "undefined"
+     id = -1
   ,  identifier = "jxxcarlson.pure-elm-markdown-parser.1568-700-834"
   ,  title = "A Pure Elm Markdown Parser"
   , authorIdentifier = "jxxcarlson"
   , content = startupText
-  , timeCreated = Time.millisToPosix 1568700834000
-  , timeUpdated = Time.millisToPosix 1568700834000
   , tags = ["elm", "markdown", "math", "mathjax"]
   , public = True
   }
 
 
 doc2 = {
-    id = Id "undefined"
+    id = -2
   , identifier = "jxxcarlson.notes-on-futhark.15687-008-834"
   , title = "Notes on Futhark"
   , authorIdentifier = "jxxcarlson"
   , content = text2
-  , timeCreated = Time.millisToPosix 1568700834000
-  , timeUpdated = Time.millisToPosix 1568700834000
   , tags = ["futhark", "gpu", "parallel computation"]
   , public = True
   }
 
 doc3 = {
-    id = Id "undefined"
+    id = -3
   , identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568-700-834"
   , title = "Math Markdown Progress Roadmap & Report"
   , authorIdentifier = "jxxcarlson"
   , content = text3
-  , timeCreated = Time.millisToPosix 1568769977000
-  , timeUpdated = Time.millisToPosix 1568851146000
   , tags = ["markdown", "elm", "mathjax"]
   , public = True
   }
 
 doc4 = {
-    id = Id "undefined"
+    id = -4
   ,  identifier = "jxxcarlson.graphql-queries-and-mutations.1568-700-834"
   , title = "GraphQL Queries and Mutations"
   , authorIdentifier = "jxxcarlson"
   , content = text4
-  , timeCreated = Time.millisToPosix 1568930218000
-  , timeUpdated = Time.millisToPosix 1568930218000
   , tags = ["graphql"]
   , public = True
   }
 
 doc5= {
-    id = Id "undefined"
+    id = -5
   , identifier = "jxxcarlson.elm-resources.1568-981-582"
   , title = "Elm resources"
   , authorIdentifier = "jxxcarlson"
   , content = text5
-  , timeCreated = Time.millisToPosix 1568981582000
-  , timeUpdated = Time.millisToPosix 1568981582000
   , tags = ["elm"]
   , public = True
   }

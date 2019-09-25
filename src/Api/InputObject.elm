@@ -12,8 +12,8 @@ import Api.Enum.User_update_column
 import Api.Interface
 import Api.Object
 import Api.Scalar
-import Api.ScalarCodecs
 import Api.Union
+import CustomScalarCodecs
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
 import Graphql.Internal.Encode as Encode exposing (Value)
@@ -129,13 +129,13 @@ buildDocument_append_input fillOptionals =
 
 
 type alias Document_append_inputOptionalFields =
-    { tags : OptionalArgument Api.ScalarCodecs.Jsonb }
+    { tags : OptionalArgument CustomScalarCodecs.Jsonb }
 
 
 {-| Type for the Document\_append\_input input object.
 -}
 type alias Document_append_input =
-    { tags : OptionalArgument Api.ScalarCodecs.Jsonb }
+    { tags : OptionalArgument CustomScalarCodecs.Jsonb }
 
 
 {-| Encode a Document\_append\_input into a value that can be used as an argument.
@@ -143,7 +143,7 @@ type alias Document_append_input =
 encodeDocument_append_input : Document_append_input -> Value
 encodeDocument_append_input input =
     Encode.maybeObject
-        [ ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ) ]
+        [ ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ) ]
 
 
 buildDocument_arr_rel_insert_input : Document_arr_rel_insert_inputRequiredFields -> (Document_arr_rel_insert_inputOptionalFields -> Document_arr_rel_insert_inputOptionalFields) -> Document_arr_rel_insert_input
@@ -406,8 +406,8 @@ type alias Document_insert_inputOptionalFields =
     , id : OptionalArgument Int
     , identifier : OptionalArgument String
     , public : OptionalArgument Bool
-    , tags : OptionalArgument Api.ScalarCodecs.Jsonb
-    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , tags : OptionalArgument CustomScalarCodecs.Jsonb
+    , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , title : OptionalArgument String
     , user : OptionalArgument User_obj_rel_insert_input
     }
@@ -424,8 +424,8 @@ type alias Document_insert_inputRaw =
     , id : OptionalArgument Int
     , identifier : OptionalArgument String
     , public : OptionalArgument Bool
-    , tags : OptionalArgument Api.ScalarCodecs.Jsonb
-    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , tags : OptionalArgument CustomScalarCodecs.Jsonb
+    , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , title : OptionalArgument String
     , user : OptionalArgument User_obj_rel_insert_input
     }
@@ -442,7 +442,7 @@ type Document_insert_input
 encodeDocument_insert_input : Document_insert_input -> Value
 encodeDocument_insert_input (Document_insert_input input) =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ), ( "user", encodeUser_obj_rel_insert_input |> Encode.optional input.user ) ]
+        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ), ( "user", encodeUser_obj_rel_insert_input |> Encode.optional input.user ) ]
 
 
 buildDocument_max_order_by : (Document_max_order_byOptionalFields -> Document_max_order_byOptionalFields) -> Document_max_order_by
@@ -661,13 +661,13 @@ buildDocument_prepend_input fillOptionals =
 
 
 type alias Document_prepend_inputOptionalFields =
-    { tags : OptionalArgument Api.ScalarCodecs.Jsonb }
+    { tags : OptionalArgument CustomScalarCodecs.Jsonb }
 
 
 {-| Type for the Document\_prepend\_input input object.
 -}
 type alias Document_prepend_input =
-    { tags : OptionalArgument Api.ScalarCodecs.Jsonb }
+    { tags : OptionalArgument CustomScalarCodecs.Jsonb }
 
 
 {-| Encode a Document\_prepend\_input into a value that can be used as an argument.
@@ -675,7 +675,7 @@ type alias Document_prepend_input =
 encodeDocument_prepend_input : Document_prepend_input -> Value
 encodeDocument_prepend_input input =
     Encode.maybeObject
-        [ ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ) ]
+        [ ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ) ]
 
 
 buildDocument_set_input : (Document_set_inputOptionalFields -> Document_set_inputOptionalFields) -> Document_set_input
@@ -694,8 +694,8 @@ type alias Document_set_inputOptionalFields =
     , id : OptionalArgument Int
     , identifier : OptionalArgument String
     , public : OptionalArgument Bool
-    , tags : OptionalArgument Api.ScalarCodecs.Jsonb
-    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , tags : OptionalArgument CustomScalarCodecs.Jsonb
+    , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , title : OptionalArgument String
     }
 
@@ -708,8 +708,8 @@ type alias Document_set_input =
     , id : OptionalArgument Int
     , identifier : OptionalArgument String
     , public : OptionalArgument Bool
-    , tags : OptionalArgument Api.ScalarCodecs.Jsonb
-    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , tags : OptionalArgument CustomScalarCodecs.Jsonb
+    , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , title : OptionalArgument String
     }
 
@@ -719,7 +719,7 @@ type alias Document_set_input =
 encodeDocument_set_input : Document_set_input -> Value
 encodeDocument_set_input input =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ) ]
+        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "content", Encode.string |> Encode.optional input.content ), ( "id", Encode.int |> Encode.optional input.id ), ( "identifier", Encode.string |> Encode.optional input.identifier ), ( "public", Encode.bool |> Encode.optional input.public ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
 
 buildDocument_stddev_order_by : (Document_stddev_order_byOptionalFields -> Document_stddev_order_byOptionalFields) -> Document_stddev_order_by
@@ -975,40 +975,40 @@ buildJsonb_comparison_exp fillOptionals =
 
 
 type alias Jsonb_comparison_expOptionalFields =
-    { contained_in_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , contains_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , eq_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , gt_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , gte_ : OptionalArgument Api.ScalarCodecs.Jsonb
+    { contained_in_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , contains_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , eq_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , gt_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , gte_ : OptionalArgument CustomScalarCodecs.Jsonb
     , has_key_ : OptionalArgument String
     , has_keys_all_ : OptionalArgument (List String)
     , has_keys_any_ : OptionalArgument (List String)
-    , in_ : OptionalArgument (List Api.ScalarCodecs.Jsonb)
+    , in_ : OptionalArgument (List CustomScalarCodecs.Jsonb)
     , is_null_ : OptionalArgument Bool
-    , lt_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , lte_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , neq_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , nin_ : OptionalArgument (List Api.ScalarCodecs.Jsonb)
+    , lt_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , lte_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , neq_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , nin_ : OptionalArgument (List CustomScalarCodecs.Jsonb)
     }
 
 
 {-| Type for the Jsonb\_comparison\_exp input object.
 -}
 type alias Jsonb_comparison_exp =
-    { contained_in_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , contains_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , eq_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , gt_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , gte_ : OptionalArgument Api.ScalarCodecs.Jsonb
+    { contained_in_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , contains_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , eq_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , gt_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , gte_ : OptionalArgument CustomScalarCodecs.Jsonb
     , has_key_ : OptionalArgument String
     , has_keys_all_ : OptionalArgument (List String)
     , has_keys_any_ : OptionalArgument (List String)
-    , in_ : OptionalArgument (List Api.ScalarCodecs.Jsonb)
+    , in_ : OptionalArgument (List CustomScalarCodecs.Jsonb)
     , is_null_ : OptionalArgument Bool
-    , lt_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , lte_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , neq_ : OptionalArgument Api.ScalarCodecs.Jsonb
-    , nin_ : OptionalArgument (List Api.ScalarCodecs.Jsonb)
+    , lt_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , lte_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , neq_ : OptionalArgument CustomScalarCodecs.Jsonb
+    , nin_ : OptionalArgument (List CustomScalarCodecs.Jsonb)
     }
 
 
@@ -1017,7 +1017,7 @@ type alias Jsonb_comparison_exp =
 encodeJsonb_comparison_exp : Jsonb_comparison_exp -> Value
 encodeJsonb_comparison_exp input =
     Encode.maybeObject
-        [ ( "_contained_in", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.contained_in_ ), ( "_contains", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.contains_ ), ( "_eq", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.eq_ ), ( "_gt", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.gt_ ), ( "_gte", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.gte_ ), ( "_has_key", Encode.string |> Encode.optional input.has_key_ ), ( "_has_keys_all", (Encode.string |> Encode.list) |> Encode.optional input.has_keys_all_ ), ( "_has_keys_any", (Encode.string |> Encode.list) |> Encode.optional input.has_keys_any_ ), ( "_in", ((Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_lt", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.lt_ ), ( "_lte", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.lte_ ), ( "_neq", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.neq_ ), ( "_nin", ((Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.list) |> Encode.optional input.nin_ ) ]
+        [ ( "_contained_in", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.contained_in_ ), ( "_contains", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.contains_ ), ( "_eq", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.eq_ ), ( "_gt", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.gt_ ), ( "_gte", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.gte_ ), ( "_has_key", Encode.string |> Encode.optional input.has_key_ ), ( "_has_keys_all", (Encode.string |> Encode.list) |> Encode.optional input.has_keys_all_ ), ( "_has_keys_any", (Encode.string |> Encode.list) |> Encode.optional input.has_keys_any_ ), ( "_in", ((CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_lt", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.lt_ ), ( "_lte", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.lte_ ), ( "_neq", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.neq_ ), ( "_nin", ((CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.list) |> Encode.optional input.nin_ ) ]
 
 
 buildString_comparison_exp : (String_comparison_expOptionalFields -> String_comparison_expOptionalFields) -> String_comparison_exp
@@ -1089,30 +1089,30 @@ buildTimestamptz_comparison_exp fillOptionals =
 
 
 type alias Timestamptz_comparison_expOptionalFields =
-    { eq_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , gt_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , gte_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , in_ : OptionalArgument (List Api.ScalarCodecs.Timestamptz)
+    { eq_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , gt_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , gte_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , in_ : OptionalArgument (List CustomScalarCodecs.Timestamptz)
     , is_null_ : OptionalArgument Bool
-    , lt_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , lte_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , neq_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , nin_ : OptionalArgument (List Api.ScalarCodecs.Timestamptz)
+    , lt_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , lte_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , neq_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , nin_ : OptionalArgument (List CustomScalarCodecs.Timestamptz)
     }
 
 
 {-| Type for the Timestamptz\_comparison\_exp input object.
 -}
 type alias Timestamptz_comparison_exp =
-    { eq_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , gt_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , gte_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , in_ : OptionalArgument (List Api.ScalarCodecs.Timestamptz)
+    { eq_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , gt_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , gte_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , in_ : OptionalArgument (List CustomScalarCodecs.Timestamptz)
     , is_null_ : OptionalArgument Bool
-    , lt_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , lte_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , neq_ : OptionalArgument Api.ScalarCodecs.Timestamptz
-    , nin_ : OptionalArgument (List Api.ScalarCodecs.Timestamptz)
+    , lt_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , lte_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , neq_ : OptionalArgument CustomScalarCodecs.Timestamptz
+    , nin_ : OptionalArgument (List CustomScalarCodecs.Timestamptz)
     }
 
 
@@ -1121,7 +1121,7 @@ type alias Timestamptz_comparison_exp =
 encodeTimestamptz_comparison_exp : Timestamptz_comparison_exp -> Value
 encodeTimestamptz_comparison_exp input =
     Encode.maybeObject
-        [ ( "_eq", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.eq_ ), ( "_gt", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.gt_ ), ( "_gte", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.gte_ ), ( "_in", ((Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_lt", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.lt_ ), ( "_lte", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.lte_ ), ( "_neq", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.neq_ ), ( "_nin", ((Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.list) |> Encode.optional input.nin_ ) ]
+        [ ( "_eq", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.eq_ ), ( "_gt", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.gt_ ), ( "_gte", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.gte_ ), ( "_in", ((CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.list) |> Encode.optional input.in_ ), ( "_is_null", Encode.bool |> Encode.optional input.is_null_ ), ( "_lt", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.lt_ ), ( "_lte", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.lte_ ), ( "_neq", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.neq_ ), ( "_nin", ((CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.list) |> Encode.optional input.nin_ ) ]
 
 
 buildUser_aggregate_order_by : (User_aggregate_order_byOptionalFields -> User_aggregate_order_byOptionalFields) -> User_aggregate_order_by
@@ -1349,7 +1349,7 @@ type alias User_insert_inputOptionalFields =
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
     , lastName : OptionalArgument String
-    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
 
@@ -1366,7 +1366,7 @@ type alias User_insert_inputRaw =
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
     , lastName : OptionalArgument String
-    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
 
@@ -1382,7 +1382,7 @@ type User_insert_input
 encodeUser_insert_input : User_insert_input -> Value
 encodeUser_insert_input (User_insert_input input) =
     Encode.maybeObject
-        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "documents", encodeDocument_arr_rel_insert_input |> Encode.optional input.documents ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeStamp", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "documents", encodeDocument_arr_rel_insert_input |> Encode.optional input.documents ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
 
 
 buildUser_max_order_by : (User_max_order_byOptionalFields -> User_max_order_byOptionalFields) -> User_max_order_by
@@ -1595,7 +1595,7 @@ type alias User_set_inputOptionalFields =
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
     , lastName : OptionalArgument String
-    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
 
@@ -1608,7 +1608,7 @@ type alias User_set_input =
     , firstName : OptionalArgument String
     , id : OptionalArgument Int
     , lastName : OptionalArgument String
-    , timeStamp : OptionalArgument Api.ScalarCodecs.Timestamptz
+    , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
 
@@ -1618,7 +1618,7 @@ type alias User_set_input =
 encodeUser_set_input : User_set_input -> Value
 encodeUser_set_input input =
     Encode.maybeObject
-        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeStamp", (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", Encode.int |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
 
 
 buildUser_stddev_order_by : (User_stddev_order_byOptionalFields -> User_stddev_order_byOptionalFields) -> User_stddev_order_by

@@ -37,6 +37,9 @@ main =
 
 -- MODEL --
 
+hasuraToken : String
+hasuraToken = "GOc97wA7CCMm31H4UJHa-4pqdVoLf3l6gAwzczdHC"
+
 type alias Model =
     {
       seed : Int
@@ -245,8 +248,7 @@ update msg model =
 
         Clear ->
             ( { model
-                | currentDocument  = Maybe.map (Document.setContent model.time "") model.currentDocument
-                , counter = model.counter + 1
+                |  counter = model.counter + 1
               }
             , Cmd.none
             )
@@ -311,7 +313,7 @@ update msg model =
         GotEmail _ -> (model, Cmd.none)
 
         SignIn ->
-          if model.username == "demo" && model.password == "demo" then
+          if model.username == "jxxcarlson" && model.password == "locoLobo" then
             ({ model | currentUser = Just User.dummy, appMode = Reading }, Cmd.none)
            else
             ({model | currentUser = Nothing, appMode = UserMode SignInState, password = ""} , Cmd.none)
@@ -325,7 +327,8 @@ update msg model =
 
         -- DOCUMENT --
 
---        CreateDocument ->
+        CreateDocument ->
+            (model, Cmd.none)
 --           case model.currentUser of
 --               Nothing -> (model, Cmd.none)
 --               Just user ->
@@ -338,9 +341,10 @@ update msg model =
 --                     }
 --                     , Request.createDocument newDocument |> Cmd.map Req
 --                   )
---
---
---        SaveDocument ->
+
+
+        SaveDocument ->
+            (model, Cmd.none)
 --            case model.currentDocument of
 --               Nothing -> (model, Cmd.none)
 --               Just document ->
@@ -353,8 +357,9 @@ update msg model =
 
         CancelDeleteDocument ->
             ({ model | documentDeleteState = SafetyOn, message = "Delete cancelled"}, Cmd.none)
---
---        DeleteDocument ->
+
+        DeleteDocument ->
+            (model, Cmd.none)
 --            case model.currentDocument of
 --               Nothing -> (model, Cmd.none)
 --               Just document ->
@@ -371,14 +376,14 @@ update msg model =
                 Nothing -> ({model | message = "Can't get documents if user is not signed in"}, Cmd.none)
                 Just user ->
                     ({model | message = "Getting your documents"
-                       , visibilityOfTools = Invisible }, Request.documentsByAuthor user.username |> Cmd.map Req)
+                       , visibilityOfTools = Invisible }, Request.documentsByAuthor hasuraToken user.username |> Cmd.map Req)
 
         UpdateDocumentText str ->
             case model.currentDocument of
                 Nothing -> (model, Cmd.none)
                 Just doc ->
                    let
-                     updatedDoc = Document.setContent model.time str doc
+                     updatedDoc = Document.setContent str doc
                    in
                      ( { model | currentDocument = Just updatedDoc
                                , documentList = Document.replaceInList updatedDoc model.documentList
@@ -424,12 +429,10 @@ update msg model =
                    Loading -> ({model | message = "Get author docs:: loading"} , Cmd.none)
                    Failure _ ->
                        ({model | message = "Get author docs:: request failed"} , Cmd.none)
-                   Success maybeDocumentList ->
-                    case maybeDocumentList of
-                      Nothing -> ({model |documentList = [], currentDocument = Nothing,  message = "No documents retuned for author"} , Cmd.none)
-                      Just documentList -> ({model | documentList = documentList
-                                                , currentDocument = List.head documentList
-                                                , message = "Success returning document list for author!"} , Cmd.none)
+                   Success documentList ->
+                         ({model | documentList = documentList
+                                 , currentDocument = List.head documentList
+                                 , message = "Success returning document list for author!"} , Cmd.none)
 
 
 
@@ -1106,7 +1109,7 @@ idDisplay  : Model -> String
 idDisplay model =
    case model.currentDocument of
      Nothing -> ""
-     Just document -> "id = " ++ Utility.unwrapId document.id
+     Just document -> "id = " ++ String.fromInt document.id
 
 
 currentAuthorDisplay model =

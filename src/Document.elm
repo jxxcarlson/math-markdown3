@@ -1,4 +1,4 @@
-module Document exposing (Document, SummaryDocument, setContent, getContent, documentIdentifier
+module Document exposing (Document, setContent, getContent, documentIdentifier
   , create, replaceInList, getHeading, footer, slug)
 
 import Time exposing(Posix)
@@ -14,17 +14,10 @@ type alias Document = {
    , title : String
    , authorIdentifier: String
    , content : String
-   , tags : List String
    , public: Bool
-
+   , tags : List String
   }
 
-type alias SummaryDocument = {
-    id : Int
-  , identifier : String
-  , title : String
-  , authorIdentifier : String
-  }
 
 setContent : String -> Document -> Document
 setContent str document =

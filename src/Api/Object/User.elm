@@ -9,8 +9,8 @@ import Api.InputObject
 import Api.Interface
 import Api.Object
 import Api.Scalar
-import Api.ScalarCodecs
 import Api.Union
+import CustomScalarCodecs
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
 import Graphql.Internal.Encode as Encode exposing (Value)
@@ -107,9 +107,9 @@ lastName =
     Object.selectionForField "String" "lastName" [] Decode.string
 
 
-timeStamp : SelectionSet Api.ScalarCodecs.Timestamptz Api.Object.User
+timeStamp : SelectionSet CustomScalarCodecs.Timestamptz Api.Object.User
 timeStamp =
-    Object.selectionForField "ScalarCodecs.Timestamptz" "timeStamp" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder)
+    Object.selectionForField "CustomScalarCodecs.Timestamptz" "timeStamp" [] (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder)
 
 
 username : SelectionSet String Api.Object.User

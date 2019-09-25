@@ -8,8 +8,8 @@ import Api.InputObject
 import Api.Interface
 import Api.Object
 import Api.Scalar
-import Api.ScalarCodecs
 import Api.Union
+import CustomScalarCodecs
 import Graphql.Internal.Builder.Argument as Argument exposing (Argument)
 import Graphql.Internal.Builder.Object as Object
 import Graphql.Internal.Encode as Encode exposing (Value)
@@ -39,9 +39,9 @@ identifier =
     Object.selectionForField "(Maybe String)" "identifier" [] (Decode.string |> Decode.nullable)
 
 
-timeStamp : SelectionSet (Maybe Api.ScalarCodecs.Timestamptz) Api.Object.Document_min_fields
+timeStamp : SelectionSet (Maybe CustomScalarCodecs.Timestamptz) Api.Object.Document_min_fields
 timeStamp =
-    Object.selectionForField "(Maybe ScalarCodecs.Timestamptz)" "timeStamp" [] (Api.ScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder |> Decode.nullable)
+    Object.selectionForField "(Maybe CustomScalarCodecs.Timestamptz)" "timeStamp" [] (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecTimestamptz |> .decoder |> Decode.nullable)
 
 
 title : SelectionSet (Maybe String) Api.Object.Document_min_fields

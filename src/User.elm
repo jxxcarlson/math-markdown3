@@ -16,8 +16,8 @@ type alias User = {
 
 dummy = {
     id = 0
-   , username = "demo"
-   , email = "demo@gmail.com"
+   , username = "jxxcarlson"
+   , email = "jxxcarlson@gmail.com"
    , public = True
    , firstName = "James"
    , lastName = "Carlson"
