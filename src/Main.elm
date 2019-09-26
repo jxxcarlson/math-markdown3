@@ -328,19 +328,18 @@ update msg model =
         -- DOCUMENT --
 
         CreateDocument ->
-            (model, Cmd.none)
---           case model.currentUser of
---               Nothing -> (model, Cmd.none)
---               Just user ->
---                   let
---                      newDocument = Document.create user.username "New Document" model.time "# New Document\n\nWrite something here ..."
---                   in
---                   ({model | currentDocument = Just newDocument
---                            , documentList = newDocument :: model.documentList
---                            , visibilityOfTools = Invisible
---                     }
---                     , Request.createDocument newDocument |> Cmd.map Req
---                   )
+           case model.currentUser of
+               Nothing -> (model, Cmd.none)
+               Just user ->
+                   let
+                      newDocument = Document.create user.username "New Document" model.time "# New Document\n\nWrite something here ..."
+                   in
+                   ({model | currentDocument = Just newDocument
+                            , documentList = newDocument :: model.documentList
+                            , visibilityOfTools = Invisible
+                     }
+                     , Request.insertDocument hasuraToken newDocument |> Cmd.map Req
+                   )
 
 
         SaveDocument ->
