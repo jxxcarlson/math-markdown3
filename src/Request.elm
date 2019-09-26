@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), documentsByAuthor)
+module Request exposing (RequestMsg(..), documentsByAuthor, insertDocument)
 
 import RemoteData exposing(RemoteData)
 import Graphql.Http
@@ -25,20 +25,36 @@ import Api.Object
 import Api.Object.User
 import Api.Object.Document exposing (authorIdentifier)
 import Api.Query as Query exposing (DocumentOptionalArguments)
-import Api.Mutation as Mutation
+import Api.Mutation as Mutation exposing(InsertDocumentRequiredArguments, insert_document)
 import Api.Object.Document_mutation_response as DocumentMutation
 
 import CustomScalarCodecs
+import Json.Encode as Encode
 
 
 
 
 
 type RequestMsg =
-        GotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
-       | GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+        --vGotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
+         GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+       | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
+       -- | InsertDocumentResponse (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 --     | ConfirmUpdatedDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 --     | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
+
+
+-- Cmd RequestMsg --
+
+documentsByAuthor: String -> String -> Cmd RequestMsg
+documentsByAuthor authToken authorIdentifier =
+    makeGraphQLQuery authToken
+        (fetchUserSummaryDocumentsQuery authorIdentifier)
+        (RemoteData.fromResult >> GotUserDocuments)
+
+insertDocument : String -> Document -> Cmd RequestMsg
+insertDocument authToken newDocument =
+    makeMutation (getDocumentInsertObject newDocument) authToken
 
 
 -- GENERAL --
@@ -78,15 +94,6 @@ makeGraphQLMutation authToken query decodesTo =
         -}
         |> getAuthHeader authToken
         |> Graphql.Http.send decodesTo
-
--- Cmd RequestMsg --
-
-documentsByAuthor: String -> String -> Cmd RequestMsg
-documentsByAuthor authToken authorIdentifier =
-    makeGraphQLQuery authToken
-        (fetchUserSummaryDocumentsQuery authorIdentifier)
-        (RemoteData.fromResult >> GotUserDocuments)
-
 
 -- Summary Document Helpers --
 
@@ -132,45 +139,50 @@ documentListSelection =
         (Api.Object.Document.tags identity |> SelectionSet.map (\(Jsonb x) -> x))
 
 
----- D --
---
---insertDocument : Document -> Document_insert_input
---insertDocument newDocument =
---    buildDocument_insert_input
---        (\args ->
---            { args
---                | id = Present newDocument.id
---                , identifier = Present newDocument.identifier
---                , title = Present newDocument.title
---                , authorIdentifier = Present newDocument.authorIdentifier
---                , content = Present newDocument.content
---                , public = Present newDocument.public
---                , tags = Present newDocument.tags
---            }
---        )
---
---insertArgs : String -> Bool -> InsertTodosRequiredArguments
---insertArgs newTodo isPublic =
---
---    InsertTodosRequiredArguments [ insertTodoObjects newTodo isPublic ]
---
---getTodoListInsertObject : String -> Bool -> SelectionSet (Maybe MutationResponse) RootMutation
---
---getTodoListInsertObject newTodo isPublic =
---
---    insert_todos identity (insertArgs newTodo isPublic) mutationResponseSelection
---
---mutationResponseSelection : SelectionSet MutationResponse Hasura.Object.Todos_mutation_response
---
---mutationResponseSelection =
---
---    SelectionSet.map MutationResponse
---
---        TodosMutation.affected_rows
---
---makeMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd Msg
---
---makeMutation mutation authToken =
---
---    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> InsertPrivateTodoResponse)
-----
+-- INSERT DOCUMENT
+
+
+insertDocumentObjects : Document -> Document_insert_input
+insertDocumentObjects newDocument =
+    buildDocument_insert_input
+        (\args ->
+            { args
+                | id = Present newDocument.id
+                , identifier = Present newDocument.identifier
+                , title = Present newDocument.title
+                , authorIdentifier = Present newDocument.authorIdentifier
+                , content = Present newDocument.content
+                , public = Present newDocument.public
+--                , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
+            }
+        )
+
+insertArgs : Document -> InsertDocumentRequiredArguments
+insertArgs newDocument =
+    InsertDocumentRequiredArguments [ insertDocumentObjects newDocument ]
+
+getDocumentInsertObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
+getDocumentInsertObject newDocument =
+    insert_document identity (insertArgs newDocument ) mutationResponseSelection
+
+mutationResponseSelection : SelectionSet MutationResponse Api.Object.Document_mutation_response
+mutationResponseSelection =
+    SelectionSet.map MutationResponse
+        DocumentMutation.affected_rows
+
+
+makeMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
+makeMutation mutation authToken =
+    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> InsertDocumentResponse)
+
+
+type alias MutationResponse =
+    { affected_rows : Int
+
+    }
+
+type alias MaybeMutationResponse =
+    Maybe MutationResponse
+
+type GraphQLResponse decodesTo
+    = GraphQLResponse (RemoteData (Graphql.Http.Error decodesTo) decodesTo)

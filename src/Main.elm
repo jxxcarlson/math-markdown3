@@ -433,7 +433,8 @@ update msg model =
                          ({model | documentList = documentList
                                  , currentDocument = List.head documentList
                                  , message = "Success returning document list for author!"} , Cmd.none)
-
+              InsertDocumentResponse _ ->
+                  ({model | message = "Maybe new document saved"}, Cmd.none)
 
 
 
