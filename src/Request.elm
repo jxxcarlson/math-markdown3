@@ -49,7 +49,7 @@ type RequestMsg =
 documentsByAuthor: String -> String -> Cmd RequestMsg
 documentsByAuthor authToken authorIdentifier =
     makeGraphQLQuery authToken
-        (fetchUserSummaryDocumentsQuery authorIdentifier)
+        (fetchUserDocumentsQuery authorIdentifier)
         (RemoteData.fromResult >> GotUserDocuments)
 
 insertDocument : String -> Document -> Cmd RequestMsg
@@ -98,8 +98,8 @@ makeGraphQLMutation authToken query decodesTo =
 -- Summary Document Helpers --
 
 
-fetchUserSummaryDocumentsQuery : String -> SelectionSet (List Document) RootQuery
-fetchUserSummaryDocumentsQuery author =
+fetchUserDocumentsQuery : String -> SelectionSet (List Document) RootQuery
+fetchUserDocumentsQuery author =
     Query.document (documentListOptionalArgument author) documentListSelection
 
 
