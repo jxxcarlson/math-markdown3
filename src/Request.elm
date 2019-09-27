@@ -74,7 +74,7 @@ insertDocument authToken newDocument =
 
 updateDocument : String -> Document -> Cmd RequestMsg
 updateDocument authToken document  =
-    makeUpdateDocumentMutation (getDocumentInsertObject document) authToken
+    makeUpdateDocumentMutation (getDocumentUpdateObject document) authToken
 
 
 makeUpdateDocumentMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
