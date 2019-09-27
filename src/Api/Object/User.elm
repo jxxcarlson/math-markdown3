@@ -97,9 +97,9 @@ firstName =
     Object.selectionForField "String" "firstName" [] Decode.string
 
 
-id : SelectionSet Int Api.Object.User
+id : SelectionSet CustomScalarCodecs.Uuid Api.Object.User
 id =
-    Object.selectionForField "Int" "id" [] Decode.int
+    Object.selectionForField "CustomScalarCodecs.Uuid" "id" [] (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecUuid |> .decoder)
 
 
 lastName : SelectionSet String Api.Object.User

@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.User_min_fields exposing (email, firstName, id, lastName, timeStamp, username)
+module Api.Object.User_min_fields exposing (email, firstName, lastName, timeStamp, username)
 
 import Api.InputObject
 import Api.Interface
@@ -27,11 +27,6 @@ email =
 firstName : SelectionSet (Maybe String) Api.Object.User_min_fields
 firstName =
     Object.selectionForField "(Maybe String)" "firstName" [] (Decode.string |> Decode.nullable)
-
-
-id : SelectionSet (Maybe Int) Api.Object.User_min_fields
-id =
-    Object.selectionForField "(Maybe Int)" "id" [] (Decode.int |> Decode.nullable)
 
 
 lastName : SelectionSet (Maybe String) Api.Object.User_min_fields

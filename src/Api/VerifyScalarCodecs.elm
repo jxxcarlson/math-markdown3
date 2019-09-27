@@ -13,6 +13,6 @@ import Api.Scalar
 import CustomScalarCodecs
 
 
-verify : Api.Scalar.Codecs CustomScalarCodecs.Id CustomScalarCodecs.Jsonb CustomScalarCodecs.Timestamptz
+verify : Api.Scalar.Codecs CustomScalarCodecs.Id CustomScalarCodecs.Jsonb CustomScalarCodecs.Timestamptz CustomScalarCodecs.Uuid
 verify =
     CustomScalarCodecs.codecs

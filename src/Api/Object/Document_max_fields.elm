@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document_max_fields exposing (authorIdentifier, content, id, identifier, timeStamp, title)
+module Api.Object.Document_max_fields exposing (authorIdentifier, content, identifier, timeStamp, title)
 
 import Api.InputObject
 import Api.Interface
@@ -27,11 +27,6 @@ authorIdentifier =
 content : SelectionSet (Maybe String) Api.Object.Document_max_fields
 content =
     Object.selectionForField "(Maybe String)" "content" [] (Decode.string |> Decode.nullable)
-
-
-id : SelectionSet (Maybe Int) Api.Object.Document_max_fields
-id =
-    Object.selectionForField "(Maybe Int)" "id" [] (Decode.int |> Decode.nullable)
 
 
 identifier : SelectionSet (Maybe String) Api.Object.Document_max_fields

@@ -9,18 +9,20 @@ import Json.Decode as Decode exposing (Decoder)
 
 {-| unique or primary key constraints on table "document"
 
+  - Document\_idd\_key - unique or primary key constraint
+  - Document\_pkey - unique or primary key constraint
   - Documents\_identifier\_key - unique or primary key constraint
-  - Documents\_pkey - unique or primary key constraint
 
 -}
 type Document_constraint
-    = Documents_identifier_key
-    | Documents_pkey
+    = Document_idd_key
+    | Document_pkey
+    | Documents_identifier_key
 
 
 list : List Document_constraint
 list =
-    [ Documents_identifier_key, Documents_pkey ]
+    [ Document_idd_key, Document_pkey, Documents_identifier_key ]
 
 
 decoder : Decoder Document_constraint
@@ -29,11 +31,14 @@ decoder =
         |> Decode.andThen
             (\string ->
                 case string of
+                    "document_idd_key" ->
+                        Decode.succeed Document_idd_key
+
+                    "document_pkey" ->
+                        Decode.succeed Document_pkey
+
                     "documents_identifier_key" ->
                         Decode.succeed Documents_identifier_key
-
-                    "documents_pkey" ->
-                        Decode.succeed Documents_pkey
 
                     _ ->
                         Decode.fail ("Invalid Document_constraint type, " ++ string ++ " try re-running the @dillonkearns/elm-graphql CLI ")
@@ -45,11 +50,14 @@ decoder =
 toString : Document_constraint -> String
 toString enum =
     case enum of
+        Document_idd_key ->
+            "document_idd_key"
+
+        Document_pkey ->
+            "document_pkey"
+
         Documents_identifier_key ->
             "documents_identifier_key"
-
-        Documents_pkey ->
-            "documents_pkey"
 
 
 {-| Convert from a String representation to an elm representation enum.
@@ -66,11 +74,14 @@ This can be useful for generating Strings to use for <select> menus to check whi
 fromString : String -> Maybe Document_constraint
 fromString enumString =
     case enumString of
+        "document_idd_key" ->
+            Just Document_idd_key
+
+        "document_pkey" ->
+            Just Document_pkey
+
         "documents_identifier_key" ->
             Just Documents_identifier_key
-
-        "documents_pkey" ->
-            Just Documents_pkey
 
         _ ->
             Nothing

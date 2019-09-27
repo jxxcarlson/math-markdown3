@@ -5,11 +5,11 @@ import Time exposing(Posix)
 import Utility
 import List.Extra
 import Parser exposing(Parser, getChompedString, succeed, symbol, chompWhile, (|.))
-
+import Prng.Uuid as Uuid exposing(Uuid)
 
 
 type alias Document = {
-     id : Int
+     id : Uuid
    , identifier : String
    , title : String
    , authorIdentifier: String
@@ -78,9 +78,9 @@ slug document =
         : Document
 
 -}
-create : String -> String -> Posix -> String -> Document
-create authorIdentifier title time content =
-     {  id = 0
+create : Uuid -> String -> String -> Posix -> String -> Document
+create uuid authorIdentifier title time content =
+     {  id = uuid
       , identifier =  documentIdentifier authorIdentifier title time
       , title = title
       , authorIdentifier = authorIdentifier

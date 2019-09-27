@@ -9,18 +9,20 @@ import Json.Decode as Decode exposing (Decoder)
 
 {-| unique or primary key constraints on table "user"
 
-  - Users\_pkey - unique or primary key constraint
+  - User\_idd\_key - unique or primary key constraint
+  - User\_pkey - unique or primary key constraint
   - Users\_username\_key - unique or primary key constraint
 
 -}
 type User_constraint
-    = Users_pkey
+    = User_idd_key
+    | User_pkey
     | Users_username_key
 
 
 list : List User_constraint
 list =
-    [ Users_pkey, Users_username_key ]
+    [ User_idd_key, User_pkey, Users_username_key ]
 
 
 decoder : Decoder User_constraint
@@ -29,8 +31,11 @@ decoder =
         |> Decode.andThen
             (\string ->
                 case string of
-                    "users_pkey" ->
-                        Decode.succeed Users_pkey
+                    "user_idd_key" ->
+                        Decode.succeed User_idd_key
+
+                    "user_pkey" ->
+                        Decode.succeed User_pkey
 
                     "users_username_key" ->
                         Decode.succeed Users_username_key
@@ -45,8 +50,11 @@ decoder =
 toString : User_constraint -> String
 toString enum =
     case enum of
-        Users_pkey ->
-            "users_pkey"
+        User_idd_key ->
+            "user_idd_key"
+
+        User_pkey ->
+            "user_pkey"
 
         Users_username_key ->
             "users_username_key"
@@ -66,8 +74,11 @@ This can be useful for generating Strings to use for <select> menus to check whi
 fromString : String -> Maybe User_constraint
 fromString enumString =
     case enumString of
-        "users_pkey" ->
-            Just Users_pkey
+        "user_idd_key" ->
+            Just User_idd_key
+
+        "user_pkey" ->
+            Just User_pkey
 
         "users_username_key" ->
             Just Users_username_key

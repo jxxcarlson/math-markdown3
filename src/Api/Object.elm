@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object exposing (Document(..), Document_aggregate(..), Document_aggregate_fields(..), Document_avg_fields(..), Document_max_fields(..), Document_min_fields(..), Document_mutation_response(..), Document_stddev_fields(..), Document_stddev_pop_fields(..), Document_stddev_samp_fields(..), Document_sum_fields(..), Document_var_pop_fields(..), Document_var_samp_fields(..), Document_variance_fields(..), User(..), User_aggregate(..), User_aggregate_fields(..), User_avg_fields(..), User_max_fields(..), User_min_fields(..), User_mutation_response(..), User_stddev_fields(..), User_stddev_pop_fields(..), User_stddev_samp_fields(..), User_sum_fields(..), User_var_pop_fields(..), User_var_samp_fields(..), User_variance_fields(..))
+module Api.Object exposing (Document(..), Document_aggregate(..), Document_aggregate_fields(..), Document_max_fields(..), Document_min_fields(..), Document_mutation_response(..), User(..), User_aggregate(..), User_aggregate_fields(..), User_max_fields(..), User_min_fields(..), User_mutation_response(..))
 
 
 type Document
@@ -17,10 +17,6 @@ type Document_aggregate_fields
     = Document_aggregate_fields
 
 
-type Document_avg_fields
-    = Document_avg_fields
-
-
 type Document_max_fields
     = Document_max_fields
 
@@ -31,34 +27,6 @@ type Document_min_fields
 
 type Document_mutation_response
     = Document_mutation_response
-
-
-type Document_stddev_fields
-    = Document_stddev_fields
-
-
-type Document_stddev_pop_fields
-    = Document_stddev_pop_fields
-
-
-type Document_stddev_samp_fields
-    = Document_stddev_samp_fields
-
-
-type Document_sum_fields
-    = Document_sum_fields
-
-
-type Document_var_pop_fields
-    = Document_var_pop_fields
-
-
-type Document_var_samp_fields
-    = Document_var_samp_fields
-
-
-type Document_variance_fields
-    = Document_variance_fields
 
 
 type User
@@ -73,10 +41,6 @@ type User_aggregate_fields
     = User_aggregate_fields
 
 
-type User_avg_fields
-    = User_avg_fields
-
-
 type User_max_fields
     = User_max_fields
 
@@ -87,31 +51,3 @@ type User_min_fields
 
 type User_mutation_response
     = User_mutation_response
-
-
-type User_stddev_fields
-    = User_stddev_fields
-
-
-type User_stddev_pop_fields
-    = User_stddev_pop_fields
-
-
-type User_stddev_samp_fields
-    = User_stddev_samp_fields
-
-
-type User_sum_fields
-    = User_sum_fields
-
-
-type User_var_pop_fields
-    = User_var_pop_fields
-
-
-type User_var_samp_fields
-    = User_var_samp_fields
-
-
-type User_variance_fields
-    = User_variance_fields

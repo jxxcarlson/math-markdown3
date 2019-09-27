@@ -29,9 +29,9 @@ content =
     Object.selectionForField "String" "content" [] Decode.string
 
 
-id : SelectionSet Int Api.Object.Document
+id : SelectionSet CustomScalarCodecs.Uuid Api.Object.Document
 id =
-    Object.selectionForField "Int" "id" [] Decode.int
+    Object.selectionForField "CustomScalarCodecs.Uuid" "id" [] (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecUuid |> .decoder)
 
 
 identifier : SelectionSet String Api.Object.Document

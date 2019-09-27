@@ -84,14 +84,14 @@ document_aggregate fillInOptionals object_ =
 
 
 type alias DocumentByPkRequiredArguments =
-    { id : Int }
+    { id : CustomScalarCodecs.Uuid }
 
 
 {-| fetch data from the table: "document" using primary key columns
 -}
 document_by_pk : DocumentByPkRequiredArguments -> SelectionSet decodesTo Api.Object.Document -> SelectionSet (Maybe decodesTo) RootSubscription
 document_by_pk requiredArgs object_ =
-    Object.selectionForCompositeField "document_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+    Object.selectionForCompositeField "document_by_pk" [ Argument.required "id" requiredArgs.id (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) ] object_ (identity >> Decode.nullable)
 
 
 type alias UserOptionalArguments =
@@ -157,11 +157,11 @@ user_aggregate fillInOptionals object_ =
 
 
 type alias UserByPkRequiredArguments =
-    { id : Int }
+    { id : CustomScalarCodecs.Uuid }
 
 
 {-| fetch data from the table: "user" using primary key columns
 -}
 user_by_pk : UserByPkRequiredArguments -> SelectionSet decodesTo Api.Object.User -> SelectionSet (Maybe decodesTo) RootSubscription
 user_by_pk requiredArgs object_ =
-    Object.selectionForCompositeField "user_by_pk" [ Argument.required "id" requiredArgs.id Encode.int ] object_ (identity >> Decode.nullable)
+    Object.selectionForCompositeField "user_by_pk" [ Argument.required "id" requiredArgs.id (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) ] object_ (identity >> Decode.nullable)
