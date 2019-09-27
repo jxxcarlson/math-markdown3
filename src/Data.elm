@@ -1,30 +1,7 @@
 module Data exposing (startupDocument, doc5, doc2, doc3, doc4, rhsUserText  )
 
-import Time exposing(Posix)
 
-import Api.Scalar exposing(Id(..))
-
-import Prng.Uuid exposing(Uuid(..))
-import Random.Pcg.Extended exposing (Seed, initialSeed, step)
-
-id0 = step Prng.Uuid.generator (initialSeed 0 [1,2,3,4]) |> Tuple.first
-
-uuids =
-    let
-        (id1, seed1 ) = step Prng.Uuid.generator (initialSeed 0 [1,2,3,4])
-        (id2, seed2 ) = step Prng.Uuid.generator seed1
-        (id3, seed3 ) = step Prng.Uuid.generator seed2
-        (id4, seed4 ) = step Prng.Uuid.generator seed3
-        (id5, seed5 ) = step Prng.Uuid.generator seed4
-
-     in
-       [id1,id2,id3,id4,id5]
-
-getId : Int -> Uuid
-getId k =
-    List.drop (k - 1) uuids
-      |> List.head
-      |> Maybe.withDefault id0
+import Utility exposing(getId)
 
 startupDocument = {
      id = getId 1

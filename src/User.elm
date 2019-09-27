@@ -1,7 +1,7 @@
 module User exposing (User, dummy)
 
-import Time exposing(Posix)
-import Prng.Uuid as Uuid exposing(Uuid)
+import Prng.Uuid exposing(Uuid(..))
+import Utility exposing(getId)
 
 
 type alias User = {
@@ -16,7 +16,7 @@ type alias User = {
 
 
 dummy = {
-    id = 0
+    id = getId 6
    , username = "jxxcarlson"
    , email = "jxxcarlson@gmail.com"
    , public = True

@@ -1145,7 +1145,7 @@ idDisplay  : Model -> String
 idDisplay model =
    case model.currentDocument of
      Nothing -> ""
-     Just document -> "id = " ++ String.fromInt document.id
+     Just document -> "id = " ++ Uuid.toString document.id
 
 
 currentAuthorDisplay model =

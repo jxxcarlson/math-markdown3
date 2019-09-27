@@ -1,8 +1,33 @@
-module Utility exposing (unwrapId, humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug, intSlug)
+module Utility exposing (id0, getId, unwrapId, humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug, intSlug)
 import List.Extra
 
 import Time exposing(Posix)
 import Api.Scalar exposing(Id(..))
+
+import Prng.Uuid exposing(Uuid(..))
+import Random.Pcg.Extended exposing (Seed, initialSeed, step)
+
+
+id0 = step Prng.Uuid.generator (initialSeed 0 [1,2,3,4]) |> Tuple.first
+
+uuids =
+    let
+        (id1, seed1 ) = step Prng.Uuid.generator (initialSeed 0 [1,2,3,4])
+        (id2, seed2 ) = step Prng.Uuid.generator seed1
+        (id3, seed3 ) = step Prng.Uuid.generator seed2
+        (id4, seed4 ) = step Prng.Uuid.generator seed3
+        (id5, seed5 ) = step Prng.Uuid.generator seed4
+        (id6, seed6 ) = step Prng.Uuid.generator seed5
+        (id7, seed7 ) = step Prng.Uuid.generator seed6
+     in
+       [id1,id2,id3,id4,id5,id6,id7]
+
+getId : Int -> Uuid
+getId k =
+    List.drop (k - 1) uuids
+      |> List.head
+      |> Maybe.withDefault id0
+
 
 unwrapId : Id -> String
 unwrapId (Id str) = str
