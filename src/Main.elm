@@ -15,6 +15,8 @@ import Markdown.Elm
 import Html.Attributes
 import Markdown.Option exposing (Option(..))
 import Random
+import Prng.Uuid as Uuid
+import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import Data
 import Document exposing(Document)
 import Time
@@ -50,7 +52,9 @@ type alias Model =
     , visibilityOfTools : Visibility
     , appMode: AppMode
     , message : String
-    -- TIME
+    -- SYSTEM
+    , currentSeed : Seed
+    , currentUuid : Maybe Uuid.Uuid
     , zone : Time.Zone
     , time : Time.Posix
     -- USER
@@ -99,6 +103,8 @@ type Visibility = Visible | Invisible
 init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
+        ( newUuid, newSeed ) =
+            step Uuid.generator (initialSeed flags.seed flags.randInts)
         model =
             {
              seed = 0
@@ -110,7 +116,9 @@ init flags =
             , appMode = UserMode SignInState
             , message = "Starting ..."
 
-            -- TIME
+            -- SYSTEM
+            , currentSeed = newSeed -- initialSeed flags.seed flags.randInts
+            , currentUuid = Just newUuid -- Nothing
             , zone = Time.utc
             , time = Time.millisToPosix 0
             -- USER
@@ -133,7 +141,8 @@ init flags =
 
 type Msg
     = NoOp
-    -- Time
+    -- System
+    | NewUuid
     | Tick Time.Posix
     | AdjustTimeZone Time.Zone
     -- Random
@@ -176,6 +185,8 @@ type Msg
 type alias Flags =
     {  width : Int
       , height : Int
+      , seed : Int
+      , randInts : List Int
     }
 
 
@@ -286,7 +297,20 @@ update msg model =
                 UserMode s ->  ( {model | appMode =  UserMode s}, Cmd.none)
 
 
-        -- TIME --
+        -- SYSTEM --
+
+        NewUuid ->
+            let
+                ( newUuid, newSeed ) =
+                    step Uuid.generator model.currentSeed
+            in
+            -- 2.: Store the new seed
+            ( { model
+                | currentUuid = Just newUuid
+                , currentSeed = newSeed
+              }
+            , Cmd.none
+            )
 
         Tick newTime ->
               ( { model | time = newTime }
@@ -436,8 +460,11 @@ update msg model =
                   ({model | message = "Maybe new document saved"}, Cmd.none)
 
 
+-- UPDATE HELPERS --
 
-          -- MANAGE DOCUMENTS --
+
+
+-- MANAGE DOCUMENTS --
 
 handleDeletedDocument model maybeDeletedDocument =
     case maybeDeletedDocument  of
@@ -824,6 +851,8 @@ readingDisplay viewInfo model =
          , footer model
          ]
 
+
+
 toolsOrDocs viewInfo model =
     case model.visibilityOfTools of
         Visible ->  toolPanel viewInfo model
@@ -1097,7 +1126,14 @@ footer model =
            , el [] (Element.text <| slug model)
            , el [] (Element.text <| idDisplay model )
            , el [] (Element.text <| model.message)
+           , displayUUID model
        ]
+
+displayUUID : Model -> Element Msg
+displayUUID model =
+    case model.currentUuid of
+        Nothing -> el [] (Element.text "No UUID")
+        Just uuid -> el [] (Element.text <| "UUID: " ++ Uuid.toString uuid)
 
 slug : Model -> String
 slug model =
