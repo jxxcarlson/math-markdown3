@@ -19,20 +19,30 @@ import Api.InputObject exposing (
  , buildString_comparison_exp
  , buildDocument_bool_exp
  , Document_insert_input
- , buildDocument_insert_input )
+ , buildDocument_insert_input
+ , Uuid_comparison_exp
+ , buildUuid_comparison_exp
+ , Document_set_input
+ , buildDocument_set_input)
 
 import Api.Object
 import Api.Object.User
 import Api.Object.Document exposing (authorIdentifier)
 import Api.Query as Query exposing (DocumentOptionalArguments)
-import Api.Mutation as Mutation exposing(InsertDocumentRequiredArguments, insert_document)
+import Api.Mutation as Mutation exposing(
+   InsertDocumentRequiredArguments
+ , insert_document
+ , UpdateDocumentOptionalArguments
+ , UpdateDocumentRequiredArguments
+  )
+
 import Api.Object.Document_mutation_response as DocumentMutation
 
 import CustomScalarCodecs
 import Json.Encode as Encode
 
 
-
+-- MSG --
 
 
 type RequestMsg =
@@ -41,7 +51,7 @@ type RequestMsg =
        | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
        -- | InsertDocumentResponse (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 --     | ConfirmUpdatedDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
---     | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
+--      | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 
 
 -- Cmd RequestMsg --
@@ -56,6 +66,14 @@ insertDocument : String -> Document -> Cmd RequestMsg
 insertDocument authToken newDocument =
     makeMutation (getDocumentInsertObject newDocument) authToken
 
+--deleteDocument : String -> Document -> Cmd RequestMsg
+--deleteDocument authToken newDocument =
+--    makeMutation (getDocumentInsertObject newDocument) authToken
+
+{-
+delete_document : DeleteDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
+delete_document requiredArgs object_ =
+-}
 
 -- GENERAL --
 
@@ -153,7 +171,8 @@ insertDocumentObjects newDocument =
                 , authorIdentifier = Present newDocument.authorIdentifier
                 , content = Present newDocument.content
                 , public = Present newDocument.public
---                , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
+               -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
+                , tags = Present newDocument.tags
             }
         )
 
