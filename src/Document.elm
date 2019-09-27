@@ -79,8 +79,8 @@ slug document =
 
 -}
 create : Uuid -> String -> String -> Posix -> String -> Document
-create uuid authorIdentifier title time content =
-     {  id = uuid
+create documentUuid authorIdentifier title time content =
+     {  id = documentUuid
       , identifier =  documentIdentifier authorIdentifier title time
       , title = title
       , authorIdentifier = authorIdentifier

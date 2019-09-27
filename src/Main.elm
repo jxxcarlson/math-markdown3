@@ -54,7 +54,7 @@ type alias Model =
     , message : String
     -- SYSTEM
     , currentSeed : Seed
-    , currentUuid : Maybe Uuid.Uuid
+    , currentUuid : Uuid.Uuid
     , zone : Time.Zone
     , time : Time.Posix
     -- USER
@@ -118,7 +118,7 @@ init flags =
 
             -- SYSTEM
             , currentSeed = newSeed -- initialSeed flags.seed flags.randInts
-            , currentUuid = Just newUuid -- Nothing
+            , currentUuid = newUuid -- Nothing
             , zone = Time.utc
             , time = Time.millisToPosix 0
             -- USER
@@ -306,7 +306,7 @@ update msg model =
             in
             -- 2.: Store the new seed
             ( { model
-                | currentUuid = Just newUuid
+                | currentUuid = newUuid
                 , currentSeed = newSeed
               }
             , Cmd.none
@@ -356,13 +356,17 @@ update msg model =
                Nothing -> (model, Cmd.none)
                Just user ->
                    let
-                      newDocument = Document.create user.username "New Document" model.time "# New Document\n\nWrite something here ..."
+                      newDocument = Document.create model.currentUuid user.username "New Document" model.time "# New Document\n\nWrite something here ..."
+                      ( newUuid, newSeed ) =
+                         step Uuid.generator model.currentSeed
                    in
                    ({model | currentDocument = Just newDocument
                             , documentList = newDocument :: model.documentList
                             , visibilityOfTools = Invisible
+                            , currentUuid = newUuid
+                            , currentSeed = newSeed
                      }
-                     , Request.insertDocument hasuraToken newDocument |> Cmd.map Req
+                     ,  Request.insertDocument hasuraToken newDocument |> Cmd.map Req
                    )
 
 
@@ -1131,9 +1135,7 @@ footer model =
 
 displayUUID : Model -> Element Msg
 displayUUID model =
-    case model.currentUuid of
-        Nothing -> el [] (Element.text "No UUID")
-        Just uuid -> el [] (Element.text <| "UUID: " ++ Uuid.toString uuid)
+       el [] (Element.text <| "UUID: " ++ Uuid.toString model.currentUuid)
 
 slug : Model -> String
 slug model =
