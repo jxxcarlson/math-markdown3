@@ -23,7 +23,7 @@ import Time
 import Task
 import Utility exposing (humanTimeHM)
 import User exposing(User)
-import Request exposing(RequestMsg(..))
+import Request exposing(RequestMsg(..), GraphQLResponse(..))
 import RemoteData exposing (RemoteData(..))
 import Style
 import Api.Scalar exposing(Id(..))
@@ -371,13 +371,12 @@ update msg model =
 
 
         SaveDocument ->
-            (model, Cmd.none)
---            case model.currentDocument of
---               Nothing -> (model, Cmd.none)
---               Just document ->
---                   ({model | message = "Saving document ..."}
---                     , Request.update_document document |> Cmd.map Req
---                   )
+            case model.currentDocument of
+               Nothing -> (model, Cmd.none)
+               Just document ->
+                   ({model | message = "Saving document ..."}
+                     , Request.updateDocument hasuraToken document |> Cmd.map Req
+                   )
 
         ArmForDelete ->
             ({ model | documentDeleteState = Armed, message = "Armed for delete.  Caution!"}, Cmd.none)
@@ -433,14 +432,25 @@ update msg model =
 --                        ({model | message = "New doc: failed request"} , Cmd.none)
 --                   Success _ -> ({model | message = "New document created"} , Cmd.none)
 --
---              ConfirmUpdatedDocument remoteData ->
---                  case remoteData of
---                     NotAsked -> ({ model | message = "Update doc: not asked"} , Cmd.none)
---                     Loading -> ({model | message = "Updated doc: loading"} , Cmd.none)
---                     Failure _ ->
---                          ({model | message = "Updated doc: failed request"} , Cmd.none)
---                     Success _ -> ({model | message = "Document update successful"} , Cmd.none)
---
+--              UpdateDocumentResponse response ->
+--                  case response of
+--                     GraphQLResponse Nothing -> ({model | message = "Updated doc: failed"} , Cmd.none)
+--                     GraphQLResponse  remoteData ->
+--                       case remoteData of
+--                            NotAsked -> ({ model | message = "Update doc: not asked"} , Cmd.none)
+--                            Loading -> ({model | message = "Update doc: loading"} , Cmd.none)
+--                            Failure _ ->
+--                                ({model | message = "Update doc: failed request"} , Cmd.none)
+--                            Success _ -> ({model | message = "Update doc: success"} , Cmd.none)
+
+              UpdateDocumentResponse (GraphQLResponse remoteData) ->
+                  case remoteData of
+                      NotAsked -> ({ model | message = "Update doc: not asked"} , Cmd.none)
+                      Loading -> ({model | message = "Update doc: loading"} , Cmd.none)
+                      Failure _ ->
+                           ({model | message = "Update doc: failed request"} , Cmd.none)
+                      Success _ -> ({model | message = "Document update successful"} , Cmd.none)
+
 --              ConfirmUDeleteDocument remoteData ->
 --                  case remoteData of
 --                     NotAsked -> ({ model | message = "Delete doc: not asked"} , Cmd.none)

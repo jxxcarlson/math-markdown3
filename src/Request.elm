@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), documentsByAuthor, insertDocument)
+module Request exposing (RequestMsg(..), GraphQLResponse(..), documentsByAuthor, insertDocument, updateDocument)
 
 import RemoteData exposing(RemoteData)
 import Graphql.Http
@@ -9,6 +9,9 @@ import Document exposing(Document, Document)
 import CustomScalarCodecs exposing(Jsonb(..))
 
 import Api.Enum.Order_by exposing (Order_by(..))
+
+import Prng.Uuid exposing(Uuid(..))
+
 
 import Api.InputObject exposing (
    Boolean_comparison_exp
@@ -32,6 +35,7 @@ import Api.Query as Query exposing (DocumentOptionalArguments)
 import Api.Mutation as Mutation exposing(
    InsertDocumentRequiredArguments
  , insert_document
+ , update_document
  , UpdateDocumentOptionalArguments
  , UpdateDocumentRequiredArguments
   )
@@ -46,11 +50,12 @@ import Json.Encode as Encode
 
 
 type RequestMsg =
-        --vGotNewDocument (RemoteData (Graphql.Http.Error Document) Document)
          GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
        | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
+       | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
        -- | InsertDocumentResponse (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
---     | ConfirmUpdatedDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
+       -- | ConfirmUpdatedDocument (GraphQLResponse (Maybe Document))
+--      | UpdateDocument (GraphQLResponse UpdateDocumentResponse)
 --      | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 
 
@@ -65,6 +70,19 @@ documentsByAuthor authToken authorIdentifier =
 insertDocument : String -> Document -> Cmd RequestMsg
 insertDocument authToken newDocument =
     makeMutation (getDocumentInsertObject newDocument) authToken
+
+
+updateDocument : String -> Document -> Cmd RequestMsg
+updateDocument authToken document  =
+    makeUpdateDocumentMutation (getDocumentInsertObject document) authToken
+
+
+makeUpdateDocumentMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
+makeUpdateDocumentMutation mutation authToken =
+    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> UpdateDocumentResponse)
+
+
+
 
 --deleteDocument : String -> Document -> Cmd RequestMsg
 --deleteDocument authToken newDocument =
@@ -172,9 +190,21 @@ insertDocumentObjects newDocument =
                 , content = Present newDocument.content
                 , public = Present newDocument.public
                -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
-                , tags = Present newDocument.tags
+              --  , tags = Present newDocument.tags
             }
         )
+--updateDocumentObjects : Document -> Document_update_input
+--updateDocumentObjects document =
+--    buildDocument_insert_input
+--        (\args ->
+--            { args
+--                |  authorIdentifier = Present document.authorIdentifier
+--                , content = Present document.content
+--                , public = Present document.public
+--               -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
+--              --  , tags = Present newDocument.tags
+--            }
+--        )
 
 insertArgs : Document -> InsertDocumentRequiredArguments
 insertArgs newDocument =
@@ -183,6 +213,26 @@ insertArgs newDocument =
 getDocumentInsertObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
 getDocumentInsertObject newDocument =
     insert_document identity (insertArgs newDocument ) mutationResponseSelection
+
+-- UP --
+
+getDocumentUpdateObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
+getDocumentUpdateObject document =
+    update_document
+       (setDocumentUpdateArgs document.content)
+       (setDocumentUpdateWhere document.id)
+       mutationResponseSelection
+
+--update_document :
+--     (UpdateDocumentOptionalArguments  -> UpdateDocumentOptionalArguments)
+--  -> UpdateDocumentRequiredArguments
+--  -> SelectionSet decodesTo Api.Object.Document_mutation_response
+--  -> SelectionSet (Maybe decodesTo) RootMutation
+--update_document fillInOptionals requiredArgs object_ =
+
+
+
+
 
 mutationResponseSelection : SelectionSet MutationResponse Api.Object.Document_mutation_response
 mutationResponseSelection =
@@ -205,3 +255,60 @@ type alias MaybeMutationResponse =
 
 type GraphQLResponse decodesTo
     = GraphQLResponse (RemoteData (Graphql.Http.Error decodesTo) decodesTo)
+
+-- UPDATE DOCUMENT
+
+type alias DocumentoData =
+    RemoteData (Graphql.Http.Error Document) Document
+
+type alias UpdateDocumentResponse =
+    RemoteData (Graphql.Http.Error (Maybe MutationResponse)) (Maybe MutationResponse)
+
+--updateDocument : String -> SelectionSet (Maybe MutationResponse) RootMutation -> Cmd RequestMsg
+--updateDocument authToken mutation  =
+--    makeGraphQLMutation
+--        authToken
+--        mutation
+--        (RemoteData.fromResult >> UpdateDocument)
+
+
+updateDocumentContent : Uuid -> String -> SelectionSet (Maybe MutationResponse) RootMutation
+updateDocumentContent documentId content =
+    Mutation.update_document (setDocumentUpdateArgs content) (setDocumentUpdateWhere documentId) mutationResponseSelection
+
+setDocumentSetArg : String -> Document_set_input
+setDocumentSetArg content =
+    buildDocument_set_input
+        (\args ->
+            { args
+                | content = OptionalArgument.Present content
+            }
+        )
+
+setDocumentUpdateArgs : String -> UpdateDocumentOptionalArguments -> UpdateDocumentOptionalArguments
+setDocumentUpdateArgs content optionalArgs =
+    { optionalArgs
+        | set_ = Present (setDocumentSetArg content)
+    }
+
+setDocumentValueForId : Uuid -> Uuid_comparison_exp
+setDocumentValueForId uuid =
+    buildUuid_comparison_exp
+        (\args ->
+            { args
+                | eq_ = Present uuid
+            }
+        )
+
+setDocumentUpdateWhere : Uuid -> UpdateDocumentRequiredArguments
+setDocumentUpdateWhere uuid =
+    UpdateDocumentRequiredArguments
+        (buildDocument_bool_exp
+            (\args ->
+                { args
+                    | id = Present (setDocumentValueForId uuid)
+                }
+            )
+        )
+
+
