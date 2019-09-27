@@ -4,9 +4,30 @@ import Time exposing(Posix)
 
 import Api.Scalar exposing(Id(..))
 
+import Prng.Uuid exposing(Uuid(..))
+import Random.Pcg.Extended exposing (Seed, initialSeed, step)
+
+id0 = step Prng.Uuid.generator (initialSeed 0 [1,2,3,4]) |> Tuple.first
+
+uuids =
+    let
+        (id1, seed1 ) = step Prng.Uuid.generator (initialSeed 0 [1,2,3,4])
+        (id2, seed2 ) = step Prng.Uuid.generator seed1
+        (id3, seed3 ) = step Prng.Uuid.generator seed2
+        (id4, seed4 ) = step Prng.Uuid.generator seed3
+        (id5, seed5 ) = step Prng.Uuid.generator seed4
+
+     in
+       [id1,id2,id3,id4,id5]
+
+getId : Int -> Uuid
+getId k =
+    List.drop (k - 1) uuids
+      |> List.head
+      |> Maybe.withDefault id0
 
 startupDocument = {
-     id = -1
+     id = getId 1
   ,  identifier = "jxxcarlson.pure-elm-markdown-parser.1568-700-834"
   ,  title = "A Pure Elm Markdown Parser"
   , authorIdentifier = "jxxcarlson"
@@ -17,7 +38,7 @@ startupDocument = {
 
 
 doc2 = {
-    id = -2
+    id = getId 2
   , identifier = "jxxcarlson.notes-on-futhark.15687-008-834"
   , title = "Notes on Futhark"
   , authorIdentifier = "jxxcarlson"
@@ -27,7 +48,7 @@ doc2 = {
   }
 
 doc3 = {
-    id = -3
+    id = getId 3
   , identifier = "jxxcarlson.math-markdown-roadmap-and-progress-report.1568-700-834"
   , title = "Math Markdown Progress Roadmap & Report"
   , authorIdentifier = "jxxcarlson"
@@ -37,7 +58,7 @@ doc3 = {
   }
 
 doc4 = {
-    id = -4
+    id = getId 4
   ,  identifier = "jxxcarlson.graphql-queries-and-mutations.1568-700-834"
   , title = "GraphQL Queries and Mutations"
   , authorIdentifier = "jxxcarlson"
@@ -47,7 +68,7 @@ doc4 = {
   }
 
 doc5= {
-    id = -5
+    id = getId 5
   , identifier = "jxxcarlson.elm-resources.1568-981-582"
   , title = "Elm resources"
   , authorIdentifier = "jxxcarlson"
