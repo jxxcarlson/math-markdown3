@@ -632,10 +632,13 @@ signInUpView model =
     column Style.signInColumn
         [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Welcome!")
          , column [spacing 8, paddingXY 0 18] [
-             el [ Font.size 14 ] (Element.text "Explore public documents without signing in — Click on 'Read' above left.")
-            , el [ Font.size 14 ] (Element.text "Edits are saved for only for your documents and only if you are signed in")
+             el [ Font.size 14 ] (Element.text "Explore public documents without signing in — Click on 'Read', above left.")
+            , el [ Font.size 14 ] (Element.text "Edits are saved only for your documents and only if you are signed in")
             , el [ Font.size 14 ] (Element.text "User sign in/sign up coming soon.")
-            , el [ Font.size 14 ] (Element.text "This project is a work-in-progress. Comments to jxxcarlson at gmail")
+            , el [ Font.size 14 ] (Element.text "")
+            , el [ Font.size 14 ] (Element.text "This project is a work-in-progress.")
+            , el [ Font.size 14 ] (Element.text "Comments to jxxcarlson on the Elm Slack or to jxxcarlson at gmail")
+
            ]
          , outerPasswordPanel model
         ]
