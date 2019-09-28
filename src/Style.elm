@@ -66,9 +66,6 @@ mouseDownColor =
 
 -- COLOR --
 
-white =
-    Element.rgb 1 1 1
-
 
 darkRed =
     Element.rgb 0.5 0.0 0.0
@@ -77,8 +74,26 @@ darkRed =
 darkBlue =
     Element.rgb 0.0 0.0 0.6
 
-black =
-    Element.rgb 0.1 0.1 0.1
+
+-- COLORS --
 
 makeGrey g =
     Element.rgb g g g
+
+
+lightGrey =
+    makeGrey 0.95
+
+buttonGrey = grey 0.5
+
+red =  Element.rgb 0.4 0.1 0.1
+
+white = Element.rgb 1 1 1
+
+blue = Element.rgb 0.1 0.1 0.4
+
+grey g = Element.rgb g g g
+
+charcoal = grey 0.3
+
+black = grey 0.1
