@@ -959,7 +959,6 @@ toolPanel viewInfo model =
        , paddingXY 20 20, alignTop]
       [column [Font.size 13, spacing 15]  [
           el [Font.size 16, Font.bold, Font.color white] (Element.text "Document tools")
-        , getUserDocumentsButton
         , flavors model
        ]
   ]
