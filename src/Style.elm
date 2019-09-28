@@ -64,6 +64,38 @@ buttonFontSize =
 mouseDownColor =
     Element.rgb 0.7 0.1 0.1
 
+
+buttonStyleSelected = buttonStyleSelected_ buttonGrey red
+
+buttonStyleSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
+buttonStyleSelected_ color color2 width_ bit =
+    [ case bit of
+        False -> Background.color color
+        True -> Background.color color2
+
+    , Font.color white
+    , width (px width_)
+    , height (px 25)
+    , Font.size 12
+    , centerX
+    ]
+
+preWrap =
+    Element.htmlAttribute (Html.Attributes.attribute "white-space" "pre-wrap")
+
+
+textInputStyle w h=
+    [ preWrap
+    , height <| px <| round h
+    , width <| px <| round w
+    , clipX
+    , paddingXY 12 12
+    , Font.size 13
+    , paddingXY 8 20
+    , Background.color lightGrey
+    ,  Border.width 2
+    ]
+
 -- COLOR --
 
 

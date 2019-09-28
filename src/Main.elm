@@ -873,7 +873,7 @@ editor viewInfo model =
     column []
             [ Element.Keyed.el []
                 ( String.fromInt model.counter
-                , Input.multiline (textInputStyle w_ h_)
+                , Input.multiline (Style.textInputStyle w_ h_)
                     { onChange = UpdateDocumentText
                     , text = Document.getContent model.currentDocument
                     , placeholder = Nothing
@@ -1184,7 +1184,7 @@ standardMarkdownButton model width =
        let
           bit = (model.option == Standard)
        in
-          Input.button (buttonStyleSelected width bit)
+          Input.button (Style.buttonStyleSelected width bit)
               { onPress = Just SelectStandard, label = el [centerX] (Element.text "Standard")}
 
 
@@ -1192,7 +1192,7 @@ extendedMarkdownButton model width =
     let
        bit = (model.option == Extended)
     in
-        Input.button (buttonStyleSelected width bit)
+        Input.button (Style.buttonStyleSelected width bit)
           { onPress = Just SelectExtended, label = el [centerX] (Element.text "Extended")}
 
 
@@ -1200,38 +1200,9 @@ extendedMathMarkdownButton model width =
     let
         bit = (model.option == ExtendedMath)
     in
-    Input.button (buttonStyleSelected width bit)
+    Input.button (Style.buttonStyleSelected width bit)
       { onPress = Just SelectExtendedMath, label = el [centerX] (Element.text "ExtendedMath")}
 
 
 
-buttonStyleSelected = buttonStyleSelected_ Style.buttonGrey Style.red
-
-buttonStyleSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
-buttonStyleSelected_ color color2 width_ bit =
-    [ case bit of
-        False -> Background.color color
-        True -> Background.color color2
-
-    , Font.color Style.white
-    , width (px width_)
-    , height (px 25)
-    , Font.size 12
-    , centerX
-    ]
-
-textInputStyle w h=
-    [ preWrap
-    , height <| px <| round h
-    , width <| px <| round w
-    , clipX
-    , paddingXY 12 12
-    , Font.size 13
-    , paddingXY 8 20
-    , Background.color Style.lightGrey
-    ,  Border.width 2
-    ]
-
-preWrap =
-    Element.htmlAttribute (Html.Attributes.attribute "white-space" "pre-wrap")
 
