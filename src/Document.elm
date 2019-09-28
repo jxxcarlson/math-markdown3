@@ -58,6 +58,13 @@ documentIdentifier authorIdentifier title time =
 slug : Document -> String
 slug document =
     let
+      shortHash = Uuid.toString document.id  |> String.right 6
+    in
+    document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ shortHash
+
+slug1 : Document -> String
+slug1 document =
+    let
       timeCreated = String.split "." document.identifier
         |> List.reverse
         |> List.head

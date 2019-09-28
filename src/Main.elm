@@ -338,8 +338,13 @@ update msg model =
 
         SignIn ->
           if model.username == "jxxcarlson" && model.password == "locoLobo" then
-            ({ model | currentUser = Just User.dummy, appMode = Reading }, Cmd.none)
-           else
+               (  { model |   currentUser = Just User.dummy
+                          , appMode = Reading
+                          , visibilityOfTools = Invisible
+                          }
+                 , Request.documentsByAuthor hasuraToken User.dummy.username |> Cmd.map Req
+              )
+          else
             ({model | currentUser = Nothing, appMode = UserMode SignInState, password = ""} , Cmd.none)
 
 
