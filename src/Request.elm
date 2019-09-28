@@ -165,12 +165,12 @@ documentListSelection: SelectionSet Document Api.Object.Document
 documentListSelection =
     SelectionSet.map7  Document
         Api.Object.Document.id
-        Api.Object.Document.identifier
         Api.Object.Document.title
         Api.Object.Document.authorIdentifier
         Api.Object.Document.content
         Api.Object.Document.public
         (Api.Object.Document.tags identity |> SelectionSet.map (\(Jsonb x) -> x))
+        Api.Object.Document.slug
 
 
 -- INSERT DOCUMENT
@@ -182,7 +182,6 @@ insertDocumentObjects newDocument =
         (\args ->
             { args
                 | id = Present newDocument.id
-                , identifier = Present newDocument.identifier
                 , title = Present newDocument.title
                 , authorIdentifier = Present newDocument.authorIdentifier
                 , content = Present newDocument.content

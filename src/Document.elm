@@ -1,5 +1,5 @@
 module Document exposing (Document, setContent, getContent, documentIdentifier
-  , create, replaceInList, getHeading, updateTitle, footer, slug)
+  , create, replaceInList, getHeading, updateTitle, footer, makeSlug)
 
 import Time exposing(Posix)
 import Utility
@@ -10,12 +10,12 @@ import Prng.Uuid as Uuid exposing(Uuid)
 
 type alias Document = {
      id : Uuid
-   , identifier : String
    , title : String
    , authorIdentifier: String
    , content : String
    , public: Bool
    , tags : List String
+   , slug : String
   }
 
 
@@ -37,7 +37,7 @@ footer document =
     "\n\n___\n\n````\nAuthor: "
     ++ document.authorIdentifier ++ "\n"
     -- ++ "Document ID: " ++ document.identifier ++ "\n"
-    ++ "Document slug: " ++ slug document ++ "\n"
+    ++ "Document slug: " ++ makeSlug document ++ "\n"
     ++ "Tags: " ++ String.join ", " document.tags ++ "\n"
     ++ "Words: " ++ Utility.wordCount document.content
     ++ "\n" ++ "````" ++ "\n\n"
@@ -55,25 +55,19 @@ documentIdentifier authorIdentifier title time =
     [authorIdentifier, Utility.normalize title, Utility.stringOfPosix time]
       |> String.join "."
 
-slug : Document -> String
-slug document =
+makeSlug : Document -> String
+makeSlug document =
     let
       shortHash = Uuid.toString document.id  |> String.right 6
     in
     document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ shortHash
 
-slug1 : Document -> String
-slug1 document =
+makeInitiaSlug : String -> String -> Uuid -> String
+makeInitiaSlug title authorIdentifier identifier =
     let
-      timeCreated = String.split "." document.identifier
-        |> List.reverse
-        |> List.head
-        |> Maybe.andThen String.toInt
-        |> Maybe.withDefault 0
-
+      shortHash = Uuid.toString identifier  |> String.right 6
     in
-    document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ Utility.intSlug timeCreated
-
+    authorIdentifier ++ "." ++ Utility.compress title ++ "." ++ shortHash
 
 {-|
 
@@ -87,13 +81,16 @@ slug1 document =
 -}
 create : Uuid -> String -> String -> Posix -> String -> Document
 create documentUuid authorIdentifier title time content =
+   let
+       slug = makeInitiaSlug title authorIdentifier documentUuid
+   in
      {  id = documentUuid
-      , identifier =  documentIdentifier authorIdentifier title time
       , title = title
       , authorIdentifier = authorIdentifier
       , content = content
       , tags  = [ ]
       , public = False
+      , slug = slug
 
 
      }
@@ -108,7 +105,7 @@ replaceInList targetDocument_ documentList =
    let
        targetDocument = updateTitle targetDocument_
     in
-    List.Extra.setIf (\doc -> doc.identifier == targetDocument.identifier) targetDocument documentList
+    List.Extra.setIf (\doc -> doc.id == targetDocument.id) targetDocument documentList
 
 
 updateTitle : Document -> Document

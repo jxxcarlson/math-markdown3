@@ -131,8 +131,8 @@ init flags =
             -- documents
             , counter = 0
             , documentDeleteState = SafetyOn
-            , documentList = [Data.startupDocument, Data.doc5, Data.doc2, Data.doc3, Data.doc4]
-            , currentDocument = Just Data.startupDocument
+            , documentList = []
+            , currentDocument = Nothing
             }
     in
     ( model, Task.perform AdjustTimeZone Time.here )
@@ -1034,7 +1034,7 @@ tocEntry currentDocument_ document =
         color = case currentDocument_ of
             Nothing ->  Style.buttonGrey
             Just currentDocument ->
-                if currentDocument.identifier == document.identifier then
+                if currentDocument.id == document.id then
                    Style.red
                 else
                    Style.buttonGrey
@@ -1132,7 +1132,7 @@ slug : Model -> String
 slug model =
     case model.currentDocument of
         Nothing -> ""
-        Just document -> Document.slug document
+        Just document -> document.slug
 
 
 currentAuthorDisplay model =
