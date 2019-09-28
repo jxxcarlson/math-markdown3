@@ -264,6 +264,7 @@ setDocumentSetArg document =
             { args
                 |   content = OptionalArgument.Present document.content
                   , title = OptionalArgument.Present document.title
+                  , slug = OptionalArgument.Present document.slug
             }
         )
 

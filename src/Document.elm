@@ -1,5 +1,5 @@
 module Document exposing (Document, setContent, getContent, documentIdentifier
-  , create, replaceInList, getHeading, updateTitle, footer, makeSlug)
+  , create, replaceInList, updateMetaData, footer)
 
 import Time exposing(Posix)
 import Utility
@@ -103,20 +103,21 @@ create documentUuid authorIdentifier title time content =
 replaceInList : Document -> List Document -> List Document
 replaceInList targetDocument_ documentList =
    let
-       targetDocument = updateTitle targetDocument_
+       targetDocument = updateMetaData targetDocument_
     in
     List.Extra.setIf (\doc -> doc.id == targetDocument.id) targetDocument documentList
 
+updateMetaData : Document -> Document
+updateMetaData document =
+      { document | slug = makeSlug document, title = newTitle document}
 
-updateTitle : Document -> Document
-updateTitle document =
+
+newTitle : Document -> String
+newTitle document =
     case  getHeading document  of
-        Nothing -> document
-        Just newTitle ->
-         if newTitle /= "" then
-            { document | title = newTitle }
-         else
-            document
+       Nothing -> document.title
+       Just newTitle_ -> newTitle_
+
 
 
 getHeading: Document -> Maybe String

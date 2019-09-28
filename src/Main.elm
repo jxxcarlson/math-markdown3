@@ -378,12 +378,12 @@ update msg model =
         SaveDocument ->
             case model.currentDocument of
                Nothing -> (model, Cmd.none)
-               Just document ->
+               Just document_ ->
                  let
-                    documentWithUpdatedTitle = Document.updateTitle document
+                    document = Document.updateMetaData document_
                  in
                    ({model | message = "Saving document ..."}
-                     , Request.updateDocument hasuraToken documentWithUpdatedTitle |> Cmd.map Req
+                     , Request.updateDocument hasuraToken document |> Cmd.map Req
                    )
 
         ArmForDelete ->
@@ -1122,14 +1122,14 @@ footer model =
        row [ paddingXY 20 0, height (px 30), width (px (model.windowWidth)), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12] [
              currentAuthorDisplay model
            , wordCount model
-           , el [] (Element.text <| slug model)
+           , el [] (Element.text <| slugOfCurrentDocument model)
            , el [alignRight, paddingXY 10 0] (Element.text <| model.message)
             , currentTime model
        ]
 
 
-slug : Model -> String
-slug model =
+slugOfCurrentDocument : Model -> String
+slugOfCurrentDocument model =
     case model.currentDocument of
         Nothing -> ""
         Just document -> document.slug
