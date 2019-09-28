@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), GraphQLResponse(..), documentsByAuthor, insertDocument, updateDocument)
+module Request exposing (RequestMsg(..), GraphQLResponse(..), documentsByAuthor, insertDocument, updateDocument, deleteDocument)
 
 import RemoteData exposing(RemoteData)
 import Graphql.Http
@@ -55,7 +55,7 @@ type RequestMsg =
          GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
        | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
        | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
---      | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
+       | DeleteDocumentResponse (GraphQLResponse (Maybe MutationResponse))
 
 
 -- Cmd RequestMsg --
@@ -87,7 +87,7 @@ deleteDocument authToken document =
 
 makeDeleteDocumentMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
 makeDeleteDocumentMutation mutation authToken =
-    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> UpdateDocumentResponse)
+    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> DeleteDocumentResponse)
 
 
 
