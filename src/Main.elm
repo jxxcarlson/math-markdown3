@@ -57,6 +57,7 @@ type alias Model =
     , currentUuid : Uuid.Uuid
     , zone : Time.Zone
     , time : Time.Posix
+    , currentDocumentDirty : Bool
     -- USER
     , currentUser : Maybe User
     , username : String
@@ -118,6 +119,7 @@ init flags =
             , currentUuid = newUuid -- Nothing
             , zone = Time.utc
             , time = Time.millisToPosix 0
+            , currentDocumentDirty = False
             -- USER
             , currentUser = Nothing
             , username = ""
@@ -388,7 +390,9 @@ update msg model =
                  let
                     document = Document.updateMetaData document_
                  in
-                   ({model | message = "Saving document ...", currentDocument = Just document}
+                   ({model |  currentDocumentDirty = False
+                            , message = "Saving document ..."
+                            , currentDocument = Just document}
                      , Request.updateDocument hasuraToken document |> Cmd.map Req
                    )
 
@@ -427,6 +431,7 @@ update msg model =
                    in
                      ( { model | currentDocument = Just updatedDoc2
                                , documentList = Document.replaceInList updatedDoc2 model.documentList
+                               , currentDocumentDirty = True
                        }
                        ,
                        Cmd.none
