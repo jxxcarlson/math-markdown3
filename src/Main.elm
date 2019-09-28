@@ -42,6 +42,11 @@ main =
 hasuraToken : String
 hasuraToken = "GOc97wA7CCMm31H4UJHa-4pqdVoLf3l6gAwzczdHC"
 
+
+type alias Message = (MessageType, String)
+
+type MessageType = SignInMessage | UserMessage | ErrorMessage | DebugMessage
+
 type alias Model =
     {
       seed : Int
@@ -51,7 +56,7 @@ type alias Model =
     , windowHeight : Int
     , visibilityOfTools : Visibility
     , appMode: AppMode
-    , message : String
+    , message : Message
     -- SYSTEM
     , currentSeed : Seed
     , currentUuid : Uuid.Uuid
@@ -113,7 +118,7 @@ init flags =
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
             , appMode = UserMode SignInState
-            , message = "Starting ..."
+            , message = (UserMessage, "Starting ...")
 
             -- SYSTEM
             , currentSeed = newSeed -- initialSeed flags.seed flags.randInts
@@ -366,7 +371,7 @@ update msg model =
 
 
 
-        SignUp -> ({model | appMode = UserMode SignUpState, message = "At SignUp msg"} , Cmd.none)
+        SignUp -> ({model | appMode = UserMode SignUpState, message = (DebugMessage, "At SignUp msg")} , Cmd.none)
 
 
         SignOut -> ({model | currentUser = Nothing
@@ -405,16 +410,15 @@ update msg model =
                  let
                     document = Document.updateMetaData document_
                  in
-                   ({model |  message = "Saving document ..."
-                            , currentDocument = Just document}
+                   ({model | message = (UserMessage, "Saving document ..."), currentDocument = Just document}
                      , Request.updateDocument hasuraToken document |> Cmd.map Req
                    )
 
         ArmForDelete ->
-            ({ model | documentDeleteState = Armed, message = "Armed for delete.  Caution!"}, Cmd.none)
+            ({ model | documentDeleteState = Armed, message = (UserMessage, "Armed for delete.  Caution!")}, Cmd.none)
 
         CancelDeleteDocument ->
-            ({ model | documentDeleteState = SafetyOn, message = "Delete cancelled"}, Cmd.none)
+            ({ model | documentDeleteState = SafetyOn, message = (UserMessage, "Delete cancelled")}, Cmd.none)
 
         DeleteDocument ->
             case model.currentDocument of
@@ -422,17 +426,17 @@ update msg model =
                Just document ->
                    case model.documentDeleteState of
                        SafetyOn ->
-                           ({model | message = "Turning safety off.  Press again to delete document.", documentDeleteState = Armed}
+                           ({model | message = (UserMessage, "Turning safety off.  Press again to delete document."), documentDeleteState = Armed}
                              , Cmd.none)
                        Armed ->
-                         ({model | message = "Deleting document ...", documentDeleteState = SafetyOn}
+                         ({model | message =(UserMessage, "Deleting document ..."), documentDeleteState = SafetyOn}
                              , Request.deleteDocument hasuraToken document |> Cmd.map Req)
 
         GetUserDocuments ->
             case model.currentUser of
-                Nothing -> ({model | message = "Can't get documents if user is not signed in"}, Cmd.none)
+                Nothing -> ({model | message = (UserMessage, "Can't get documents if user is not signed in")}, Cmd.none)
                 Just user ->
-                    ({model | message = "Getting your documents"
+                    ({model | message = (UserMessage, "Getting your documents")
                        , visibilityOfTools = Invisible }, Request.documentsByAuthor hasuraToken user.username |> Cmd.map Req)
 
         UpdateDocumentText str ->
@@ -459,34 +463,34 @@ update msg model =
             case requestMsg of
               UpdateDocumentResponse (GraphQLResponse remoteData)  ->
                   case remoteData of
-                      NotAsked -> ({ model | message = "Update doc: not asked"} , Cmd.none)
-                      Loading -> ({model | message = "Update doc: loading"} , Cmd.none)
+                      NotAsked -> ({ model | message = (ErrorMessage, "Update doc: not asked")} , Cmd.none)
+                      Loading -> ({model | message = (ErrorMessage,"Update doc: loading")} , Cmd.none)
                       Failure _ ->
-                           ({model | message = "Update doc: failed request"} , Cmd.none)
-                      Success _ -> ({model |   message = "Document update successful"
-                                             , currentDocumentDirty = False
-                                             , secondsWhileDirty = 0} , Cmd.none)
+                           ({model | message = (ErrorMessage, "Update doc: failed request")} , Cmd.none)
+                      Success _ -> ({model |   message = (UserMessage, "Document update successful")
+                           , currentDocumentDirty = False
+                           , secondsWhileDirty = 0} , Cmd.none)
 
               DeleteDocumentResponse (GraphQLResponse remoteData) ->
                   case remoteData of
-                     NotAsked -> ({ model | message = "Delete doc: not asked"} , Cmd.none)
-                     Loading -> ({model | message = "Delete doc: loading"} , Cmd.none)
+                     NotAsked -> ({ model | message = (ErrorMessage,"Delete doc: not asked")} , Cmd.none)
+                     Loading -> ({model | message = (ErrorMessage,"Delete doc: loading")} , Cmd.none)
                      Failure _ ->
-                          ({model | message = "Delete doc: failed request"} , Cmd.none)
+                          ({model | message = (ErrorMessage, "Delete doc: failed request")} , Cmd.none)
                      Success _ -> handleDeletedDocument model
 
               GotUserDocuments remoteData  ->
                 case remoteData of
-                   NotAsked -> ({ model | message = "Get author docs: not asked"} , Cmd.none)
-                   Loading -> ({model | message = "Get author docs:: loading"} , Cmd.none)
+                   NotAsked -> ({ model | message = (ErrorMessage, "Get author docs: not asked")} , Cmd.none)
+                   Loading -> ({model | message = (ErrorMessage, "Get author docs:: loading")} , Cmd.none)
                    Failure _ ->
-                       ({model | message = "Get author docs:: request failed"} , Cmd.none)
+                       ({model | message = (ErrorMessage, "Get author docs:: request failed")} , Cmd.none)
                    Success documentList ->
                          ({model | documentList = documentList
                                  , currentDocument = List.head documentList
-                                 , message = "Success getting document list"} , Cmd.none)
+                                 , message = (UserMessage, "Success getting document list")} , Cmd.none)
               InsertDocumentResponse _ ->
-                  ({model | message = "Maybe new document saved"}, Cmd.none)
+                  ({model | message = (UserMessage, "New document saved")}, Cmd.none)
 
 
 -- UPDATE HELPERS --
@@ -497,14 +501,14 @@ update msg model =
 
 handleDeletedDocument model =
     case model.currentDocument  of
-        Nothing -> ({model | message = "Odd, something weird happened in deleting your document"}, Cmd.none)
+        Nothing -> ({model | message = (DebugMessage, "Odd, something weird happened in deleting your document")}, Cmd.none)
         Just deletedDocument ->
             let
                newDocumentList = List.filter (\doc -> doc.id /= deletedDocument.id )  model.documentList
             in
                ({ model | documentList = newDocumentList
                   , currentDocument = List.head newDocumentList
-                  , message = "Document " ++ deletedDocument.title ++ " deleted"
+                  , message = (UserMessage, "Document " ++ deletedDocument.title ++ " deleted")
                   , visibilityOfTools = Invisible}
                 , Cmd.none)
 
@@ -593,7 +597,7 @@ userPageFooter : Model -> Element Msg
 userPageFooter model =
        row [ paddingXY 20 0, height (px 30), width (px (model.windowWidth)), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12] [
              el [] (Element.text <| appStateAsString model)
-           , el [] (Element.text <| model.message)
+           , el [] (Element.text <| (model.message |> Tuple.second))
        ]
 
 userPageHeader : ViewInfoUserPage -> Model -> Element Msg
@@ -623,10 +627,10 @@ signInUpView model =
     column Style.signInColumn
         [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Welcome!")
          , column [spacing 8, paddingXY 0 18] [
-             el [ Font.size 14 ] (Element.text "Sign in or explore public documents without signing in.")
+             el [ Font.size 14 ] (Element.text "Explore public documents without signing in.")
             , el [ Font.size 14 ] (Element.text "Edits are saved for only for your documents and only if you are signed in")
+            , el [ Font.size 14 ] (Element.text "User sign in/sign up coming soon.")
             , el [ Font.size 14 ] (Element.text "This project is a work-in-progress. Comments to jxxcarlson at gmail")
-
            ]
          , outerPasswordPanel model
         ]
@@ -644,8 +648,16 @@ outerPasswordPanel model =
               , showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
               ]
           ]
-      , el [ Font.size 16, Font.color Style.white ] (Element.text model.message)
+      , el [ Font.size 16, Font.color Style.white ] (Element.text (signInMessage model.message))
     ]
+
+
+signInMessage : Message -> String
+signInMessage (messageType, messageContent_) =
+    if messageType == SignInMessage then
+       messageContent_
+    else
+      ""
 
 signedInUserView : Model -> User -> Element Msg
 signedInUserView model user =
@@ -666,7 +678,7 @@ passwordPanel model =
         [ inputCurrentPassword model
         , inputNewPassword1 model
         , inputNewPassword2 model
-        , el [ Font.size 16, Font.color Style.darkRed ] (Element.text model.message)
+        , el [ Font.size 16, Font.color Style.darkRed ] (Element.text (signInMessage model.message))
         ]
 
 
@@ -1051,7 +1063,7 @@ docListViewer viewInfo model =
   in
     column [width (px (scale viewInfo.docListWidth model.windowWidth)), height (px h_), Background.color (Style.makeGrey 0.9)
        , paddingXY 12 20, alignTop, clipX]
-      [column [Font.size 13, spacing 8]  (heading::(List.map (tocEntry model.currentDocument) model.documentList))]
+      [column [Font.size 13, spacing 8]  ((heading model)::(List.map (tocEntry model.currentDocument) model.documentList))]
 
 
 tocEntry : Maybe Document -> Document -> Element Msg
@@ -1067,8 +1079,11 @@ tocEntry currentDocument_ document =
     in
     Input.button [] { onPress = Just (SetCurrentDocument document), label = el [Font.color color] (Element.text document.title)}
 
-
-heading = el [Font.size 16, Font.bold] (Element.text "Documents")
+heading : Model -> Element Msg
+heading model =
+  case model.currentUser of
+    Nothing -> el [Font.size 16, Font.bold] (Element.text "Public documents")
+    Just _ ->  el [Font.size 16, Font.bold] (Element.text "Documents")
 
 
 -- HEADER AND FOOTER --
@@ -1150,8 +1165,8 @@ footer model =
            , wordCount model
            , el [] (Element.text <| slugOfCurrentDocument model)
            , dirtyDocumentDisplay model
-           , el [alignRight, paddingXY 10 0] (Element.text <| model.message)
-            , currentTime model
+           , el [alignRight, paddingXY 10 0] (Element.text <| (model.message |> Tuple.second))
+           , currentTime model
        ]
 
 displaySecondsWhileDirty model =
@@ -1177,12 +1192,15 @@ slugOfCurrentDocument model =
 currentAuthorDisplay model =
     let
        message = case model.currentUser of
-          Nothing -> "Not signed in"
-          Just user -> "Signed in as " ++ user.username
+          Nothing -> (UserMessage, "Not signed in")
+          Just user -> (UserMessage, "Signed in as " ++ user.username)
      in
       Element.el [Font.color Style.white, Font.size 12]
-           (Element.text <| message )
+           (Element.text <| messageContent <| message )
 
+messageContent : Message -> String
+messageContent (_, messageContent_) =
+    messageContent_
 
 currentTime model =
       Element.el [alignRight, Font.color Style.white, Font.size 12]
