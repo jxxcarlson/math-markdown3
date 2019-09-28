@@ -101,15 +101,16 @@ create documentUuid authorIdentifier title time content =
   It is assumed, but not enfornced, that document ids are unique.
 -}
 replaceInList : Document -> List Document -> List Document
-replaceInList targetDocument_ documentList =
-   let
-       targetDocument = updateMetaData targetDocument_
-    in
+replaceInList targetDocument documentList =
+--   let
+--       targetDocument = updateMetaData targetDocument_
+--    in
     List.Extra.setIf (\doc -> doc.id == targetDocument.id) targetDocument documentList
+
 
 updateMetaData : Document -> Document
 updateMetaData document =
-      { document | slug = makeSlug document, title = newTitle document}
+      { document | slug = Debug.log "SLUG" (makeSlug document), title = newTitle document}
 
 
 newTitle : Document -> String

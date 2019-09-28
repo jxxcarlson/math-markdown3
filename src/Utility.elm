@@ -147,7 +147,7 @@ filterNoise : List String -> List String
 filterNoise list =
     List.filter (\word -> not (List.member word lowInfoWords)) list
 
-lowInfoWords = ["a", "the", "in", "on", "to", "from", "with", "without", "that", "this", "and", "or"]
+lowInfoWords = ["a", "the", "in", "on", "of", "for", "to", "from", "with", "without", "that", "this", "and", "or"]
 
 
 msp : Int -> String

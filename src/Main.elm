@@ -131,7 +131,7 @@ init flags =
             -- documents
             , counter = 0
             , documentDeleteState = SafetyOn
-            , documentList = []
+            , documentList = [Data.loadingPage]
             , currentDocument = Nothing
             }
     in
@@ -382,7 +382,7 @@ update msg model =
                  let
                     document = Document.updateMetaData document_
                  in
-                   ({model | message = "Saving document ..."}
+                   ({model | message = "Saving document ...", currentDocument = Just document}
                      , Request.updateDocument hasuraToken document |> Cmd.map Req
                    )
 
@@ -416,10 +416,11 @@ update msg model =
                 Nothing -> (model, Cmd.none)
                 Just doc ->
                    let
-                     updatedDoc = Document.setContent str doc
+                     updatedDoc1 = Document.setContent str doc
+                     updatedDoc2 = Document.updateMetaData updatedDoc1
                    in
-                     ( { model | currentDocument = Just updatedDoc
-                               , documentList = Document.replaceInList updatedDoc model.documentList
+                     ( { model | currentDocument = Just updatedDoc2
+                               , documentList = Document.replaceInList updatedDoc2 model.documentList
                        }
                        ,
                        Cmd.none
