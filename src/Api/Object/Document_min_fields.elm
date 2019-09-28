@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document_min_fields exposing (authorIdentifier, content, identifier, timeStamp, title)
+module Api.Object.Document_min_fields exposing (authorIdentifier, content, identifier, slug, timeStamp, title)
 
 import Api.InputObject
 import Api.Interface
@@ -32,6 +32,11 @@ content =
 identifier : SelectionSet (Maybe String) Api.Object.Document_min_fields
 identifier =
     Object.selectionForField "(Maybe String)" "identifier" [] (Decode.string |> Decode.nullable)
+
+
+slug : SelectionSet (Maybe String) Api.Object.Document_min_fields
+slug =
+    Object.selectionForField "(Maybe String)" "slug" [] (Decode.string |> Decode.nullable)
 
 
 timeStamp : SelectionSet (Maybe CustomScalarCodecs.Timestamptz) Api.Object.Document_min_fields

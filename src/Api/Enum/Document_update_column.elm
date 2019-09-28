@@ -14,6 +14,7 @@ import Json.Decode as Decode exposing (Decoder)
   - Id - column name
   - Identifier - column name
   - Public - column name
+  - Slug - column name
   - Tags - column name
   - TimeStamp - column name
   - Title - column name
@@ -25,6 +26,7 @@ type Document_update_column
     | Id
     | Identifier
     | Public
+    | Slug
     | Tags
     | TimeStamp
     | Title
@@ -32,7 +34,7 @@ type Document_update_column
 
 list : List Document_update_column
 list =
-    [ AuthorIdentifier, Content, Id, Identifier, Public, Tags, TimeStamp, Title ]
+    [ AuthorIdentifier, Content, Id, Identifier, Public, Slug, Tags, TimeStamp, Title ]
 
 
 decoder : Decoder Document_update_column
@@ -55,6 +57,9 @@ decoder =
 
                     "public" ->
                         Decode.succeed Public
+
+                    "slug" ->
+                        Decode.succeed Slug
 
                     "tags" ->
                         Decode.succeed Tags
@@ -89,6 +94,9 @@ toString enum =
 
         Public ->
             "public"
+
+        Slug ->
+            "slug"
 
         Tags ->
             "tags"
@@ -128,6 +136,9 @@ fromString enumString =
 
         "public" ->
             Just Public
+
+        "slug" ->
+            Just Slug
 
         "tags" ->
             Just Tags
