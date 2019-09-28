@@ -19,7 +19,14 @@ loadingPage = {
 
 loadingPageText =
     """# Loading ...
+
+
+![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
 Please stand by.  We are loading your documents
+
+$$
+\\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
+$$
 
 """
 

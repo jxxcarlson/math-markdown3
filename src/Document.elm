@@ -58,14 +58,16 @@ documentIdentifier authorIdentifier title time =
 makeSlug : Document -> String
 makeSlug document =
     let
-      shortHash = Uuid.toString document.id  |> String.right 6
+      endOfHash = Uuid.toString document.id  |> String.right 6
+      shortHash =  String.left 3 endOfHash ++ "-" ++ String.right 3 endOfHash
     in
     document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ shortHash
 
 makeInitiaSlug : String -> String -> Uuid -> String
 makeInitiaSlug title authorIdentifier identifier =
     let
-      shortHash = Uuid.toString identifier  |> String.right 6
+      endOfHash = Uuid.toString identifier  |> String.right 6
+      shortHash =  String.left 3 endOfHash ++ "-" ++ String.right 3 endOfHash
     in
     authorIdentifier ++ "." ++ Utility.compress title ++ "." ++ shortHash
 
