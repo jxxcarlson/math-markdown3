@@ -4,7 +4,6 @@ import Parse
 import Browser
 import Browser.Events
 import Html exposing (..)
-
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -79,6 +78,7 @@ type alias Model =
     }
 
 type AppMode = Reading | Editing | UserMode UserState
+
 
 type UserState
     = SignInState
@@ -298,7 +298,7 @@ update msg model =
 
         SetAppMode appMode ->
             case appMode of
-                Reading ->  ( {model | appMode = Reading}, Cmd.none)
+                Reading ->  ( {model | appMode = Reading, visibilityOfTools = Invisible}, Cmd.none)
                 Editing ->  ( {model | appMode =  Editing}, Cmd.none)
                 UserMode s ->
                   case model.currentUser of
@@ -922,9 +922,9 @@ readingDisplay viewInfo model =
 
 
 toolsOrDocs viewInfo model =
-    case model.visibilityOfTools of
-        Visible ->  toolPanel viewInfo model
-        Invisible -> docListViewer viewInfo model
+    case (model.visibilityOfTools, model.appMode) of
+        (Visible, Editing) ->  toolPanel viewInfo model
+        (_, _) -> docListViewer viewInfo model
 
 -- DOCUMENT VIEWS (EDITOR, RENDERED, TOC) --
 
@@ -1148,7 +1148,7 @@ editTools model =
 
 -- TAB-STRIP ON LEFT --
 
-tabStrip : ViewInfo -> { a | visibilityOfTools : Visibility } -> Element Msg
+tabStrip : ViewInfo -> Model -> Element Msg
 tabStrip viewInfo model =
     column [width (px 30), height(px 200), Background.color (Style.grey 0.1), alignTop ] [
         row [spacing 15, rotate -1.5708,moveLeft 50, moveDown 70] [showToolsButton model, showDocumentListButton model]
@@ -1157,7 +1157,7 @@ tabStrip viewInfo model =
 
 
 
-showToolsButton : { a | visibilityOfTools : Visibility } -> Element Msg
+showToolsButton : Model -> Element Msg
 showToolsButton model =
   let
       color = if model.visibilityOfTools == Visible then
@@ -1165,9 +1165,13 @@ showToolsButton model =
         else
            Style.buttonGrey
   in
-    Input.button [] { onPress = Just (SetToolPanelState Visible)
-            , label = el [height (px 30), padding 8, Background.color color, Font.color Style.white, Font.size 12] (Element.text "Tools")}
-
+    case model.appMode of
+       Editing ->
+          Input.button [] { onPress = Just (SetToolPanelState Visible)
+               , label = el [height (px 30), width (px 50), padding 8, Background.color color, Font.color Style.white, Font.size 12] (Element.text "Tools")}
+       _ ->
+          Input.button [] { onPress = Just (NoOp)
+                           , label = el [height (px 30), width (px 50), padding 8, Background.color Style.charcoal, Font.color Style.white, Font.size 12] (Element.text "")}
 
 showDocumentListButton : { a | visibilityOfTools : Visibility } -> Element Msg
 showDocumentListButton model =
