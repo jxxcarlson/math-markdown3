@@ -36,11 +36,13 @@ footer : Document -> String
 footer document =
     "\n\n___\n\n````\nAuthor: "
     ++ document.authorIdentifier ++ "\n"
-    -- ++ "Document ID: " ++ document.identifier ++ "\n"
+     ++ "Public: " ++ Utility.boolAsString document.public ++ "\n"
     ++ "Document slug: " ++ makeSlug document ++ "\n"
     ++ "Tags: " ++ String.join ", " document.tags ++ "\n"
     ++ "Words: " ++ Utility.wordCount document.content
     ++ "\n" ++ "````" ++ "\n\n"
+
+
 
 {-|
     > t = Time.millisToPosix (1568667528 * 1000)

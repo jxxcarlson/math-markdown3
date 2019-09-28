@@ -1,4 +1,4 @@
-module Utility exposing (id0, getId, unwrapId, humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug, intSlug)
+module Utility exposing (boolAsString, id0, getId, unwrapId, humanTimeHM, humanTimeHMS, normalize, stringOfPosix, humanDateUTC, wordCount, compress, posixSlug, intSlug)
 import List.Extra
 
 import Time exposing(Posix)
@@ -7,6 +7,13 @@ import Api.Scalar exposing(Id(..))
 import Prng.Uuid exposing(Uuid(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 
+
+boolAsString : Bool -> String
+boolAsString bit =
+    if bit then
+      "Yes"
+    else
+       "No"
 
 id0 = step Prng.Uuid.generator (initialSeed 0 [1,2,3,4]) |> Tuple.first
 

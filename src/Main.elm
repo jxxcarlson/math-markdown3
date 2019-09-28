@@ -185,6 +185,7 @@ type Msg
     | CancelDeleteDocument
     | UpdateDocumentText String
     | SetCurrentDocument Document
+    | SetDocumentPublic Bool
     | Clear
     | Req RequestMsg
 
@@ -463,6 +464,16 @@ update msg model =
         SetCurrentDocument document ->
             ( {model | currentDocument = Just document, counter = model.counter + 1}, Cmd.none)
 
+        SetDocumentPublic bit ->
+           case model.currentDocument of
+               Nothing -> ( model, Cmd.none)
+               Just document ->
+                  let
+                      newDocument = {document | public =  bit}
+                  in
+                    ( {model | currentDocument = Just newDocument
+                             , documentList = Document.replaceInList newDocument model.documentList }
+                      , Request.updateDocument hasuraToken newDocument |> Cmd.map Req)
 
         Req requestMsg ->
             case requestMsg of
@@ -1015,6 +1026,7 @@ toolPanel viewInfo model =
        , paddingXY 20 20, alignTop]
       [column [Font.size 13, spacing 15]  [
           el [Font.size 16, Font.bold, Font.color Style.white] (Element.text "Document tools")
+        , togglePublic model
         , flavors model
        ]
   ]
@@ -1026,15 +1038,26 @@ toolButtonStyle = [height (px 30), width (px 150),  padding 8, Background.color 
 toolButtonStyleInHeader : List (Element.Attribute msg)
 toolButtonStyleInHeader = [height (px 30), width (px 60),  padding 8, Background.color (Style.makeGrey 0.1), Border.color Style.white, Font.color Style.white, Font.size 12]
 
+togglePublic model =
+    case model.currentDocument of
+          Nothing -> Element.none
+          Just document ->
+              case document.public of
+                  True ->
+                      Input.button [] { onPress = Just (SetDocumentPublic False)
+                       , label = el toolButtonStyleInHeader (Element.text "Public")}
+                  False ->
+                       Input.button [] { onPress = Just (SetDocumentPublic True)
+                        , label = el toolButtonStyleInHeader (Element.text "Private")}
 
-newDocumentButtonInHeader model =
+newDocumentButton model =
     case model.currentUser of
         Nothing -> Element.none
         Just _ ->
           Input.button [] { onPress = Just (CreateDocument)
                 , label = el toolButtonStyleInHeader (Element.text "New")}
 
-saveDocumentButtonInHeader model =
+saveDocumentButton model =
     case model.currentUser of
         Nothing -> Element.none
         Just _ ->
@@ -1042,7 +1065,7 @@ saveDocumentButtonInHeader model =
                 , label = el toolButtonStyleInHeader (Element.text "Save")}
 
 
-deleteDocumentButtonInHeader model =
+deleteDocumentButton model =
      case model.currentUser of
          Nothing -> Element.none
          Just _ ->
@@ -1115,9 +1138,9 @@ editTools model =
     if model.appMode == Editing then
       row [ spacing 6] [
          editingModeButton model
-       , newDocumentButtonInHeader model
-       , saveDocumentButtonInHeader model
-       , deleteDocumentButtonInHeader model
+       , newDocumentButton model
+       , saveDocumentButton model
+       , deleteDocumentButton model
        , cancelDeleteDocumentButtonInHeader model
        ]
     else

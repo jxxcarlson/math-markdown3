@@ -285,6 +285,7 @@ setDocumentSetArg document =
                 |   content = OptionalArgument.Present document.content
                   , title = OptionalArgument.Present document.title
                   , slug = OptionalArgument.Present document.slug
+                  , public = OptionalArgument.Present document.public
             }
         )
 
