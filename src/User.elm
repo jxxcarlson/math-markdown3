@@ -15,10 +15,10 @@ type alias User = {
   }
 
 
-dummy = {
+dummy username = {
     id = getId 6
-   , username = "jxxcarlson"
-   , email = "jxxcarlson@gmail.com"
+   , username = username
+   , email = username ++ "@gmail.com"
    , public = True
    , firstName = "James"
    , lastName = "Carlson"

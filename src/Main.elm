@@ -80,7 +80,6 @@ type UserState
     | SignedInState
 
 
-
 appStateAsString : Model -> String
 appStateAsString model =
     case model.appMode of
@@ -95,8 +94,6 @@ appStateAsString model =
 type DocumentDeleteState = SafetyOn | Armed
 
 type Visibility = Visible | Invisible
-
-
 
 -- INIT --
 
@@ -135,14 +132,13 @@ init flags =
             , currentDocument = Nothing
             }
     in
-    ( model,
+        -- ( model, Task.perform AdjustTimeZone Time.here )
+       (model, Cmd.batch [
+           Task.perform AdjustTimeZone Time.here
+         ,  Request.publicDocuments hasuraToken  |> Cmd.map Req
+         ]
+       )
 
-      Cmd.batch [
-         Task.perform AdjustTimeZone Time.here
---       , Request.publicDocuments hasuraToken  |> Cmd.map Req
-      ]
-
-    )
 
 -- MSG --
 
@@ -185,18 +181,12 @@ type Msg
     | Req RequestMsg
 
 
-
-
-
-
 type alias Flags =
     {  width : Int
       , height : Int
       , seed : Int
       , randInts : List Int
     }
-
-
 
 
 type alias ViewInfo = {
@@ -301,7 +291,10 @@ update msg model =
             case appMode of
                 Reading ->  ( {model | appMode = Reading}, Cmd.none)
                 Editing ->  ( {model | appMode =  Editing}, Cmd.none)
-                UserMode s ->  ( {model | appMode =  UserMode s}, Cmd.none)
+                UserMode s ->
+                  case model.currentUser of
+                    Nothing -> ( {model | appMode =  UserMode SignInState}, Cmd.none)
+                    Just _ -> ( {model | appMode =  UserMode s}, Cmd.none)
 
 
         -- SYSTEM --
@@ -344,12 +337,12 @@ update msg model =
         GotEmail _ -> (model, Cmd.none)
 
         SignIn ->
-          if model.username == "jxxcarlson" && model.password == "locoLobo" then
-               (  { model |   currentUser = Just User.dummy
+          if (model.username == "jxxcarlson" || model.username == "boris") && model.password == "locoLobo" then
+               (  { model |   currentUser = Just (User.dummy model.username)
                           , appMode = Reading
                           , visibilityOfTools = Invisible
                           }
-                 , Request.documentsByAuthor hasuraToken User.dummy.username |> Cmd.map Req
+                 , Request.documentsByAuthor hasuraToken model.username |> Cmd.map Req
               )
           else
             ({model | currentUser = Nothing, appMode = UserMode SignInState, password = ""} , Cmd.none)
@@ -359,7 +352,13 @@ update msg model =
         SignUp -> ({model | appMode = UserMode SignUpState, message = "At SignUp msg"} , Cmd.none)
 
 
-        SignOut -> ({model | currentUser = Nothing, appMode = UserMode SignInState} , Cmd.none)
+        SignOut -> ({model | currentUser = Nothing
+                           , appMode = UserMode SignInState
+                           , username = ""
+                           , password = ""
+                           , currentDocument = Nothing
+                           , documentList = []
+                           } , Request.publicDocuments hasuraToken  |> Cmd.map Req)
 
         -- DOCUMENT --
 
@@ -464,7 +463,7 @@ update msg model =
                    Success documentList ->
                          ({model | documentList = documentList
                                  , currentDocument = List.head documentList
-                                 , message = "Success returning document list for author!"} , Cmd.none)
+                                 , message = "Success getting document list"} , Cmd.none)
               InsertDocumentResponse _ ->
                   ({model | message = "Maybe new document saved"}, Cmd.none)
 
@@ -600,28 +599,36 @@ noUserView model =
 
 
 signInUpView model =
-    column Style.mainColumnX
+    column Style.signInColumn
         [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Welcome!")
-        , el [ Font.size 14, Font.bold, paddingXY 0 12 ] (Element.text "For now, please sign in as 'demo' with password 'demo'.")
-        , inputUserName model
-        , inputPassword model
-        , showIf (model.appMode == UserMode SignUpState) (inputEmail model)
-        , showIf (model.appMode == UserMode SignUpState) (el [ Font.size 12 ] (Element.text "A real email address is only needed for password recovery in real production."))
-        , row [ spacing 12, paddingXY 0 12 ]
-            [ showIf (model.appMode == UserMode SignInState) (signInButton)
-            , row [ spacing 12 ]
-                [ signUpButton model
-                , showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
-                ]
-            ]
-        , el [ Font.size 16, Font.color Style.white ] (Element.text model.message)
+         , column [spacing 8, paddingXY 0 18] [
+             el [ Font.size 14 ] (Element.text "Sign in or explore public documents without signing in.")
+            , el [ Font.size 14 ] (Element.text "Edits are saved for only for your documents and only if you are signed in")
+            , el [ Font.size 14 ] (Element.text "This project is a work-in-progress. Comments to jxxcarlson at gmail")
+
+           ]
+         , outerPasswordPanel model
         ]
 
-
+outerPasswordPanel model =
+    column [spacing 24] [
+        inputUserName model
+      , inputPassword model
+      , showIf (model.appMode == UserMode SignUpState) (inputEmail model)
+      , showIf (model.appMode == UserMode SignUpState) (el [ Font.size 12 ] (Element.text "A real email address is only needed for password recovery in real production."))
+      , row [ spacing 12, paddingXY 0 12 ]
+          [ showIf (model.appMode == UserMode SignInState) (signInButton)
+          , row [ spacing 12 ]
+              [ signUpButton model
+              , showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
+              ]
+          ]
+      , el [ Font.size 16, Font.color Style.white ] (Element.text model.message)
+    ]
 
 signedInUserView : Model -> User -> Element Msg
 signedInUserView model user =
-    column Style.mainColumnX
+    column Style.signInColumn
         [ el [] (Element.text <| "Signed in as " ++ user.username)
         , signOutButton model
         , showIf (model.appMode == UserMode ChangePasswordState) (passwordPanel model)

@@ -12,8 +12,8 @@ mainColumn w h =
     [ paddingXY 8 8, spacing 12, width w, height h, clipY, clipX ]
 
 
-mainColumnX =
-    mainColumn fill fill ++ [ spacing 12, padding 12, Background.color (makeGrey 0.4) ]
+signInColumn =
+    mainColumn fill fill ++ [ spacing 12, paddingXY 72 36, Background.color (makeGrey 0.4) ]
 
 -- INPUT --
 

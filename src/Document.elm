@@ -112,7 +112,7 @@ replaceInList targetDocument documentList =
 
 updateMetaData : Document -> Document
 updateMetaData document =
-      { document | slug = Debug.log "SLUG" (makeSlug document), title = newTitle document}
+      { document | slug = makeSlug document, title = newTitle document}
 
 
 newTitle : Document -> String
