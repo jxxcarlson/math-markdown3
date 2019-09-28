@@ -328,9 +328,10 @@ update msg model =
                    model.secondsWhileDirty
 
                cmd = if model.secondsWhileDirty > 4 then
-                        case model.currentDocument of
-                            Nothing -> Cmd.none
-                            Just document ->
+                        case (model.currentUser, model.currentDocument)of
+                            (Nothing, _) -> Cmd.none
+                            (_, Nothing) -> Cmd.none
+                            (Just _, Just document) ->
                                Request.updateDocument hasuraToken document |> Cmd.map Req
                      else
                          Cmd.none
@@ -409,9 +410,13 @@ update msg model =
                Just document_ ->
                  let
                     document = Document.updateMetaData document_
+                    (message, cmd) = case model.currentUser of
+                        Nothing -> ((UserMessage, "Saving document ..."), Cmd.none)
+                        Just _ -> ((UserMessage, "Saving document ..."), Request.updateDocument hasuraToken document |> Cmd.map Req)
+
                  in
-                   ({model | message = (UserMessage, "Saving document ..."), currentDocument = Just document}
-                     , Request.updateDocument hasuraToken document |> Cmd.map Req
+                   ({model | message = message, currentDocument = Just document}
+                     , cmd
                    )
 
         ArmForDelete ->
@@ -1169,11 +1174,16 @@ footer model =
            , currentTime model
        ]
 
-displaySecondsWhileDirty model =
-    el [] (Element.text <| "Seconds dirty: " ++ String.fromInt model.secondsWhileDirty)
 
 
+dirtyDocumentDisplay : Model -> Element Msg
 dirtyDocumentDisplay model =
+    case (model.appMode == Editing, model.currentUser) of
+        (True, Just _) -> dirtyDocumentDisplay_ model
+        (_, _) -> Element.none
+
+
+dirtyDocumentDisplay_ model =
   if model.currentDocumentDirty then
         row [width (px 30), height (px 20), Background.color Style.red, Font.color Style.white]
            [ el [centerX, centerY] (Element.text <| String.fromInt model.secondsWhileDirty)]
