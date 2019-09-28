@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, id, identifier, public, slug, tags, timeStamp, title, user)
+module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, id, public, slug, tags, timeStamp, title, user)
 
 import Api.InputObject
 import Api.Interface
@@ -32,11 +32,6 @@ content =
 id : SelectionSet CustomScalarCodecs.Uuid Api.Object.Document
 id =
     Object.selectionForField "CustomScalarCodecs.Uuid" "id" [] (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecUuid |> .decoder)
-
-
-identifier : SelectionSet String Api.Object.Document
-identifier =
-    Object.selectionForField "String" "identifier" [] Decode.string
 
 
 public : SelectionSet Bool Api.Object.Document

@@ -11,18 +11,16 @@ import Json.Decode as Decode exposing (Decoder)
 
   - Document\_idd\_key - unique or primary key constraint
   - Document\_pkey - unique or primary key constraint
-  - Documents\_identifier\_key - unique or primary key constraint
 
 -}
 type Document_constraint
     = Document_idd_key
     | Document_pkey
-    | Documents_identifier_key
 
 
 list : List Document_constraint
 list =
-    [ Document_idd_key, Document_pkey, Documents_identifier_key ]
+    [ Document_idd_key, Document_pkey ]
 
 
 decoder : Decoder Document_constraint
@@ -36,9 +34,6 @@ decoder =
 
                     "document_pkey" ->
                         Decode.succeed Document_pkey
-
-                    "documents_identifier_key" ->
-                        Decode.succeed Documents_identifier_key
 
                     _ ->
                         Decode.fail ("Invalid Document_constraint type, " ++ string ++ " try re-running the @dillonkearns/elm-graphql CLI ")
@@ -55,9 +50,6 @@ toString enum =
 
         Document_pkey ->
             "document_pkey"
-
-        Documents_identifier_key ->
-            "documents_identifier_key"
 
 
 {-| Convert from a String representation to an elm representation enum.
@@ -79,9 +71,6 @@ fromString enumString =
 
         "document_pkey" ->
             Just Document_pkey
-
-        "documents_identifier_key" ->
-            Just Documents_identifier_key
 
         _ ->
             Nothing
