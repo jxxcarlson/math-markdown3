@@ -36,8 +36,10 @@ import Api.Mutation as Mutation exposing(
    InsertDocumentRequiredArguments
  , insert_document
  , update_document
+ , delete_document
  , UpdateDocumentOptionalArguments
  , UpdateDocumentRequiredArguments
+ , DeleteDocumentRequiredArguments
   )
 
 import Api.Object.Document_mutation_response as DocumentMutation
@@ -79,16 +81,15 @@ makeUpdateDocumentMutation mutation authToken =
     makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> UpdateDocumentResponse)
 
 
+deleteDocument : String -> Document -> Cmd RequestMsg
+deleteDocument authToken document =
+    makeDeleteDocumentMutation (getDocumentDeleteObject document) authToken
+
+makeDeleteDocumentMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
+makeDeleteDocumentMutation mutation authToken =
+    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> UpdateDocumentResponse)
 
 
---deleteDocument : String -> Document -> Cmd RequestMsg
---deleteDocument authToken newDocument =
---    makeMutation (getDocumentInsertObject newDocument) authToken
-
-{-
-delete_document : DeleteDocumentRequiredArguments -> SelectionSet decodesTo Api.Object.Document_mutation_response -> SelectionSet (Maybe decodesTo) RootMutation
-delete_document requiredArgs object_ =
--}
 
 -- GENERAL --
 
@@ -209,6 +210,20 @@ getDocumentUpdateObject document =
        (setDocumentUpdateWhere document.id)
        mutationResponseSelection
 
+getDocumentDeleteObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
+getDocumentDeleteObject document =
+    delete_document
+       (setDocumentDeleteWhere document.id)
+       mutationResponseSelection
+
+
+{-
+delete_document :
+     DeleteDocumentRequiredArguments
+  -> SelectionSet decodesTo Api.Object.Document_mutation_response
+  -> SelectionSet (Maybe decodesTo) RootMutation
+delete_document requiredArgs object_ =
+-}
 mutationResponseSelection : SelectionSet MutationResponse Api.Object.Document_mutation_response
 mutationResponseSelection =
     SelectionSet.map MutationResponse
@@ -279,4 +294,13 @@ setDocumentUpdateWhere uuid =
             )
         )
 
-
+setDocumentDeleteWhere : Uuid -> DeleteDocumentRequiredArguments
+setDocumentDeleteWhere uuid =
+    DeleteDocumentRequiredArguments
+        (buildDocument_bool_exp
+            (\args ->
+                { args
+                    | id = Present (setDocumentValueForId uuid)
+                }
+            )
+        )
