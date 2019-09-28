@@ -1121,10 +1121,10 @@ footer model =
      in
        row [ paddingXY 20 0, height (px 30), width (px (model.windowWidth)), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12] [
              currentAuthorDisplay model
-           , currentTime model
            , wordCount model
            , el [] (Element.text <| slug model)
-           , el [] (Element.text <| model.message)
+           , el [alignRight, paddingXY 10 0] (Element.text <| model.message)
+            , currentTime model
        ]
 
 
@@ -1132,7 +1132,7 @@ slug : Model -> String
 slug model =
     case model.currentDocument of
         Nothing -> ""
-        Just document -> "Permalink: " ++  Document.slug document
+        Just document -> Document.slug document
 
 
 currentAuthorDisplay model =
@@ -1146,7 +1146,7 @@ currentAuthorDisplay model =
 
 
 currentTime model =
-      Element.el [Font.color Style.white, Font.size 12]
+      Element.el [alignRight, Font.color Style.white, Font.size 12]
         (Element.text <| "Current time: " ++ Utility.humanTimeHM model.zone model.time)
 
 
