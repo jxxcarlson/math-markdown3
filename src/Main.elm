@@ -135,7 +135,14 @@ init flags =
             , currentDocument = Nothing
             }
     in
-    ( model, Task.perform AdjustTimeZone Time.here )
+    ( model,
+
+      Cmd.batch [
+         Task.perform AdjustTimeZone Time.here
+--       , Request.publicDocuments hasuraToken  |> Cmd.map Req
+      ]
+
+    )
 
 -- MSG --
 

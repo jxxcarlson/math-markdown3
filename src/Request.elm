@@ -1,4 +1,4 @@
-module Request exposing (RequestMsg(..), GraphQLResponse(..), documentsByAuthor, insertDocument, updateDocument, deleteDocument)
+module Request exposing (RequestMsg(..), GraphQLResponse(..), publicDocuments, documentsByAuthor, insertDocument, updateDocument, deleteDocument)
 
 import RemoteData exposing(RemoteData)
 import Graphql.Http
@@ -165,6 +165,12 @@ hasAuthor author =
 
 
 -- XXXX --
+
+equalToString : String -> OptionalArgument String_comparison_exp
+equalToString  str =
+    Present <| buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str})
+
+-- XXX --
 
 whereIsPublic : Bool -> OptionalArgument Document_bool_exp
 whereIsPublic isPublic_ =
