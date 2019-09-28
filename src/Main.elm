@@ -1140,12 +1140,8 @@ footer model =
            , el [] (Element.text <| slug model)
            , el [] (Element.text <| idDisplay model )
            , el [] (Element.text <| model.message)
-           , displayUUID model
        ]
 
-displayUUID : Model -> Element Msg
-displayUUID model =
-       el [] (Element.text <| "UUID: " ++ Uuid.toString model.currentUuid)
 
 slug : Model -> String
 slug model =

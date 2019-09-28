@@ -53,9 +53,6 @@ type RequestMsg =
          GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
        | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
        | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
-       -- | InsertDocumentResponse (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
-       -- | ConfirmUpdatedDocument (GraphQLResponse (Maybe Document))
---      | UpdateDocument (GraphQLResponse UpdateDocumentResponse)
 --      | ConfirmUDeleteDocument (RemoteData (Graphql.Http.Error (Maybe Document)) (Maybe Document))
 
 
@@ -193,18 +190,7 @@ insertDocumentObjects newDocument =
               --  , tags = Present newDocument.tags
             }
         )
---updateDocumentObjects : Document -> Document_update_input
---updateDocumentObjects document =
---    buildDocument_insert_input
---        (\args ->
---            { args
---                |  authorIdentifier = Present document.authorIdentifier
---                , content = Present document.content
---                , public = Present document.public
---               -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
---              --  , tags = Present newDocument.tags
---            }
---        )
+
 
 insertArgs : Document -> InsertDocumentRequiredArguments
 insertArgs newDocument =
@@ -222,17 +208,6 @@ getDocumentUpdateObject document =
        (setDocumentUpdateArgs document.content)
        (setDocumentUpdateWhere document.id)
        mutationResponseSelection
-
---update_document :
---     (UpdateDocumentOptionalArguments  -> UpdateDocumentOptionalArguments)
---  -> UpdateDocumentRequiredArguments
---  -> SelectionSet decodesTo Api.Object.Document_mutation_response
---  -> SelectionSet (Maybe decodesTo) RootMutation
---update_document fillInOptionals requiredArgs object_ =
-
-
-
-
 
 mutationResponseSelection : SelectionSet MutationResponse Api.Object.Document_mutation_response
 mutationResponseSelection =
@@ -263,14 +238,6 @@ type alias DocumentoData =
 
 type alias UpdateDocumentResponse =
     RemoteData (Graphql.Http.Error (Maybe MutationResponse)) (Maybe MutationResponse)
-
---updateDocument : String -> SelectionSet (Maybe MutationResponse) RootMutation -> Cmd RequestMsg
---updateDocument authToken mutation  =
---    makeGraphQLMutation
---        authToken
---        mutation
---        (RemoteData.fromResult >> UpdateDocument)
-
 
 updateDocumentContent : Uuid -> String -> SelectionSet (Maybe MutationResponse) RootMutation
 updateDocumentContent documentId content =
