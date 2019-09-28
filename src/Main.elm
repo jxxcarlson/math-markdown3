@@ -971,43 +971,33 @@ toolButtonStyle = [height (px 30), width (px 150),  padding 8, Background.color 
 toolButtonStyleInHeader : List (Element.Attribute msg)
 toolButtonStyleInHeader = [height (px 30), width (px 60),  padding 8, Background.color (Style.makeGrey 0.1), Border.color Style.white, Font.color Style.white, Font.size 12]
 
-newDocumentButton =
-        Input.button [] { onPress = Just (CreateDocument)
-                , label = el toolButtonStyle (Element.text "Create")}
 
-newDocumentButtonInHeader =
-        Input.button [] { onPress = Just (CreateDocument)
-                , label = el toolButtonStyleInHeader (Element.text "Create")}
+newDocumentButtonInHeader model =
+    case model.currentUser of
+        Nothing -> Element.none
+        Just _ ->
+          Input.button [] { onPress = Just (CreateDocument)
+                , label = el toolButtonStyleInHeader (Element.text "New")}
 
-saveDocumentButton =
-        Input.button [] { onPress = Just (SaveDocument)
-                , label = el toolButtonStyle (Element.text "Save")}
-
-saveDocumentButtonInHeader =
-        Input.button [] { onPress = Just (SaveDocument)
+saveDocumentButtonInHeader model =
+    case model.currentUser of
+        Nothing -> Element.none
+        Just _ ->
+            Input.button [] { onPress = Just (SaveDocument)
                 , label = el toolButtonStyleInHeader (Element.text "Save")}
 
-getUserDocumentsButton =
-        Input.button [] { onPress = Just (GetUserDocuments)
-                , label = el toolButtonStyle (Element.text "Get")}
-
-deleteDocumentButton model =
-    case model.documentDeleteState of
-       Armed ->
-         Input.button [] { onPress = Just (DeleteDocument)
-                , label = el (toolButtonStyle ++ [Background.color Style.red]) (Element.text "Delete!")}
-       SafetyOn ->
-          Input.button [] { onPress = Just ArmForDelete
-                          , label = el toolButtonStyle (Element.text "Delete?")}
 
 deleteDocumentButtonInHeader model =
-      case model.documentDeleteState of
-         Armed ->
-           Input.button [] { onPress = Just (DeleteDocument)
-                  , label = el (toolButtonStyleInHeader ++ [Background.color Style.red]) (Element.text "Delete!")}
-         SafetyOn ->
-            Input.button [] { onPress = Just ArmForDelete
-                            , label = el toolButtonStyleInHeader (Element.text "Delete?")}
+     case model.currentUser of
+         Nothing -> Element.none
+         Just _ ->
+          case model.documentDeleteState of
+             Armed ->
+               Input.button [] { onPress = Just (DeleteDocument)
+                      , label = el (toolButtonStyleInHeader ++ [Background.color Style.red]) (Element.text "Delete!")}
+             SafetyOn ->
+                Input.button [] { onPress = Just ArmForDelete
+                                , label = el toolButtonStyleInHeader (Element.text "Delete?")}
 
 cancelDeleteDocumentButtonInHeader model =
       case model.documentDeleteState of
@@ -1067,8 +1057,8 @@ editTools model =
     if model.appMode == Editing then
       row [ spacing 6] [
          editingModeButton model
-       , newDocumentButtonInHeader
-       , saveDocumentButtonInHeader
+       , newDocumentButtonInHeader model
+       , saveDocumentButtonInHeader model
        , deleteDocumentButtonInHeader model
        , cancelDeleteDocumentButtonInHeader model
        ]

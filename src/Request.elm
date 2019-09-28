@@ -66,6 +66,12 @@ documentsByAuthor authToken authorIdentifier =
         (fetchUserDocumentsQuery authorIdentifier)
         (RemoteData.fromResult >> GotUserDocuments)
 
+publicDocuments: String -> Cmd RequestMsg
+publicDocuments authToken  =
+    makeGraphQLQuery authToken
+        fetchPublicDocumentsQuery
+        (RemoteData.fromResult >> GotUserDocuments)
+
 insertDocument : String -> Document -> Cmd RequestMsg
 insertDocument authToken newDocument =
     makeMutation (getDocumentInsertObject newDocument) authToken
@@ -136,30 +142,38 @@ fetchUserDocumentsQuery : String -> SelectionSet (List Document) RootQuery
 fetchUserDocumentsQuery author =
     Query.document (documentListOptionalArgument author) documentListSelection
 
+fetchPublicDocumentsQuery : SelectionSet (List Document) RootQuery
+fetchPublicDocumentsQuery =
+    Query.document publicDocumentListOptionalArgument documentListSelection
+
 
 documentListOptionalArgument : String -> DocumentOptionalArguments -> DocumentOptionalArguments
 documentListOptionalArgument author optionalArgs =
     { optionalArgs | where_ = hasAuthor author }
 
+publicDocumentListOptionalArgument : DocumentOptionalArguments -> DocumentOptionalArguments
+publicDocumentListOptionalArgument optionalArgs =
+    { optionalArgs | where_ = isPublic }
+
+isPublic : OptionalArgument Document_bool_exp
+isPublic =
+    Present <| buildDocument_bool_exp (\args -> { args | public = equalToBoolean True })
 
 hasAuthor : String -> OptionalArgument Document_bool_exp
 hasAuthor author =
     Present <| buildDocument_bool_exp (\args -> { args | authorIdentifier = equalToString author })
 
-equalToString : String -> OptionalArgument String_comparison_exp
-equalToString  str =
-    Present <| buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str})
 
 -- XXXX --
 
 whereIsPublic : Bool -> OptionalArgument Document_bool_exp
-whereIsPublic isPublic =
-    Present <| buildDocument_bool_exp (\args -> { args | public = equalToBoolean isPublic })
+whereIsPublic isPublic_ =
+    Present <| buildDocument_bool_exp (\args -> { args | public = equalToBoolean isPublic_ })
 
 
 equalToBoolean : Bool -> OptionalArgument Boolean_comparison_exp
-equalToBoolean isPublic =
-    Present <| buildBoolean_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present isPublic })
+equalToBoolean isPublic_ =
+    Present <| buildBoolean_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present isPublic_ })
 
 documentListSelection: SelectionSet Document Api.Object.Document
 documentListSelection =
