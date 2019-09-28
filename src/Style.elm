@@ -124,6 +124,8 @@ white = Element.rgb 1 1 1
 
 blue = Element.rgb 0.1 0.1 0.4
 
+green = Element.rgb 0 0.5 0
+
 grey g = Element.rgb g g g
 
 charcoal = grey 0.3

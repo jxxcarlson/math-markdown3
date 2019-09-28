@@ -57,7 +57,6 @@ type alias Model =
     , currentUuid : Uuid.Uuid
     , zone : Time.Zone
     , time : Time.Posix
-    , currentDocumentDirty : Bool
     -- USER
     , currentUser : Maybe User
     , username : String
@@ -70,6 +69,8 @@ type alias Model =
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
     , currentDocument : Maybe Document
+    , currentDocumentDirty : Bool
+    , secondsWhileDirty : Int
     }
 
 type AppMode = Reading | Editing | UserMode UserState
@@ -119,7 +120,6 @@ init flags =
             , currentUuid = newUuid -- Nothing
             , zone = Time.utc
             , time = Time.millisToPosix 0
-            , currentDocumentDirty = False
             -- USER
             , currentUser = Nothing
             , username = ""
@@ -132,9 +132,10 @@ init flags =
             , documentDeleteState = SafetyOn
             , documentList = [Data.loadingPage]
             , currentDocument = Nothing
+            , currentDocumentDirty = False
+            , secondsWhileDirty = 0
             }
     in
-        -- ( model, Task.perform AdjustTimeZone Time.here )
        (model, Cmd.batch [
            Task.perform AdjustTimeZone Time.here
          ,  Request.publicDocuments hasuraToken  |> Cmd.map Req
@@ -315,8 +316,22 @@ update msg model =
             )
 
         Tick newTime ->
-              ( { model | time = newTime }
-              , Cmd.none
+            let
+               secondsWhileDirty = if model.currentDocumentDirty then
+                   model.secondsWhileDirty + 1
+                 else
+                   model.secondsWhileDirty
+
+               cmd = if model.secondsWhileDirty > 4 then
+                        case model.currentDocument of
+                            Nothing -> Cmd.none
+                            Just document ->
+                               Request.updateDocument hasuraToken document |> Cmd.map Req
+                     else
+                         Cmd.none
+            in
+              ( { model | time = newTime, secondsWhileDirty = secondsWhileDirty}
+              , cmd
               )
 
         WindowSize width height ->
@@ -390,8 +405,7 @@ update msg model =
                  let
                     document = Document.updateMetaData document_
                  in
-                   ({model |  currentDocumentDirty = False
-                            , message = "Saving document ..."
+                   ({model |  message = "Saving document ..."
                             , currentDocument = Just document}
                      , Request.updateDocument hasuraToken document |> Cmd.map Req
                    )
@@ -449,7 +463,9 @@ update msg model =
                       Loading -> ({model | message = "Update doc: loading"} , Cmd.none)
                       Failure _ ->
                            ({model | message = "Update doc: failed request"} , Cmd.none)
-                      Success _ -> ({model | message = "Document update successful"} , Cmd.none)
+                      Success _ -> ({model |   message = "Document update successful"
+                                             , currentDocumentDirty = False
+                                             , secondsWhileDirty = 0} , Cmd.none)
 
               DeleteDocumentResponse (GraphQLResponse remoteData) ->
                   case remoteData of
@@ -1133,9 +1149,22 @@ footer model =
              currentAuthorDisplay model
            , wordCount model
            , el [] (Element.text <| slugOfCurrentDocument model)
+           , dirtyDocumentDisplay model
            , el [alignRight, paddingXY 10 0] (Element.text <| model.message)
             , currentTime model
        ]
+
+displaySecondsWhileDirty model =
+    el [] (Element.text <| "Seconds dirty: " ++ String.fromInt model.secondsWhileDirty)
+
+
+dirtyDocumentDisplay model =
+  if model.currentDocumentDirty then
+        row [width (px 30), height (px 20), Background.color Style.red, Font.color Style.white]
+           [ el [centerX, centerY] (Element.text <| String.fromInt model.secondsWhileDirty)]
+     else
+        row [width (px 30), height (px 20), Background.color Style.green, Font.color Style.white]
+               [ el [centerX, centerY] (Element.text <|  String.fromInt model.secondsWhileDirty)]
 
 
 slugOfCurrentDocument : Model -> String
