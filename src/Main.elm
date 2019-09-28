@@ -374,8 +374,11 @@ update msg model =
             case model.currentDocument of
                Nothing -> (model, Cmd.none)
                Just document ->
+                 let
+                    documentWithUpdatedTitle = Document.updateTitle document
+                 in
                    ({model | message = "Saving document ..."}
-                     , Request.updateDocument hasuraToken document |> Cmd.map Req
+                     , Request.updateDocument hasuraToken documentWithUpdatedTitle |> Cmd.map Req
                    )
 
         ArmForDelete ->
@@ -1138,7 +1141,6 @@ footer model =
            , currentTime model
            , wordCount model
            , el [] (Element.text <| slug model)
-           , el [] (Element.text <| idDisplay model )
            , el [] (Element.text <| model.message)
        ]
 
@@ -1148,12 +1150,6 @@ slug model =
     case model.currentDocument of
         Nothing -> ""
         Just document -> "Permalink: " ++  Document.slug document
-
-idDisplay  : Model -> String
-idDisplay model =
-   case model.currentDocument of
-     Nothing -> ""
-     Just document -> "id = " ++ Uuid.toString document.id
 
 
 currentAuthorDisplay model =

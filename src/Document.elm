@@ -1,5 +1,5 @@
 module Document exposing (Document, setContent, getContent, documentIdentifier
-  , create, replaceInList, getHeading, footer, slug)
+  , create, replaceInList, getHeading, updateTitle, footer, slug)
 
 import Time exposing(Posix)
 import Utility

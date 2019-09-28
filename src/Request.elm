@@ -205,7 +205,7 @@ getDocumentInsertObject newDocument =
 getDocumentUpdateObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
 getDocumentUpdateObject document =
     update_document
-       (setDocumentUpdateArgs document.content)
+       (setDocumentUpdateOptionalArgs document)
        (setDocumentUpdateWhere document.id)
        mutationResponseSelection
 
@@ -239,23 +239,24 @@ type alias DocumentoData =
 type alias UpdateDocumentResponse =
     RemoteData (Graphql.Http.Error (Maybe MutationResponse)) (Maybe MutationResponse)
 
-updateDocumentContent : Uuid -> String -> SelectionSet (Maybe MutationResponse) RootMutation
-updateDocumentContent documentId content =
-    Mutation.update_document (setDocumentUpdateArgs content) (setDocumentUpdateWhere documentId) mutationResponseSelection
+--updateDocumentContent : Uuid -> String -> SelectionSet (Maybe MutationResponse) RootMutation
+--updateDocumentContent documentId content =
+--    Mutation.update_document (setDocumentUpdateArgs content) (setDocumentUpdateWhere documentId) mutationResponseSelection
 
-setDocumentSetArg : String -> Document_set_input
-setDocumentSetArg content =
+setDocumentSetArg : Document -> Document_set_input
+setDocumentSetArg document =
     buildDocument_set_input
         (\args ->
             { args
-                | content = OptionalArgument.Present content
+                |   content = OptionalArgument.Present document.content
+                  , title = OptionalArgument.Present document.title
             }
         )
 
-setDocumentUpdateArgs : String -> UpdateDocumentOptionalArguments -> UpdateDocumentOptionalArguments
-setDocumentUpdateArgs content optionalArgs =
+setDocumentUpdateOptionalArgs : Document ->  UpdateDocumentOptionalArguments -> UpdateDocumentOptionalArguments
+setDocumentUpdateOptionalArgs document optionalArgs =
     { optionalArgs
-        | set_ = Present (setDocumentSetArg content)
+        | set_ =  Present (setDocumentSetArg document)
     }
 
 setDocumentValueForId : Uuid -> Uuid_comparison_exp
