@@ -857,7 +857,7 @@ rhsViewInfoPage viewInfo model =
         rt =
             Markdown.Elm.toHtml ExtendedMath Data.rhsUserText
     in
-    column [ width (px w), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.8), Font.color (Style.makeGrey 0.1) ]
+    column [ width (px w), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.9), Font.color (Style.makeGrey 0.1) ]
         [ rt |> Element.html ]
 
 
