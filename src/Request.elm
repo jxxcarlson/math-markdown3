@@ -1,6 +1,5 @@
 module Request exposing (GraphQLResponse(..), RequestMsg(..), deleteDocument, documentsByAuthor, insertDocument, publicDocuments, updateDocument)
 
-import Api.Enum.Order_by exposing (Order_by(..))
 import Api.InputObject
     exposing
         ( Boolean_comparison_exp
@@ -17,7 +16,7 @@ import Api.InputObject
         , buildString_comparison_exp
         , buildUuid_comparison_exp
         )
-import Api.Mutation as Mutation
+import Api.Mutation
     exposing
         ( DeleteDocumentRequiredArguments
         , InsertDocumentRequiredArguments
@@ -30,7 +29,6 @@ import Api.Mutation as Mutation
 import Api.Object
 import Api.Object.Document exposing (authorIdentifier)
 import Api.Object.Document_mutation_response as DocumentMutation
-import Api.Object.User
 import Api.Query as Query exposing (DocumentOptionalArguments)
 import CustomScalarCodecs exposing (Jsonb(..))
 import Document exposing (Document)
@@ -38,7 +36,6 @@ import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
-import Json.Encode as Encode
 import Prng.Uuid exposing (Uuid(..))
 import RemoteData exposing (RemoteData)
 
@@ -185,15 +182,6 @@ equalToString str =
     Present <| buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str })
 
 
-
--- XXX --
-
-
-whereIsPublic : Bool -> OptionalArgument Document_bool_exp
-whereIsPublic isPublic_ =
-    Present <| buildDocument_bool_exp (\args -> { args | public = equalToBoolean isPublic_ })
-
-
 equalToBoolean : Bool -> OptionalArgument Boolean_comparison_exp
 equalToBoolean isPublic_ =
     Present <| buildBoolean_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present isPublic_ })
@@ -299,7 +287,7 @@ type GraphQLResponse decodesTo
 -- UPDATE DOCUMENT
 
 
-type alias DocumentoData =
+type alias DocumenToData =
     RemoteData (Graphql.Http.Error Document) Document
 
 
