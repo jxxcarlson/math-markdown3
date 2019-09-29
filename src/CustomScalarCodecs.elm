@@ -1,6 +1,6 @@
 module CustomScalarCodecs exposing (Id, Jsonb(..), Timestamptz(..), Uuid, codecs)
 
-import Api.Scalar exposing (defaultCodecs)
+import Api.Scalar
 import Graphql.Internal.Builder.Object as Object
 import Json.Decode as Decode
 import Json.Encode as Encode
