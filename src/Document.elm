@@ -3,6 +3,7 @@ module Document exposing
     , create
     , documentIdentifier
     , footer
+    , getById
     , getContent
     , replaceInList
     , setContent
@@ -42,6 +43,16 @@ getContent maybeDocument =
             ""
 
 
+getById : String -> List Document -> Maybe Document
+getById str docList =
+    case Uuid.fromString str of
+        Nothing ->
+            Nothing
+
+        Just uuid ->
+            List.filter (\doc -> doc.id == uuid) docList |> List.head
+
+
 footer : Document -> String
 footer document =
     "\n\n___\n\n````\nAuthor: "
@@ -50,14 +61,18 @@ footer document =
         ++ "Public: "
         ++ Utility.boolAsString document.public
         ++ "\n"
-        ++ "Document slug: "
-        ++ makeSlug document
-        ++ "\n"
         ++ "Tags: "
         ++ String.join ", " document.tags
         ++ "\n"
         ++ "Words: "
         ++ Utility.wordCount document.content
+        ++ "\n"
+        ++ "\n"
+        ++ "Document slug: "
+        ++ makeSlug document
+        ++ "\n"
+        ++ "Document id: "
+        ++ (document.id |> Uuid.toString)
         ++ "\n"
         ++ "````"
         ++ "\n\n"

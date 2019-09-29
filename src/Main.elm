@@ -689,6 +689,31 @@ update msg model =
                             , Cmd.none
                             )
 
+                GotPublicDocuments remoteData ->
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "Get author docs: not asked" ) }, Cmd.none )
+
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "Get author docs:: loading" ) }, Cmd.none )
+
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "Get author docs:: request failed" ) }, Cmd.none )
+
+                        Success documentList ->
+                            let
+                                currentDoc =
+                                    Document.getById "e6880153-cc25-48b6-9d71-aae6653aad23" documentList
+                            in
+                            ( { model
+                                | documentList = documentList
+                                , currentDocument = currentDoc
+                                , tagString = getTagString currentDoc
+                                , message = ( UserMessage, "Success getting document list" )
+                              }
+                            , Cmd.none
+                            )
+
                 InsertDocumentResponse _ ->
                     ( { model | message = ( UserMessage, "New document saved" ) }, Cmd.none )
 

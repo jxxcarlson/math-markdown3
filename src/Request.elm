@@ -49,6 +49,7 @@ import RemoteData exposing (RemoteData)
 
 type RequestMsg
     = GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+    | GotPublicDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | DeleteDocumentResponse (GraphQLResponse (Maybe MutationResponse))
@@ -69,7 +70,7 @@ publicDocuments : String -> Cmd RequestMsg
 publicDocuments authToken =
     makeGraphQLQuery authToken
         fetchPublicDocumentsQuery
-        (RemoteData.fromResult >> GotUserDocuments)
+        (RemoteData.fromResult >> GotPublicDocuments)
 
 
 insertDocument : String -> Document -> Cmd RequestMsg
@@ -224,6 +225,7 @@ insertDocumentObjects newDocument =
                 , authorIdentifier = Present newDocument.authorIdentifier
                 , content = Present newDocument.content
                 , public = Present newDocument.public
+
                 --  , tags = Present newDocument.tags
                 -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
             }
