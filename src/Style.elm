@@ -96,6 +96,17 @@ textInputStyle w h=
     ,  Border.width 2
     ]
 
+textInputStyleSimple w h=
+    [ preWrap
+    , height <| px <| round h
+    , width <| px <| round w
+    , clipX
+    , Font.size 13
+    , paddingXY 4 4
+    , Background.color lightGrey
+    ,  Border.width 2
+    ]
+
 -- COLOR --
 
 

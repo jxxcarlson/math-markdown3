@@ -75,6 +75,7 @@ type alias Model =
     , currentDocument : Maybe Document
     , currentDocumentDirty : Bool
     , secondsWhileDirty : Int
+    , tagString : String
     }
 
 type AppMode = Reading | Editing | UserMode UserState
@@ -139,6 +140,7 @@ init flags =
             , currentDocument = Nothing
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
+            , tagString = ""
             }
     in
        (model, Cmd.batch [
@@ -186,6 +188,7 @@ type Msg
     | UpdateDocumentText String
     | SetCurrentDocument Document
     | SetDocumentPublic Bool
+    | GotTagString String
     | Clear
     | Req RequestMsg
 
@@ -465,7 +468,9 @@ update msg model =
                      )
 
         SetCurrentDocument document ->
-            ( {model | currentDocument = Just document, counter = model.counter + 1}, Cmd.none)
+            ( {model | currentDocument = Just document
+                     , tagString = document.tags |> String.join ", "
+                     , counter = model.counter + 1}, Cmd.none)
 
         SetDocumentPublic bit ->
            case (model.currentDocument, model.currentUser) of
@@ -481,6 +486,23 @@ update msg model =
                         ( {model | currentDocument = Just newDocument
                                  , documentList = Document.replaceInList newDocument model.documentList }
                           , Request.updateDocument hasuraToken newDocument |> Cmd.map Req)
+
+        GotTagString str ->
+           let
+               (newDocumentList, newCurrentDocument) = case model.currentDocument of
+                     Nothing -> (model.documentList, Nothing)
+                     Just doc ->
+                         let
+                           newDoc = {doc | tags = str |> String.split "," |> List.map (String.toLower >> String.trim)}
+                         in
+                          (Document.replaceInList newDoc model.documentList, Just newDoc)
+           in
+            ( {model | tagString = str
+                    , currentDocumentDirty = True
+                    , secondsWhileDirty = 0
+                    , currentDocument = newCurrentDocument
+                    , documentList = newDocumentList}, Cmd.none)
+
 
         Req requestMsg ->
             case requestMsg of
@@ -509,8 +531,12 @@ update msg model =
                    Failure _ ->
                        ({model | message = (ErrorMessage, "Get author docs:: request failed")} , Cmd.none)
                    Success documentList ->
+                       let
+                           currentDoc = List.head documentList
+                       in
                          ({model | documentList = documentList
-                                 , currentDocument = List.head documentList
+                                 , currentDocument = currentDoc
+                                 , tagString = getTagString currentDoc
                                  , message = (UserMessage, "Success getting document list")} , Cmd.none)
               InsertDocumentResponse _ ->
                   ({model | message = (UserMessage, "New document saved")}, Cmd.none)
@@ -518,7 +544,12 @@ update msg model =
 
 -- UPDATE HELPERS --
 
-
+getTagString : Maybe Document -> String
+getTagString maybeDocument =
+    case maybeDocument of
+        Nothing -> ""
+        Just document ->
+            document.tags |> String.join ", "
 
 -- MANAGE DOCUMENTS --
 
@@ -534,6 +565,7 @@ handleDeletedDocument model =
                   , message = (UserMessage, "Document " ++ deletedDocument.title ++ " deleted")
                   , visibilityOfTools = Invisible}
                 , Cmd.none)
+
 
 --
 -- VIEW FUNCTIONS
@@ -1034,6 +1066,7 @@ toolPanel viewInfo model =
       [column [Font.size 13, spacing 15]  [
           el [Font.size 16, Font.bold, Font.color Style.white] (Element.text "Document tools")
         , togglePublic model
+        , inputTags model
         , flavors model
        ]
   ]
@@ -1044,6 +1077,16 @@ toolButtonStyle = [height (px 30), width (px 150),  padding 8, Background.color 
 
 toolButtonStyleInHeader : List (Element.Attribute msg)
 toolButtonStyleInHeader = [height (px 30), width (px 60),  padding 8, Background.color (Style.makeGrey 0.1), Border.color Style.white, Font.color Style.white, Font.size 12]
+
+
+inputTags model =
+    Input.multiline (Style.textInputStyleSimple 180 80)
+        { onChange = GotTagString
+        , text = model.tagString
+        , placeholder = Nothing
+        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "Tags")
+        , spellcheck = False
+        }
 
 togglePublic model =
     case model.currentDocument of

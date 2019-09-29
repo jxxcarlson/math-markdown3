@@ -206,8 +206,8 @@ insertDocumentObjects newDocument =
                 , authorIdentifier = Present newDocument.authorIdentifier
                 , content = Present newDocument.content
                 , public = Present newDocument.public
-               -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
-              --  , tags = Present newDocument.tags
+                -- , tags = Present newDocument.tags
+                -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
             }
         )
 
@@ -273,9 +273,6 @@ type alias DocumentoData =
 type alias UpdateDocumentResponse =
     RemoteData (Graphql.Http.Error (Maybe MutationResponse)) (Maybe MutationResponse)
 
---updateDocumentContent : Uuid -> String -> SelectionSet (Maybe MutationResponse) RootMutation
---updateDocumentContent documentId content =
---    Mutation.update_document (setDocumentUpdateArgs content) (setDocumentUpdateWhere documentId) mutationResponseSelection
 
 setDocumentSetArg : Document -> Document_set_input
 setDocumentSetArg document =
@@ -286,6 +283,7 @@ setDocumentSetArg document =
                   , title = OptionalArgument.Present document.title
                   , slug = OptionalArgument.Present document.slug
                   , public = OptionalArgument.Present document.public
+                 -- , tags = OptionalArgument.Present document.tags
             }
         )
 
