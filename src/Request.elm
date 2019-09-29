@@ -36,6 +36,7 @@ import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
+import Json.Encode as Encode
 import Prng.Uuid exposing (Uuid(..))
 import RemoteData exposing (RemoteData)
 
@@ -213,9 +214,7 @@ insertDocumentObjects newDocument =
                 , authorIdentifier = Present newDocument.authorIdentifier
                 , content = Present newDocument.content
                 , public = Present newDocument.public
-
-                --  , tags = Present newDocument.tags
-                -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
+                , tags = Present (newDocument.tags |> (\list -> Jsonb list)) -- Present (newDocument.tags |> String.join ", ")
             }
         )
 
@@ -304,8 +303,7 @@ setDocumentSetArg document =
                 , title = OptionalArgument.Present document.title
                 , slug = OptionalArgument.Present document.slug
                 , public = OptionalArgument.Present document.public
-
-                -- , tags = OptionalArgument.Present document.tags
+                , tags = Present (document.tags |> (\list -> Jsonb list))
             }
         )
 
