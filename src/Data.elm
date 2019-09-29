@@ -32,11 +32,11 @@ rhsUserText =
     """
 ## Welcome!
 
-![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
+![Hummingbird](http://noteimages.s3.amazonaws.com/jxxcarlson/hummingbird.jpg)
 Hummingbird (Meditation)
 
 
-This little app  demonstates what one can do with the pure Elm markdown
+This little app  demonstrates what one can do with the pure Elm markdown
 library [jxxcarlson/elm-markdown](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/).
 The idea is to be able to do Markdown + Math, like this:
 
