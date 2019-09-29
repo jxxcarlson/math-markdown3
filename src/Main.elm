@@ -1,6 +1,5 @@
 module Main exposing (main)
 
-import Api.Scalar exposing (Id(..))
 import Browser
 import Browser.Events
 import Data
@@ -12,10 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
 import Html exposing (..)
-import Html.Attributes
 import Markdown.Elm
 import Markdown.Option exposing (Option(..))
-import Parse
 import Prng.Uuid as Uuid
 import Random
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
@@ -25,7 +22,7 @@ import Style
 import Task
 import Time
 import User exposing (User)
-import Utility exposing (humanTimeHM)
+import Utility
 
 
 main : Program Flags Model Msg
@@ -893,10 +890,6 @@ modeButtonStrip model =
 -- SIGN-IN
 
 
-noUserView model =
-    column [] [ Element.text "Now one signed in" ]
-
-
 signInUpView model =
     column Style.signInColumn
         [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Welcome!")
@@ -1323,9 +1316,6 @@ toolPanel viewInfo model =
     let
         h_ =
             translate -viewInfo.vInset model.windowHeight
-
-        heading_ =
-            el [ Font.size 16, Font.bold ] (Element.text "Report bugs!  ")
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))
@@ -1341,11 +1331,6 @@ toolPanel viewInfo model =
             , flavors model
             ]
         ]
-
-
-toolButtonStyle : List (Element.Attribute msg)
-toolButtonStyle =
-    [ height (px 30), width (px 150), padding 8, Background.color Style.charcoal, Font.color Style.white, Font.size 12 ]
 
 
 toolButtonStyleInHeader : List (Element.Attribute msg)
@@ -1494,9 +1479,6 @@ heading model =
 header : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
 header viewInfo model rt =
     let
-        editorWidth_ =
-            scale viewInfo.editorWidth model.windowWidth
-
         renderedDisplayWidth_ =
             scale viewInfo.renderedDisplayWidth model.windowWidth
 
@@ -1582,16 +1564,6 @@ showDocumentListButton model =
 
 footer : Model -> Element Msg
 footer model =
-    let
-        editorWidth_ =
-            scale viewInfoEditing.editorWidth model.windowWidth
-
-        renderedDisplayWidth =
-            scale viewInfoEditing.renderedDisplayWidth model.windowWidth
-
-        innerTOCWidth_ =
-            scale viewInfoEditing.tocWidth model.windowWidth
-    in
     row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
         [ currentAuthorDisplay model
         , wordCount model
