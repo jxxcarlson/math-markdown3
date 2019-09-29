@@ -478,7 +478,7 @@ update msg model =
                 Just user ->
                     let
                         newDocument =
-                            Document.create model.currentUuid user.username "New Document" model.time "# New Document\n\nWrite something here ..."
+                            Document.create model.currentUuid user.username "New Document" "# New Document\n\nWrite something here ..."
 
                         ( newUuid, newSeed ) =
                             step Uuid.generator model.currentSeed

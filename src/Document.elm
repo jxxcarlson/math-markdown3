@@ -1,7 +1,6 @@
 module Document exposing
     ( Document
     , create
-    , documentIdentifier
     , footer
     , getById
     , getContent
@@ -78,23 +77,6 @@ footer document =
         ++ "\n\n"
 
 
-{-|
-
-    > t = Time.millisToPosix (1568667528 * 1000)
-    Posix 1568667528000 : Time.Posix
-    > title = "Introduction to Quantum Mechanics"
-    > documentId "jxxcarlson" title t
-    "jxxcarlson.introduction-to-quantum-mechanics.1568667528"
-
-44
-
--}
-documentIdentifier : String -> String -> Posix -> String
-documentIdentifier authorIdentifier title time =
-    [ authorIdentifier, Utility.normalize title, Utility.stringOfPosix time ]
-        |> String.join "."
-
-
 makeSlug : Document -> String
 makeSlug document =
     let
@@ -107,8 +89,8 @@ makeSlug document =
     document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ shortHash
 
 
-makeInitiaSlug : String -> String -> Uuid -> String
-makeInitiaSlug title authorIdentifier identifier =
+makeInitialSlug : String -> String -> Uuid -> String
+makeInitialSlug title authorIdentifier identifier =
     let
         endOfHash =
             Uuid.toString identifier |> String.right 6
@@ -129,11 +111,11 @@ makeInitiaSlug title authorIdentifier identifier =
         : Document
 
 -}
-create : Uuid -> String -> String -> Posix -> String -> Document
-create documentUuid authorIdentifier title time content =
+create : Uuid -> String -> String -> String -> Document
+create documentUuid authorIdentifier title content =
     let
         slug =
-            makeInitiaSlug title authorIdentifier documentUuid
+            makeInitialSlug title authorIdentifier documentUuid
     in
     { id = documentUuid
     , title = title
@@ -146,8 +128,8 @@ create documentUuid authorIdentifier title time content =
 
 
 {-| Replace by the target document any occurrence of a document in
-the documentList whose id is the same as taht of the target document.
-It is assumed, but not enfornced, that document ids are unique.
+the documentList whose id is the same as that of the target document.
+It is assumed, but not enforced, that document ids are unique.
 -}
 replaceInList : Document -> List Document -> List Document
 replaceInList targetDocument documentList =
