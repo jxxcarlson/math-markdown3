@@ -1,4 +1,4 @@
-module Utility exposing (boolAsString, compress, getId, humanDateUTC, humanTimeHM, humanTimeHMS, id0, intSlug, normalize, posixSlug, stringOfPosix, unwrapId, wordCount)
+module Utility exposing (boolAsString, compress, getId, humanDateUTC, humanTimeHM, humanTimeHMS, id0, intSlug, normalize, wordCount)
 
 import Api.Scalar exposing (Id(..))
 import List.Extra
@@ -39,11 +39,8 @@ uuids =
 
         ( id6, seed6 ) =
             step Prng.Uuid.generator seed5
-
-        ( id7, seed7 ) =
-            step Prng.Uuid.generator seed6
     in
-    [ id1, id2, id3, id4, id5, id6, id7 ]
+    [ id1, id2, id3, id4, id5, id6 ]
 
 
 getId : Int -> Uuid
@@ -51,11 +48,6 @@ getId k =
     List.drop (k - 1) uuids
         |> List.head
         |> Maybe.withDefault id0
-
-
-unwrapId : Id -> String
-unwrapId (Id str) =
-    str
 
 
 wordCount str =
@@ -245,25 +237,9 @@ lsp seconds =
     a ++ "-" ++ b
 
 
-posixSlug : Posix -> String
-posixSlug posix =
-    posix
-        |> Time.posixToMillis
-        |> (\x -> x // 1000)
-        |> intSlug
-
-
 intSlug : Int -> String
 intSlug seconds =
     msp seconds ++ "-" ++ lsp seconds
-
-
-stringOfPosix : Posix -> String
-stringOfPosix posix =
-    posix
-        |> Time.posixToMillis
-        |> (\x -> x // 1000)
-        |> chunked
 
 
 chunked : Int -> String
