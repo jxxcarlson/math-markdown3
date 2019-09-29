@@ -224,8 +224,7 @@ insertDocumentObjects newDocument =
                 , authorIdentifier = Present newDocument.authorIdentifier
                 , content = Present newDocument.content
                 , public = Present newDocument.public
-
-                -- , tags = Present newDocument.tags
+                --  , tags = Present newDocument.tags
                 -- , tags = Present (newDocument.tags |> String.join ", " |> Encode.string)
             }
         )

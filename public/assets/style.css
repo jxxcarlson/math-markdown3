@@ -6,6 +6,13 @@ p {
 	font-size: 10pt;
 }
 
+
+a:link {color: #00a;}      /* unvisited link */
+a:visited {color: #00a;}   /* visited link */
+a:hover {color: #00a;}     /* mouse over link */
+a:active {color:#00a;}    /* selected link */
+
+
 #toc a p.mm-paragraph { line-height: 5pt; }
 #toc h1 p.mm-paragraph { font-size: 12pt; }
 .toc-level-0 { margin-left: 0em; font-size : 10pt;  font-weight: normal; text-decoration: none; }

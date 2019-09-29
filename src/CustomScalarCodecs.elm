@@ -37,7 +37,9 @@ codecs =
             , decoder = Object.scalarDecoder |> Decode.map Id
             }
         , codecJsonb =
-            { encoder = \(Jsonb raw) -> raw |> String.join "," |> Encode.string
+            { encoder = \(Jsonb raw) -> raw |> Encode.list Encode.string
+
+            -- encoder = \(Jsonb raw) -> raw |> String.join "," |> Encode.string
             , decoder = Decode.list Decode.string |> Decode.map Jsonb
             }
         , codecTimestamptz =
