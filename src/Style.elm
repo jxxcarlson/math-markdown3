@@ -1,5 +1,4 @@
-module Style exposing (..)
-
+module Style exposing (activeButtonStyle, basicButtonsStyle, black, blue, buttonFontSize, buttonGrey, buttonStyleSelected, buttonStyleSelected_, charcoal, darkBlue, darkRed, green, grey, headerButton, inputStyle, lightGrey, mainColumn, makeGrey, mouseDownColor, multiline, preWrap, red, signInColumn, textInputStyle, textInputStyleSimple, white)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -14,6 +13,8 @@ mainColumn w h =
 
 signInColumn =
     mainColumn fill fill ++ [ spacing 12, paddingXY 72 36, Background.color (makeGrey 0.4) ]
+
+
 
 -- INPUT --
 
@@ -40,7 +41,9 @@ multiline w h =
     ]
 
 
+
 -- BUTTONS --
+
 
 headerButton : List (Element.Attr () msg)
 headerButton =
@@ -58,21 +61,27 @@ activeButtonStyle : List (Element.Attr () msg)
 activeButtonStyle =
     [ Background.color darkBlue, Font.color white, Element.paddingXY 10 6 ] ++ basicButtonsStyle
 
+
 buttonFontSize =
     Font.size 16
+
 
 mouseDownColor =
     Element.rgb 0.7 0.1 0.1
 
 
-buttonStyleSelected = buttonStyleSelected_ buttonGrey red
+buttonStyleSelected =
+    buttonStyleSelected_ buttonGrey red
+
 
 buttonStyleSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
 buttonStyleSelected_ color color2 width_ bit =
     [ case bit of
-        False -> Background.color color
-        True -> Background.color color2
+        False ->
+            Background.color color
 
+        True ->
+            Background.color color2
     , Font.color white
     , width (px width_)
     , height (px 25)
@@ -80,11 +89,12 @@ buttonStyleSelected_ color color2 width_ bit =
     , centerX
     ]
 
+
 preWrap =
     Element.htmlAttribute (Html.Attributes.attribute "white-space" "pre-wrap")
 
 
-textInputStyle w h=
+textInputStyle w h =
     [ preWrap
     , height <| px <| round h
     , width <| px <| round w
@@ -93,10 +103,11 @@ textInputStyle w h=
     , Font.size 13
     , paddingXY 8 20
     , Background.color lightGrey
-    ,  Border.width 2
+    , Border.width 2
     ]
 
-textInputStyleSimple w h=
+
+textInputStyleSimple w h =
     [ preWrap
     , height <| px <| round h
     , width <| px <| round w
@@ -104,8 +115,10 @@ textInputStyleSimple w h=
     , Font.size 13
     , paddingXY 4 4
     , Background.color lightGrey
-    ,  Border.width 2
+    , Border.width 2
     ]
+
+
 
 -- COLOR --
 
@@ -118,7 +131,9 @@ darkBlue =
     Element.rgb 0.0 0.0 0.6
 
 
+
 -- COLORS --
+
 
 makeGrey g =
     Element.rgb g g g
@@ -127,18 +142,34 @@ makeGrey g =
 lightGrey =
     makeGrey 0.95
 
-buttonGrey = grey 0.5
 
-red =  Element.rgb 0.4 0.1 0.1
+buttonGrey =
+    grey 0.5
 
-white = Element.rgb 1 1 1
 
-blue = Element.rgb 0.1 0.1 0.4
+red =
+    Element.rgb 0.4 0.1 0.1
 
-green = Element.rgb 0 0.5 0
 
-grey g = Element.rgb g g g
+white =
+    Element.rgb 1 1 1
 
-charcoal = grey 0.3
 
-black = grey 0.1
+blue =
+    Element.rgb 0.1 0.1 0.4
+
+
+green =
+    Element.rgb 0 0.5 0
+
+
+grey g =
+    Element.rgb g g g
+
+
+charcoal =
+    grey 0.3
+
+
+black =
+    grey 0.1

@@ -1,22 +1,30 @@
-module Document exposing (Document, setContent, getContent, documentIdentifier
-  , create, replaceInList, updateMetaData, footer)
+module Document exposing
+    ( Document
+    , create
+    , documentIdentifier
+    , footer
+    , getContent
+    , replaceInList
+    , setContent
+    , updateMetaData
+    )
 
-import Time exposing(Posix)
-import Utility
 import List.Extra
-import Parser exposing(Parser, getChompedString, succeed, symbol, chompWhile, (|.))
-import Prng.Uuid as Uuid exposing(Uuid)
+import Parser exposing ((|.), Parser, chompWhile, getChompedString, succeed, symbol)
+import Prng.Uuid as Uuid exposing (Uuid)
+import Time exposing (Posix)
+import Utility
 
 
-type alias Document = {
-     id : Uuid
-   , title : String
-   , authorIdentifier: String
-   , content : String
-   , public: Bool
-   , tags : List String
-   , slug : String
-  }
+type alias Document =
+    { id : Uuid
+    , title : String
+    , authorIdentifier : String
+    , content : String
+    , public : Bool
+    , tags : List String
+    , slug : String
+    }
 
 
 setContent : String -> Document -> Document
@@ -29,49 +37,72 @@ getContent maybeDocument =
     case maybeDocument of
         Just document ->
             document.content
-        Nothing -> ""
+
+        Nothing ->
+            ""
 
 
 footer : Document -> String
 footer document =
     "\n\n___\n\n````\nAuthor: "
-    ++ document.authorIdentifier ++ "\n"
-     ++ "Public: " ++ Utility.boolAsString document.public ++ "\n"
-    ++ "Document slug: " ++ makeSlug document ++ "\n"
-    ++ "Tags: " ++ String.join ", " document.tags ++ "\n"
-    ++ "Words: " ++ Utility.wordCount document.content
-    ++ "\n" ++ "````" ++ "\n\n"
-
+        ++ document.authorIdentifier
+        ++ "\n"
+        ++ "Public: "
+        ++ Utility.boolAsString document.public
+        ++ "\n"
+        ++ "Document slug: "
+        ++ makeSlug document
+        ++ "\n"
+        ++ "Tags: "
+        ++ String.join ", " document.tags
+        ++ "\n"
+        ++ "Words: "
+        ++ Utility.wordCount document.content
+        ++ "\n"
+        ++ "````"
+        ++ "\n\n"
 
 
 {-|
+
     > t = Time.millisToPosix (1568667528 * 1000)
     Posix 1568667528000 : Time.Posix
     > title = "Introduction to Quantum Mechanics"
     > documentId "jxxcarlson" title t
     "jxxcarlson.introduction-to-quantum-mechanics.1568667528"
+
 44
+
 -}
 documentIdentifier : String -> String -> Posix -> String
 documentIdentifier authorIdentifier title time =
-    [authorIdentifier, Utility.normalize title, Utility.stringOfPosix time]
-      |> String.join "."
+    [ authorIdentifier, Utility.normalize title, Utility.stringOfPosix time ]
+        |> String.join "."
+
 
 makeSlug : Document -> String
 makeSlug document =
     let
-      endOfHash = Uuid.toString document.id  |> String.right 6
-      shortHash =  String.left 3 endOfHash ++ "-" ++ String.right 3 endOfHash
+        endOfHash =
+            Uuid.toString document.id |> String.right 6
+
+        shortHash =
+            String.left 3 endOfHash ++ "-" ++ String.right 3 endOfHash
     in
     document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ shortHash
+
 
 makeInitiaSlug : String -> String -> Uuid -> String
 makeInitiaSlug title authorIdentifier identifier =
     let
-      endOfHash = Uuid.toString identifier  |> String.right 6
-      shortHash =  String.left 3 endOfHash ++ "-" ++ String.right 3 endOfHash
+        endOfHash =
+            Uuid.toString identifier |> String.right 6
+
+        shortHash =
+            String.left 3 endOfHash ++ "-" ++ String.right 3 endOfHash
     in
     authorIdentifier ++ "." ++ Utility.compress title ++ "." ++ shortHash
+
 
 {-|
 
@@ -85,67 +116,69 @@ makeInitiaSlug title authorIdentifier identifier =
 -}
 create : Uuid -> String -> String -> Posix -> String -> Document
 create documentUuid authorIdentifier title time content =
-   let
-       slug = makeInitiaSlug title authorIdentifier documentUuid
-   in
-     {  id = documentUuid
-      , title = title
-      , authorIdentifier = authorIdentifier
-      , content = content
-      , tags  = [ ]
-      , public = False
-      , slug = slug
+    let
+        slug =
+            makeInitiaSlug title authorIdentifier documentUuid
+    in
+    { id = documentUuid
+    , title = title
+    , authorIdentifier = authorIdentifier
+    , content = content
+    , tags = []
+    , public = False
+    , slug = slug
+    }
 
 
-     }
-
-{-|
-  Replace by the target document any occurrence of a document in
-  the documentList whose id is the same as taht of the target document.
-  It is assumed, but not enfornced, that document ids are unique.
+{-| Replace by the target document any occurrence of a document in
+the documentList whose id is the same as taht of the target document.
+It is assumed, but not enfornced, that document ids are unique.
 -}
 replaceInList : Document -> List Document -> List Document
 replaceInList targetDocument documentList =
---   let
---       targetDocument = updateMetaData targetDocument_
---    in
+    --   let
+    --       targetDocument = updateMetaData targetDocument_
+    --    in
     List.Extra.setIf (\doc -> doc.id == targetDocument.id) targetDocument documentList
 
 
 updateMetaData : Document -> Document
 updateMetaData document =
-      { document | slug = makeSlug document, title = newTitle document}
+    { document | slug = makeSlug document, title = newTitle document }
 
 
 newTitle : Document -> String
 newTitle document =
-    case  getHeading document  of
-       Nothing -> document.title
-       Just newTitle_ -> newTitle_
+    case getHeading document of
+        Nothing ->
+            document.title
+
+        Just newTitle_ ->
+            newTitle_
 
 
-
-getHeading: Document -> Maybe String
+getHeading : Document -> Maybe String
 getHeading document =
-   case  Parser.run parseHeading document.content of
-       Ok result -> String.dropLeft 1 result |> String.trim |> Just
-       Err _ -> Nothing
+    case Parser.run parseHeading document.content of
+        Ok result ->
+            String.dropLeft 1 result |> String.trim |> Just
+
+        Err _ ->
+            Nothing
+
 
 parseHeading : Parser String
 parseHeading =
-  (getChompedString <|
-    succeed identity
-        |. parseWhile (\c -> c /= '#')
-        |. symbol "#"
-        |. symbol " "
-        |. parseWhile (\c -> c /= '\n'))
-    |> Parser.map String.trim
+    (getChompedString <|
+        succeed identity
+            |. parseWhile (\c -> c /= '#')
+            |. symbol "#"
+            |. symbol " "
+            |. parseWhile (\c -> c /= '\n')
+    )
+        |> Parser.map String.trim
+
 
 parseWhile : (Char -> Bool) -> Parser String
 parseWhile accepting =
     chompWhile accepting |> getChompedString
-
-
-
-
-

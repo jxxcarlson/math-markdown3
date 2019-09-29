@@ -1,20 +1,17 @@
-module Data exposing (loadingPage, rhsUserText  )
+module Data exposing (loadingPage, rhsUserText)
+
+import Utility exposing (getId)
 
 
-import Utility exposing(getId)
-
-
-
-loadingPage = {
-    id = getId 1
-  , title = "Notes on Futhark"
-  , authorIdentifier = "jxxcarlson"
-  , content = loadingPageText
-  , tags = ["system"]
-  , public = True
-  , slug = "loading"
-  }
-
+loadingPage =
+    { id = getId 1
+    , title = "Notes on Futhark"
+    , authorIdentifier = "jxxcarlson"
+    , content = loadingPageText
+    , tags = [ "system" ]
+    , public = True
+    , slug = "loading"
+    }
 
 
 loadingPageText =
@@ -30,7 +27,9 @@ $$
 
 """
 
-rhsUserText = """
+
+rhsUserText =
+    """
 ## Welcome!
 
 ![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
