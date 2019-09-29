@@ -332,8 +332,11 @@ update msg model =
                         case (model.currentUser, model.currentDocument)of
                             (Nothing, _) -> Cmd.none
                             (_, Nothing) -> Cmd.none
-                            (Just _, Just document) ->
-                               Request.updateDocument hasuraToken document |> Cmd.map Req
+                            (Just user, Just document) ->
+                               if user.username == document.authorIdentifier then
+                                  Request.updateDocument hasuraToken document |> Cmd.map Req
+                               else
+                                  Cmd.none
                      else
                          Cmd.none
             in
@@ -406,19 +409,19 @@ update msg model =
 
 
         SaveDocument ->
-            case model.currentDocument of
-               Nothing -> (model, Cmd.none)
-               Just document_ ->
-                 let
-                    document = Document.updateMetaData document_
-                    (message, cmd) = case model.currentUser of
-                        Nothing -> ((UserMessage, "Saving document ..."), Cmd.none)
-                        Just _ -> ((UserMessage, "Saving document ..."), Request.updateDocument hasuraToken document |> Cmd.map Req)
+            case (model.currentUser, model.currentDocument) of
+               (_, Nothing) -> (model, Cmd.none)
+               (Nothing, _) -> (model, Cmd.none)
+               (Just user, Just document_) ->
+                   if user.username /= document_.authorIdentifier then
+                     (model, Cmd.none)
+                   else
+                     let
+                        document = Document.updateMetaData document_
+                     in
+                       ({model | message = (UserMessage, "Saving document ..."), currentDocument = Just document}
+                         , Request.updateDocument hasuraToken document |> Cmd.map Req)
 
-                 in
-                   ({model | message = message, currentDocument = Just document}
-                     , cmd
-                   )
 
         ArmForDelete ->
             ({ model | documentDeleteState = Armed, message = (UserMessage, "Armed for delete.  Caution!")}, Cmd.none)
@@ -465,15 +468,19 @@ update msg model =
             ( {model | currentDocument = Just document, counter = model.counter + 1}, Cmd.none)
 
         SetDocumentPublic bit ->
-           case model.currentDocument of
-               Nothing -> ( model, Cmd.none)
-               Just document ->
-                  let
-                      newDocument = {document | public =  bit}
-                  in
-                    ( {model | currentDocument = Just newDocument
-                             , documentList = Document.replaceInList newDocument model.documentList }
-                      , Request.updateDocument hasuraToken newDocument |> Cmd.map Req)
+           case (model.currentDocument, model.currentUser) of
+               (Nothing, _) -> ( model, Cmd.none)
+               (_, Nothing) -> ( model, Cmd.none)
+               (Just document, Just user)  ->
+                  if document.authorIdentifier /= user.username then
+                     ( model, Cmd.none)
+                  else
+                      let
+                          newDocument = {document | public =  bit}
+                      in
+                        ( {model | currentDocument = Just newDocument
+                                 , documentList = Document.replaceInList newDocument model.documentList }
+                          , Request.updateDocument hasuraToken newDocument |> Cmd.map Req)
 
         Req requestMsg ->
             case requestMsg of
