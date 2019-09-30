@@ -175,15 +175,29 @@ isPublic =
 
 hasAuthor : String -> OptionalArgument Document_bool_exp
 hasAuthor author =
-    Present <| buildDocument_bool_exp (\args -> { args | authorIdentifier = equalToString author })
+    Present <| hasAuthor_ author
+
+
+hasAuthor_ : String -> Document_bool_exp
+hasAuthor_ author =
+    buildDocument_bool_exp (\args -> { args | authorIdentifier = equalToString author })
 
 
 hasTitle : String -> OptionalArgument Document_bool_exp
 hasTitle key =
-    Present <| buildDocument_bool_exp (\args -> { args | title = likeString key })
+    Present <| hasTitle_ key
+
+
+hasTitle_ : String -> Document_bool_exp
+hasTitle_ key =
+    buildDocument_bool_exp (\args -> { args | title = likeString key })
 
 
 
+--hasAuthorAndTitle : String -> String -> OptionalArgument Document_bool_exp
+--hasAuthorAndTitle author titleKey =
+--    Present <| buildDocument_bool_exp (\args -> { args | and_ = [ hasAuthor author, hasTitle titleKey ] })
+--
 --
 --hasTag : String -> OptionalArgument Document_bool_exp
 --hasTag key =
