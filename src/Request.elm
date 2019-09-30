@@ -3,6 +3,7 @@ module Request exposing
     , RequestMsg(..)
     , deleteDocument
     , documentsByAuthor
+    , documentsByTitle
     , insertDocument
     , publicDocuments
     , updateDocument
@@ -76,6 +77,13 @@ documentsByAuthor : String -> String -> Cmd RequestMsg
 documentsByAuthor authToken authorIdentifier =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (hasAuthor authorIdentifier))
+        (RemoteData.fromResult >> GotUserDocuments)
+
+
+documentsByTitle : String -> String -> Cmd RequestMsg
+documentsByTitle authToken key =
+    makeGraphQLQuery authToken
+        (fetchDocumentsQuery (titleLike key))
         (RemoteData.fromResult >> GotUserDocuments)
 
 
@@ -157,33 +165,7 @@ documentListOptionalArgument doc_bool_exp optionalArgs =
 
 
 
--- (1) DOCUMENTS BY AUTHOR --
---noinspection ALL
-
-
-fetchUserDocumentsQuery : String -> SelectionSet (List Document) RootQuery
-fetchUserDocumentsQuery author =
-    Query.document (documentListAuthorOptionalArgument author) documentListSelection
-
-
-
--- (2) PUBLIC DOCUMENTS --
---noinspection ALL
-
-
-fetchPublicDocumentsQuery : SelectionSet (List Document) RootQuery
-fetchPublicDocumentsQuery =
-    Query.document publicDocumentListOptionalArgument documentListSelection
-
-
-documentListAuthorOptionalArgument : String -> DocumentOptionalArguments -> DocumentOptionalArguments
-documentListAuthorOptionalArgument author optionalArgs =
-    { optionalArgs | where_ = hasAuthor author }
-
-
-publicDocumentListOptionalArgument : DocumentOptionalArguments -> DocumentOptionalArguments
-publicDocumentListOptionalArgument optionalArgs =
-    { optionalArgs | where_ = isPublic }
+-- DOCUMENT BOOLEAN EXPRESSIONS --
 
 
 isPublic : OptionalArgument Document_bool_exp
@@ -196,8 +178,9 @@ hasAuthor author =
     Present <| buildDocument_bool_exp (\args -> { args | authorIdentifier = equalToString author })
 
 
-
--- XXXX --
+titleLike : String -> OptionalArgument Document_bool_exp
+titleLike key =
+    Present <| buildDocument_bool_exp (\args -> { args | title = likeString key })
 
 
 equalToString : String -> OptionalArgument String_comparison_exp
@@ -205,9 +188,18 @@ equalToString str =
     Present <| buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str })
 
 
+likeString : String -> OptionalArgument String_comparison_exp
+likeString str =
+    Present <| buildString_comparison_exp (\args -> { args | ilike_ = OptionalArgument.Present str })
+
+
 equalToBoolean : Bool -> OptionalArgument Boolean_comparison_exp
 equalToBoolean isPublic_ =
     Present <| buildBoolean_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present isPublic_ })
+
+
+
+-- DOCUMENT --
 
 
 documentListSelection : SelectionSet Document Api.Object.Document
@@ -223,7 +215,7 @@ documentListSelection =
 
 
 
--- INSERT DOCUMENT
+-- DOCUMENT OBJECTS --
 
 
 insertDocumentObjects : Document -> Document_insert_input
@@ -249,10 +241,6 @@ insertArgs newDocument =
 getDocumentInsertObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
 getDocumentInsertObject newDocument =
     insert_document identity (insertArgs newDocument) mutationResponseSelection
-
-
-
--- UP --
 
 
 getDocumentUpdateObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
