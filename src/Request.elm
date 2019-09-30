@@ -83,7 +83,7 @@ documentsByAuthor authToken authorIdentifier =
 documentsByTitle : String -> String -> Cmd RequestMsg
 documentsByTitle authToken key =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (hasTitle key))
+        (fetchDocumentsQuery (hasTitle ("%" ++ key ++ "%")))
         (RemoteData.fromResult >> GotUserDocuments)
 
 
