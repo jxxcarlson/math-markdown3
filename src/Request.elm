@@ -3,9 +3,10 @@ module Request exposing
     , RequestMsg(..)
     , deleteDocument
     , documentsByAuthor
-    , documentsByTitle
+    , documentsByAuthorAndTitle
     , insertDocument
     , publicDocuments
+    , publicDocumentsByTitle
     , updateDocument
     )
 
@@ -80,10 +81,18 @@ documentsByAuthor authToken authorIdentifier =
         (RemoteData.fromResult >> GotUserDocuments)
 
 
-documentsByTitle : String -> String -> Cmd RequestMsg
-documentsByTitle authToken key =
+
+--documentsByAuthorAndTitle : String -> String -> Cmd RequestMsg
+--documentsByAuthorAndTitle authToken key =
+--    makeGraphQLQuery authToken
+--        (fetchDocumentsQuery (hasTitle ("%" ++ key ++ "%")))
+--        (RemoteData.fromResult >> GotUserDocuments)
+
+
+documentsByAuthorAndTitle : String -> String -> String -> Cmd RequestMsg
+documentsByAuthorAndTitle authToken authorIdentifier titleKey =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (hasTitle ("%" ++ key ++ "%")))
+        (fetchDocumentsQuery (hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")))
         (RemoteData.fromResult >> GotUserDocuments)
 
 
@@ -91,6 +100,13 @@ publicDocuments : String -> Cmd RequestMsg
 publicDocuments authToken =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery isPublic)
+        (RemoteData.fromResult >> GotPublicDocuments)
+
+
+publicDocumentsByTitle : String -> String -> Cmd RequestMsg
+publicDocumentsByTitle authToken titleKey =
+    makeGraphQLQuery authToken
+        (fetchDocumentsQuery (isPublicAndTitle ("%" ++ titleKey ++ "%")))
         (RemoteData.fromResult >> GotPublicDocuments)
 
 

@@ -553,7 +553,7 @@ update msg model =
                     )
 
         GetPublicDocuments ->
-            ( model, Request.publicDocuments hasuraToken |> Cmd.map Req )
+            ( model, Request.publicDocumentsByTitle hasuraToken model.searchTerms |> Cmd.map Req )
 
         UpdateDocumentText str ->
             case model.currentDocument of
@@ -637,7 +637,11 @@ update msg model =
             ( { model | searchTerms = str }, Cmd.none )
 
         DoSearch ->
-            ( model, Request.documentsByTitle hasuraToken model.searchTerms |> Cmd.map Req )
+            let
+                authorIdentifier =
+                    model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
+            in
+            ( model, Request.documentsByAuthorAndTitle hasuraToken authorIdentifier model.searchTerms |> Cmd.map Req )
 
         Req requestMsg ->
             case requestMsg of
@@ -1510,7 +1514,6 @@ header viewInfo model rt =
             [ row [ spacing 10 ]
                 [ inputSearchTerms model
                 , searchButton
-                , allUserDocumentsButton
                 , publicDocumentsButton
                 ]
             ]
@@ -1531,18 +1534,8 @@ searchButton =
     Input.button []
         { onPress = Just DoSearch
         , label =
-            el [ height (px 30), width (px 30), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 12 ]
-                (Element.text "S")
-        }
-
-
-allUserDocumentsButton : Element Msg
-allUserDocumentsButton =
-    Input.button []
-        { onPress = Just GetUserDocuments
-        , label =
-            el [ height (px 30), width (px 30), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 12 ]
-                (Element.text "M")
+            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2 ] (Element.text "Search"))
         }
 
 
@@ -1551,8 +1544,8 @@ publicDocumentsButton =
     Input.button []
         { onPress = Just GetPublicDocuments
         , label =
-            el [ height (px 30), width (px 30), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 12 ]
-                (Element.text "P")
+            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2 ] (Element.text "Public"))
         }
 
 
