@@ -80,14 +80,10 @@ documentsByAuthor authToken authorIdentifier =
         (RemoteData.fromResult >> GotUserDocuments)
 
 
-
--- fetchDocumentsQuery doc_bool_exp
-
-
 publicDocuments : String -> Cmd RequestMsg
 publicDocuments authToken =
     makeGraphQLQuery authToken
-        fetchPublicDocumentsQuery
+        (fetchDocumentsQuery isPublic)
         (RemoteData.fromResult >> GotPublicDocuments)
 
 
