@@ -88,6 +88,7 @@ type alias Model =
     , currentDocumentDirty : Bool
     , secondsWhileDirty : Int
     , tagString : String
+    , searchTerms : String
     }
 
 
@@ -179,6 +180,7 @@ init flags =
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
             , tagString = ""
+            , searchTerms = ""
             }
     in
     ( model
@@ -227,6 +229,7 @@ type Msg
     | DeleteDocument
     | CancelDeleteDocument
     | UpdateDocumentText String
+    | GotSearchTerms String
     | SetCurrentDocument Document
     | SetDocumentPublic Bool
     | GotTagString String
@@ -624,6 +627,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        GotSearchTerms str ->
+            ( { model | searchTerms = str }, Cmd.none )
 
         Req requestMsg ->
             case requestMsg of
@@ -1025,6 +1031,15 @@ inputUserName model =
         , text = model.username
         , placeholder = Nothing
         , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Username")
+        }
+
+
+inputSearchTerms model =
+    Input.text (Style.inputStyle 200)
+        { onChange = GotSearchTerms
+        , text = model.searchTerms
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "")
         }
 
 
