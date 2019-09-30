@@ -355,7 +355,7 @@ update msg model =
                     ( { model | appMode = Reading, visibilityOfTools = Invisible }, Cmd.none )
 
                 Editing ->
-                    ( { model | appMode = Editing }, Cmd.none )
+                    ( { model | appMode = Editing, visibilityOfTools = Visible }, Cmd.none )
 
                 UserMode s ->
                     case model.currentUser of
