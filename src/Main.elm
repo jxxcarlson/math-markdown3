@@ -226,6 +226,7 @@ type Msg
     | SaveDocument
     | GetUserDocuments
     | GetPublicDocuments
+    | ClearSearchTerms
     | ArmForDelete
     | DeleteDocument
     | CancelDeleteDocument
@@ -642,6 +643,9 @@ update msg model =
                     model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
             in
             ( model, Request.documentsByAuthorAndTitle hasuraToken authorIdentifier model.searchTerms |> Cmd.map Req )
+
+        ClearSearchTerms ->
+            ( { model | searchTerms = "" }, Cmd.none )
 
         Req requestMsg ->
             case requestMsg of
@@ -1520,6 +1524,7 @@ header viewInfo model rt =
                 [ inputSearchTerms model
                 , searchButton
                 , publicDocumentsButton
+                , clearSearchTermsButton
                 ]
             ]
         ]
@@ -1551,6 +1556,16 @@ publicDocumentsButton =
         , label =
             el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
                 (el [ moveDown 2 ] (Element.text "Public"))
+        }
+
+
+clearSearchTermsButton : Element Msg
+clearSearchTermsButton =
+    Input.button []
+        { onPress = Just ClearSearchTerms
+        , label =
+            el [ height (px 30), width (px 25), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2 ] (Element.text "X"))
         }
 
 
