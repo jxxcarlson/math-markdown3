@@ -718,7 +718,12 @@ update msg model =
                         Success documentList ->
                             let
                                 currentDoc =
-                                    Document.getById "e6880153-cc25-48b6-9d71-aae6653aad23" documentList
+                                    case Document.getById "e6880153-cc25-48b6-9d71-aae6653aad23" documentList of
+                                        Nothing ->
+                                            List.head documentList
+
+                                        Just document ->
+                                            Just document
                             in
                             ( { model
                                 | documentList = documentList
