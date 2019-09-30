@@ -1,4 +1,12 @@
-module Request exposing (GraphQLResponse(..), RequestMsg(..), deleteDocument, documentsByAuthor, insertDocument, publicDocuments, updateDocument)
+module Request exposing
+    ( GraphQLResponse(..)
+    , RequestMsg(..)
+    , deleteDocument
+    , documentsByAuthor
+    , insertDocument
+    , publicDocuments
+    , updateDocument
+    )
 
 import Api.InputObject
     exposing
@@ -54,7 +62,15 @@ type RequestMsg
 
 
 
--- Cmd RequestMsg --
+-- GENERAL --
+
+
+endpoint =
+    "https://math-markdown-heroku.herokuapp.com/v1/graphql"
+
+
+
+-- CMD: Top level, exported --
 
 
 documentsByAuthor : String -> String -> Cmd RequestMsg
@@ -81,32 +97,23 @@ updateDocument authToken document =
     makeUpdateDocumentMutation (getDocumentUpdateObject document) authToken
 
 
-makeUpdateDocumentMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
-makeUpdateDocumentMutation mutation authToken =
-    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> UpdateDocumentResponse)
-
-
 deleteDocument : String -> Document -> Cmd RequestMsg
 deleteDocument authToken document =
     makeDeleteDocumentMutation (getDocumentDeleteObject document) authToken
 
 
+
+-- MUTATION --
+
+
+makeUpdateDocumentMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
+makeUpdateDocumentMutation mutation authToken =
+    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> UpdateDocumentResponse)
+
+
 makeDeleteDocumentMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
 makeDeleteDocumentMutation mutation authToken =
     makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> DeleteDocumentResponse)
-
-
-
--- GENERAL --
-
-
-endpoint =
-    "https://math-markdown-heroku.herokuapp.com/v1/graphql"
-
-
-graphql_url : String
-graphql_url =
-    "https://math-markdown-heroku.herokuapp.com/v1/graphql"
 
 
 getAuthHeader : String -> (Graphql.Http.Request decodesTo -> Graphql.Http.Request decodesTo)
@@ -117,7 +124,7 @@ getAuthHeader token =
 makeGraphQLQuery : String -> SelectionSet decodesTo RootQuery -> (Result (Graphql.Http.Error decodesTo) decodesTo -> msg) -> Cmd msg
 makeGraphQLQuery authToken query decodesTo =
     query
-        |> Graphql.Http.queryRequest graphql_url
+        |> Graphql.Http.queryRequest endpoint
         {-
            queryRequest signature is of the form
                String -> SelectionSet decodesTo RootQuery -> Request decodesTo
@@ -130,7 +137,7 @@ makeGraphQLQuery authToken query decodesTo =
 makeGraphQLMutation : String -> SelectionSet decodesTo RootMutation -> (Result (Graphql.Http.Error decodesTo) decodesTo -> msg) -> Cmd msg
 makeGraphQLMutation authToken query decodesTo =
     query
-        |> Graphql.Http.mutationRequest graphql_url
+        |> Graphql.Http.mutationRequest endpoint
         {-
            mutationRequest signature is of the form
                String -> SelectionSet decodesTo RootMutation -> Request decodesTo
@@ -141,7 +148,7 @@ makeGraphQLMutation authToken query decodesTo =
 
 
 
--- Summary Document Helpers --
+-- Document Helpers --
 
 
 fetchUserDocumentsQuery : String -> SelectionSet (List Document) RootQuery
