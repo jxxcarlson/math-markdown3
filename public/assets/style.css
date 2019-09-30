@@ -85,6 +85,23 @@ h5 p {font-size: 12pt}
 
 .mm-strike-through {
 	 text-decoration: line-through;
+     position: relative;
+}
+
+.strikeout {
+  font-size: 4em;
+  position: relative;
+}
+
+.mm-strike-through::after {
+  border-bottom: 0.150em solid rgba(0, 0, 0, 0.1);
+  content: "";
+  left: 0;
+  line-height: 1em;
+  margin-top: calc(0.125em / 2 * -1);
+  position: absolute;
+  right: 0;
+  top: 50%;
 }
 
 .mm-table {
