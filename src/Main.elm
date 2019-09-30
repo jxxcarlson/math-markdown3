@@ -1,4 +1,4 @@
-module Main exposing (main)
+module Main exposing (main, parseSearchTerm)
 
 import Browser
 import Browser.Events
@@ -257,6 +257,53 @@ type alias ViewInfo =
     , vInset : Float
     , hExtra : Float
     }
+
+
+
+-- SEARCH --
+
+
+type SearchType
+    = TitleSearch
+    | KeywordSearch
+    | NoSearchTerm
+
+
+stringValueOfSearchType : String -> SearchType
+stringValueOfSearchType str =
+    case str of
+        "k" ->
+            KeywordSearch
+
+        _ ->
+            TitleSearch
+
+
+parseSearchTerm : String -> ( SearchType, String )
+parseSearchTerm str =
+    let
+        parts =
+            String.split ":" str
+
+        first =
+            List.head parts
+
+        second =
+            List.head (List.drop 1 parts)
+    in
+    case ( first, second ) of
+        ( Just typeString, Just searchTerm ) ->
+            ( stringValueOfSearchType typeString, searchTerm )
+
+        ( Just searchTerm, Nothing ) ->
+            ( TitleSearch, searchTerm )
+
+        ( _, _ ) ->
+            ( NoSearchTerm, "" )
+
+
+
+-- /SEARCH --
 
 
 vInset =
@@ -641,8 +688,19 @@ update msg model =
             let
                 authorIdentifier =
                     model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
+
+                cmd =
+                    case parseSearchTerm model.searchTerms of
+                        ( TitleSearch, searchTerm ) ->
+                            Request.documentsByAuthorAndTitle hasuraToken authorIdentifier searchTerm |> Cmd.map Req
+
+                        ( KeywordSearch, searchTerm ) ->
+                            Request.documentsByTag hasuraToken searchTerm |> Cmd.map Req
+
+                        ( NoSearchTerm, _ ) ->
+                            Cmd.none
             in
-            ( model, Request.documentsByAuthorAndTitle hasuraToken authorIdentifier model.searchTerms |> Cmd.map Req )
+            ( model, cmd )
 
         ClearSearchTerms ->
             ( { model | searchTerms = "" }, Cmd.none )
