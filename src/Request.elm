@@ -186,6 +186,15 @@ hasAuthor_ author =
     buildDocument_bool_exp (\args -> { args | authorIdentifier = Present <| equalToString author })
 
 
+
+--hasTag : String -> Document_bool_exp
+--hasTag tag =
+--    buildDocument_bool_exp (\args -> { args | tag = Present <| hasTag_ tags })
+--hasTag : String -> Document_bool_exp
+--hasTag tag =
+--    buildDocument_bool_exp (\args -> { args | tags = Present <| equalToString author })
+
+
 hasTitle_ : String -> Document_bool_exp
 hasTitle_ key =
     buildDocument_bool_exp (\args -> { args | title = Present <| likeString key })
@@ -204,6 +213,20 @@ isPublicAndTitle titleKey =
 equalToString : String -> String_comparison_exp
 equalToString str =
     buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str })
+
+
+
+-- XXXXX --
+--hasTag_ : List String -> String_comparison_exp
+
+
+hasTag_ strList foo =
+    buildString_comparison_exp foo
+
+
+
+-- (\args -> { args | contained_in_  = OptionalArgument.Present strList })
+-- XXXXX --
 
 
 likeString : String -> String_comparison_exp
