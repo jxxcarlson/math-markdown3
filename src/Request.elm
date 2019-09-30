@@ -77,36 +77,28 @@ endpoint =
 documentsByAuthor : String -> String -> Cmd RequestMsg
 documentsByAuthor authToken authorIdentifier =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (hasAuthor authorIdentifier))
+        (fetchDocumentsQuery (Present <| hasAuthor_ authorIdentifier))
         (RemoteData.fromResult >> GotUserDocuments)
-
-
-
---documentsByAuthorAndTitle : String -> String -> Cmd RequestMsg
---documentsByAuthorAndTitle authToken key =
---    makeGraphQLQuery authToken
---        (fetchDocumentsQuery (hasTitle ("%" ++ key ++ "%")))
---        (RemoteData.fromResult >> GotUserDocuments)
 
 
 documentsByAuthorAndTitle : String -> String -> String -> Cmd RequestMsg
 documentsByAuthorAndTitle authToken authorIdentifier titleKey =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")))
+        (fetchDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")))
         (RemoteData.fromResult >> GotUserDocuments)
 
 
 publicDocuments : String -> Cmd RequestMsg
 publicDocuments authToken =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery isPublic)
+        (fetchDocumentsQuery <| Present <| isPublic_)
         (RemoteData.fromResult >> GotPublicDocuments)
 
 
 publicDocumentsByTitle : String -> String -> Cmd RequestMsg
 publicDocumentsByTitle authToken titleKey =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (isPublicAndTitle ("%" ++ titleKey ++ "%")))
+        (fetchDocumentsQuery (Present <| isPublicAndTitle ("%" ++ titleKey ++ "%")))
         (RemoteData.fromResult >> GotPublicDocuments)
 
 
@@ -181,74 +173,42 @@ documentListOptionalArgument doc_bool_exp optionalArgs =
 
 
 
--- DOCUMENT BOOLEAN EXPRESSIONS --
-
-
-isPublic : OptionalArgument Document_bool_exp
-isPublic =
-    Present <| isPublic_
+-- BOOLEAN EXPRESSIONS --
 
 
 isPublic_ : Document_bool_exp
 isPublic_ =
-    buildDocument_bool_exp (\args -> { args | public = equalToBoolean True })
-
-
-hasAuthor : String -> OptionalArgument Document_bool_exp
-hasAuthor author =
-    Present <| hasAuthor_ author
+    buildDocument_bool_exp (\args -> { args | public = Present <| equalToBoolean_ True })
 
 
 hasAuthor_ : String -> Document_bool_exp
 hasAuthor_ author =
-    buildDocument_bool_exp (\args -> { args | authorIdentifier = equalToString author })
-
-
-hasTitle : String -> OptionalArgument Document_bool_exp
-hasTitle key =
-    Present <| hasTitle_ key
+    buildDocument_bool_exp (\args -> { args | authorIdentifier = Present <| equalToString author })
 
 
 hasTitle_ : String -> Document_bool_exp
 hasTitle_ key =
-    buildDocument_bool_exp (\args -> { args | title = likeString key })
+    buildDocument_bool_exp (\args -> { args | title = Present <| likeString key })
 
 
-hasAuthorAndTitle : String -> String -> OptionalArgument Document_bool_exp
+hasAuthorAndTitle : String -> String -> Document_bool_exp
 hasAuthorAndTitle author titleKey =
-    Present <| buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| hasAuthor_ author, Just <| hasTitle_ titleKey ] })
+    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| hasAuthor_ author, Just <| hasTitle_ titleKey ] })
 
 
-isPublicAndTitle : String -> OptionalArgument Document_bool_exp
+isPublicAndTitle : String -> Document_bool_exp
 isPublicAndTitle titleKey =
-    Present <| buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| isPublic_, Just <| hasTitle_ titleKey ] })
+    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| isPublic_, Just <| hasTitle_ titleKey ] })
 
 
-
---hasTag : String -> OptionalArgument Document_bool_exp
---hasTag key =
---    Present <| buildDocument_bool_exp (\args -> { args | tags = likeString key })
-
-
-equalToString : String -> OptionalArgument String_comparison_exp
+equalToString : String -> String_comparison_exp
 equalToString str =
-    Present <| buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str })
+    buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str })
 
 
-
---inStringList : String -> OptionalArgument String_comparison_exp
---inStringList str =
---    Present <| buildString_comparison_exp (\args -> { args | in_ = OptionalArgument.Present str })
-
-
-likeString : String -> OptionalArgument String_comparison_exp
+likeString : String -> String_comparison_exp
 likeString str =
-    Present <| buildString_comparison_exp (\args -> { args | ilike_ = OptionalArgument.Present str })
-
-
-equalToBoolean : Bool -> OptionalArgument Boolean_comparison_exp
-equalToBoolean bit =
-    Present <| equalToBoolean_ bit
+    buildString_comparison_exp (\args -> { args | ilike_ = OptionalArgument.Present str })
 
 
 equalToBoolean_ : Bool -> Boolean_comparison_exp
