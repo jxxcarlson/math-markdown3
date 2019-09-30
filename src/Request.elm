@@ -44,7 +44,6 @@ import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
-import Json.Encode as Encode
 import Prng.Uuid exposing (Uuid(..))
 import RemoteData exposing (RemoteData)
 
@@ -159,6 +158,7 @@ documentListOptionalArgument doc_bool_exp optionalArgs =
 
 
 -- (1) DOCUMENTS BY AUTHOR --
+--noinspection ALL
 
 
 fetchUserDocumentsQuery : String -> SelectionSet (List Document) RootQuery
@@ -168,6 +168,7 @@ fetchUserDocumentsQuery author =
 
 
 -- (2) PUBLIC DOCUMENTS --
+--noinspection ALL
 
 
 fetchPublicDocumentsQuery : SelectionSet (List Document) RootQuery
@@ -307,7 +308,7 @@ type GraphQLResponse decodesTo
 -- UPDATE DOCUMENT
 
 
-type alias DocumenToData =
+type alias DocumentToData =
     RemoteData (Graphql.Http.Error Document) Document
 
 
