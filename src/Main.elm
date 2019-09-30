@@ -225,11 +225,13 @@ type Msg
     | CreateDocument
     | SaveDocument
     | GetUserDocuments
+    | GetPublicDocuments
     | ArmForDelete
     | DeleteDocument
     | CancelDeleteDocument
     | UpdateDocumentText String
     | GotSearchTerms String
+    | DoSearch
     | SetCurrentDocument Document
     | SetDocumentPublic Bool
     | GotTagString String
@@ -550,6 +552,9 @@ update msg model =
                     , Request.documentsByAuthor hasuraToken user.username |> Cmd.map Req
                     )
 
+        GetPublicDocuments ->
+            ( model, Request.publicDocuments hasuraToken |> Cmd.map Req )
+
         UpdateDocumentText str ->
             case model.currentDocument of
                 Nothing ->
@@ -630,6 +635,9 @@ update msg model =
 
         GotSearchTerms str ->
             ( { model | searchTerms = str }, Cmd.none )
+
+        DoSearch ->
+            ( model, Request.documentsByTitle hasuraToken model.searchTerms |> Cmd.map Req )
 
         Req requestMsg ->
             case requestMsg of
@@ -889,7 +897,11 @@ userPageHeader viewInfo model =
 
 
 modeButtonStrip model =
-    row [ width (px 400), height (px 45), spacing 10, paddingXY 20 0 ] [ editTools model, readingModeButton model, userPageModeButton model ]
+    row [ width fill, height (px 45), spacing 10, paddingXY 20 0 ]
+        [ editTools model
+        , readingModeButton model
+        , userPageModeButton model
+        ]
 
 
 
@@ -1031,15 +1043,6 @@ inputUserName model =
         , text = model.username
         , placeholder = Nothing
         , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Username")
-        }
-
-
-inputSearchTerms model =
-    Input.text (Style.inputStyle 200)
-        { onChange = GotSearchTerms
-        , text = model.searchTerms
-        , placeholder = Nothing
-        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "")
         }
 
 
@@ -1503,8 +1506,54 @@ header viewInfo model rt =
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
         [ modeButtonStrip model
         , column [ width (px renderedDisplayWidth_), Font.size 12, Font.color Style.white, alignRight, moveUp 8 ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
-        , column [ width (px innerTOCWidth_) ] []
+        , column [ width (px innerTOCWidth_) ]
+            [ row [ spacing 10 ]
+                [ inputSearchTerms model
+                , searchButton
+                , allUserDocumentsButton
+                , publicDocumentsButton
+                ]
+            ]
         ]
+
+
+inputSearchTerms model =
+    Input.text (Style.inputStyle 200 ++ [ alignLeft ])
+        { onChange = GotSearchTerms
+        , text = model.searchTerms
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 14, width (px 0) ] (Element.text "")
+        }
+
+
+searchButton : Element Msg
+searchButton =
+    Input.button []
+        { onPress = Just DoSearch
+        , label =
+            el [ height (px 30), width (px 30), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 12 ]
+                (Element.text "S")
+        }
+
+
+allUserDocumentsButton : Element Msg
+allUserDocumentsButton =
+    Input.button []
+        { onPress = Just GetUserDocuments
+        , label =
+            el [ height (px 30), width (px 30), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 12 ]
+                (Element.text "M")
+        }
+
+
+publicDocumentsButton : Element Msg
+publicDocumentsButton =
+    Input.button []
+        { onPress = Just GetPublicDocuments
+        , label =
+            el [ height (px 30), width (px 30), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 12 ]
+                (Element.text "P")
+        }
 
 
 editTools : Model -> Element Msg

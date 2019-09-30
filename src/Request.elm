@@ -83,7 +83,7 @@ documentsByAuthor authToken authorIdentifier =
 documentsByTitle : String -> String -> Cmd RequestMsg
 documentsByTitle authToken key =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (titleLike key))
+        (fetchDocumentsQuery (hasTitle key))
         (RemoteData.fromResult >> GotUserDocuments)
 
 
@@ -178,14 +178,27 @@ hasAuthor author =
     Present <| buildDocument_bool_exp (\args -> { args | authorIdentifier = equalToString author })
 
 
-titleLike : String -> OptionalArgument Document_bool_exp
-titleLike key =
+hasTitle : String -> OptionalArgument Document_bool_exp
+hasTitle key =
     Present <| buildDocument_bool_exp (\args -> { args | title = likeString key })
+
+
+
+--
+--hasTag : String -> OptionalArgument Document_bool_exp
+--hasTag key =
+--    Present <| buildDocument_bool_exp (\args -> { args | tags = likeString key })
 
 
 equalToString : String -> OptionalArgument String_comparison_exp
 equalToString str =
     Present <| buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str })
+
+
+
+--inStringList : String -> OptionalArgument String_comparison_exp
+--inStringList str =
+--    Present <| buildString_comparison_exp (\args -> { args | in_ = OptionalArgument.Present str })
 
 
 likeString : String -> OptionalArgument String_comparison_exp
