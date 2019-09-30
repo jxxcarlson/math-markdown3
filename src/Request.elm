@@ -62,7 +62,7 @@ type RequestMsg
 
 
 
--- GENERAL --
+-- PARAMETERS --
 
 
 endpoint =
@@ -76,8 +76,12 @@ endpoint =
 documentsByAuthor : String -> String -> Cmd RequestMsg
 documentsByAuthor authToken authorIdentifier =
     makeGraphQLQuery authToken
-        (fetchUserDocumentsQuery authorIdentifier)
+        (fetchDocumentsQuery (hasAuthor authorIdentifier))
         (RemoteData.fromResult >> GotUserDocuments)
+
+
+
+-- fetchDocumentsQuery doc_bool_exp
 
 
 publicDocuments : String -> Cmd RequestMsg
@@ -103,7 +107,7 @@ deleteDocument authToken document =
 
 
 
--- MUTATION --
+-- HELPERS --
 
 
 makeUpdateDocumentMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
@@ -147,13 +151,27 @@ makeGraphQLMutation authToken query decodesTo =
         |> Graphql.Http.send decodesTo
 
 
+fetchDocumentsQuery : OptionalArgument Document_bool_exp -> SelectionSet (List Document) RootQuery
+fetchDocumentsQuery doc_bool_exp =
+    Query.document (documentListOptionalArgument doc_bool_exp) documentListSelection
 
--- Document Helpers --
+
+documentListOptionalArgument : OptionalArgument Document_bool_exp -> DocumentOptionalArguments -> DocumentOptionalArguments
+documentListOptionalArgument doc_bool_exp optionalArgs =
+    { optionalArgs | where_ = doc_bool_exp }
+
+
+
+-- (1) DOCUMENTS BY AUTHOR --
 
 
 fetchUserDocumentsQuery : String -> SelectionSet (List Document) RootQuery
 fetchUserDocumentsQuery author =
-    Query.document (documentListOptionalArgument author) documentListSelection
+    Query.document (documentListAuthorOptionalArgument author) documentListSelection
+
+
+
+-- (2) PUBLIC DOCUMENTS --
 
 
 fetchPublicDocumentsQuery : SelectionSet (List Document) RootQuery
@@ -161,8 +179,8 @@ fetchPublicDocumentsQuery =
     Query.document publicDocumentListOptionalArgument documentListSelection
 
 
-documentListOptionalArgument : String -> DocumentOptionalArguments -> DocumentOptionalArguments
-documentListOptionalArgument author optionalArgs =
+documentListAuthorOptionalArgument : String -> DocumentOptionalArguments -> DocumentOptionalArguments
+documentListAuthorOptionalArgument author optionalArgs =
     { optionalArgs | where_ = hasAuthor author }
 
 
