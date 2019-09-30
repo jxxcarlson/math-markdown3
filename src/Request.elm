@@ -170,7 +170,12 @@ documentListOptionalArgument doc_bool_exp optionalArgs =
 
 isPublic : OptionalArgument Document_bool_exp
 isPublic =
-    Present <| buildDocument_bool_exp (\args -> { args | public = equalToBoolean True })
+    Present <| isPublic_
+
+
+isPublic_ : Document_bool_exp
+isPublic_ =
+    buildDocument_bool_exp (\args -> { args | public = equalToBoolean True })
 
 
 hasAuthor : String -> OptionalArgument Document_bool_exp
@@ -193,12 +198,17 @@ hasTitle_ key =
     buildDocument_bool_exp (\args -> { args | title = likeString key })
 
 
+hasAuthorAndTitle : String -> String -> OptionalArgument Document_bool_exp
+hasAuthorAndTitle author titleKey =
+    Present <| buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| hasAuthor_ author, Just <| hasTitle_ titleKey ] })
 
---hasAuthorAndTitle : String -> String -> OptionalArgument Document_bool_exp
---hasAuthorAndTitle author titleKey =
---    Present <| buildDocument_bool_exp (\args -> { args | and_ = [ hasAuthor author, hasTitle titleKey ] })
---
---
+
+isPublicAndTitle : String -> OptionalArgument Document_bool_exp
+isPublicAndTitle titleKey =
+    Present <| buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| isPublic_, Just <| hasTitle_ titleKey ] })
+
+
+
 --hasTag : String -> OptionalArgument Document_bool_exp
 --hasTag key =
 --    Present <| buildDocument_bool_exp (\args -> { args | tags = likeString key })
@@ -221,8 +231,13 @@ likeString str =
 
 
 equalToBoolean : Bool -> OptionalArgument Boolean_comparison_exp
-equalToBoolean isPublic_ =
-    Present <| buildBoolean_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present isPublic_ })
+equalToBoolean bit =
+    Present <| equalToBoolean_ bit
+
+
+equalToBoolean_ : Bool -> Boolean_comparison_exp
+equalToBoolean_ bit =
+    buildBoolean_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present bit })
 
 
 
