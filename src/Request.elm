@@ -4,6 +4,7 @@ module Request exposing
     , deleteDocument
     , documentsByAuthor
     , documentsByAuthorAndTitle
+    , documentsByTag
     , insertDocument
     , publicDocuments
     , publicDocumentsByTitle
@@ -23,6 +24,7 @@ import Api.InputObject
         , buildDocument_bool_exp
         , buildDocument_insert_input
         , buildDocument_set_input
+        , buildJsonb_comparison_exp
         , buildString_comparison_exp
         , buildUuid_comparison_exp
         )
@@ -72,6 +74,13 @@ endpoint =
 
 
 -- CMD: Top level, exported --
+
+
+documentsByTag : String -> String -> Cmd RequestMsg
+documentsByTag authToken tag =
+    makeGraphQLQuery authToken
+        (fetchDocumentsQuery (Present <| hasTag tag))
+        (RemoteData.fromResult >> GotUserDocuments)
 
 
 documentsByAuthor : String -> String -> Cmd RequestMsg
@@ -186,15 +195,6 @@ hasAuthor_ author =
     buildDocument_bool_exp (\args -> { args | authorIdentifier = Present <| equalToString author })
 
 
-
---hasTag : String -> Document_bool_exp
---hasTag tag =
---    buildDocument_bool_exp (\args -> { args | tag = Present <| hasTag_ tags })
---hasTag : String -> Document_bool_exp
---hasTag tag =
---    buildDocument_bool_exp (\args -> { args | tags = Present <| equalToString author })
-
-
 hasTitle_ : String -> Document_bool_exp
 hasTitle_ key =
     buildDocument_bool_exp (\args -> { args | title = Present <| likeString key })
@@ -217,15 +217,19 @@ equalToString str =
 
 
 -- XXXXX --
---hasTag_ : List String -> String_comparison_exp
 
 
-hasTag_ strList foo =
-    buildString_comparison_exp foo
+hasTag : String -> Document_bool_exp
+hasTag key =
+    buildDocument_bool_exp (\args -> { args | tags = Present <| hasTag_ key })
+
+
+hasTag_ : String -> Api.InputObject.Jsonb_comparison_exp
+hasTag_ x =
+    buildJsonb_comparison_exp (\args -> { args | has_key_ = OptionalArgument.Present x })
 
 
 
--- (\args -> { args | contained_in_  = OptionalArgument.Present strList })
 -- XXXXX --
 
 
