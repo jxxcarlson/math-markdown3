@@ -903,9 +903,8 @@ userPageHeader viewInfo model =
             scale viewInfo.rhsFraction model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [--        modeButtonStrip model
-         --        , column [ width (px lhsWidth), Font.size 12, Font.color Style.white, alignRight, moveUp 8 ] []
-         --        , column [ width (px rhsWidth) ] []
+        [ modeButtonStrip model lhsWidth
+        , column [ width (px rhsWidth) ] []
         ]
 
 
@@ -1186,7 +1185,7 @@ editingDisplay viewInfo model =
             Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument)
     in
     column []
-        [ header viewInfo model rt
+        [ editingHeader viewInfo model rt
         , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, renderedSource viewInfo model rt ]
         , footer model
         ]
@@ -1203,7 +1202,7 @@ readingDisplay viewInfo model =
             Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument ++ footerText)
     in
     column [ paddingXY 0 0 ]
-        [ header viewInfo model rt
+        [ readingHeader viewInfo model rt
         , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, renderedSource viewInfo model rt ]
         , footer model
         ]
@@ -1507,32 +1506,88 @@ heading model =
 -- HEADER AND FOOTER --
 
 
-header : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
-header viewInfo model rt =
+readingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
+readingHeader viewInfo model rt =
     let
         lhWidth =
             scale (1 - viewInfo.renderedDisplayWidth - viewInfo.tocWidth) model.windowWidth
+
+        titleWidth =
+            scale (0.8 * viewInfo.renderedDisplayWidth) model.windowWidth
 
         rhWidth =
             scale (viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
         [ modeButtonStrip model lhWidth
-        , column [ width (px rhWidth) ]
-            [ row [ spacing 10, paddingXY 12 0, alignRight ] [ titleRow model rt, searchRow model ] ]
+        , row [ spacing 10 ]
+            [ titleRow titleWidth rt
+            , searchRow model
+            ]
+        ]
+
+
+
+--
+--viewInfoEditing =
+--    { toolStripWidth = 0.05
+--    , docListWidth = 0.15
+--    , editorWidth = 0.3
+--    , renderedDisplayWidth = 0.3
+--    , tocWidth = 0.2
+--    , vInset = vInset
+--    , hExtra = 0
+--    }
+--
+--
+--viewInfoReading =
+--    { toolStripWidth = 0.05
+--    , docListWidth = 0.25
+--    , editorWidth = 0
+--    , renderedDisplayWidth = 0.45
+--    , tocWidth = 0.25
+--    , vInset = vInset
+--    , hExtra = 0
+--    }
+
+
+editingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
+editingHeader viewInfo model rt =
+    let
+        lhWidth =
+            scale (viewInfo.toolStripWidth + viewInfo.docListWidth + viewInfo.editorWidth / 2) model.windowWidth
+
+        rh =
+            viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth
+
+        --        titleWidth =
+        --            scale (rh / 2) model.windowWidth
+        titleWidth =
+            scale (0.45 * rh) model.windowWidth
+
+        rhWidth =
+            scale (viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
+    in
+    row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
+        [ modeButtonStrip model lhWidth
+        , row [ spacing 10, width fill ]
+            [ titleRow titleWidth rt
+            , searchRow model
+            , el [ width (px 20) ] (Element.text "")
+            ]
         ]
 
 
 searchRow model =
-    row [ spacing 10 ] [ inputSearchTerms model, searchButton, publicDocumentsButton, clearSearchTermsButton ]
+    row [ spacing 10, alignRight ] [ inputSearchTerms model, searchButton, publicDocumentsButton, clearSearchTermsButton ]
 
 
-titleRow model rt =
-    row [ Font.size 12, Font.color Style.white, alignLeft, moveUp 8 ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
+titleRow titleWidth rt =
+    row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignLeft ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
 
 
 inputSearchTerms model =
-    Input.text (Style.inputStyle 200 ++ [ alignLeft ])
+    Input.text (Style.inputStyle 200)
         { onChange = GotSearchTerms
         , text = model.searchTerms
         , placeholder = Nothing
