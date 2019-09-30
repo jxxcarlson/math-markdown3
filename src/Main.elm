@@ -903,14 +903,14 @@ userPageHeader viewInfo model =
             scale viewInfo.rhsFraction model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [ modeButtonStrip model
-        , column [ width (px lhsWidth), Font.size 12, Font.color Style.white, alignRight, moveUp 8 ] []
-        , column [ width (px rhsWidth) ] []
+        [--        modeButtonStrip model
+         --        , column [ width (px lhsWidth), Font.size 12, Font.color Style.white, alignRight, moveUp 8 ] []
+         --        , column [ width (px rhsWidth) ] []
         ]
 
 
-modeButtonStrip model =
-    row [ width fill, height (px 45), spacing 10, paddingXY 20 0 ]
+modeButtonStrip model lhWidth =
+    row [ width (px lhWidth), height (px 45), spacing 10, paddingXY 20 0 ]
         [ editTools model
         , readingModeButton model
         , userPageModeButton model
@@ -1510,24 +1510,25 @@ heading model =
 header : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
 header viewInfo model rt =
     let
-        renderedDisplayWidth_ =
-            scale viewInfo.renderedDisplayWidth model.windowWidth
+        lhWidth =
+            scale (1 - viewInfo.renderedDisplayWidth - viewInfo.tocWidth) model.windowWidth
 
-        innerTOCWidth_ =
-            scale viewInfo.tocWidth model.windowWidth
+        rhWidth =
+            scale (viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [ modeButtonStrip model
-        , column [ width (px renderedDisplayWidth_), Font.size 12, Font.color Style.white, alignRight, moveUp 8 ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
-        , column [ width (px innerTOCWidth_) ]
-            [ row [ spacing 10 ]
-                [ inputSearchTerms model
-                , searchButton
-                , publicDocumentsButton
-                , clearSearchTermsButton
-                ]
-            ]
+        [ modeButtonStrip model lhWidth
+        , column [ width (px rhWidth) ]
+            [ row [ spacing 10, paddingXY 12 0, alignRight ] [ titleRow model rt, searchRow model ] ]
         ]
+
+
+searchRow model =
+    row [ spacing 10 ] [ inputSearchTerms model, searchButton, publicDocumentsButton, clearSearchTermsButton ]
+
+
+titleRow model rt =
+    row [ Font.size 12, Font.color Style.white, alignLeft, moveUp 8 ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
 
 
 inputSearchTerms model =
