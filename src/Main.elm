@@ -1444,7 +1444,7 @@ inputTags model =
         { onChange = GotTagString
         , text = model.tagString
         , placeholder = Nothing
-        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "Tags")
+        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "Keywords")
         , spellcheck = False
         }
 
