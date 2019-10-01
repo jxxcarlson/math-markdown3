@@ -3,8 +3,8 @@ module Request exposing
     , RequestMsg(..)
     , deleteDocument
     , documentsByAuthor
+    , documentsByAuthorAndTag
     , documentsByAuthorAndTitle
-    , documentsByTag
     , insertDocument
     , publicDocuments
     , publicDocumentsByTitle
@@ -76,10 +76,10 @@ endpoint =
 -- CMD: Top level, exported --
 
 
-documentsByTag : String -> String -> Cmd RequestMsg
-documentsByTag authToken tag =
+documentsByAuthorAndTag : String -> String -> String -> Cmd RequestMsg
+documentsByAuthorAndTag authToken author tag =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (Present <| hasTag tag))
+        (fetchDocumentsQuery (Present <| hasAuthorAndTag author tag))
         (RemoteData.fromResult >> GotUserDocuments)
 
 
@@ -203,6 +203,11 @@ hasTitle_ key =
 hasAuthorAndTitle : String -> String -> Document_bool_exp
 hasAuthorAndTitle author titleKey =
     buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| hasAuthor_ author, Just <| hasTitle_ titleKey ] })
+
+
+hasAuthorAndTag : String -> String -> Document_bool_exp
+hasAuthorAndTag author tag =
+    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| hasAuthor_ author, Just <| hasTag tag ] })
 
 
 isPublicAndTitle : String -> Document_bool_exp

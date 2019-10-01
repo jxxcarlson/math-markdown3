@@ -695,7 +695,7 @@ update msg model =
                             Request.documentsByAuthorAndTitle hasuraToken authorIdentifier searchTerm |> Cmd.map Req
 
                         ( KeywordSearch, searchTerm ) ->
-                            Request.documentsByTag hasuraToken searchTerm |> Cmd.map Req
+                            Request.documentsByAuthorAndTag hasuraToken authorIdentifier searchTerm |> Cmd.map Req
 
                         ( NoSearchTerm, _ ) ->
                             Cmd.none
