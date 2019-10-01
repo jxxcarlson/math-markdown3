@@ -633,6 +633,8 @@ update msg model =
                         | currentDocument = Just updatedDoc2
                         , documentList = Document.replaceInList updatedDoc2 model.documentList
                         , currentDocumentDirty = True
+
+                        -- , counter = model.counter + 1
                       }
                     , Cmd.none
                     )
