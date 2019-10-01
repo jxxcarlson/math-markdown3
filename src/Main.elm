@@ -498,7 +498,7 @@ update msg model =
                     , appMode = Reading
                     , visibilityOfTools = Invisible
                   }
-                , Request.documentsByAuthor hasuraToken model.username |> Cmd.map Req
+                , Request.documentsWithAuthor hasuraToken model.username |> Cmd.map Req
                 )
 
             else
@@ -597,11 +597,24 @@ update msg model =
                         | message = ( UserMessage, "Getting your documents" )
                         , visibilityOfTools = Invisible
                       }
-                    , Request.documentsByAuthor hasuraToken user.username |> Cmd.map Req
+                    , Request.documentsWithAuthor hasuraToken user.username |> Cmd.map Req
                     )
 
         GetPublicDocuments ->
-            ( model, Request.publicDocumentsByTitle hasuraToken model.searchTerms |> Cmd.map Req )
+            --( model, Request.publicDocumentsWithTitle hasuraToken model.searchTerms |> Cmd.map Req )
+            let
+                cmd =
+                    case parseSearchTerm model.searchTerms of
+                        ( TitleSearch, searchTerm ) ->
+                            Request.publicDocumentsWithTitle hasuraToken searchTerm |> Cmd.map Req
+
+                        ( KeywordSearch, searchTerm ) ->
+                            Request.publicDocumentsWithTag hasuraToken searchTerm |> Cmd.map Req
+
+                        ( NoSearchTerm, _ ) ->
+                            Cmd.none
+            in
+            ( model, cmd )
 
         UpdateDocumentText str ->
             case model.currentDocument of
@@ -692,10 +705,10 @@ update msg model =
                 cmd =
                     case parseSearchTerm model.searchTerms of
                         ( TitleSearch, searchTerm ) ->
-                            Request.documentsByAuthorAndTitle hasuraToken authorIdentifier searchTerm |> Cmd.map Req
+                            Request.documentsWithAuthorAndTitle hasuraToken authorIdentifier searchTerm |> Cmd.map Req
 
                         ( KeywordSearch, searchTerm ) ->
-                            Request.documentsByAuthorAndTag hasuraToken authorIdentifier searchTerm |> Cmd.map Req
+                            Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm |> Cmd.map Req
 
                         ( NoSearchTerm, _ ) ->
                             Cmd.none
@@ -1637,7 +1650,7 @@ editingHeader viewInfo model rt =
 
 
 searchRow model =
-    row [ spacing 10, alignRight ] [ inputSearchTerms model, searchButton, publicDocumentsButton, clearSearchTermsButton ]
+    row [ spacing 10, alignRight ] [ inputSearchTerms model, searchButton model, publicDocumentsButton model, clearSearchTermsButton ]
 
 
 titleRow titleWidth rt =
@@ -1653,23 +1666,38 @@ inputSearchTerms model =
         }
 
 
-searchButton : Element Msg
-searchButton =
+
+--publicDocumentsButton : Model -> Element Msg
+--publicDocumentsButton model =
+--    hideIf (model.currentUser == Nothing) (publicDocumentsButton_ model)
+
+
+publicDocumentsButton : Model -> Element Msg
+publicDocumentsButton model =
+    let
+        labelText =
+            showOne (model.currentUser == Nothing) "Search" "Public"
+    in
+    Input.button []
+        { onPress = Just GetPublicDocuments
+        , label =
+            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2 ] (Element.text labelText))
+        }
+
+
+searchButton : Model -> Element Msg
+searchButton model =
+    hideIf (model.currentUser == Nothing) searchButton_
+
+
+searchButton_ : Element Msg
+searchButton_ =
     Input.button []
         { onPress = Just DoSearch
         , label =
             el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
                 (el [ moveDown 2 ] (Element.text "Search"))
-        }
-
-
-publicDocumentsButton : Element Msg
-publicDocumentsButton =
-    Input.button []
-        { onPress = Just GetPublicDocuments
-        , label =
-            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2 ] (Element.text "Public"))
         }
 
 

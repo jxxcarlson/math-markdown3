@@ -2,12 +2,13 @@ module Request exposing
     ( GraphQLResponse(..)
     , RequestMsg(..)
     , deleteDocument
-    , documentsByAuthor
-    , documentsByAuthorAndTag
-    , documentsByAuthorAndTitle
+    , documentsWithAuthor
+    , documentsWithAuthorAndTag
+    , documentsWithAuthorAndTitle
     , insertDocument
     , publicDocuments
-    , publicDocumentsByTitle
+    , publicDocumentsWithTag
+    , publicDocumentsWithTitle
     , updateDocument
     )
 
@@ -76,22 +77,29 @@ endpoint =
 -- CMD: Top level, exported --
 
 
-documentsByAuthorAndTag : String -> String -> String -> Cmd RequestMsg
-documentsByAuthorAndTag authToken author tag =
+documentsWithAuthorAndTag : String -> String -> String -> Cmd RequestMsg
+documentsWithAuthorAndTag authToken author tag =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| hasAuthorAndTag author tag))
         (RemoteData.fromResult >> GotUserDocuments)
 
 
-documentsByAuthor : String -> String -> Cmd RequestMsg
-documentsByAuthor authToken authorIdentifier =
+publicDocumentsWithTag : String -> String -> Cmd RequestMsg
+publicDocumentsWithTag authToken tag =
+    makeGraphQLQuery authToken
+        (fetchDocumentsQuery (Present <| hasTagAndIsPublic tag))
+        (RemoteData.fromResult >> GotUserDocuments)
+
+
+documentsWithAuthor : String -> String -> Cmd RequestMsg
+documentsWithAuthor authToken authorIdentifier =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| hasAuthor_ authorIdentifier))
         (RemoteData.fromResult >> GotUserDocuments)
 
 
-documentsByAuthorAndTitle : String -> String -> String -> Cmd RequestMsg
-documentsByAuthorAndTitle authToken authorIdentifier titleKey =
+documentsWithAuthorAndTitle : String -> String -> String -> Cmd RequestMsg
+documentsWithAuthorAndTitle authToken authorIdentifier titleKey =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")))
         (RemoteData.fromResult >> GotUserDocuments)
@@ -104,8 +112,8 @@ publicDocuments authToken =
         (RemoteData.fromResult >> GotPublicDocuments)
 
 
-publicDocumentsByTitle : String -> String -> Cmd RequestMsg
-publicDocumentsByTitle authToken titleKey =
+publicDocumentsWithTitle : String -> String -> Cmd RequestMsg
+publicDocumentsWithTitle authToken titleKey =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| isPublicAndTitle ("%" ++ titleKey ++ "%")))
         (RemoteData.fromResult >> GotPublicDocuments)
@@ -203,6 +211,11 @@ hasTitle_ key =
 hasAuthorAndTitle : String -> String -> Document_bool_exp
 hasAuthorAndTitle author titleKey =
     buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| hasAuthor_ author, Just <| hasTitle_ titleKey ] })
+
+
+hasTagAndIsPublic : String -> Document_bool_exp
+hasTagAndIsPublic tag =
+    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| isPublic_, Just <| hasTag tag ] })
 
 
 hasAuthorAndTag : String -> String -> Document_bool_exp
