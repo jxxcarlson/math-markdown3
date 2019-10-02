@@ -11,6 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
 import Html exposing (..)
+import Keyboard exposing (Key(..))
+import Keyboard.Arrows
 import Markdown.Elm
 import Markdown.Option exposing (Option(..))
 import Prng.Uuid as Uuid
@@ -65,6 +67,7 @@ type alias Model =
     , visibilityOfTools : Visibility
     , appMode : AppMode
     , message : Message
+    , pressedKeys : List Key
 
     -- SYSTEM
     , currentSeed : Seed
@@ -157,6 +160,7 @@ init flags =
             , visibilityOfTools = Invisible
             , appMode = UserMode SignInState
             , message = ( UserMessage, "Starting ..." )
+            , pressedKeys = []
 
             -- SYSTEM
             , currentSeed = newSeed -- initialSeed flags.seed flags.randInts
@@ -211,6 +215,7 @@ type Msg
     | SetToolPanelState Visibility
     | SetAppMode AppMode
     | WindowSize Int Int
+    | KeyMsg Keyboard.Msg
       -- User
     | GotUserName String
     | GotPassword String
@@ -356,6 +361,7 @@ subscriptions model =
     Sub.batch
         [ Time.every 1000 Tick
         , Browser.Events.onResize WindowSize
+        , Sub.map KeyMsg Keyboard.subscriptions
         ]
 
 
@@ -466,6 +472,16 @@ update msg model =
 
         WindowSize width height ->
             ( { model | windowWidth = width, windowHeight = height }, Cmd.none )
+
+        KeyMsg keyMsg ->
+            let
+                ( pressedKeys, maybeKeyChange ) =
+                    Keyboard.updateWithKeyChange
+                        (Keyboard.oneOf [ Keyboard.characterKeyOriginal, Keyboard.modifierKey, Keyboard.whitespaceKey ])
+                        keyMsg
+                        model.pressedKeys
+            in
+            ( { model | pressedKeys = pressedKeys }, Cmd.none )
 
         AdjustTimeZone newZone ->
             ( { model | zone = newZone }
