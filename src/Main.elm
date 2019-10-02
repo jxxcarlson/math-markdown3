@@ -821,6 +821,9 @@ handleKey model key =
         Character "s" ->
             saveDocument model
 
+        Character "t" ->
+            toggleKeyboardTools model
+
         Character "u" ->
             case model.currentUser of
                 Nothing ->
@@ -913,6 +916,20 @@ setUserMode model s =
 
         Just _ ->
             ( { model | appMode = UserMode s }, Cmd.none )
+
+
+toggleKeyboardTools : Model -> ( Model, Cmd Msg )
+toggleKeyboardTools model =
+    if model.appMode /= Editing then
+        ( model, Cmd.none )
+
+    else
+        case model.visibilityOfTools of
+            Visible ->
+                ( { model | visibilityOfTools = Invisible }, Cmd.none )
+
+            Invisible ->
+                ( { model | visibilityOfTools = Visible }, Cmd.none )
 
 
 getTagString : Maybe Document -> String
