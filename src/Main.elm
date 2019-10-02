@@ -633,8 +633,7 @@ update msg model =
                         | currentDocument = Just updatedDoc2
                         , documentList = Document.replaceInList updatedDoc2 model.documentList
                         , currentDocumentDirty = True
-
-                        -- , counter = model.counter + 1
+                        , counter = model.counter + 1
                       }
                     , Cmd.none
                     )
@@ -1306,7 +1305,8 @@ editor viewInfo model =
     in
     column []
         [ Element.Keyed.el []
-            ( String.fromInt model.counter
+            -- XXX, below∫
+            ( String.fromInt 0
             , Input.multiline (Style.textInputStyle w_ h_)
                 { onChange = UpdateDocumentText
                 , text = Document.getContent model.currentDocument
