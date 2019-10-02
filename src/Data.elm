@@ -28,13 +28,19 @@ $$
 """
 
 
+image =
+    """
+  ![Hummingbird](http://noteimages.s3.amazonaws.com/jxxcarlson/hummingbird.jpg)
+         Hummingbird (Meditation)
+"""
+
+
 rhsUserText =
     """
-## Welcome!
 
-![Hummingbird](http://noteimages.s3.amazonaws.com/jxxcarlson/hummingbird.jpg)
-Hummingbird (Meditation)
+# Welcome!
 
+## About this app
 
 This little app  demonstrates what one can do with the pure Elm markdown
 library [jxxcarlson/elm-markdown](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/).
@@ -46,10 +52,16 @@ $$
 
 Formulas written in TeX/LaTeX are rendered using [MathJax](https://mathjax.org)
 
-We are growing this app into a content management system which
+We are growing the app into a content management system which
 can be useful both for personal notes and classroom materials. Lecture note,
 problem sets, and the like.  We also plan to add live editing and rendering
 of LaTeX documents (MiniLaTeX flavor).
 
 For more information, click the **Read** tab and take a look at the article *A Pure Elm Markdown Parser*.
+
+## Hints
+
+blah blah
+
+##  News
 """

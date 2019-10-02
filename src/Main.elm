@@ -288,7 +288,7 @@ parseSearchTerm : String -> ( SearchType, String )
 parseSearchTerm str =
     let
         parts =
-            String.split ":" str
+            String.split "/" str
 
         first =
             List.head parts
@@ -297,7 +297,7 @@ parseSearchTerm str =
             List.head (List.drop 1 parts)
     in
     case ( first, second ) of
-        ( Just typeString, Just searchTerm ) ->
+        ( Just searchTerm, Just typeString ) ->
             ( stringValueOfSearchType typeString, searchTerm )
 
         ( Just searchTerm, Nothing ) ->
@@ -998,8 +998,8 @@ type alias ViewInfoUserPage =
 
 
 viewInfoUserPage =
-    { lhsFraction = 0.7
-    , rhsFraction = 0.3
+    { lhsFraction = 0.5
+    , rhsFraction = 0.5
     , vInset = vInset
     }
 
@@ -1041,17 +1041,25 @@ lhsViewInfoPage viewInfo model =
 
 rhsViewInfoPage viewInfo model =
     let
-        w =
-            scale viewInfo.rhsFraction model.windowWidth
+        w1 =
+            scale (0.7 * viewInfo.rhsFraction) model.windowWidth
+
+        w2 =
+            scale (0.3 * viewInfo.rhsFraction) model.windowWidth
 
         h =
             translate -viewInfo.vInset model.windowHeight
 
+        rt : { title : Html msg, toc : Html msg, document : Html msg }
         rt =
-            Markdown.Elm.toHtml ExtendedMath Data.rhsUserText
+            Markdown.Elm.toHtmlWithExternaTOC ExtendedMath Data.rhsUserText
     in
-    column [ width (px w), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.9), Font.color (Style.makeGrey 0.1) ]
-        [ rt |> Element.html ]
+    row []
+        [ column [ width (px w1), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.9), Font.color (Style.makeGrey 0.1) ]
+            [ rt.title |> Element.html, rt.document |> Element.html ]
+        , column [ width (px w2), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.8), Font.color (Style.makeGrey 0.1) ]
+            [ rt.toc |> Element.html ]
+        ]
 
 
 userPageFooter : Model -> Element Msg
