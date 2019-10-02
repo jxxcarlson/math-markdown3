@@ -866,7 +866,7 @@ headKey keyList =
 
 
 clearSearchTerms model =
-    ( { model | searchTerms = "" }, Cmd.none )
+    ( { model | searchTerms = "" }, focusSearchBox )
 
 
 inputSearchTerms model =
