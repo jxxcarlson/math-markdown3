@@ -476,10 +476,11 @@ update msg model =
         KeyMsg keyMsg ->
             let
                 ( pressedKeys, maybeKeyChange ) =
-                    Keyboard.updateWithKeyChange
-                        (Keyboard.oneOf [ Keyboard.characterKeyOriginal, Keyboard.modifierKey, Keyboard.whitespaceKey ])
-                        keyMsg
-                        model.pressedKeys
+                    Debug.log "KEYS" <|
+                        Keyboard.updateWithKeyChange
+                            (Keyboard.oneOf [ Keyboard.characterKeyOriginal, Keyboard.modifierKey, Keyboard.whitespaceKey ])
+                            keyMsg
+                            model.pressedKeys
             in
             ( { model | pressedKeys = pressedKeys }, Cmd.none )
 
@@ -828,6 +829,43 @@ update msg model =
 
                 InsertDocumentResponse _ ->
                     ( { model | message = ( UserMessage, "New document saved" ) }, Cmd.none )
+
+
+
+-- KEYBOARD --
+
+
+gateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
+gateway model ( pressedKeys, maybeKeyChange ) =
+    if List.member Control model.pressedKeys then
+        handleKey { model | pressedKeys = [] } (headKey pressedKeys)
+        --    else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
+        --        let
+        --            newModel =
+        --                { model | pressedKeys = [] }
+        --        in
+        --            Search.doSearch newModel
+
+    else
+        ( { model | pressedKeys = pressedKeys }, Cmd.none )
+
+
+handleKey : Model -> Key -> ( Model, Cmd Msg )
+handleKey model key =
+    case key of
+        Character "r" ->
+            ( model, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )
+
+
+headKey : List Key -> Key
+headKey keyList =
+    keyList
+        |> List.filter (\item -> item /= Control && item /= Character "^")
+        |> List.head
+        |> Maybe.withDefault F20
 
 
 
