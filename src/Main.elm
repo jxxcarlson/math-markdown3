@@ -699,7 +699,7 @@ update msg model =
             ( model, cmd )
 
         ClearSearchTerms ->
-            ( { model | searchTerms = "" }, Cmd.none )
+            clearSearchTerms model
 
         Req requestMsg ->
             case requestMsg of
@@ -825,6 +825,9 @@ handleKey model key =
         Character "f" ->
             ( model, focusSearchBox )
 
+        Character "k" ->
+            clearSearchTerms model
+
         Character "n" ->
             makeNewDocument model
 
@@ -860,6 +863,10 @@ headKey keyList =
 
 -- UPDATE HELPERS --
 -- SEARCH
+
+
+clearSearchTerms model =
+    ( { model | searchTerms = "" }, Cmd.none )
 
 
 inputSearchTerms model =
