@@ -1567,12 +1567,18 @@ tocEntry currentDocument_ document =
 
 heading : Model -> Element Msg
 heading model =
+    let
+        n =
+            List.length model.documentList
+                |> String.fromInt
+                |> (\x -> " (" ++ x ++ ")")
+    in
     case model.currentUser of
         Nothing ->
-            el [ Font.size 16, Font.bold ] (Element.text "Public documents")
+            el [ Font.size 16, Font.bold ] (Element.text ("Public documents" ++ n))
 
         Just _ ->
-            el [ Font.size 16, Font.bold ] (Element.text "Documents")
+            el [ Font.size 16, Font.bold ] (Element.text ("Documents" ++ n))
 
 
 
