@@ -998,8 +998,8 @@ type alias ViewInfoUserPage =
 
 
 viewInfoUserPage =
-    { lhsFraction = 0.5
-    , rhsFraction = 0.5
+    { lhsFraction = 0.45
+    , rhsFraction = 0.55
     , vInset = vInset
     }
 
@@ -1057,7 +1057,7 @@ rhsViewInfoPage viewInfo model =
     row []
         [ column [ width (px w1), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.9), Font.color (Style.makeGrey 0.1) ]
             [ rt.title |> Element.html, rt.document |> Element.html ]
-        , column [ width (px w2), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.8), Font.color (Style.makeGrey 0.1) ]
+        , column [ width (px w2), height (px h), padding 12, scrollbarY, Background.color (Style.makeGrey 0.8), Font.color (Style.makeGrey 0.1) ]
             [ rt.toc |> Element.html ]
         ]
 
@@ -1099,14 +1099,11 @@ modeButtonStrip model lhWidth =
 
 signInUpView model =
     column Style.signInColumn
-        [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Welcome!")
+        [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Sign in/up/out")
         , column [ spacing 8, paddingXY 0 18 ]
-            [ el [ Font.size 14 ] (Element.text "Explore public documents without signing in — Click on 'Read', above left.")
-            , el [ Font.size 14 ] (Element.text "Edits are saved only for your documents and only if you are signed in")
-            , el [ Font.size 14 ] (Element.text "User sign in/sign up coming soon.")
-            , el [ Font.size 14 ] (Element.text "")
-            , el [ Font.size 14 ] (Element.text "This project is a work-in-progress.")
-            , el [ Font.size 14 ] (Element.text "Comments to jxxcarlson on the Elm Slack or to jxxcarlson at gmail")
+            [ el [ Font.size 14 ] (Element.text "This project is a work-in-progress.")
+            , el [ Font.size 14 ] (Element.text "Comments to jxxcarlson on the Elm Slack")
+            , el [ Font.size 14 ] (Element.text "or to jxxcarlson at gmail")
             ]
         , outerPasswordPanel model
         ]
