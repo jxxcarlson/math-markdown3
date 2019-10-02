@@ -853,8 +853,11 @@ gateway model ( pressedKeys, maybeKeyChange ) =
 handleKey : Model -> Key -> ( Model, Cmd Msg )
 handleKey model key =
     case key of
+        Character "e" ->
+            setModeToEditing model
+
         Character "r" ->
-            ( model, Cmd.none )
+            setModeToReading model
 
         _ ->
             ( model, Cmd.none )
@@ -870,6 +873,16 @@ headKey keyList =
 
 
 -- UPDATE HELPERS --
+
+
+setModeToReading : Model -> ( Model, Cmd Msg )
+setModeToReading model =
+    ( { model | appMode = Reading, visibilityOfTools = Invisible }, Cmd.none )
+
+
+setModeToEditing : Model -> ( Model, Cmd Msg )
+setModeToEditing model =
+    ( { model | appMode = Editing, visibilityOfTools = Invisible }, Cmd.none )
 
 
 getTagString : Maybe Document -> String
@@ -920,10 +933,10 @@ view : Model -> Html Msg
 view model =
     case model.appMode of
         Reading ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (readingDisplay viewInfoReading model)
+            setModeToReading model
 
         Editing ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (editingDisplay viewInfoEditing model)
+            setModeToEditing model
 
         UserMode _ ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (userPageDisplay viewInfoUserPage model)
