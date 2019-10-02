@@ -482,7 +482,7 @@ update msg model =
                         keyMsg
                         model.pressedKeys
             in
-            keybaordGateway model ( pressedKeys, maybeKeyChange )
+            keyboardGateway model ( pressedKeys, maybeKeyChange )
 
         SetFocusOnSearchBox result ->
             ( model, Cmd.none )
@@ -800,8 +800,8 @@ update msg model =
 -- KEYBOARD --
 
 
-keybaordGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
-keybaordGateway model ( pressedKeys, maybeKeyChange ) =
+keyboardGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
+keyboardGateway model ( pressedKeys, maybeKeyChange ) =
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = [] } (headKey pressedKeys)
 
@@ -938,7 +938,7 @@ doSearch model =
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
     in
-    ( model, cmd )
+    ( { model | focusedElement = NoFocus }, cmd )
 
 
 
