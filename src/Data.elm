@@ -88,4 +88,11 @@ To float on the right use `![TITLE::right](IMAGE LOCATION)`
 The plain vanilla version, `![TITLE](IMAGE LOCATION)` scales the image to 100%.
 
 For a smaller centered image, use `![TITLE::center](IMAGE LOCATION)`
+
+## Plans
+
+### LaTeX
+
+Add MiniLaTeX, as subset of LaTeX, as a document format.  You will be able to convert Markdown documents, along with their mathematical formulas, to MiniLaTex.  You will also be able to export MiniLatTeX documets.
+
 """
