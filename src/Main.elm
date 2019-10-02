@@ -43,32 +43,11 @@ main =
 -- MODEL --
 
 
-hasuraToken : String
-hasuraToken =
-    "GOc97wA7CCMm31H4UJHa-4pqdVoLf3l6gAwzczdHC"
-
-
-type alias Message =
-    ( MessageType, String )
-
-
-type MessageType
-    = SignInMessage
-    | UserMessage
-    | ErrorMessage
-    | DebugMessage
-
-
-type FocusedElement
-    = FocusOnSearchBox
-    | NoFocus
-
-
 type alias Model =
     { seed : Int
 
     -- UI
-    , option : Option
+    , option : Markdown.Option.Option
     , windowWidth : Int
     , windowHeight : Int
     , visibilityOfTools : Visibility
@@ -100,7 +79,34 @@ type alias Model =
     , secondsWhileDirty : Int
     , tagString : String
     , searchTerms : String
+    , searchMode : SearchMode
     }
+
+
+hasuraToken : String
+hasuraToken =
+    "GOc97wA7CCMm31H4UJHa-4pqdVoLf3l6gAwzczdHC"
+
+
+type SearchMode
+    = UserSearch
+    | PublicSearch
+
+
+type alias Message =
+    ( MessageType, String )
+
+
+type MessageType
+    = SignInMessage
+    | UserMessage
+    | ErrorMessage
+    | DebugMessage
+
+
+type FocusedElement
+    = FocusOnSearchBox
+    | NoFocus
 
 
 type AppMode
@@ -158,6 +164,7 @@ init flags =
         ( newUuid, newSeed ) =
             step Uuid.generator (initialSeed flags.seed flags.randInts)
 
+        model : Model
         model =
             { seed = 0
 
@@ -194,6 +201,7 @@ init flags =
             , secondsWhileDirty = 0
             , tagString = ""
             , searchTerms = ""
+            , searchMode = PublicSearch
             }
     in
     ( model
@@ -240,7 +248,9 @@ type Msg
     | CreateDocument
     | SaveDocument
     | GetUserDocuments
+    | AllDocuments
     | GetPublicDocuments
+    | GetHelpDocs
     | ClearSearchTerms
     | ArmForDelete
     | DeleteDocument
@@ -248,6 +258,7 @@ type Msg
     | UpdateDocumentText String
     | GotSearchTerms String
     | DoSearch
+    | ToggleSearchMode
     | SetCurrentDocument Document
     | SetDocumentPublic Bool
     | GotTagString String
@@ -272,49 +283,6 @@ type alias ViewInfo =
     , vInset : Float
     , hExtra : Float
     }
-
-
-
--- SEARCH --
-
-
-type SearchType
-    = TitleSearch
-    | KeywordSearch
-    | NoSearchTerm
-
-
-stringValueOfSearchType : String -> SearchType
-stringValueOfSearchType str =
-    case str of
-        "k" ->
-            KeywordSearch
-
-        _ ->
-            TitleSearch
-
-
-parseSearchTerm : String -> ( SearchType, String )
-parseSearchTerm str =
-    let
-        parts =
-            String.split "/" str
-
-        first =
-            List.head parts
-
-        second =
-            List.head (List.drop 1 parts)
-    in
-    case ( first, second ) of
-        ( Just searchTerm, Just typeString ) ->
-            ( stringValueOfSearchType typeString, searchTerm )
-
-        ( Just searchTerm, Nothing ) ->
-            ( TitleSearch, searchTerm )
-
-        ( _, _ ) ->
-            ( NoSearchTerm, "" )
 
 
 vInset =
@@ -517,6 +485,7 @@ update msg model =
                     | currentUser = Just (User.dummy model.username)
                     , appMode = Reading
                     , visibilityOfTools = Invisible
+                    , searchMode = UserSearch
                   }
                 , Request.documentsWithAuthor hasuraToken model.username |> Cmd.map Req
                 )
@@ -570,33 +539,16 @@ update msg model =
                             )
 
         GetUserDocuments ->
-            case model.currentUser of
-                Nothing ->
-                    ( { model | message = ( UserMessage, "Can't get documents if user is not signed in" ) }, Cmd.none )
+            searchForUsersDocuments model
 
-                Just user ->
-                    ( { model
-                        | message = ( UserMessage, "Getting your documents" )
-                        , visibilityOfTools = Invisible
-                      }
-                    , Request.documentsWithAuthor hasuraToken user.username |> Cmd.map Req
-                    )
+        AllDocuments ->
+            getAllDocuments model
 
         GetPublicDocuments ->
-            --( model, Request.publicDocumentsWithTitle hasuraToken model.searchTerms |> Cmd.map Req )
-            let
-                cmd =
-                    case parseSearchTerm model.searchTerms of
-                        ( TitleSearch, searchTerm ) ->
-                            Request.publicDocumentsWithTitle hasuraToken searchTerm |> Cmd.map Req
+            searchForPublicDocuments model
 
-                        ( KeywordSearch, searchTerm ) ->
-                            Request.publicDocumentsWithTag hasuraToken searchTerm |> Cmd.map Req
-
-                        ( NoSearchTerm, _ ) ->
-                            Cmd.none
-            in
-            ( model, cmd )
+        GetHelpDocs ->
+            getHelpDocs model
 
         UpdateDocumentText str ->
             case model.currentDocument of
@@ -681,22 +633,10 @@ update msg model =
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
 
         DoSearch ->
-            let
-                authorIdentifier =
-                    model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
+            doSearch model
 
-                cmd =
-                    case parseSearchTerm model.searchTerms of
-                        ( TitleSearch, searchTerm ) ->
-                            Request.documentsWithAuthorAndTitle hasuraToken authorIdentifier searchTerm |> Cmd.map Req
-
-                        ( KeywordSearch, searchTerm ) ->
-                            Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm |> Cmd.map Req
-
-                        ( NoSearchTerm, _ ) ->
-                            Cmd.none
-            in
-            ( model, cmd )
+        ToggleSearchMode ->
+            toggleSearchMode model
 
         ClearSearchTerms ->
             clearSearchTerms model
@@ -819,11 +759,17 @@ keyboardGateway model ( pressedKeys, maybeKeyChange ) =
 handleKey : Model -> Key -> ( Model, Cmd Msg )
 handleKey model key =
     case key of
+        Character "a" ->
+            getAllDocuments model
+
         Character "e" ->
             setModeToEditing model
 
         Character "f" ->
             ( model, focusSearchBox )
+
+        Character "h" ->
+            getHelpDocs model
 
         Character "k" ->
             clearSearchTerms model
@@ -865,6 +811,60 @@ headKey keyList =
 -- SEARCH
 
 
+type SearchType
+    = TitleSearch
+    | KeywordSearch
+    | NoSearchTerm
+
+
+stringValueOfSearchType : String -> SearchType
+stringValueOfSearchType str =
+    case str of
+        "k" ->
+            KeywordSearch
+
+        _ ->
+            TitleSearch
+
+
+parseSearchTerm : String -> ( SearchType, String )
+parseSearchTerm str =
+    let
+        parts =
+            String.split "/" str
+
+        first =
+            List.head parts
+
+        second =
+            List.head (List.drop 1 parts)
+    in
+    case ( first, second ) of
+        ( Just searchTerm, Just typeString ) ->
+            ( stringValueOfSearchType typeString, searchTerm )
+
+        ( Just searchTerm, Nothing ) ->
+            ( TitleSearch, searchTerm )
+
+        ( _, _ ) ->
+            ( NoSearchTerm, "" )
+
+
+toggleSearchMode : Model -> ( Model, Cmd Msg )
+toggleSearchMode model =
+    case model.searchMode of
+        UserSearch ->
+            ( { model | searchMode = PublicSearch }, Cmd.none )
+
+        PublicSearch ->
+            case model.currentUser of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just _ ->
+                    ( { model | searchMode = UserSearch }, Cmd.none )
+
+
 clearSearchTerms model =
     ( { model | searchTerms = "" }, focusSearchBox )
 
@@ -878,38 +878,42 @@ inputSearchTerms model =
         }
 
 
-
---publicDocumentsButton : Model -> Element Msg
---publicDocumentsButton model =
---    hideIf (model.currentUser == Nothing) (publicDocumentsButton_ model)
-
-
-publicDocumentsButton : Model -> Element Msg
-publicDocumentsButton model =
+searchButton : Model -> Element Msg
+searchButton model =
     let
-        labelText =
-            showOne (model.currentUser == Nothing) "Search" "Public"
+        title =
+            case model.searchMode of
+                UserSearch ->
+                    "My docs"
+
+                PublicSearch ->
+                    "Public docs"
     in
     Input.button []
-        { onPress = Just GetPublicDocuments
+        { onPress = Just ToggleSearchMode
         , label =
-            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2 ] (Element.text labelText))
+            el [ height (px 30), width (px 75), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2, centerX ] (Element.text title))
         }
 
 
-searchButton : Model -> Element Msg
-searchButton model =
-    hideIf (model.currentUser == Nothing) searchButton_
-
-
-searchButton_ : Element Msg
-searchButton_ =
+allDocumentsButton : Element Msg
+allDocumentsButton =
     Input.button []
-        { onPress = Just DoSearch
+        { onPress = Just AllDocuments
         , label =
-            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2 ] (Element.text "Search"))
+            el [ height (px 30), width (px 40), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2, centerX ] (Element.text "All"))
+        }
+
+
+helpDocsButton : Element Msg
+helpDocsButton =
+    Input.button []
+        { onPress = Just GetHelpDocs
+        , label =
+            el [ height (px 30), width (px 40), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2, centerX ] (Element.text "Help"))
         }
 
 
@@ -928,8 +932,44 @@ focusSearchBox =
     Task.attempt SetFocusOnSearchBox (Browser.Dom.focus "search-box")
 
 
+getAllDocuments : Model -> ( Model, Cmd Msg )
+getAllDocuments model =
+    let
+        cmd =
+            case model.searchMode of
+                UserSearch ->
+                    case model.currentUser of
+                        Nothing ->
+                            Cmd.none
+
+                        Just user ->
+                            Request.documentsWithAuthorAndTitle hasuraToken user.username "" |> Cmd.map Req
+
+                PublicSearch ->
+                    Request.publicDocumentsWithTitle hasuraToken "" |> Cmd.map Req
+    in
+    ( model, cmd )
+
+
+getHelpDocs : Model -> ( Model, Cmd Msg )
+getHelpDocs model =
+    ( { model | focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
+    , Request.publicDocumentsWithTag hasuraToken "help" |> Cmd.map Req
+    )
+
+
 doSearch : Model -> ( Model, Cmd Msg )
 doSearch model =
+    case model.searchMode of
+        UserSearch ->
+            searchForUsersDocuments model
+
+        PublicSearch ->
+            searchForPublicDocuments model
+
+
+searchForUsersDocuments : Model -> ( Model, Cmd Msg )
+searchForUsersDocuments model =
     let
         authorIdentifier =
             model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
@@ -941,6 +981,23 @@ doSearch model =
 
                 ( KeywordSearch, searchTerm ) ->
                     Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm |> Cmd.map Req
+
+                ( NoSearchTerm, _ ) ->
+                    Cmd.none
+    in
+    ( { model | focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+
+
+searchForPublicDocuments : Model -> ( Model, Cmd Msg )
+searchForPublicDocuments model =
+    let
+        cmd =
+            case parseSearchTerm model.searchTerms of
+                ( TitleSearch, searchTerm ) ->
+                    Request.publicDocumentsWithTitle hasuraToken searchTerm |> Cmd.map Req
+
+                ( KeywordSearch, searchTerm ) ->
+                    Request.publicDocumentsWithTag hasuraToken searchTerm |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
@@ -1882,7 +1939,7 @@ editingHeader viewInfo model rt =
 
 
 searchRow model =
-    row [ spacing 10, alignRight ] [ inputSearchTerms model, searchButton model, publicDocumentsButton model, clearSearchTermsButton ]
+    row [ spacing 10, alignRight ] [ inputSearchTerms model, clearSearchTermsButton, searchButton model, allDocumentsButton, helpDocsButton ]
 
 
 titleRow titleWidth rt =
