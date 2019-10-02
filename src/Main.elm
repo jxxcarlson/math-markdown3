@@ -938,7 +938,7 @@ doSearch model =
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
     in
-    ( { model | focusedElement = NoFocus }, cmd )
+    ( { model | focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 
