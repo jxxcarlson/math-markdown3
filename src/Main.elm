@@ -1,6 +1,7 @@
 module Main exposing (main, parseSearchTerm)
 
 import Browser
+import Browser.Dom
 import Browser.Events
 import Data
 import Document exposing (Document)
@@ -11,6 +12,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
 import Html exposing (..)
+import Html.Attributes as HA
 import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 import Markdown.Elm
@@ -57,6 +59,11 @@ type MessageType
     | DebugMessage
 
 
+type FocusedElement
+    = FocusOnSearchBox
+    | NoFocus
+
+
 type alias Model =
     { seed : Int
 
@@ -68,6 +75,7 @@ type alias Model =
     , appMode : AppMode
     , message : Message
     , pressedKeys : List Key
+    , focusedElement : FocusedElement
 
     -- SYSTEM
     , currentSeed : Seed
@@ -161,6 +169,7 @@ init flags =
             , appMode = UserMode SignInState
             , message = ( UserMessage, "Starting ..." )
             , pressedKeys = []
+            , focusedElement = NoFocus
 
             -- SYSTEM
             , currentSeed = newSeed -- initialSeed flags.seed flags.randInts
@@ -216,6 +225,7 @@ type Msg
     | SetAppMode AppMode
     | WindowSize Int Int
     | KeyMsg Keyboard.Msg
+    | SetFocusOnSearchBox (Result Browser.Dom.Error ())
       -- User
     | GotUserName String
     | GotPassword String
@@ -305,10 +315,6 @@ parseSearchTerm str =
 
         ( _, _ ) ->
             ( NoSearchTerm, "" )
-
-
-
--- /SEARCH --
 
 
 vInset =
@@ -477,6 +483,9 @@ update msg model =
                         model.pressedKeys
             in
             keybaordGateway model ( pressedKeys, maybeKeyChange )
+
+        SetFocusOnSearchBox result ->
+            ( model, Cmd.none )
 
         AdjustTimeZone newZone ->
             ( { model | zone = newZone }
@@ -669,7 +678,7 @@ update msg model =
             )
 
         GotSearchTerms str ->
-            ( { model | searchTerms = str }, Cmd.none )
+            ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
 
         DoSearch ->
             let
@@ -795,12 +804,13 @@ keybaordGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cm
 keybaordGateway model ( pressedKeys, maybeKeyChange ) =
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = [] } (headKey pressedKeys)
-        --    else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
-        --        let
-        --            newModel =
-        --                { model | pressedKeys = [] }
-        --        in
-        --            Search.doSearch newModel
+
+    else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
+        let
+            newModel =
+                { model | pressedKeys = [] }
+        in
+        doSearch newModel
 
     else
         ( { model | pressedKeys = pressedKeys }, Cmd.none )
@@ -811,6 +821,9 @@ handleKey model key =
     case key of
         Character "e" ->
             setModeToEditing model
+
+        Character "f" ->
+            ( model, focusSearchBox )
 
         Character "n" ->
             makeNewDocument model
@@ -846,6 +859,91 @@ headKey keyList =
 
 
 -- UPDATE HELPERS --
+-- SEARCH
+
+
+inputSearchTerms model =
+    Input.text (Style.inputStyle 200 ++ [ Element.htmlAttribute <| HA.attribute "id" "search-box" ])
+        { onChange = GotSearchTerms
+        , text = model.searchTerms
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 14, width (px 0) ] (Element.text "")
+        }
+
+
+
+--publicDocumentsButton : Model -> Element Msg
+--publicDocumentsButton model =
+--    hideIf (model.currentUser == Nothing) (publicDocumentsButton_ model)
+
+
+publicDocumentsButton : Model -> Element Msg
+publicDocumentsButton model =
+    let
+        labelText =
+            showOne (model.currentUser == Nothing) "Search" "Public"
+    in
+    Input.button []
+        { onPress = Just GetPublicDocuments
+        , label =
+            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2 ] (Element.text labelText))
+        }
+
+
+searchButton : Model -> Element Msg
+searchButton model =
+    hideIf (model.currentUser == Nothing) searchButton_
+
+
+searchButton_ : Element Msg
+searchButton_ =
+    Input.button []
+        { onPress = Just DoSearch
+        , label =
+            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2 ] (Element.text "Search"))
+        }
+
+
+clearSearchTermsButton : Element Msg
+clearSearchTermsButton =
+    Input.button []
+        { onPress = Just ClearSearchTerms
+        , label =
+            el [ height (px 30), width (px 25), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2 ] (Element.text "X"))
+        }
+
+
+focusSearchBox : Cmd Msg
+focusSearchBox =
+    Task.attempt SetFocusOnSearchBox (Browser.Dom.focus "search-box")
+
+
+doSearch : Model -> ( Model, Cmd Msg )
+doSearch model =
+    let
+        authorIdentifier =
+            model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
+
+        cmd =
+            case parseSearchTerm model.searchTerms of
+                ( TitleSearch, searchTerm ) ->
+                    Request.documentsWithAuthorAndTitle hasuraToken authorIdentifier searchTerm |> Cmd.map Req
+
+                ( KeywordSearch, searchTerm ) ->
+                    Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm |> Cmd.map Req
+
+                ( NoSearchTerm, _ ) ->
+                    Cmd.none
+    in
+    ( model, cmd )
+
+
+
+-- END SEARCH
+-- DOCUMENT HELPERS --
 
 
 makeNewDocument : Model -> ( Model, Cmd Msg )
@@ -1782,60 +1880,6 @@ searchRow model =
 
 titleRow titleWidth rt =
     row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignLeft ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
-
-
-inputSearchTerms model =
-    Input.text (Style.inputStyle 200)
-        { onChange = GotSearchTerms
-        , text = model.searchTerms
-        , placeholder = Nothing
-        , label = Input.labelLeft [ Font.size 14, width (px 0) ] (Element.text "")
-        }
-
-
-
---publicDocumentsButton : Model -> Element Msg
---publicDocumentsButton model =
---    hideIf (model.currentUser == Nothing) (publicDocumentsButton_ model)
-
-
-publicDocumentsButton : Model -> Element Msg
-publicDocumentsButton model =
-    let
-        labelText =
-            showOne (model.currentUser == Nothing) "Search" "Public"
-    in
-    Input.button []
-        { onPress = Just GetPublicDocuments
-        , label =
-            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2 ] (Element.text labelText))
-        }
-
-
-searchButton : Model -> Element Msg
-searchButton model =
-    hideIf (model.currentUser == Nothing) searchButton_
-
-
-searchButton_ : Element Msg
-searchButton_ =
-    Input.button []
-        { onPress = Just DoSearch
-        , label =
-            el [ height (px 30), width (px 50), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2 ] (Element.text "Search"))
-        }
-
-
-clearSearchTermsButton : Element Msg
-clearSearchTermsButton =
-    Input.button []
-        { onPress = Just ClearSearchTerms
-        , label =
-            el [ height (px 30), width (px 25), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2 ] (Element.text "X"))
-        }
 
 
 editTools : Model -> Element Msg
