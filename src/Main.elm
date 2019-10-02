@@ -411,18 +411,13 @@ update msg model =
         SetAppMode appMode ->
             case appMode of
                 Reading ->
-                    ( { model | appMode = Reading, visibilityOfTools = Invisible }, Cmd.none )
+                    setModeToReading model
 
                 Editing ->
-                    ( { model | appMode = Editing, visibilityOfTools = Visible }, Cmd.none )
+                    setModeToEditing model
 
                 UserMode s ->
-                    case model.currentUser of
-                        Nothing ->
-                            ( { model | appMode = UserMode SignInState }, Cmd.none )
-
-                        Just _ ->
-                            ( { model | appMode = UserMode s }, Cmd.none )
+                    setUserMode model s
 
         -- SYSTEM --
         NewUuid ->
@@ -476,13 +471,12 @@ update msg model =
         KeyMsg keyMsg ->
             let
                 ( pressedKeys, maybeKeyChange ) =
-                    Debug.log "KEYS" <|
-                        Keyboard.updateWithKeyChange
-                            (Keyboard.oneOf [ Keyboard.characterKeyOriginal, Keyboard.modifierKey, Keyboard.whitespaceKey ])
-                            keyMsg
-                            model.pressedKeys
+                    Keyboard.updateWithKeyChange
+                        (Keyboard.oneOf [ Keyboard.characterKeyOriginal, Keyboard.modifierKey, Keyboard.whitespaceKey ])
+                        keyMsg
+                        model.pressedKeys
             in
-            ( { model | pressedKeys = pressedKeys }, Cmd.none )
+            keybaordGateway model ( pressedKeys, maybeKeyChange )
 
         AdjustTimeZone newZone ->
             ( { model | zone = newZone }
@@ -538,48 +532,10 @@ update msg model =
 
         -- DOCUMENT --
         CreateDocument ->
-            case model.currentUser of
-                Nothing ->
-                    ( model, Cmd.none )
-
-                Just user ->
-                    let
-                        newDocument =
-                            Document.create model.currentUuid user.username "New Document" "# New Document\n\nWrite something here ..."
-
-                        ( newUuid, newSeed ) =
-                            step Uuid.generator model.currentSeed
-                    in
-                    ( { model
-                        | currentDocument = Just newDocument
-                        , documentList = newDocument :: model.documentList
-                        , visibilityOfTools = Invisible
-                        , currentUuid = newUuid
-                        , currentSeed = newSeed
-                      }
-                    , Request.insertDocument hasuraToken newDocument |> Cmd.map Req
-                    )
+            makeNewDocument model
 
         SaveDocument ->
-            case ( model.currentUser, model.currentDocument ) of
-                ( _, Nothing ) ->
-                    ( model, Cmd.none )
-
-                ( Nothing, _ ) ->
-                    ( model, Cmd.none )
-
-                ( Just user, Just document_ ) ->
-                    if user.username /= document_.authorIdentifier then
-                        ( model, Cmd.none )
-
-                    else
-                        let
-                            document =
-                                Document.updateMetaData document_
-                        in
-                        ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
-                        , Request.updateDocument hasuraToken document |> Cmd.map Req
-                        )
+            saveDocument model
 
         ArmForDelete ->
             ( { model | documentDeleteState = Armed, message = ( UserMessage, "Armed for delete.  Caution!" ) }, Cmd.none )
@@ -835,8 +791,8 @@ update msg model =
 -- KEYBOARD --
 
 
-gateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
-gateway model ( pressedKeys, maybeKeyChange ) =
+keybaordGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
+keybaordGateway model ( pressedKeys, maybeKeyChange ) =
     if List.member Control model.pressedKeys then
         handleKey { model | pressedKeys = [] } (headKey pressedKeys)
         --    else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
@@ -856,8 +812,22 @@ handleKey model key =
         Character "e" ->
             setModeToEditing model
 
+        Character "n" ->
+            makeNewDocument model
+
         Character "r" ->
             setModeToReading model
+
+        Character "s" ->
+            saveDocument model
+
+        Character "u" ->
+            case model.currentUser of
+                Nothing ->
+                    setUserMode model SignInState
+
+                _ ->
+                    setUserMode model SignedInState
 
         _ ->
             ( model, Cmd.none )
@@ -875,6 +845,56 @@ headKey keyList =
 -- UPDATE HELPERS --
 
 
+makeNewDocument : Model -> ( Model, Cmd Msg )
+makeNewDocument model =
+    case model.currentUser of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just user ->
+            let
+                newDocument =
+                    Document.create model.currentUuid user.username "New Document" "# New Document\n\nWrite something here ..."
+
+                ( newUuid, newSeed ) =
+                    step Uuid.generator model.currentSeed
+            in
+            ( { model
+                | currentDocument = Just newDocument
+                , documentList = newDocument :: model.documentList
+                , visibilityOfTools = Visible
+                , appMode = Editing
+                , tagString = ""
+                , currentUuid = newUuid
+                , currentSeed = newSeed
+              }
+            , Request.insertDocument hasuraToken newDocument |> Cmd.map Req
+            )
+
+
+saveDocument : Model -> ( Model, Cmd Msg )
+saveDocument model =
+    case ( model.currentUser, model.currentDocument ) of
+        ( _, Nothing ) ->
+            ( model, Cmd.none )
+
+        ( Nothing, _ ) ->
+            ( model, Cmd.none )
+
+        ( Just user, Just document_ ) ->
+            if user.username /= document_.authorIdentifier then
+                ( model, Cmd.none )
+
+            else
+                let
+                    document =
+                        Document.updateMetaData document_
+                in
+                ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
+                , Request.updateDocument hasuraToken document |> Cmd.map Req
+                )
+
+
 setModeToReading : Model -> ( Model, Cmd Msg )
 setModeToReading model =
     ( { model | appMode = Reading, visibilityOfTools = Invisible }, Cmd.none )
@@ -882,7 +902,17 @@ setModeToReading model =
 
 setModeToEditing : Model -> ( Model, Cmd Msg )
 setModeToEditing model =
-    ( { model | appMode = Editing, visibilityOfTools = Invisible }, Cmd.none )
+    ( { model | appMode = Editing, visibilityOfTools = Visible }, Cmd.none )
+
+
+setUserMode : Model -> UserState -> ( Model, Cmd msg )
+setUserMode model s =
+    case model.currentUser of
+        Nothing ->
+            ( { model | appMode = UserMode SignInState }, Cmd.none )
+
+        Just _ ->
+            ( { model | appMode = UserMode s }, Cmd.none )
 
 
 getTagString : Maybe Document -> String
@@ -933,10 +963,10 @@ view : Model -> Html Msg
 view model =
     case model.appMode of
         Reading ->
-            setModeToReading model
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (readingDisplay viewInfoReading model)
 
         Editing ->
-            setModeToEditing model
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (editingDisplay viewInfoEditing model)
 
         UserMode _ ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (userPageDisplay viewInfoUserPage model)
