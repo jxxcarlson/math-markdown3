@@ -261,7 +261,7 @@ type Msg
     | CreateDocument
     | SaveDocument
     | GetUserDocuments
-    | GotSecondPart ( Tree ParseWithId.MDBlockWithId, RenderedText Msg )
+    | GotSecondPart (RenderedText Msg)
     | AllDocuments
     | GetPublicDocuments
     | GetHelpDocs
@@ -555,8 +555,8 @@ update msg model =
         GetUserDocuments ->
             searchForUsersDocuments model
 
-        GotSecondPart ( ast, rt ) ->
-            ( model, Cmd.none )
+        GotSecondPart rt ->
+            ( { model | renderedText = rt }, Cmd.none )
 
         AllDocuments ->
             getAllDocuments model
@@ -579,11 +579,19 @@ update msg model =
 
                         updatedDoc2 =
                             Document.updateMetaData updatedDoc1
+
+                        newAst_ =
+                            Markdown.ElmWithId.parse model.counter model.option str
+
+                        newAst =
+                            Diff.mergeWith ParseWithId.equal model.lastAst newAst_
                     in
                     ( { model
                         | currentDocument = Just updatedDoc2
                         , documentList = Document.replaceInList updatedDoc2 model.documentList
                         , currentDocumentDirty = True
+                        , lastAst = newAst
+                        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC newAst
                         , counter = model.counter + 1
                       }
                     , Cmd.none
@@ -709,14 +717,55 @@ update msg model =
                             let
                                 currentDoc =
                                     List.head documentList
+
+                                ( newAst, newRenderedText, cmd ) =
+                                    case currentDoc of
+                                        Nothing ->
+                                            ( emptyAst, emptyRenderedText, Cmd.none )
+
+                                        Just doc ->
+                                            let
+                                                content =
+                                                    Document.getContent model.currentDocument
+
+                                                lastAst =
+                                                    Markdown.ElmWithId.parse model.counter ExtendedMath content
+
+                                                nMath =
+                                                    Markdown.ElmWithId.numberOfMathElements lastAst
+
+                                                ( renderedText, cmd_ ) =
+                                                    if nMath > 10 then
+                                                        let
+                                                            firstAst =
+                                                                Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+
+                                                            renderedText_ =
+                                                                Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+
+                                                            cmd__ =
+                                                                renderAstFor lastAst
+                                                        in
+                                                        ( renderedText_
+                                                        , cmd__
+                                                        )
+
+                                                    else
+                                                        -- XXX
+                                                        ( Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst, Cmd.none )
+                                            in
+                                            ( lastAst, renderedText, cmd_ )
                             in
                             ( { model
                                 | documentList = documentList
                                 , currentDocument = currentDoc
                                 , tagString = getTagString currentDoc
+                                , counter = model.counter + 2
+                                , lastAst = newAst
+                                , renderedText = newRenderedText
                                 , message = ( UserMessage, "Success getting document list" )
                               }
-                            , Cmd.none
+                            , cmd
                             )
 
                 GotPublicDocuments remoteData ->
@@ -1037,14 +1086,10 @@ emptyRenderedText =
     Markdown.ElmWithId.renderHtmlWithExternaTOC emptyAst
 
 
-renderAstFor : Model -> String -> Cmd Msg
-renderAstFor model text =
-    let
-        newAst =
-            Markdown.ElmWithId.parse model.counter ExtendedMath text
-    in
+renderAstFor : Tree ParseWithId.MDBlockWithId -> Cmd Msg
+renderAstFor ast =
     Process.sleep 10
-        |> Task.andThen (\_ -> Process.sleep 100 |> Task.andThen (\_ -> Task.succeed ( newAst, Markdown.ElmWithId.renderHtmlWithExternaTOC newAst )))
+        |> Task.andThen (\_ -> Process.sleep 100 |> Task.andThen (\_ -> Task.succeed (Markdown.ElmWithId.renderHtmlWithExternaTOC ast)))
         |> Task.perform GotSecondPart
 
 
@@ -1582,9 +1627,9 @@ config =
 editingDisplay : ViewInfo -> Model -> Element Msg
 editingDisplay viewInfo model =
     let
-        rt : { title : Html msg, toc : Html msg, document : Html msg }
+        rt : RenderedText Msg
         rt =
-            Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument)
+            model.renderedText
     in
     column []
         [ editingHeader viewInfo model rt
@@ -1596,12 +1641,13 @@ editingDisplay viewInfo model =
 readingDisplay : ViewInfo -> Model -> Element Msg
 readingDisplay viewInfo model =
     let
-        footerText =
-            Maybe.map Document.footer model.currentDocument |> Maybe.withDefault ""
-
-        rt : { title : Html msg, toc : Html msg, document : Html msg }
+        --        footerText =
+        --            Maybe.map Document.footer model.currentDocument |> Maybe.withDefault ""
+        rt : RenderedText Msg
         rt =
-            Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument ++ footerText)
+            model.renderedText
+
+        -- XXX Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument ++ footerText)
     in
     column [ paddingXY 0 0 ]
         [ readingHeader viewInfo model rt
