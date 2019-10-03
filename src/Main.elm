@@ -16,8 +16,11 @@ import Html.Attributes as HA
 import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 import Markdown.Elm
+import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
+import ParseWithId
 import Prng.Uuid as Uuid
+import Process
 import Random
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
@@ -25,6 +28,8 @@ import Request exposing (GraphQLResponse(..), RequestMsg(..))
 import Style
 import Task
 import Time
+import Tree exposing (Tree)
+import Tree.Diff as Diff
 import User exposing (User)
 import Utility
 
@@ -41,6 +46,10 @@ main =
 
 
 -- MODEL --
+
+
+type alias RenderedText msg =
+    { title : Html msg, toc : Html msg, document : Html msg }
 
 
 type alias Model =
@@ -77,6 +86,8 @@ type alias Model =
     , currentDocument : Maybe Document
     , currentDocumentDirty : Bool
     , secondsWhileDirty : Int
+    , lastAst : Tree ParseWithId.MDBlockWithId
+    , renderedText : RenderedText Msg
     , tagString : String
     , searchTerms : String
     , searchMode : SearchMode
@@ -199,6 +210,8 @@ init flags =
             , currentDocument = Nothing
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
+            , lastAst = emptyAst
+            , renderedText = emptyRenderedText
             , tagString = ""
             , searchTerms = ""
             , searchMode = PublicSearch
@@ -248,6 +261,7 @@ type Msg
     | CreateDocument
     | SaveDocument
     | GetUserDocuments
+    | GotSecondPart ( Tree ParseWithId.MDBlockWithId, RenderedText Msg )
     | AllDocuments
     | GetPublicDocuments
     | GetHelpDocs
@@ -540,6 +554,9 @@ update msg model =
 
         GetUserDocuments ->
             searchForUsersDocuments model
+
+        GotSecondPart ( ast, rt ) ->
+            ( model, Cmd.none )
 
         AllDocuments ->
             getAllDocuments model
@@ -1008,6 +1025,38 @@ searchForPublicDocuments model =
 
 -- END SEARCH
 -- DOCUMENT HELPERS --
+
+
+emptyAst : Tree ParseWithId.MDBlockWithId
+emptyAst =
+    Markdown.ElmWithId.parse -1 ExtendedMath ""
+
+
+emptyRenderedText : RenderedText Msg
+emptyRenderedText =
+    Markdown.ElmWithId.renderHtmlWithExternaTOC emptyAst
+
+
+renderAstFor : Model -> String -> Cmd Msg
+renderAstFor model text =
+    let
+        newAst =
+            Markdown.ElmWithId.parse model.counter ExtendedMath text
+    in
+    Process.sleep 10
+        |> Task.andThen (\_ -> Process.sleep 100 |> Task.andThen (\_ -> Task.succeed ( newAst, Markdown.ElmWithId.renderHtmlWithExternaTOC newAst )))
+        |> Task.perform GotSecondPart
+
+
+
+--renderSecond : Model -> Cmd Msg
+--renderSecond model =
+--    renderAstFor model model.sourceText
+
+
+getFirstPart : String -> String
+getFirstPart str =
+    String.left 1500 str
 
 
 makeNewDocument : Model -> ( Model, Cmd Msg )
