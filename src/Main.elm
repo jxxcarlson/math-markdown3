@@ -11,9 +11,9 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
+import Element.Lazy
 import Html exposing (..)
 import Html.Attributes as HA
-import Html.Lazy
 import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 import Markdown.Elm
@@ -736,7 +736,11 @@ handleTime model newTime =
 
 signIn : Model -> ( Model, Cmd Msg )
 signIn model =
-    if (model.username == "jxxcarlson" || model.username == "boris") && model.password == "locoLobo" then
+    if
+        (model.username == "jxxcarlson" && model.password == "locoLobo")
+            || (model.username == "boris" && model.password == "locoLobo")
+            || (model.username == "cervone" && model.password == "mathjax3")
+    then
         ( { model
             | currentUser = Just (User.dummy model.username)
             , appMode = Reading
@@ -1727,7 +1731,7 @@ editingDisplay viewInfo model =
     in
     column []
         [ editingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, renderedSource viewInfo model rt ]
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, Element.Lazy.lazy (renderedSource viewInfo model) rt ]
         , footer model
         ]
 
@@ -1743,34 +1747,8 @@ readingDisplay viewInfo model =
     in
     column [ paddingXY 0 0 ]
         [ readingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, renderedSource viewInfo model rt ]
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, Element.Lazy.lazy (renderedSource viewInfo model) rt ]
         , footer model
-        ]
-
-
-renderedSource1 : ViewInfo -> Model -> RenderedText Msg -> Element Msg
-renderedSource1 viewInfo model rt =
-    let
-        w_ =
-            affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
-
-        h_ =
-            translate -viewInfo.vInset model.windowHeight
-
-        w2_ =
-            affine viewInfo.renderedDisplayWidth (viewInfo.hExtra + 160) model.windowWidth
-
-        wToc =
-            affine viewInfo.tocWidth viewInfo.hExtra model.windowWidth
-
-        hToc =
-            translate -viewInfo.vInset model.windowHeight
-    in
-    row [ spacing 10 ]
-        [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
-            [ column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ]
-        , Element.column [ width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (Style.makeGrey 0.9) ]
-            [ rt.toc |> Element.html ]
         ]
 
 
@@ -1794,7 +1772,7 @@ renderedSource viewInfo model rt =
     in
     row [ spacing 10 ]
         [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
-            [ column [ width (px w2_), paddingXY 10 20 ] [ Html.Lazy.lazy (Html.div []) [ rt.document ] |> Element.html ] ]
+            [ column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ]
         , Element.column [ width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (Style.makeGrey 0.9) ]
             [ rt.toc |> Element.html ]
         ]
