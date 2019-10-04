@@ -618,7 +618,8 @@ update msg model =
 
 
 
--- KEYBOARD --
+-- UPDATE HELPERS --
+-- KEYBOARD HELPERS --
 
 
 keyboardGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
@@ -688,7 +689,6 @@ headKey keyList =
 
 
 
--- UPDATE HELPERS --
 -- SYSTEM HELPERS
 
 
