@@ -1024,7 +1024,6 @@ processDocumentRequest model maybeDocument documentList =
                                 )
 
                             else
-                                -- XXX
                                 ( Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst, Cmd.none )
                     in
                     ( lastAst, renderedText, cmd_ )
@@ -1134,6 +1133,7 @@ makeNewDocument model =
 
 updateDocumentText : Model -> String -> ( Model, Cmd Msg )
 updateDocumentText model str =
+    -- XXX
     case model.currentDocument of
         Nothing ->
             ( model, Cmd.none )
@@ -1153,12 +1153,17 @@ updateDocumentText model str =
                     Diff.mergeWith ParseWithId.equal model.lastAst newAst_
             in
             ( { model
-                | currentDocument = Just updatedDoc2
+                | -- document
+                  currentDocument = Just updatedDoc2
                 , documentList = Document.replaceInList updatedDoc2 model.documentList
                 , currentDocumentDirty = True
+
+                -- rendering
                 , lastAst = newAst
                 , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC newAst
                 , counter = model.counter + 1
+
+                -- message
                 , message = ( UserMessage, "update: " ++ String.fromInt model.counter )
               }
             , Cmd.none
@@ -1716,6 +1721,7 @@ config =
 
 editingDisplay : ViewInfo -> Model -> Element Msg
 editingDisplay viewInfo model =
+    -- XXX
     let
         rt : RenderedText Msg
         rt =
@@ -1723,7 +1729,7 @@ editingDisplay viewInfo model =
     in
     column []
         [ editingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, renderedSource viewInfo model rt ]
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, renderedSource viewInfo model ]
         , footer model
         ]
 
@@ -1736,12 +1742,10 @@ readingDisplay viewInfo model =
         rt : RenderedText Msg
         rt =
             model.renderedText
-
-        -- XXX Markdown.Elm.toHtmlWithExternaTOC model.option (Document.getContent model.currentDocument ++ footerText)
     in
     column [ paddingXY 0 0 ]
         [ readingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, renderedSource viewInfo model rt ]
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, renderedSource viewInfo model ]
         , footer model
         ]
 
@@ -1771,7 +1775,6 @@ editor viewInfo model =
     in
     column []
         [ Element.Keyed.el []
-            -- XXX, below∫
             ( String.fromInt 0
             , Input.multiline (Style.textInputStyle w_ h_)
                 { onChange = UpdateDocumentText
@@ -1848,11 +1851,11 @@ headerLabelStyle =
 -- RENDERED SOURCE --
 
 
-renderedSource : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element msg
-renderedSource viewInfo model rt =
+renderedSource : ViewInfo -> Model -> Element Msg
+renderedSource viewInfo model =
     let
-        token =
-            String.fromInt model.counter
+        rt =
+            model.renderedText
 
         w_ =
             affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
@@ -1871,7 +1874,7 @@ renderedSource viewInfo model rt =
     in
     row [ spacing 10 ]
         [ Element.Keyed.column [ width (px w_), height (px h_), clipX, Font.size 12 ]
-            [ ( token, column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ) ]
+            [ ( "token", column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ) ]
         , Element.column [ width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (Style.makeGrey 0.9) ]
             [ rt.toc |> Element.html ]
         ]
