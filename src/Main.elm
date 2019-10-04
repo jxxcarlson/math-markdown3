@@ -520,52 +520,10 @@ update msg model =
             processDocument model document
 
         SetDocumentPublic bit ->
-            case ( model.currentDocument, model.currentUser ) of
-                ( Nothing, _ ) ->
-                    ( model, Cmd.none )
-
-                ( _, Nothing ) ->
-                    ( model, Cmd.none )
-
-                ( Just document, Just user ) ->
-                    if document.authorIdentifier /= user.username then
-                        ( model, Cmd.none )
-
-                    else
-                        let
-                            newDocument =
-                                { document | public = bit }
-                        in
-                        ( { model
-                            | currentDocument = Just newDocument
-                            , documentList = Document.replaceInList newDocument model.documentList
-                          }
-                        , Request.updateDocument hasuraToken newDocument |> Cmd.map Req
-                        )
+            setDocumentPublic model bit
 
         GotTagString str ->
-            let
-                ( newDocumentList, newCurrentDocument ) =
-                    case model.currentDocument of
-                        Nothing ->
-                            ( model.documentList, Nothing )
-
-                        Just doc ->
-                            let
-                                newDoc =
-                                    { doc | tags = str |> String.split "," |> List.map (String.toLower >> String.trim) }
-                            in
-                            ( Document.replaceInList newDoc model.documentList, Just newDoc )
-            in
-            ( { model
-                | tagString = str
-                , currentDocumentDirty = True
-                , secondsWhileDirty = 0
-                , currentDocument = newCurrentDocument
-                , documentList = newDocumentList
-              }
-            , Cmd.none
-            )
+            processTagString model str
 
         GotSearchTerms str ->
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
@@ -1219,6 +1177,62 @@ saveDocument model =
                 ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
                 , Request.updateDocument hasuraToken document |> Cmd.map Req
                 )
+
+
+setDocumentPublic : Model -> Bool -> ( Model, Cmd Msg )
+setDocumentPublic model bit =
+    case ( model.currentDocument, model.currentUser ) of
+        ( Nothing, _ ) ->
+            ( model, Cmd.none )
+
+        ( _, Nothing ) ->
+            ( model, Cmd.none )
+
+        ( Just document, Just user ) ->
+            if document.authorIdentifier /= user.username then
+                ( model, Cmd.none )
+
+            else
+                let
+                    newDocument =
+                        { document | public = bit }
+                in
+                ( { model
+                    | currentDocument = Just newDocument
+                    , documentList = Document.replaceInList newDocument model.documentList
+                  }
+                , Request.updateDocument hasuraToken newDocument |> Cmd.map Req
+                )
+
+
+processTagString : Model -> String -> ( Model, Cmd Msg )
+processTagString model str =
+    let
+        ( newDocumentList, newCurrentDocument ) =
+            case model.currentDocument of
+                Nothing ->
+                    ( model.documentList, Nothing )
+
+                Just doc ->
+                    let
+                        newDoc =
+                            { doc | tags = str |> String.split "," |> List.map (String.toLower >> String.trim) }
+                    in
+                    ( Document.replaceInList newDoc model.documentList, Just newDoc )
+    in
+    ( { model
+        | tagString = str
+        , currentDocumentDirty = True
+        , secondsWhileDirty = 0
+        , currentDocument = newCurrentDocument
+        , documentList = newDocumentList
+      }
+    , Cmd.none
+    )
+
+
+
+-- UI HELPERS
 
 
 setModeToReading : Model -> ( Model, Cmd Msg )
