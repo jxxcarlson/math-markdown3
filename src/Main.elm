@@ -261,20 +261,23 @@ type Msg
     | CreateDocument
     | SaveDocument
     | GetUserDocuments
-    | GotSecondPart (RenderedText Msg)
     | AllDocuments
     | GetPublicDocuments
     | GetHelpDocs
+    | SetCurrentDocument Document
+      -- Search
     | ClearSearchTerms
-    | ArmForDelete
-    | DeleteDocument
-    | CancelDeleteDocument
-    | UpdateDocumentText String
     | GotSearchTerms String
     | DoSearch
     | ToggleSearchMode
-    | SetCurrentDocument Document
+      -- Delete
+    | ArmForDelete
+    | DeleteDocument
+    | CancelDeleteDocument
+      -- Update
+    | UpdateDocumentText String
     | SetDocumentPublic Bool
+    | GotSecondPart (RenderedText Msg)
     | GotTagString String
     | Clear
     | Req RequestMsg
@@ -585,7 +588,7 @@ update msg model =
                             ( { model | message = ( ErrorMessage, "Get author docs:: request failed" ) }, Cmd.none )
 
                         Success documentList ->
-                            processDocumentRequest model documentList
+                            processDocumentRequest model Nothing documentList
 
                 GotPublicDocuments remoteData ->
                     case remoteData of
@@ -609,7 +612,7 @@ update msg model =
                                             Just document
 
                                 ( newModel, cmd ) =
-                                    processDocumentRequest model documentList
+                                    processDocumentRequest model currentDoc documentList
                             in
                             ( { newModel | currentDocument = currentDoc }, cmd )
 
@@ -977,11 +980,16 @@ getFirstPart str =
     String.left 1500 str
 
 
-processDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
-processDocumentRequest model documentList =
+processDocumentRequest : Model -> Maybe Document -> List Document -> ( Model, Cmd Msg )
+processDocumentRequest model maybeDocument documentList =
     let
         currentDoc =
-            List.head documentList
+            case maybeDocument of
+                Nothing ->
+                    List.head documentList
+
+                Just doc_ ->
+                    Just doc_
 
         ( newAst, newRenderedText, cmd ) =
             case currentDoc of
@@ -991,7 +999,7 @@ processDocumentRequest model documentList =
                 Just doc ->
                     let
                         content =
-                            Document.getContent model.currentDocument
+                            doc.content
 
                         lastAst =
                             Markdown.ElmWithId.parse model.counter ExtendedMath content
