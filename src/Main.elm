@@ -27,7 +27,7 @@ import RemoteData exposing (RemoteData(..))
 import Request exposing (GraphQLResponse(..), RequestMsg(..))
 import Style
 import Task
-import Time
+import Time exposing (Posix)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
 import User exposing (User)
@@ -422,36 +422,7 @@ update msg model =
             )
 
         Tick newTime ->
-            let
-                secondsWhileDirty =
-                    if model.currentDocumentDirty then
-                        model.secondsWhileDirty + 1
-
-                    else
-                        model.secondsWhileDirty
-
-                cmd =
-                    if model.secondsWhileDirty > 4 then
-                        case ( model.currentUser, model.currentDocument ) of
-                            ( Nothing, _ ) ->
-                                Cmd.none
-
-                            ( _, Nothing ) ->
-                                Cmd.none
-
-                            ( Just user, Just document ) ->
-                                if user.username == document.authorIdentifier then
-                                    Request.updateDocument hasuraToken document |> Cmd.map Req
-
-                                else
-                                    Cmd.none
-
-                    else
-                        Cmd.none
-            in
-            ( { model | time = newTime, secondsWhileDirty = secondsWhileDirty }
-            , cmd
-            )
+            handleTime model newTime
 
         WindowSize width height ->
             ( { model | windowWidth = width, windowHeight = height }, Cmd.none )
@@ -494,18 +465,7 @@ update msg model =
             ( model, Cmd.none )
 
         SignIn ->
-            if (model.username == "jxxcarlson" || model.username == "boris") && model.password == "locoLobo" then
-                ( { model
-                    | currentUser = Just (User.dummy model.username)
-                    , appMode = Reading
-                    , visibilityOfTools = Invisible
-                    , searchMode = UserSearch
-                  }
-                , Request.documentsWithAuthor hasuraToken model.username |> Cmd.map Req
-                )
-
-            else
-                ( { model | currentUser = Nothing, appMode = UserMode SignInState, password = "" }, Cmd.none )
+            signIn model
 
         SignUp ->
             ( { model | appMode = UserMode SignUpState, message = ( DebugMessage, "At SignUp msg" ) }, Cmd.none )
@@ -536,21 +496,7 @@ update msg model =
             ( { model | documentDeleteState = SafetyOn, message = ( UserMessage, "Delete cancelled" ) }, Cmd.none )
 
         DeleteDocument ->
-            case model.currentDocument of
-                Nothing ->
-                    ( model, Cmd.none )
-
-                Just document ->
-                    case model.documentDeleteState of
-                        SafetyOn ->
-                            ( { model | message = ( UserMessage, "Turning safety off.  Press again to delete document." ), documentDeleteState = Armed }
-                            , Cmd.none
-                            )
-
-                        Armed ->
-                            ( { model | message = ( UserMessage, "Deleting document ..." ), documentDeleteState = SafetyOn }
-                            , Request.deleteDocument hasuraToken document |> Cmd.map Req
-                            )
+            deleteDocument model
 
         GetUserDocuments ->
             searchForUsersDocuments model
@@ -568,34 +514,7 @@ update msg model =
             getHelpDocs model
 
         UpdateDocumentText str ->
-            case model.currentDocument of
-                Nothing ->
-                    ( model, Cmd.none )
-
-                Just doc ->
-                    let
-                        updatedDoc1 =
-                            Document.setContent str doc
-
-                        updatedDoc2 =
-                            Document.updateMetaData updatedDoc1
-
-                        newAst_ =
-                            Markdown.ElmWithId.parse model.counter model.option str
-
-                        newAst =
-                            Diff.mergeWith ParseWithId.equal model.lastAst newAst_
-                    in
-                    ( { model
-                        | currentDocument = Just updatedDoc2
-                        , documentList = Document.replaceInList updatedDoc2 model.documentList
-                        , currentDocumentDirty = True
-                        , lastAst = newAst
-                        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC newAst
-                        , counter = model.counter + 1
-                      }
-                    , Cmd.none
-                    )
+            updateDocumentText model str
 
         SetCurrentDocument document ->
             processDocument model document
@@ -812,7 +731,65 @@ headKey keyList =
 
 
 -- UPDATE HELPERS --
--- SEARCH
+-- SYSTEM HELPERS
+
+
+handleTime : Model -> Posix -> ( Model, Cmd Msg )
+handleTime model newTime =
+    let
+        secondsWhileDirty =
+            if model.currentDocumentDirty then
+                model.secondsWhileDirty + 1
+
+            else
+                model.secondsWhileDirty
+
+        cmd =
+            if model.secondsWhileDirty > 4 then
+                case ( model.currentUser, model.currentDocument ) of
+                    ( Nothing, _ ) ->
+                        Cmd.none
+
+                    ( _, Nothing ) ->
+                        Cmd.none
+
+                    ( Just user, Just document ) ->
+                        if user.username == document.authorIdentifier then
+                            Request.updateDocument hasuraToken document |> Cmd.map Req
+
+                        else
+                            Cmd.none
+
+            else
+                Cmd.none
+    in
+    ( { model | time = newTime, secondsWhileDirty = secondsWhileDirty }
+    , cmd
+    )
+
+
+
+-- USER HELPERS
+
+
+signIn : Model -> ( Model, Cmd Msg )
+signIn model =
+    if (model.username == "jxxcarlson" || model.username == "boris") && model.password == "locoLobo" then
+        ( { model
+            | currentUser = Just (User.dummy model.username)
+            , appMode = Reading
+            , visibilityOfTools = Invisible
+            , searchMode = UserSearch
+          }
+        , Request.documentsWithAuthor hasuraToken model.username |> Cmd.map Req
+        )
+
+    else
+        ( { model | currentUser = Nothing, appMode = UserMode SignInState, password = "" }, Cmd.none )
+
+
+
+-- SEARCH HELPERS
 
 
 type SearchType
@@ -1143,6 +1120,25 @@ processDocument model document =
     )
 
 
+deleteDocument : Model -> ( Model, Cmd Msg )
+deleteDocument model =
+    case model.currentDocument of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just document ->
+            case model.documentDeleteState of
+                SafetyOn ->
+                    ( { model | message = ( UserMessage, "Turning safety off.  Press again to delete document." ), documentDeleteState = Armed }
+                    , Cmd.none
+                    )
+
+                Armed ->
+                    ( { model | message = ( UserMessage, "Deleting document ..." ), documentDeleteState = SafetyOn }
+                    , Request.deleteDocument hasuraToken document |> Cmd.map Req
+                    )
+
+
 makeNewDocument : Model -> ( Model, Cmd Msg )
 makeNewDocument model =
     case model.currentUser of
@@ -1167,6 +1163,38 @@ makeNewDocument model =
                 , currentSeed = newSeed
               }
             , Request.insertDocument hasuraToken newDocument |> Cmd.map Req
+            )
+
+
+updateDocumentText : Model -> String -> ( Model, Cmd Msg )
+updateDocumentText model str =
+    case model.currentDocument of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just doc ->
+            let
+                updatedDoc1 =
+                    Document.setContent str doc
+
+                updatedDoc2 =
+                    Document.updateMetaData updatedDoc1
+
+                newAst_ =
+                    Markdown.ElmWithId.parse model.counter model.option str
+
+                newAst =
+                    Diff.mergeWith ParseWithId.equal model.lastAst newAst_
+            in
+            ( { model
+                | currentDocument = Just updatedDoc2
+                , documentList = Document.replaceInList updatedDoc2 model.documentList
+                , currentDocumentDirty = True
+                , lastAst = newAst
+                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC newAst
+                , counter = model.counter + 1
+              }
+            , Cmd.none
             )
 
 
