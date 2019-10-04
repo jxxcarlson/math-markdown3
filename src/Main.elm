@@ -1785,7 +1785,7 @@ renderedSource viewInfo model footerText_ rt =
             ]
         , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
             [ column [ height (px (hToc - 100)), scrollbarY, clipX ] [ rt.toc |> Element.html ]
-            , column [ padding 8, width fill, height (px 100), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ] [ renderFooter footerText_ ]
+            , column [ paddingXY 12 3, width fill, height (px 100), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ] [ renderFooter footerText_ ]
             ]
         ]
 
