@@ -13,6 +13,7 @@ import Element.Input as Input
 import Element.Keyed
 import Html exposing (..)
 import Html.Attributes as HA
+import Html.Lazy
 import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 import Markdown.Elm
@@ -977,7 +978,7 @@ renderAstFor ast =
 
 getFirstPart : String -> String
 getFirstPart str =
-    String.left 1500 str
+    String.left 2000 str
 
 
 processDocumentRequest : Model -> Maybe Document -> List Document -> ( Model, Cmd Msg )
@@ -1713,7 +1714,7 @@ config =
 
 
 
--- EDITOR --
+-- VIEW: DISPLAY RENDERED TEXT --
 
 
 editingDisplay : ViewInfo -> Model -> Element Msg
@@ -1726,7 +1727,7 @@ editingDisplay viewInfo model =
     in
     column []
         [ editingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, renderedSource viewInfo model ]
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, renderedSource viewInfo model rt ]
         , footer model
         ]
 
@@ -1742,8 +1743,60 @@ readingDisplay viewInfo model =
     in
     column [ paddingXY 0 0 ]
         [ readingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, renderedSource viewInfo model ]
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, renderedSource viewInfo model rt ]
         , footer model
+        ]
+
+
+renderedSource1 : ViewInfo -> Model -> RenderedText Msg -> Element Msg
+renderedSource1 viewInfo model rt =
+    let
+        w_ =
+            affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
+
+        h_ =
+            translate -viewInfo.vInset model.windowHeight
+
+        w2_ =
+            affine viewInfo.renderedDisplayWidth (viewInfo.hExtra + 160) model.windowWidth
+
+        wToc =
+            affine viewInfo.tocWidth viewInfo.hExtra model.windowWidth
+
+        hToc =
+            translate -viewInfo.vInset model.windowHeight
+    in
+    row [ spacing 10 ]
+        [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
+            [ column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ]
+        , Element.column [ width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (Style.makeGrey 0.9) ]
+            [ rt.toc |> Element.html ]
+        ]
+
+
+renderedSource : ViewInfo -> Model -> RenderedText Msg -> Element Msg
+renderedSource viewInfo model rt =
+    let
+        w_ =
+            affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
+
+        h_ =
+            translate -viewInfo.vInset model.windowHeight
+
+        w2_ =
+            affine viewInfo.renderedDisplayWidth (viewInfo.hExtra + 160) model.windowWidth
+
+        wToc =
+            affine viewInfo.tocWidth viewInfo.hExtra model.windowWidth
+
+        hToc =
+            translate -viewInfo.vInset model.windowHeight
+    in
+    row [ spacing 10 ]
+        [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
+            [ column [ width (px w2_), paddingXY 10 20 ] [ Html.Lazy.lazy (Html.div []) [ rt.document ] |> Element.html ] ]
+        , Element.column [ width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (Style.makeGrey 0.9) ]
+            [ rt.toc |> Element.html ]
         ]
 
 
@@ -1842,39 +1895,6 @@ headerButtonStyle color =
 
 headerLabelStyle =
     [ height (px 30), width (px 80), padding 8 ]
-
-
-
--- RENDERED SOURCE --
-
-
-renderedSource : ViewInfo -> Model -> Element Msg
-renderedSource viewInfo model =
-    let
-        rt =
-            model.renderedText
-
-        w_ =
-            affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
-
-        h_ =
-            translate -viewInfo.vInset model.windowHeight
-
-        w2_ =
-            affine viewInfo.renderedDisplayWidth (viewInfo.hExtra + 160) model.windowWidth
-
-        wToc =
-            affine viewInfo.tocWidth viewInfo.hExtra model.windowWidth
-
-        hToc =
-            translate -viewInfo.vInset model.windowHeight
-    in
-    row [ spacing 10 ]
-        [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
-            [ column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ]
-        , Element.column [ width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (Style.makeGrey 0.9) ]
-            [ rt.toc |> Element.html ]
-        ]
 
 
 
