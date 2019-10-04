@@ -1159,6 +1159,7 @@ updateDocumentText model str =
                 , lastAst = newAst
                 , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC newAst
                 , counter = model.counter + 1
+                , message = ( UserMessage, "update: " ++ String.fromInt model.counter )
               }
             , Cmd.none
             )
