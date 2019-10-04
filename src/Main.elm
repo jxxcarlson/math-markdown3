@@ -598,13 +598,7 @@ update msg model =
                     )
 
         SetCurrentDocument document ->
-            ( { model
-                | currentDocument = Just document
-                , tagString = document.tags |> String.join ", "
-                , counter = model.counter + 1
-              }
-            , Cmd.none
-            )
+            processDocument model document
 
         SetDocumentPublic bit ->
             case ( model.currentDocument, model.currentUser ) of
@@ -714,59 +708,7 @@ update msg model =
                             ( { model | message = ( ErrorMessage, "Get author docs:: request failed" ) }, Cmd.none )
 
                         Success documentList ->
-                            let
-                                currentDoc =
-                                    List.head documentList
-
-                                ( newAst, newRenderedText, cmd ) =
-                                    case currentDoc of
-                                        Nothing ->
-                                            ( emptyAst, emptyRenderedText, Cmd.none )
-
-                                        Just doc ->
-                                            let
-                                                content =
-                                                    Document.getContent model.currentDocument
-
-                                                lastAst =
-                                                    Markdown.ElmWithId.parse model.counter ExtendedMath content
-
-                                                nMath =
-                                                    Markdown.ElmWithId.numberOfMathElements lastAst
-
-                                                ( renderedText, cmd_ ) =
-                                                    if nMath > 10 then
-                                                        let
-                                                            firstAst =
-                                                                Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
-
-                                                            renderedText_ =
-                                                                Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
-
-                                                            cmd__ =
-                                                                renderAstFor lastAst
-                                                        in
-                                                        ( renderedText_
-                                                        , cmd__
-                                                        )
-
-                                                    else
-                                                        -- XXX
-                                                        ( Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst, Cmd.none )
-                                            in
-                                            ( lastAst, renderedText, cmd_ )
-                            in
-                            ( { model
-                                | documentList = documentList
-                                , currentDocument = currentDoc
-                                , tagString = getTagString currentDoc
-                                , counter = model.counter + 2
-                                , lastAst = newAst
-                                , renderedText = newRenderedText
-                                , message = ( UserMessage, "Success getting document list" )
-                              }
-                            , cmd
-                            )
+                            processDocumentRequest model documentList
 
                 GotPublicDocuments remoteData ->
                     case remoteData of
@@ -788,15 +730,11 @@ update msg model =
 
                                         Just document ->
                                             Just document
+
+                                ( newModel, cmd ) =
+                                    processDocumentRequest model documentList
                             in
-                            ( { model
-                                | documentList = documentList
-                                , currentDocument = currentDoc
-                                , tagString = getTagString currentDoc
-                                , message = ( UserMessage, "Success getting document list" )
-                              }
-                            , Cmd.none
-                            )
+                            ( { newModel | currentDocument = currentDoc }, cmd )
 
                 InsertDocumentResponse _ ->
                     ( { model | message = ( UserMessage, "New document saved" ) }, Cmd.none )
@@ -1102,6 +1040,107 @@ renderAstFor ast =
 getFirstPart : String -> String
 getFirstPart str =
     String.left 1500 str
+
+
+processDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
+processDocumentRequest model documentList =
+    let
+        currentDoc =
+            List.head documentList
+
+        ( newAst, newRenderedText, cmd ) =
+            case currentDoc of
+                Nothing ->
+                    ( emptyAst, emptyRenderedText, Cmd.none )
+
+                Just doc ->
+                    let
+                        content =
+                            Document.getContent model.currentDocument
+
+                        lastAst =
+                            Markdown.ElmWithId.parse model.counter ExtendedMath content
+
+                        nMath =
+                            Markdown.ElmWithId.numberOfMathElements lastAst
+
+                        ( renderedText, cmd_ ) =
+                            if nMath > 10 then
+                                let
+                                    firstAst =
+                                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+
+                                    renderedText_ =
+                                        Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+
+                                    cmd__ =
+                                        renderAstFor lastAst
+                                in
+                                ( renderedText_
+                                , cmd__
+                                )
+
+                            else
+                                -- XXX
+                                ( Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst, Cmd.none )
+                    in
+                    ( lastAst, renderedText, cmd_ )
+    in
+    ( { model
+        | documentList = documentList
+        , currentDocument = currentDoc
+        , tagString = getTagString currentDoc
+        , counter = model.counter + 2
+        , lastAst = newAst
+        , renderedText = newRenderedText
+        , message = ( UserMessage, "Success getting document list" )
+      }
+    , cmd
+    )
+
+
+processDocument : Model -> Document -> ( Model, Cmd Msg )
+processDocument model document =
+    let
+        ( newAst, newRenderedText, cmd ) =
+            let
+                lastAst =
+                    Markdown.ElmWithId.parse model.counter ExtendedMath document.content
+
+                nMath =
+                    Markdown.ElmWithId.numberOfMathElements lastAst
+
+                ( renderedText, cmd_ ) =
+                    if nMath > 10 then
+                        let
+                            firstAst =
+                                Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
+
+                            renderedText_ =
+                                Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+
+                            cmd__ =
+                                renderAstFor lastAst
+                        in
+                        ( renderedText_
+                        , cmd__
+                        )
+
+                    else
+                        ( Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst, Cmd.none )
+            in
+            ( lastAst, renderedText, cmd_ )
+    in
+    ( { model
+        | currentDocument = Just document
+        , counter = model.counter + 2
+        , lastAst = newAst
+        , renderedText = newRenderedText
+        , tagString = document.tags |> String.join ", "
+        , message = ( UserMessage, "Success getting document list" )
+      }
+    , cmd
+    )
 
 
 makeNewDocument : Model -> ( Model, Cmd Msg )
