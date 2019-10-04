@@ -1162,9 +1162,6 @@ updateDocumentText model str =
                 , lastAst = newAst
                 , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC newAst
                 , counter = model.counter + 1
-
-                -- message
-                , message = ( UserMessage, "update: " ++ String.fromInt model.counter )
               }
             , Cmd.none
             )
@@ -1873,8 +1870,8 @@ renderedSource viewInfo model =
             translate -viewInfo.vInset model.windowHeight
     in
     row [ spacing 10 ]
-        [ Element.Keyed.column [ width (px w_), height (px h_), clipX, Font.size 12 ]
-            [ ( "token", column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ) ]
+        [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
+            [ column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ]
         , Element.column [ width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (Style.makeGrey 0.9) ]
             [ rt.toc |> Element.html ]
         ]
