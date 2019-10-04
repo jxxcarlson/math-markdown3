@@ -54,7 +54,7 @@ getById str docList =
 
 footer : Document -> String
 footer document =
-    "\n\n___\n\n````\nAuthor: "
+    "Author: "
         ++ document.authorIdentifier
         ++ "\n"
         ++ "Public: "
@@ -67,13 +67,10 @@ footer document =
         ++ Utility.wordCount document.content
         ++ "\n"
         ++ "\n"
-        ++ "Document slug: "
         ++ makeSlug document
         ++ "\n"
-        ++ "Document id: "
         ++ (document.id |> Uuid.toString)
         ++ "\n"
-        ++ "````"
         ++ "\n\n"
 
 

@@ -1725,13 +1725,17 @@ editingDisplay : ViewInfo -> Model -> Element Msg
 editingDisplay viewInfo model =
     -- XXX
     let
+        footerText =
+            Maybe.map Document.footer model.currentDocument
+                |> Maybe.withDefault "FOOTER"
+
         rt : RenderedText Msg
         rt =
             model.renderedText
     in
     column []
         [ editingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, Element.Lazy.lazy (renderedSource viewInfo model) rt ]
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, Element.Lazy.lazy (renderedSource viewInfo model footerText) rt ]
         , footer model
         ]
 
@@ -1739,21 +1743,24 @@ editingDisplay viewInfo model =
 readingDisplay : ViewInfo -> Model -> Element Msg
 readingDisplay viewInfo model =
     let
-        --        footerText =
-        --            Maybe.map Document.footer model.currentDocument |> Maybe.withDefault ""
+        footerText =
+            Maybe.map Document.footer model.currentDocument
+                |> Maybe.withDefault "FOOTER"
+
+        -- XXX
         rt : RenderedText Msg
         rt =
             model.renderedText
     in
     column [ paddingXY 0 0 ]
         [ readingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, Element.Lazy.lazy (renderedSource viewInfo model) rt ]
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, Element.Lazy.lazy (renderedSource viewInfo model footerText) rt ]
         , footer model
         ]
 
 
-renderedSource : ViewInfo -> Model -> RenderedText Msg -> Element Msg
-renderedSource viewInfo model rt =
+renderedSource : ViewInfo -> Model -> String -> RenderedText Msg -> Element Msg
+renderedSource viewInfo model footerText_ rt =
     let
         w_ =
             affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
@@ -1772,10 +1779,20 @@ renderedSource viewInfo model rt =
     in
     row [ spacing 10 ]
         [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
-            [ column [ width (px w2_), paddingXY 10 20 ] [ rt.document |> Element.html ] ]
-        , Element.column [ width (px wToc), height (px hToc), scrollbarY, Font.size 12, paddingXY 20 0, Background.color (Style.makeGrey 0.9) ]
-            [ rt.toc |> Element.html ]
+            [ column [ width (px w2_), paddingXY 10 20 ]
+                [ rt.document |> Element.html
+                ]
+            ]
+        , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
+            [ column [ height (px (hToc - 100)), scrollbarY, clipX ] [ rt.toc |> Element.html ]
+            , column [ padding 8, width fill, height (px 100), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 0.8) ] [ renderFooter footerText_ ]
+            ]
         ]
+
+
+renderFooter : String -> Element Msg
+renderFooter str =
+    pre [ HA.style "font-size" "10px" ] [ Html.text str ] |> Element.html
 
 
 toolsOrDocs viewInfo model =
