@@ -1,8 +1,10 @@
 module Data exposing (loadingPage, rhsUserText)
 
+import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Utility exposing (getId)
 
 
+loadingPage : Document
 loadingPage =
     { id = getId 1
     , title = "Notes on Futhark"
@@ -11,6 +13,7 @@ loadingPage =
     , tags = [ "system" ]
     , public = True
     , slug = "loading"
+    , docType = Markdown MDExtendedMath
     }
 
 

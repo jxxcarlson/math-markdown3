@@ -44,11 +44,11 @@ import Api.Object.Document exposing (authorIdentifier)
 import Api.Object.Document_mutation_response as DocumentMutation
 import Api.Query as Query exposing (DocumentOptionalArguments)
 import CustomScalarCodecs exposing (Jsonb(..))
-import Document exposing (Document)
+import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
-import Graphql.SelectionSet as SelectionSet exposing (SelectionSet)
+import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Prng.Uuid exposing (Uuid(..))
 import RemoteData exposing (RemoteData)
 
@@ -267,14 +267,15 @@ equalToBoolean_ bit =
 
 documentListSelection : SelectionSet Document Api.Object.Document
 documentListSelection =
-    SelectionSet.map7 Document
-        Api.Object.Document.id
-        Api.Object.Document.title
-        Api.Object.Document.authorIdentifier
-        Api.Object.Document.content
-        Api.Object.Document.public
-        (Api.Object.Document.tags identity |> SelectionSet.map (\(Jsonb x) -> x))
-        Api.Object.Document.slug
+    SelectionSet.succeed Document
+        |> with Api.Object.Document.id
+        |> with Api.Object.Document.title
+        |> with Api.Object.Document.authorIdentifier
+        |> with Api.Object.Document.content
+        |> with Api.Object.Document.public
+        |> with (Api.Object.Document.tags identity |> SelectionSet.map (\(Jsonb x) -> x))
+        |> with Api.Object.Document.slug
+        |> with (Api.Object.Document.docType |> SelectionSet.map (\x -> Markdown MDExtendedMath))
 
 
 

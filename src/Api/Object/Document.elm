@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, id, public, slug, tags, timeStamp, title, user)
+module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, docType, id, public, slug, tags, timeStamp, title, user)
 
 import Api.InputObject
 import Api.Interface
@@ -27,6 +27,11 @@ authorIdentifier =
 content : SelectionSet String Api.Object.Document
 content =
     Object.selectionForField "String" "content" [] Decode.string
+
+
+docType : SelectionSet String Api.Object.Document
+docType =
+    Object.selectionForField "String" "docType" [] Decode.string
 
 
 id : SelectionSet CustomScalarCodecs.Uuid Api.Object.Document

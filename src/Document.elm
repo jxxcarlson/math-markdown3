@@ -1,5 +1,7 @@
 module Document exposing
-    ( Document
+    ( DocType(..)
+    , Document
+    , MarkdownFlavor(..)
     , create
     , footer
     , getById
@@ -24,7 +26,20 @@ type alias Document =
     , public : Bool
     , tags : List String
     , slug : String
+    , docType : DocType
     }
+
+
+type DocType
+    = Markdown MarkdownFlavor
+    | MiniLaTeX
+    | Collection
+
+
+type MarkdownFlavor
+    = MDStandard
+    | MDExtended
+    | MDExtendedMath
 
 
 setContent : String -> Document -> Document
@@ -121,6 +136,7 @@ create documentUuid authorIdentifier title content =
     , tags = []
     , public = False
     , slug = slug
+    , docType = Markdown MDExtendedMath
     }
 
 
