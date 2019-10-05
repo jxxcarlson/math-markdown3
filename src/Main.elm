@@ -585,6 +585,20 @@ update msg model =
                         Success documentList ->
                             processDocumentRequest model Nothing documentList
 
+                GotChildDocuments remoteData ->
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "Get child docs: not asked" ) }, Cmd.none )
+
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "Get child docs:: loading" ) }, Cmd.none )
+
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "Get child docs:: request failed" ) }, Cmd.none )
+
+                        Success documentList ->
+                            processChildDocumentRequest model documentList
+
                 GotPublicDocuments remoteData ->
                     case remoteData of
                         NotAsked ->
@@ -1038,6 +1052,16 @@ processDocumentRequest model maybeDocument documentList =
         , message = ( UserMessage, "Success getting document list" )
       }
     , cmd
+    )
+
+
+processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
+processChildDocumentRequest model documentList =
+    ( { model
+        | documentList = documentList
+        , message = ( UserMessage, "Success getting document list" )
+      }
+    , Cmd.none
     )
 
 
