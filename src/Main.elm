@@ -1117,8 +1117,14 @@ makeNewDocument model =
 
         Just user ->
             let
+                newDocumentText =
+                    "# New Document\n\nWrite something here ..."
+
                 newDocument =
-                    Document.create model.currentUuid user.username "New Document" "# New Document\n\nWrite something here ..."
+                    Document.create model.currentUuid user.username "New Document" newDocumentText
+
+                lastAst =
+                    Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
 
                 ( newUuid, newSeed ) =
                     step Uuid.generator model.currentSeed
@@ -1131,6 +1137,8 @@ makeNewDocument model =
                 , tagString = ""
                 , currentUuid = newUuid
                 , currentSeed = newSeed
+                , lastAst = lastAst
+                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
               }
             , Request.insertDocument hasuraToken newDocument |> Cmd.map Req
             )
