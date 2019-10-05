@@ -3,11 +3,13 @@ module Document exposing
     , Document
     , MarkdownFlavor(..)
     , create
+    , docTypeFromString
     , footer
     , getById
     , getContent
     , replaceInList
     , setContent
+    , stringFromDocType
     , updateMetaData
     )
 
@@ -40,6 +42,49 @@ type MarkdownFlavor
     = MDStandard
     | MDExtended
     | MDExtendedMath
+
+
+docTypeFromString : String -> DocType
+docTypeFromString str =
+    case str of
+        "MiniLaTeX" ->
+            MiniLaTeX
+
+        "Collection" ->
+            Collection
+
+        "MDStandard" ->
+            Markdown MDStandard
+
+        "MDExtended" ->
+            Markdown MDExtended
+
+        "MDExtendedMath" ->
+            Markdown MDExtendedMath
+
+        _ ->
+            Markdown MDExtendedMath
+
+
+stringFromDocType : DocType -> String
+stringFromDocType docType =
+    case docType of
+        MiniLaTeX ->
+            "MiniLaTeX"
+
+        Collection ->
+            "Collection"
+
+        Markdown flavor ->
+            case flavor of
+                MDStandard ->
+                    "MDStandard"
+
+                MDExtended ->
+                    "MDExtended"
+
+                MDExtendedMath ->
+                    "MDExtendedMath"
 
 
 setContent : String -> Document -> Document
@@ -80,6 +125,9 @@ footer document =
         ++ "\n"
         ++ "Words: "
         ++ Utility.wordCount document.content
+        ++ "\n"
+        ++ "Document type: "
+        ++ (document.docType |> stringFromDocType)
         ++ "\n"
         ++ "\n"
         ++ makeSlug document

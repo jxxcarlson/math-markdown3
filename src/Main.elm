@@ -1123,6 +1123,7 @@ makeNewDocument model =
                 newDocument =
                     Document.create model.currentUuid user.username "New Document" newDocumentText
 
+                -- XXX
                 lastAst =
                     Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
 
@@ -1146,7 +1147,6 @@ makeNewDocument model =
 
 updateDocumentText : Model -> String -> ( Model, Cmd Msg )
 updateDocumentText model str =
-    -- XXX
     case model.currentDocument of
         Nothing ->
             ( model, Cmd.none )
@@ -1316,10 +1316,19 @@ handleDeletedDocument model =
             let
                 newDocumentList =
                     List.filter (\doc -> doc.id /= deletedDocument.id) model.documentList
+
+                newDocumentText =
+                    Maybe.map .content (List.head newDocumentList) |> Maybe.withDefault "This is text"
+
+                -- XXX
+                lastAst =
+                    Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
             in
             ( { model
                 | documentList = newDocumentList
                 , currentDocument = List.head newDocumentList
+                , lastAst = lastAst
+                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
                 , message = ( UserMessage, "Document " ++ deletedDocument.title ++ " deleted" )
                 , visibilityOfTools = Invisible
               }
@@ -1731,7 +1740,6 @@ config =
 
 editingDisplay : ViewInfo -> Model -> Element Msg
 editingDisplay viewInfo model =
-    -- XXX
     let
         footerText =
             Maybe.map Document.footer model.currentDocument
@@ -1755,7 +1763,6 @@ readingDisplay viewInfo model =
             Maybe.map Document.footer model.currentDocument
                 |> Maybe.withDefault "FOOTER"
 
-        -- XXX
         rt : RenderedText Msg
         rt =
             model.renderedText

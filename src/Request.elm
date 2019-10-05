@@ -275,7 +275,7 @@ documentListSelection =
         |> with Api.Object.Document.public
         |> with (Api.Object.Document.tags identity |> SelectionSet.map (\(Jsonb x) -> x))
         |> with Api.Object.Document.slug
-        |> with (Api.Object.Document.docType |> SelectionSet.map (\x -> Markdown MDExtendedMath))
+        |> with (Api.Object.Document.docType |> SelectionSet.map Document.docTypeFromString)
 
 
 
@@ -293,6 +293,7 @@ insertDocumentObjects newDocument =
                 , content = Present newDocument.content
                 , public = Present newDocument.public
                 , tags = Present (newDocument.tags |> (\list -> Jsonb list)) -- Present (newDocument.tags |> String.join ", ")
+                , docType = Present (newDocument.docType |> Document.stringFromDocType)
             }
         )
 
@@ -378,6 +379,7 @@ setDocumentSetArg document =
                 , slug = OptionalArgument.Present document.slug
                 , public = OptionalArgument.Present document.public
                 , tags = Present (document.tags |> (\list -> Jsonb list))
+                , docType = Present (document.docType |> Document.stringFromDocType)
             }
         )
 
