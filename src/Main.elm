@@ -84,6 +84,7 @@ type alias Model =
     , counter : Int
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
+    , childDocumentList : List Document
     , currentDocument : Maybe Document
     , currentDocumentDirty : Bool
     , secondsWhileDirty : Int
@@ -208,6 +209,7 @@ init flags =
             , counter = 0
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
+            , childDocumentList = []
             , currentDocument = Nothing
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
@@ -1058,7 +1060,7 @@ processDocumentRequest model maybeDocument documentList =
 processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
 processChildDocumentRequest model documentList =
     ( { model
-        | documentList = documentList
+        | childDocumentList = documentList
         , message = ( UserMessage, "Success getting document list" )
       }
     , Cmd.none
