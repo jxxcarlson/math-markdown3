@@ -240,7 +240,6 @@ type Msg
     | GenerateSeed
     | NewSeed Int
       -- UI
-    | SetDocType DocType
     | SetToolPanelState Visibility
     | SetAppMode AppMode
     | WindowSize Int Int
@@ -263,6 +262,7 @@ type Msg
     | AllDocuments
     | GetPublicDocuments
     | GetHelpDocs
+    | SetDocType DocType
     | SetCurrentDocument Document
       -- Search
     | ClearSearchTerms
@@ -375,8 +375,18 @@ update msg model =
             )
 
         SetDocType docType ->
+            let
+                currentDocument =
+                    case model.currentDocument of
+                        Nothing ->
+                            Nothing
+
+                        Just doc ->
+                            Just { doc | docType = docType }
+            in
             ( { model
                 | docType = docType
+                , currentDocument = currentDocument
               }
             , Cmd.none
             )
