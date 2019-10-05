@@ -1123,7 +1123,6 @@ makeNewDocument model =
                 newDocument =
                     Document.create model.currentUuid user.username "New Document" newDocumentText
 
-                -- XXX
                 lastAst =
                     Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
 
@@ -1320,7 +1319,6 @@ handleDeletedDocument model =
                 newDocumentText =
                     Maybe.map .content (List.head newDocumentList) |> Maybe.withDefault "This is text"
 
-                -- XXX
                 lastAst =
                     Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
             in
