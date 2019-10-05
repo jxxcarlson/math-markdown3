@@ -21,6 +21,7 @@ import Api.InputObject
         , Document_set_input
         , String_comparison_exp
         , Uuid_comparison_exp
+        , Uuid_comparison_expOptionalFields
         , buildBoolean_comparison_exp
         , buildDocument_bool_exp
         , buildDocument_insert_input
@@ -76,6 +77,13 @@ endpoint =
 
 
 -- CMD: Top level, exported --
+
+
+documentsInIdList : String -> List Uuid -> Cmd RequestMsg
+documentsInIdList authToken uuiIdList =
+    makeGraphQLQuery authToken
+        (fetchDocumentsQuery (Present <| inUuidList uuiIdList))
+        (RemoteData.fromResult >> GotUserDocuments)
 
 
 documentsWithAuthorAndTag : String -> String -> String -> Cmd RequestMsg
@@ -232,6 +240,16 @@ isPublicAndTitle titleKey =
 equalToString : String -> String_comparison_exp
 equalToString str =
     buildString_comparison_exp (\args -> { args | eq_ = OptionalArgument.Present str })
+
+
+inUuidList : List Uuid -> Document_bool_exp
+inUuidList uuiIdList =
+    buildDocument_bool_exp (\args -> { args | id = Present <| inUuidList_ uuiIdList })
+
+
+inUuidList_ : List Uuid -> Uuid_comparison_exp
+inUuidList_ uuiIdList =
+    buildUuid_comparison_exp (\args -> { args | in_ = OptionalArgument.Present uuiIdList })
 
 
 
