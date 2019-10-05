@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (TagsOptionalArguments, authorIdentifier, content, docType, id, public, slug, tags, timeStamp, title, user)
+module Api.Object.Document exposing (ChildrenOptionalArguments, TagsOptionalArguments, authorIdentifier, children, content, docType, id, public, slug, tags, timeStamp, title, user)
 
 import Api.InputObject
 import Api.Interface
@@ -22,6 +22,28 @@ import Json.Decode as Decode
 authorIdentifier : SelectionSet String Api.Object.Document
 authorIdentifier =
     Object.selectionForField "String" "authorIdentifier" [] Decode.string
+
+
+type alias ChildrenOptionalArguments =
+    { path : OptionalArgument String }
+
+
+{-|
+
+  - path - JSON select path
+
+-}
+children : (ChildrenOptionalArguments -> ChildrenOptionalArguments) -> SelectionSet CustomScalarCodecs.Jsonb Api.Object.Document
+children fillInOptionals =
+    let
+        filledInOptionals =
+            fillInOptionals { path = Absent }
+
+        optionalArgs =
+            [ Argument.optional "path" filledInOptionals.path Encode.string ]
+                |> List.filterMap identity
+    in
+    Object.selectionForField "CustomScalarCodecs.Jsonb" "children" optionalArgs (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
 
 
 content : SelectionSet String Api.Object.Document

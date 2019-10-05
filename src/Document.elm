@@ -30,6 +30,7 @@ type alias Document =
     , tags : List String
     , slug : String
     , docType : DocType
+    , children : List Uuid
     }
 
 
@@ -196,6 +197,7 @@ create documentUuid authorIdentifier title content =
     , public = False
     , slug = slug
     , docType = Markdown MDExtendedMath
+    , children = []
     }
 
 

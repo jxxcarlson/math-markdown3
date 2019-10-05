@@ -1034,6 +1034,7 @@ processDocumentRequest model maybeDocument documentList =
         , counter = model.counter + 2
         , lastAst = newAst
         , renderedText = newRenderedText
+        , docType = Document.getDocType currentDoc
         , message = ( UserMessage, "Success getting document list" )
       }
     , cmd

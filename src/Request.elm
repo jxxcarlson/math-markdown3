@@ -49,8 +49,9 @@ import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
-import Prng.Uuid exposing (Uuid(..))
+import Prng.Uuid as Uuid exposing (Uuid(..))
 import RemoteData exposing (RemoteData)
+import Utility
 
 
 
@@ -276,6 +277,11 @@ documentListSelection =
         |> with (Api.Object.Document.tags identity |> SelectionSet.map (\(Jsonb x) -> x))
         |> with Api.Object.Document.slug
         |> with (Api.Object.Document.docType |> SelectionSet.map Document.docTypeFromString)
+        |> with
+            (Api.Object.Document.children identity
+                |> SelectionSet.map
+                    (\(Jsonb x) -> List.map (Uuid.fromString >> Maybe.withDefault Utility.id0) x)
+            )
 
 
 
