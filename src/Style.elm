@@ -1,4 +1,4 @@
-module Style exposing (activeButtonStyle, basicButtonsStyle, black, blue, buttonFontSize, buttonGrey, buttonStyleSelected, buttonStyleSelected_, charcoal, darkBlue, darkRed, green, grey, headerButton, inputStyle, lightGrey, mainColumn, makeGrey, mouseDownColor, multiline, preWrap, red, signInColumn, textInputStyle, textInputStyleSimple, white)
+module Style exposing (activeButtonStyle, basicButtonsStyle, black, blue, buttonFontSize, buttonGrey, buttonSelected, buttonSelected_, charcoal, darkBlue, darkRed, green, grey, headerButton, inputStyle, lightGrey, mainColumn, makeGrey, mouseDownColor, multiline, preWrap, red, signInColumn, textInputStyle, textInputStyleSimple, white)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -70,12 +70,12 @@ mouseDownColor =
     Element.rgb 0.7 0.1 0.1
 
 
-buttonStyleSelected =
-    buttonStyleSelected_ buttonGrey red
+buttonSelected =
+    buttonSelected_ buttonGrey red
 
 
-buttonStyleSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
-buttonStyleSelected_ color color2 width_ bit =
+buttonSelected_ : Color -> Color -> Int -> Bool -> List (Attr () msg)
+buttonSelected_ color color2 width_ bit =
     [ case bit of
         False ->
             Background.color color
@@ -86,7 +86,6 @@ buttonStyleSelected_ color color2 width_ bit =
     , width (px width_)
     , height (px 25)
     , Font.size 12
-    , centerX
     ]
 
 

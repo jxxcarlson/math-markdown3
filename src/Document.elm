@@ -7,6 +7,7 @@ module Document exposing
     , footer
     , getById
     , getContent
+    , getDocType
     , replaceInList
     , setContent
     , stringFromDocType
@@ -42,6 +43,16 @@ type MarkdownFlavor
     = MDStandard
     | MDExtended
     | MDExtendedMath
+
+
+getDocType : Maybe Document -> DocType
+getDocType maybeDocument =
+    case maybeDocument of
+        Nothing ->
+            Markdown MDExtendedMath
+
+        Just doc ->
+            doc.docType
 
 
 docTypeFromString : String -> DocType

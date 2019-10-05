@@ -4,7 +4,7 @@ import Browser
 import Browser.Dom
 import Browser.Events
 import Data
-import Document exposing (Document)
+import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -57,7 +57,7 @@ type alias Model =
     { seed : Int
 
     -- UI
-    , option : Markdown.Option.Option
+    , docType : Document.DocType
     , windowWidth : Int
     , windowHeight : Int
     , visibilityOfTools : Visibility
@@ -181,7 +181,7 @@ init flags =
             { seed = 0
 
             -- UI
-            , option = ExtendedMath
+            , docType = Markdown MDExtendedMath
             , windowWidth = flags.width
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
@@ -240,9 +240,7 @@ type Msg
     | GenerateSeed
     | NewSeed Int
       -- UI
-    | SelectStandard
-    | SelectExtended
-    | SelectExtendedMath
+    | SetDocType DocType
     | SetToolPanelState Visibility
     | SetAppMode AppMode
     | WindowSize Int Int
@@ -376,23 +374,9 @@ update msg model =
             , Cmd.none
             )
 
-        SelectStandard ->
+        SetDocType docType ->
             ( { model
-                | option = Standard
-              }
-            , Cmd.none
-            )
-
-        SelectExtended ->
-            ( { model
-                | option = Extended
-              }
-            , Cmd.none
-            )
-
-        SelectExtendedMath ->
-            ( { model
-                | option = ExtendedMath
+                | docType = docType
               }
             , Cmd.none
             )
@@ -964,7 +948,7 @@ emptyAst =
 
 emptyRenderedText : RenderedText Msg
 emptyRenderedText =
-    Markdown.ElmWithId.renderHtmlWithExternaTOC emptyAst
+    render (Markdown MDExtendedMath) emptyAst
 
 
 renderAstFor : Tree ParseWithId.MDBlockWithId -> Cmd Msg
@@ -1007,7 +991,7 @@ processDocumentRequest model maybeDocument documentList =
                             doc.content
 
                         lastAst =
-                            Markdown.ElmWithId.parse model.counter ExtendedMath content
+                            parse doc.docType model.counter content
 
                         nMath =
                             Markdown.ElmWithId.numberOfMathElements lastAst
@@ -1019,7 +1003,7 @@ processDocumentRequest model maybeDocument documentList =
                                         Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
 
                                     renderedText_ =
-                                        Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+                                        render doc.docType firstAst
 
                                     cmd__ =
                                         renderAstFor lastAst
@@ -1029,7 +1013,7 @@ processDocumentRequest model maybeDocument documentList =
                                 )
 
                             else
-                                ( Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst, Cmd.none )
+                                ( render doc.docType lastAst, Cmd.none )
                     in
                     ( lastAst, renderedText, cmd_ )
     in
@@ -1159,7 +1143,7 @@ updateDocumentText model str =
                     Document.updateMetaData updatedDoc1
 
                 newAst_ =
-                    Markdown.ElmWithId.parse model.counter model.option str
+                    parse updatedDoc2.docType model.counter str
 
                 newAst =
                     Diff.mergeWith ParseWithId.equal model.lastAst newAst_
@@ -1172,11 +1156,43 @@ updateDocumentText model str =
 
                 -- rendering
                 , lastAst = newAst
-                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC newAst
+                , renderedText = render updatedDoc2.docType newAst
                 , counter = model.counter + 1
               }
             , Cmd.none
             )
+
+
+
+-- PARSE AND RENDER
+
+
+parse : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId
+parse docType counter str =
+    case docType of
+        Markdown flavor ->
+            Markdown.ElmWithId.parse counter (markdownOptionOfFlavor flavor) str
+
+        _ ->
+            emptyAst
+
+
+render : DocType -> Tree ParseWithId.MDBlockWithId -> RenderedText Msg
+render docType ast =
+    Markdown.ElmWithId.renderHtmlWithExternaTOC ast
+
+
+markdownOptionOfFlavor : MarkdownFlavor -> Markdown.Option.Option
+markdownOptionOfFlavor flavor =
+    case flavor of
+        MDStandard ->
+            Standard
+
+        MDExtended ->
+            Extended
+
+        MDExtendedMath ->
+            ExtendedMath
 
 
 saveDocument : Model -> ( Model, Cmd Msg )
@@ -1316,17 +1332,23 @@ handleDeletedDocument model =
                 newDocumentList =
                     List.filter (\doc -> doc.id /= deletedDocument.id) model.documentList
 
+                newDocument =
+                    List.head newDocumentList
+
+                docType =
+                    Document.getDocType newDocument
+
                 newDocumentText =
-                    Maybe.map .content (List.head newDocumentList) |> Maybe.withDefault "This is text"
+                    Maybe.map .content (List.head newDocumentList) |> Maybe.withDefault "This is test"
 
                 lastAst =
-                    Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+                    parse docType model.counter newDocumentText
             in
             ( { model
                 | documentList = newDocumentList
                 , currentDocument = List.head newDocumentList
                 , lastAst = lastAst
-                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+                , renderedText = render docType lastAst
                 , message = ( UserMessage, "Document " ++ deletedDocument.title ++ " deleted" )
                 , visibilityOfTools = Invisible
               }
@@ -2317,11 +2339,17 @@ status model =
 
 
 flavors model =
-    column [ spacing 10, Background.color Style.charcoal, padding 22 ]
-        [ el [ Font.color Style.white, Font.bold ] (Element.text "Markdown Flavor")
-        , standardMarkdownButton model 93
-        , extendedMarkdownButton model 93
-        , extendedMathMarkdownButton model 93
+    let
+        w =
+            120
+    in
+    column [ spacing 0 ]
+        [ el [ Font.color Style.white, Font.bold, paddingXY 0 8 ] (Element.text "Document Type")
+        , miniLaTeXButton model w
+        , collectionButton model w
+        , standardMarkdownButton model w
+        , extendedMarkdownButton model w
+        , extendedMathMarkdownButton model w
         ]
 
 
@@ -2329,28 +2357,46 @@ flavors model =
 ---- BUTTONS --
 
 
+miniLaTeXButton model width =
+    let
+        bit =
+            model.docType == MiniLaTeX
+    in
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType MiniLaTeX), label = el [ paddingXY 8 0 ] (Element.text "MiniLaTeX") }
+
+
+collectionButton model width =
+    let
+        bit =
+            model.docType == Collection
+    in
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType Collection), label = el [ paddingXY 8 0 ] (Element.text "Collection") }
+
+
 standardMarkdownButton model width =
     let
         bit =
-            model.option == Standard
+            model.docType == Markdown MDStandard
     in
-    Input.button (Style.buttonStyleSelected width bit)
-        { onPress = Just SelectStandard, label = el [ centerX ] (Element.text "Standard") }
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType (Markdown MDStandard)), label = el [ paddingXY 8 0 ] (Element.text "Markdown standard") }
 
 
 extendedMarkdownButton model width =
     let
         bit =
-            model.option == Extended
+            model.docType == Markdown MDExtended
     in
-    Input.button (Style.buttonStyleSelected width bit)
-        { onPress = Just SelectExtended, label = el [ centerX ] (Element.text "Extended") }
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType (Markdown MDExtended)), label = el [ paddingXY 8 0 ] (Element.text "Markdown extended") }
 
 
 extendedMathMarkdownButton model width =
     let
         bit =
-            model.option == ExtendedMath
+            model.docType == Markdown MDExtendedMath
     in
-    Input.button (Style.buttonStyleSelected width bit)
-        { onPress = Just SelectExtendedMath, label = el [ centerX ] (Element.text "ExtendedMath") }
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType (Markdown MDExtendedMath)), label = el [ paddingXY 8 0 ] (Element.text "Markdown math") }
