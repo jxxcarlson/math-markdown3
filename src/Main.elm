@@ -1076,26 +1076,32 @@ processDocument model document =
                 nMath =
                     Markdown.ElmWithId.numberOfMathElements lastAst
 
-                ( renderedText, cmd_ ) =
+                renderedText =
                     if nMath > 10 then
                         let
                             firstAst =
                                 Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
-
-                            renderedText_ =
-                                Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
-
-                            cmd__ =
-                                renderAstFor lastAst
                         in
-                        ( renderedText_
-                        , cmd__
-                        )
+                        Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
 
                     else
-                        ( Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst, Cmd.none )
+                        Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+
+                cmd1 =
+                    if nMath > 10 then
+                        renderAstFor lastAst
+
+                    else
+                        Cmd.none
+
+                cmd2 =
+                    if document.children == [] then
+                        Cmd.none
+
+                    else
+                        Request.documentsInIdList hasuraToken document.children |> Cmd.map Req
             in
-            ( lastAst, renderedText, cmd_ )
+            ( lastAst, renderedText, Cmd.batch [ cmd1, cmd2 ] )
     in
     ( { model
         | currentDocument = Just document
