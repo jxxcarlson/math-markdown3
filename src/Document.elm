@@ -173,9 +173,9 @@ footer document =
         ++ "\n"
         ++ "Children: "
         ++ String.fromInt (List.length document.children)
-        ++ "\n"
-        ++ "\nSummary: "
-        ++ childrenSummary document
+        --        ++ "\n"
+        --        ++ "\nSummary: "
+        --        ++ childrenSummary document
         ++ "\n\n"
         ++ makeSlug document
         ++ "\n"
