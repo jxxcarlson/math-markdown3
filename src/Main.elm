@@ -131,8 +131,13 @@ type FocusedElement
 
 type AppMode
     = Reading
-    | Editing
+    | Editing EditMode
     | UserMode UserState
+
+
+type EditMode
+    = StandardEditing
+    | SubdocumentEditing
 
 
 type UserState
@@ -148,8 +153,11 @@ appStateAsString model =
         Reading ->
             "Reading"
 
-        Editing ->
+        Editing StandardEditing ->
             "Editing"
+
+        Editing SubdocumentEditing ->
+            "Editing subdocuments"
 
         UserMode SignInState ->
             "Signing in"
@@ -422,8 +430,8 @@ update msg model =
                 Reading ->
                     setModeToReading model
 
-                Editing ->
-                    setModeToEditing model
+                Editing editMode ->
+                    setModeToEditing model editMode
 
                 UserMode s ->
                     setUserMode model s
@@ -689,7 +697,7 @@ handleKey model key =
             getAllDocuments model
 
         Character "e" ->
-            setModeToEditing model
+            setModeToEditing model StandardEditing
 
         --        Character "f" ->
         --            ( model, focusSearchBox )
@@ -1199,7 +1207,7 @@ makeNewDocument model =
                 | currentDocument = Just newDocument
                 , documentList = newDocument :: model.documentList
                 , visibilityOfTools = Visible
-                , appMode = Editing
+                , appMode = Editing StandardEditing
                 , tagString = ""
                 , currentUuid = newUuid
                 , currentSeed = newSeed
@@ -1285,7 +1293,7 @@ newSubdocument_ model user masterDocument currentDocument =
         , childDocumentList = newChildDocumentList
         , documentList = newDocumentList
         , visibilityOfTools = Invisible
-        , appMode = Editing
+        , appMode = Editing StandardEditing
         , tagString = ""
         , currentUuid = newUuid
         , currentSeed = newSeed
@@ -1451,8 +1459,8 @@ setModeToReading model =
     ( { model | appMode = Reading, visibilityOfTools = Invisible }, Cmd.none )
 
 
-setModeToEditing : Model -> ( Model, Cmd Msg )
-setModeToEditing model =
+setModeToEditing : Model -> EditMode -> ( Model, Cmd Msg )
+setModeToEditing model editMode =
     let
         visibility =
             case model.documentListType of
@@ -1462,7 +1470,7 @@ setModeToEditing model =
                 DocumentChildren ->
                     Invisible
     in
-    ( { model | appMode = Editing, visibilityOfTools = visibility }, Cmd.none )
+    ( { model | appMode = Editing editMode, visibilityOfTools = visibility }, Cmd.none )
 
 
 setUserMode : Model -> UserState -> ( Model, Cmd msg )
@@ -1477,7 +1485,7 @@ setUserMode model s =
 
 toggleKeyboardTools : Model -> ( Model, Cmd Msg )
 toggleKeyboardTools model =
-    if model.appMode /= Editing then
+    if model.appMode /= Editing StandardEditing then
         ( model, Cmd.none )
 
     else
@@ -1553,8 +1561,11 @@ view model =
         Reading ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (readingDisplay viewInfoReading model)
 
-        Editing ->
+        Editing StandardEditing ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (editingDisplay viewInfoEditing model)
+
+        Editing SubdocumentEditing ->
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (subdocumentEditor viewInfoEditing model)
 
         UserMode _ ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (userPageDisplay viewInfoUserPage model)
@@ -1939,6 +1950,19 @@ config =
 -- VIEW: DISPLAY RENDERED TEXT --
 
 
+subdocumentEditor : ViewInfo -> Model -> Element Msg
+subdocumentEditor viewInfo model =
+    let
+        footerText =
+            Maybe.map Document.footer model.currentDocument
+                |> Maybe.withDefault "FOOTER"
+    in
+    column []
+        [ row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model ]
+        , footer model
+        ]
+
+
 editingDisplay : ViewInfo -> Model -> Element Msg
 editingDisplay viewInfo model =
     let
@@ -2013,7 +2037,7 @@ renderFooter str =
 
 toolsOrDocs viewInfo model =
     case ( model.visibilityOfTools, model.appMode ) of
-        ( Visible, Editing ) ->
+        ( Visible, Editing StandardEditing ) ->
             toolPanel viewInfo model
 
         ( _, _ ) ->
@@ -2069,14 +2093,14 @@ userPageModeButton model =
 editingModeButton model =
     let
         color =
-            if model.appMode == Editing then
+            if model.appMode == Editing StandardEditing then
                 Style.red
 
             else
                 Style.buttonGrey
     in
     Input.button []
-        { onPress = Just (SetAppMode Editing)
+        { onPress = Just (SetAppMode (Editing StandardEditing))
         , label =
             el (headerButtonStyle color)
                 (el headerLabelStyle (Element.text "Edit"))
@@ -2089,7 +2113,7 @@ newSubdocumentButton model =
             Maybe.map (.children >> List.length) model.currentDocument
                 |> Maybe.withDefault 0
     in
-    showIf (model.appMode == Editing && model.currentUser /= Nothing && numberOfChildren > 0)
+    showIf (List.member model.appMode [ Editing SubdocumentEditing, Editing StandardEditing ] && model.currentUser /= Nothing && numberOfChildren > 0)
         (Input.button
             []
             { onPress = Just NewSubdocument
@@ -2482,7 +2506,7 @@ titleRow titleWidth rt =
 
 editTools : Model -> Element Msg
 editTools model =
-    if model.appMode == Editing then
+    if model.appMode == Editing StandardEditing then
         row [ spacing 6 ]
             [ editingModeButton model
             , newDocumentButton model
@@ -2517,7 +2541,7 @@ showToolsButton model =
                 Style.buttonGrey
     in
     case model.appMode of
-        Editing ->
+        Editing StandardEditing ->
             Input.button []
                 { onPress = Just (SetToolPanelState Visible)
                 , label = el [ height (px 30), width (px 50), padding 8, Background.color color, Font.color Style.white, Font.size 12 ] (Element.text "Tools")
@@ -2564,7 +2588,7 @@ footer model =
 
 dirtyDocumentDisplay : Model -> Element Msg
 dirtyDocumentDisplay model =
-    case ( model.appMode == Editing, model.currentUser ) of
+    case ( model.appMode == Editing StandardEditing, model.currentUser ) of
         ( True, Just _ ) ->
             dirtyDocumentDisplay_ model
 
