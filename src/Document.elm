@@ -3,6 +3,7 @@ module Document exposing
     , Document
     , MarkdownFlavor(..)
     , create
+    , deleteChild
     , docTypeFromString
     , footer
     , getById
@@ -174,6 +175,11 @@ sortChildren master list =
             List.Extra.elemIndex doc.id idList |> Maybe.withDefault -1
     in
     List.sortBy order list
+
+
+deleteChild : Document -> Document -> Document
+deleteChild documentToDelete masterDocument =
+    { masterDocument | children = List.filter (\uuid -> uuid /= documentToDelete.id) masterDocument.children }
 
 
 setContent : String -> Document -> Document

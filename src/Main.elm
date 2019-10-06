@@ -291,6 +291,7 @@ type Msg
       -- Subdocuments
     | NewSubdocument
     | AddSubdocument
+    | DeleteSubdocument
     | SetUpOutline
     | ReorderChildren
     | GotOutline String
@@ -529,6 +530,9 @@ update msg model =
 
         AddSubdocument ->
             addSubdocument model
+
+        DeleteSubdocument ->
+            deleteSubdocument model
 
         SaveDocument ->
             saveDocument model
@@ -1324,6 +1328,37 @@ addSubdocument model =
             ( model, Cmd.none )
 
 
+deleteSubdocument : Model -> ( Model, Cmd Msg )
+deleteSubdocument model =
+    case ( List.head model.childDocumentList, model.currentDocument ) of
+        ( Just masterDocument, Just documentToDelete ) ->
+            deleteSubdocument_ model masterDocument documentToDelete
+
+        ( _, _ ) ->
+            ( model, Cmd.none )
+
+
+deleteSubdocument_ : Model -> Document -> Document -> ( Model, Cmd Msg )
+deleteSubdocument_ model masterDocument documentToDelete =
+    let
+        newMasterDocument =
+            Document.deleteChild documentToDelete masterDocument
+
+        newChildDocumentList =
+            List.filter (\doc -> doc.id /= documentToDelete.id) model.childDocumentList
+
+        newDocumentList =
+            List.filter (\doc -> doc.id /= documentToDelete.id) model.documentList
+    in
+    ( { model
+        | currentDocument = Just newMasterDocument
+        , childDocumentList = newChildDocumentList
+        , documentList = newDocumentList
+      }
+    , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+    )
+
+
 addSubdocument_ : Model -> User -> Document -> Uuid.Uuid -> ( Model, Cmd Msg )
 addSubdocument_ model user masterDocument newUuid =
     let
@@ -2088,7 +2123,7 @@ subdocumentEditor viewInfo model =
             [ tabStrip viewInfo model
             , toolsOrDocs viewInfo model
             , subDocumentTools model
-            , column [ spacing 10 ] [ setupOutlineButton model, reorderChildreButton model, inputOutline model ]
+            , column [ spacing 4, alignTop, padding 20 ] [ setupOutlineButton model, reorderChildrenButton model, inputOutline model ]
             ]
 
         -- XXX
@@ -2102,17 +2137,18 @@ subdocumentEditor viewInfo model =
 
 subDocumentTools model =
     let
-        message =
+        ( message1, message2 ) =
             case model.currentDocument of
                 Nothing ->
-                    "Master document not selected"
+                    ( "Master document not selected", "" )
 
                 Just master ->
-                    "Add subdocument to " ++ master.title
+                    ( "Search, then click below to add subdocument to", master.title )
     in
-    column [ spacing 12, Background.color Style.lightGrey, padding 12, alignTop ]
-        [ el [ Font.size 12 ] (Element.text message)
-        , column [ Font.size 13, spacing 8 ] (List.map addSubdocumentButton2 model.candidateChildDocumentList)
+    column [ spacing 12, paddingXY 18 24, alignTop ]
+        [ el [ Font.size 14, width (px 300) ] (Element.text message1)
+        , el [ Font.size 14, width (px 300), Font.bold ] (Element.text message2)
+        , column [ Font.size 13, spacing 8, width (px 350), height (px 500), Border.color Style.charcoal, Border.width 1, padding 12, scrollbarY ] (List.map addSubdocumentButton2 model.candidateChildDocumentList)
         ]
 
 
@@ -2148,7 +2184,7 @@ setupOutlineButton model =
     Input.button [] { onPress = Just SetUpOutline, label = el xButtonStyle (Element.text "Setup outline") }
 
 
-reorderChildreButton model =
+reorderChildrenButton model =
     Input.button [] { onPress = Just ReorderChildren, label = el xButtonStyle (Element.text "Reorder") }
 
 
@@ -2346,7 +2382,7 @@ newSubdocumentButton model =
             Maybe.map (.children >> List.length) model.currentDocument
                 |> Maybe.withDefault 0
     in
-    showIf (List.member model.appMode [ Editing SubdocumentEditing, Editing StandardEditing ] && model.currentUser /= Nothing && numberOfChildren > 0)
+    showIf (model.appMode == Editing SubdocumentEditing && numberOfChildren > 0)
         (Input.button
             []
             { onPress = Just NewSubdocument
@@ -2357,7 +2393,26 @@ newSubdocumentButton model =
         )
 
 
+deleteSubdocumentButton : Model -> Element Msg
+deleteSubdocumentButton model =
+    let
+        numberOfChildren =
+            Maybe.map (.children >> List.length) model.currentDocument
+                |> Maybe.withDefault 0
+    in
+    showIf (model.appMode == Editing SubdocumentEditing)
+        (Input.button
+            []
+            { onPress = Just DeleteSubdocument
+            , label =
+                el []
+                    (el (headingButtonStyle 140) (Element.text "Delete subdocument"))
+            }
+        )
 
+
+
+--)
 --
 --addSubdocumentButton model =
 --    showIf (model.currentUser /= Nothing)
@@ -2552,7 +2607,7 @@ docListViewer viewInfo model =
         , alignTop
         , clipX
         ]
-        [ column [ Font.size 13, spacing 8 ] (heading model :: newSubdocumentButton model :: List.map (tocEntry model.currentDocument) list) ]
+        [ column [ Font.size 13, spacing 8 ] (heading model :: newSubdocumentButton model :: deleteSubdocumentButton model :: List.map (tocEntry model.currentDocument) list) ]
 
 
 tocEntry : Maybe Document -> Document -> Element Msg
