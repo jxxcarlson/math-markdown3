@@ -86,6 +86,7 @@ type alias Model =
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
     , childDocumentList : List Document
+    , childDocIdString : String
     , currentDocument : Maybe Document
     , currentDocumentDirty : Bool
     , secondsWhileDirty : Int
@@ -217,6 +218,7 @@ init flags =
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
             , childDocumentList = []
+            , childDocIdString = ""
             , currentDocument = Nothing
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
@@ -267,6 +269,7 @@ type Msg
       -- Document
     | CreateDocument
     | NewSubdocument
+    | AddSubdocument
     | SaveDocument
     | GetUserDocuments
     | AllDocuments
@@ -289,6 +292,7 @@ type Msg
     | SetDocumentPublic Bool
     | GotSecondPart (RenderedText Msg)
     | GotTagString String
+    | GotChildDocIdString String
     | Clear
     | Req RequestMsg
 
@@ -506,6 +510,9 @@ update msg model =
         NewSubdocument ->
             newSubdocument model
 
+        AddSubdocument ->
+            addSubdocument model
+
         SaveDocument ->
             saveDocument model
 
@@ -544,6 +551,9 @@ update msg model =
 
         GotTagString str ->
             processTagString model str
+
+        GotChildDocIdString str ->
+            ( { model | childDocIdString = str }, Cmd.none )
 
         GotSearchTerms str ->
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
@@ -1209,6 +1219,11 @@ newSubdocument model =
 
         ( _, _, _ ) ->
             ( model, Cmd.none )
+
+
+addSubdocument : Model -> ( Model, Cmd Msg )
+addSubdocument model =
+    ( model, Cmd.none )
 
 
 newSubdocument_ : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
@@ -2043,7 +2058,12 @@ editingModeButton model =
 
 
 newSubdocumentButton model =
-    showIf (model.appMode == Editing)
+    let
+        numberOfChildren =
+            Maybe.map (.children >> List.length) model.currentDocument
+                |> Maybe.withDefault 0
+    in
+    showIf (model.appMode == Editing && model.currentUser /= Nothing && numberOfChildren > 0)
         (Input.button
             []
             { onPress = Just NewSubdocument
@@ -2052,6 +2072,25 @@ newSubdocumentButton model =
                     (el (headingButtonStyle 140) (Element.text "New subocument"))
             }
         )
+
+
+addSubdocumentButton model =
+    Input.button
+        []
+        { onPress = Just AddSubdocument
+        , label =
+            el []
+                (el (headingButtonStyle 140) (Element.text "Add subdocument"))
+        }
+
+
+inputDocumentId model =
+    Input.text (Style.inputStyle 140 ++ [ Font.size 11 ])
+        { onChange = GotChildDocIdString
+        , text = model.childDocIdString
+        , placeholder = Nothing
+        , label = Input.labelRight [ Font.size 12, Font.color Style.white, width (px 0) ] (Element.text "")
+        }
 
 
 readingModeButton model =
@@ -2097,6 +2136,8 @@ toolPanel viewInfo model =
         ]
         [ column [ Font.size 13, spacing 15 ]
             [ el [ Font.size 16, Font.bold, Font.color Style.white ] (Element.text "Document tools")
+            , addSubdocumentButton model
+            , inputDocumentId model
             , togglePublic model
             , inputTags model
             , flavors model
@@ -2129,13 +2170,13 @@ togglePublic model =
                 True ->
                     Input.button []
                         { onPress = Just (SetDocumentPublic False)
-                        , label = el toolButtonStyleInHeader (Element.text "Public")
+                        , label = el (headingButtonStyle 140) (Element.text "Public")
                         }
 
                 False ->
                     Input.button []
                         { onPress = Just (SetDocumentPublic True)
-                        , label = el toolButtonStyleInHeader (Element.text "Private")
+                        , label = el (headingButtonStyle 140) (Element.text "Private")
                         }
 
 
