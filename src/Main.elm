@@ -586,8 +586,16 @@ update msg model =
 
                         newMasterDocument =
                             Document.reorderChildren masterDocument titleList (List.drop 1 model.childDocumentList)
+
+                        newChildDocuemntList =
+                            newMasterDocument :: List.drop 1 model.childDocumentList
                     in
-                    ( { model | currentDocument = Just newMasterDocument }, Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req )
+                    ( { model
+                        | currentDocument = Just newMasterDocument
+                        , childDocumentList = newChildDocuemntList
+                      }
+                    , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+                    )
 
         SetDocumentPublic bit ->
             setDocumentPublic model bit
@@ -1580,7 +1588,13 @@ setModeToEditing model editMode =
                 DocumentChildren ->
                     Invisible
     in
-    ( { model | appMode = Editing editMode, visibilityOfTools = visibility }, Cmd.none )
+    ( { model
+        | appMode = Editing editMode
+        , visibilityOfTools = visibility
+        , documentOutline = setupOutline_ model
+      }
+    , Cmd.none
+    )
 
 
 setUserMode : Model -> UserState -> ( Model, Cmd msg )
@@ -2102,19 +2116,28 @@ subDocumentTools model =
         ]
 
 
+
+-- XXX: Deprecated
+
+
 setupOutline : Model -> Model
 setupOutline model =
-    case model.currentDocument of
-        Nothing ->
-            model
+    { model | documentOutline = setupOutline_ model }
 
+
+setupOutline_ : Model -> String
+setupOutline_ model =
+    case model.currentDocument of
         Just doc ->
             case Just doc.id == Maybe.map .id (List.head model.childDocumentList) of
                 False ->
-                    model
+                    model.documentOutline
 
                 True ->
-                    { model | documentOutline = getTitles (List.drop 1 model.childDocumentList) }
+                    getTitles (List.drop 1 model.childDocumentList)
+
+        Nothing ->
+            model.documentOutline
 
 
 xButtonStyle =
