@@ -691,13 +691,12 @@ handleKey model key =
         Character "e" ->
             setModeToEditing model
 
-        Character "f" ->
-            ( model, focusSearchBox )
-
+        --        Character "f" ->
+        --            ( model, focusSearchBox )
         Character "h" ->
             getHelpDocs model
 
-        Character "k" ->
+        Character "f" ->
             clearSearchTerms model
 
         Character "n" ->
