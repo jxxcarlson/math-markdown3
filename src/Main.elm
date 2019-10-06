@@ -96,6 +96,7 @@ type alias Model =
     , tagString : String
     , searchTerms : String
     , searchMode : SearchMode
+    , documentOutline : String
     }
 
 
@@ -237,6 +238,7 @@ init flags =
             , tagString = ""
             , searchTerms = ""
             , searchMode = PublicSearch
+            , documentOutline = ""
             }
     in
     ( model
@@ -298,6 +300,7 @@ type Msg
     | DeleteDocument
     | CancelDeleteDocument
       -- Doc Update
+    | GotOutline String
     | AddThisDocumentToMaster Document
     | UpdateDocumentText String
     | SetDocumentPublic Bool
@@ -553,6 +556,9 @@ update msg model =
 
         AddThisDocumentToMaster document ->
             addDocumentToMaster model document
+
+        GotOutline str ->
+            ( { model | documentOutline = str }, Cmd.none )
 
         UpdateDocumentText str ->
             updateDocumentText model str
@@ -2029,6 +2035,7 @@ config =
 
 
 -- VIEW: DISPLAY RENDERED TEXT --
+-- SUBDOCUMENT EDITOR
 
 
 subdocumentEditor : ViewInfo -> Model -> Element Msg
@@ -2066,6 +2073,20 @@ subDocumentTools model =
 addSubdocumentButton2 : Document -> Element Msg
 addSubdocumentButton2 document =
     Input.button [] { onPress = Just (AddThisDocumentToMaster document), label = el [ Font.color Style.blue ] (Element.text document.title) }
+
+
+inputOutline model =
+    Input.multiline (Style.textInputStyleSimple 180 80)
+        { onChange = GotOutline
+        , text = model.tagString
+        , placeholder = Nothing
+        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "Outline")
+        , spellcheck = False
+        }
+
+
+
+-- EDITOR
 
 
 editingDisplay : ViewInfo -> Model -> Element Msg
