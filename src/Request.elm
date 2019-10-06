@@ -64,6 +64,7 @@ import Utility
 type RequestMsg
     = GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+    | GotCandidateChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotPublicDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))

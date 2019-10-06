@@ -86,6 +86,7 @@ type alias Model =
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
     , childDocumentList : List Document
+    , candidateChildDocumentList : List Document
     , childDocIdString : String
     , currentDocument : Maybe Document
     , currentDocumentDirty : Bool
@@ -226,6 +227,7 @@ init flags =
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
             , childDocumentList = []
+            , candidateChildDocumentList = []
             , childDocIdString = ""
             , currentDocument = Nothing
             , currentDocumentDirty = False
@@ -296,6 +298,7 @@ type Msg
     | DeleteDocument
     | CancelDeleteDocument
       -- Doc Update
+    | AddThisDocumentToMaster Document
     | UpdateDocumentText String
     | SetDocumentPublic Bool
     | GotSecondPart (RenderedText Msg)
@@ -548,6 +551,9 @@ update msg model =
         GetHelpDocs ->
             getHelpDocs model
 
+        AddThisDocumentToMaster document ->
+            addDocumentToMaster model document
+
         UpdateDocumentText str ->
             updateDocumentText model str
 
@@ -639,6 +645,20 @@ update msg model =
                         Success documentList ->
                             processChildDocumentRequest model documentList
 
+                GotCandidateChildDocuments remoteData ->
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "Get child docs: not asked" ) }, Cmd.none )
+
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "Get child docs:: loading" ) }, Cmd.none )
+
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "Get child docs:: request failed" ) }, Cmd.none )
+
+                        Success documentList ->
+                            processCandidateChildDocumentRequest model documentList
+
                 GotPublicDocuments remoteData ->
                     case remoteData of
                         NotAsked ->
@@ -684,7 +704,12 @@ keyboardGateway model ( pressedKeys, maybeKeyChange ) =
             newModel =
                 { model | pressedKeys = [] }
         in
-        doSearch newModel
+        case model.appMode == Editing SubdocumentEditing of
+            True ->
+                searchForChildDocuments model
+
+            False ->
+                doSearch newModel
 
     else
         ( { model | pressedKeys = pressedKeys }, Cmd.none )
@@ -982,6 +1007,26 @@ searchForUsersDocuments model =
     ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
+searchForChildDocuments : Model -> ( Model, Cmd Msg )
+searchForChildDocuments model =
+    let
+        authorIdentifier =
+            model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
+
+        cmd =
+            case parseSearchTerm model.searchTerms of
+                ( TitleSearch, searchTerm ) ->
+                    Request.documentsWithAuthorAndTitle hasuraToken authorIdentifier searchTerm GotCandidateChildDocuments |> Cmd.map Req
+
+                ( KeywordSearch, searchTerm ) ->
+                    Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm GotCandidateChildDocuments |> Cmd.map Req
+
+                ( NoSearchTerm, _ ) ->
+                    Cmd.none
+    in
+    ( model, cmd )
+
+
 searchForPublicDocuments : Model -> ( Model, Cmd Msg )
 searchForPublicDocuments model =
     let
@@ -1108,6 +1153,16 @@ processChildDocumentRequest model documentList =
     ( { model
         | childDocumentList = newDocumentList
         , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
+      }
+    , Cmd.none
+    )
+
+
+processCandidateChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
+processCandidateChildDocumentRequest model documentList =
+    ( { model
+        | candidateChildDocumentList = documentList
+        , message = ( UserMessage, "Candidate child documents: " ++ String.fromInt (List.length documentList) )
       }
     , Cmd.none
     )
@@ -1243,6 +1298,32 @@ addSubdocument_ model user masterDocument newUuid =
             { masterDocument | children = newChildren }
     in
     ( { model | currentDocument = Just newMasterDocument, appMode = Reading }
+    , Cmd.batch
+        [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+        , Request.documentsInIdList hasuraToken newChildren |> Cmd.map Req
+        ]
+    )
+
+
+addDocumentToMaster model document =
+    case ( model.currentUser, model.currentDocument ) of
+        ( Just user, Just master ) ->
+            addDocumentToMaster_ model document master
+
+        ( _, _ ) ->
+            ( model, Cmd.none )
+
+
+addDocumentToMaster_ model document master =
+    let
+        newChildren =
+            master.children
+                ++ [ document.id ]
+
+        newMasterDocument =
+            { master | children = newChildren }
+    in
+    ( { model | currentDocument = Just newMasterDocument }
     , Cmd.batch
         [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
         , Request.documentsInIdList hasuraToken newChildren |> Cmd.map Req
@@ -1967,8 +2048,24 @@ subdocumentEditor viewInfo model =
 
 
 subDocumentTools model =
+    let
+        message =
+            case model.currentDocument of
+                Nothing ->
+                    "Master document not selected"
+
+                Just master ->
+                    "Add subdocument to " ++ master.title
+    in
     column [ spacing 12, Background.color Style.lightGrey, padding 12, alignTop ]
-        [ addSubdocumentButton model, inputDocumentId model ]
+        [ el [ Font.size 12 ] (Element.text message)
+        , column [ Font.size 13, spacing 8 ] (List.map addSubdocumentButton2 model.candidateChildDocumentList)
+        ]
+
+
+addSubdocumentButton2 : Document -> Element Msg
+addSubdocumentButton2 document =
+    Input.button [] { onPress = Just (AddThisDocumentToMaster document), label = el [ Font.color Style.blue ] (Element.text document.title) }
 
 
 editingDisplay : ViewInfo -> Model -> Element Msg
@@ -2151,16 +2248,18 @@ newSubdocumentButton model =
         )
 
 
-addSubdocumentButton model =
-    showIf (model.currentUser /= Nothing)
-        (Input.button
-            []
-            { onPress = Just AddSubdocument
-            , label =
-                el []
-                    (el (headingButtonStyle 140) (Element.text "Add subdocument"))
-            }
-        )
+
+--
+--addSubdocumentButton model =
+--    showIf (model.currentUser /= Nothing)
+--        (Input.button
+--            []
+--            { onPress = Just AddSubdocument
+--            , label =
+--                el []
+--                    (el (headingButtonStyle 140) (Element.text "Add subdocument"))
+--            }
+--        )
 
 
 inputDocumentId model =
@@ -2217,8 +2316,6 @@ toolPanel viewInfo model =
         ]
         [ column [ Font.size 13, spacing 15 ]
             [ el [ Font.size 16, Font.bold, Font.color Style.white ] (Element.text "Document tools")
-            , addSubdocumentButton model
-            , inputDocumentId model
             , togglePublic model
             , inputTags model
             , flavors model
