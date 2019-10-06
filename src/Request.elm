@@ -1,5 +1,6 @@
 module Request exposing
     ( GraphQLResponse(..)
+    , RequestHandler
     , RequestMsg(..)
     , deleteDocument
     , documentsInIdList
@@ -69,12 +70,23 @@ type RequestMsg
     | DeleteDocumentResponse (GraphQLResponse (Maybe MutationResponse))
 
 
+type alias RequestHandler =
+    RemoteData (Graphql.Http.Error (List Document)) (List Document) -> RequestMsg
+
+
 
 -- PARAMETERS --
 
 
 endpoint =
     "https://math-markdown-heroku.herokuapp.com/v1/graphql"
+
+
+documentsWithAuthorAndTag : String -> String -> String -> RequestHandler -> Cmd RequestMsg
+documentsWithAuthorAndTag authToken author tag requestHandler =
+    makeGraphQLQuery authToken
+        (fetchDocumentsQuery (Present <| hasAuthorAndTag author tag))
+        (RemoteData.fromResult >> requestHandler)
 
 
 
@@ -88,8 +100,8 @@ documentsInIdList authToken uuiIdList =
         (RemoteData.fromResult >> GotChildDocuments)
 
 
-documentsWithAuthorAndTag : String -> String -> String -> Cmd RequestMsg
-documentsWithAuthorAndTag authToken author tag =
+documentsWithAuthorAndTag1 : String -> String -> String -> Cmd RequestMsg
+documentsWithAuthorAndTag1 authToken author tag =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| hasAuthorAndTag author tag))
         (RemoteData.fromResult >> GotUserDocuments)
@@ -109,11 +121,11 @@ documentsWithAuthor authToken authorIdentifier =
         (RemoteData.fromResult >> GotUserDocuments)
 
 
-documentsWithAuthorAndTitle : String -> String -> String -> Cmd RequestMsg
-documentsWithAuthorAndTitle authToken authorIdentifier titleKey =
+documentsWithAuthorAndTitle : String -> String -> String -> RequestHandler -> Cmd RequestMsg
+documentsWithAuthorAndTitle authToken authorIdentifier titleKey requestHandler =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")))
-        (RemoteData.fromResult >> GotUserDocuments)
+        (RemoteData.fromResult >> requestHandler)
 
 
 publicDocuments : String -> Cmd RequestMsg

@@ -937,7 +937,7 @@ getAllDocuments model =
                             Cmd.none
 
                         Just user ->
-                            Request.documentsWithAuthorAndTitle hasuraToken user.username "" |> Cmd.map Req
+                            Request.documentsWithAuthorAndTitle hasuraToken user.username "" GotUserDocuments |> Cmd.map Req
 
                 PublicSearch ->
                     Request.publicDocumentsWithTitle hasuraToken "" |> Cmd.map Req
@@ -971,10 +971,10 @@ searchForUsersDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTitle hasuraToken authorIdentifier searchTerm |> Cmd.map Req
+                    Request.documentsWithAuthorAndTitle hasuraToken authorIdentifier searchTerm GotUserDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm |> Cmd.map Req
+                    Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm GotUserDocuments |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
@@ -1958,9 +1958,17 @@ subdocumentEditor viewInfo model =
                 |> Maybe.withDefault "FOOTER"
     in
     column []
-        [ row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model ]
+        [ simpleEditingHeader viewInfo model
+        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, subDocumentTools model ]
+
+        -- XXX
         , footer model
         ]
+
+
+subDocumentTools model =
+    column [ spacing 12, Background.color Style.lightGrey, padding 12, alignTop ]
+        [ addSubdocumentButton model, inputDocumentId model ]
 
 
 editingDisplay : ViewInfo -> Model -> Element Msg
@@ -2107,6 +2115,25 @@ editingModeButton model =
         }
 
 
+subDocumentEditingModeButton model =
+    let
+        color =
+            if model.appMode == Editing SubdocumentEditing then
+                Style.red
+
+            else
+                Style.buttonGrey
+    in
+    showIf (model.currentUser /= Nothing)
+        (Input.button []
+            { onPress = Just (SetAppMode (Editing SubdocumentEditing))
+            , label =
+                el (headerButtonStyle color)
+                    (el headerLabelStyle (Element.text "Edit/S"))
+            }
+        )
+
+
 newSubdocumentButton model =
     let
         numberOfChildren =
@@ -2125,22 +2152,26 @@ newSubdocumentButton model =
 
 
 addSubdocumentButton model =
-    Input.button
-        []
-        { onPress = Just AddSubdocument
-        , label =
-            el []
-                (el (headingButtonStyle 140) (Element.text "Add subdocument"))
-        }
+    showIf (model.currentUser /= Nothing)
+        (Input.button
+            []
+            { onPress = Just AddSubdocument
+            , label =
+                el []
+                    (el (headingButtonStyle 140) (Element.text "Add subdocument"))
+            }
+        )
 
 
 inputDocumentId model =
-    Input.text (Style.inputStyle 140 ++ [ Font.size 11 ])
-        { onChange = GotChildDocIdString
-        , text = model.childDocIdString
-        , placeholder = Nothing
-        , label = Input.labelRight [ Font.size 12, Font.color Style.white, width (px 0) ] (Element.text "")
-        }
+    showIf (model.currentUser /= Nothing)
+        (Input.text (Style.inputStyle 140 ++ [ Font.size 11 ])
+            { onChange = GotChildDocIdString
+            , text = model.childDocIdString
+            , placeholder = Nothing
+            , label = Input.labelRight [ Font.size 12, Font.color Style.white, width (px 0) ] (Element.text "")
+            }
+        )
 
 
 readingModeButton model =
@@ -2445,28 +2476,31 @@ readingHeader viewInfo model rt =
         ]
 
 
+simpleEditingHeader : ViewInfo -> Model -> Element Msg
+simpleEditingHeader viewInfo model =
+    let
+        lhWidth =
+            scale (viewInfo.toolStripWidth + viewInfo.docListWidth + viewInfo.editorWidth / 2) model.windowWidth
 
---
---viewInfoEditing =
---    { toolStripWidth = 0.05
---    , docListWidth = 0.15
---    , editorWidth = 0.3
---    , renderedDisplayWidth = 0.3
---    , tocWidth = 0.2
---    , vInset = vInset
---    , hExtra = 0
---    }
---
---
---viewInfoReading =
---    { toolStripWidth = 0.05
---    , docListWidth = 0.25
---    , editorWidth = 0
---    , renderedDisplayWidth = 0.45
---    , tocWidth = 0.25
---    , vInset = vInset
---    , hExtra = 0
---    }
+        rh =
+            viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth
+
+        --        titleWidth =
+        --            scale (rh / 2) model.windowWidth
+        titleWidth =
+            scale (0.45 * rh) model.windowWidth
+
+        rhWidth =
+            scale (viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
+    in
+    row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
+        [ modeButtonStrip model lhWidth
+        , row [ spacing 10, width fill ]
+            [ el [ Font.color Style.white ] (Element.text "Subdocument Editor")
+            , searchRow model
+            , el [ width (px 20) ] (Element.text "")
+            ]
+        ]
 
 
 editingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
@@ -2506,9 +2540,10 @@ titleRow titleWidth rt =
 
 editTools : Model -> Element Msg
 editTools model =
-    if model.appMode == Editing StandardEditing then
+    if List.member model.appMode [ Editing StandardEditing, Editing SubdocumentEditing ] then
         row [ spacing 6 ]
             [ editingModeButton model
+            , subDocumentEditingModeButton model
             , newDocumentButton model
             , saveDocumentButton model
             , deleteDocumentButton model
@@ -2516,7 +2551,7 @@ editTools model =
             ]
 
     else
-        editingModeButton model
+        row [ spacing 6 ] [ editingModeButton model, subDocumentEditingModeButton model ]
 
 
 
