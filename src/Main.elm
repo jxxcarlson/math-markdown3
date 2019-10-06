@@ -925,12 +925,12 @@ getAllDocuments model =
                 PublicSearch ->
                     Request.publicDocumentsWithTitle hasuraToken "" |> Cmd.map Req
     in
-    ( model, cmd )
+    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 getHelpDocs : Model -> ( Model, Cmd Msg )
 getHelpDocs model =
-    ( { model | focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
+    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
     , Request.publicDocumentsWithTag hasuraToken "help" |> Cmd.map Req
     )
 
@@ -2210,7 +2210,11 @@ docListViewer viewInfo model =
                     model.documentList
 
                 DocumentChildren ->
-                    model.childDocumentList
+                    let
+                        master =
+                            List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
+                    in
+                    Document.sortChildren master model.childDocumentList
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))

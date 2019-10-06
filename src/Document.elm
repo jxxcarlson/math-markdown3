@@ -11,6 +11,7 @@ module Document exposing
     , insertDocumentInList
     , replaceInList
     , setContent
+    , sortChildren
     , stringFromDocType
     , updateMetaData
     )
@@ -113,6 +114,19 @@ insertDocumentInList newDocument targetDocument list =
 
         Nothing ->
             list
+
+
+sortChildren : Document -> List Document -> List Document
+sortChildren master list =
+    let
+        idList =
+            master.id :: master.children
+
+        order : Document -> Int
+        order doc =
+            List.Extra.elemIndex doc.id idList |> Maybe.withDefault -1
+    in
+    List.sortBy order list
 
 
 setContent : String -> Document -> Document
