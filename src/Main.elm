@@ -280,8 +280,6 @@ type Msg
     | SignOut
       -- Document
     | CreateDocument
-    | NewSubdocument
-    | AddSubdocument
     | SaveDocument
     | GetUserDocuments
     | AllDocuments
@@ -290,6 +288,14 @@ type Msg
     | SetDocumentListType DocumentListType
     | SetDocType DocType
     | SetCurrentDocument Document
+      -- Subdocuments
+    | NewSubdocument
+    | AddSubdocument
+    | SetUpOutline
+    | ReorderChildren
+    | GotOutline String
+    | AddThisDocumentToMaster Document
+    | GotChildDocIdString String
       -- Doc Search
     | ClearSearchTerms
     | GotSearchTerms String
@@ -300,13 +306,10 @@ type Msg
     | DeleteDocument
     | CancelDeleteDocument
       -- Doc Update
-    | GotOutline String
-    | AddThisDocumentToMaster Document
     | UpdateDocumentText String
     | SetDocumentPublic Bool
     | GotSecondPart (RenderedText Msg)
     | GotTagString String
-    | GotChildDocIdString String
     | Clear
     | Req RequestMsg
 
@@ -565,6 +568,26 @@ update msg model =
 
         SetCurrentDocument document ->
             processDocument model document
+
+        SetUpOutline ->
+            ( setupOutline model, Cmd.none )
+
+        ReorderChildren ->
+            case model.currentDocument of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just masterDocument ->
+                    let
+                        titleList =
+                            String.split "\n" model.documentOutline
+                                |> List.map String.trim
+                                |> List.filter (\str -> str /= "")
+
+                        newMasterDocument =
+                            Document.reorderChildren masterDocument titleList (List.drop 1 model.childDocumentList)
+                    in
+                    ( { model | currentDocument = Just newMasterDocument }, Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req )
 
         SetDocumentPublic bit ->
             setDocumentPublic model bit
@@ -2047,11 +2070,20 @@ subdocumentEditor viewInfo model =
     in
     column []
         [ simpleEditingHeader viewInfo model
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, subDocumentTools model ]
+        , row []
+            [ tabStrip viewInfo model
+            , toolsOrDocs viewInfo model
+            , subDocumentTools model
+            , column [ spacing 10 ] [ setupOutlineButton model, reorderChildreButton model, inputOutline model ]
+            ]
 
         -- XXX
         , footer model
         ]
+
+
+
+-- XXX
 
 
 subDocumentTools model =
@@ -2070,15 +2102,48 @@ subDocumentTools model =
         ]
 
 
+setupOutline : Model -> Model
+setupOutline model =
+    case model.currentDocument of
+        Nothing ->
+            model
+
+        Just doc ->
+            case Just doc.id == Maybe.map .id (List.head model.childDocumentList) of
+                False ->
+                    model
+
+                True ->
+                    { model | documentOutline = getTitles (List.drop 1 model.childDocumentList) }
+
+
+xButtonStyle =
+    Style.headerButton ++ [ Background.color Style.charcoal, Font.color Style.white ]
+
+
+setupOutlineButton model =
+    Input.button [] { onPress = Just SetUpOutline, label = el xButtonStyle (Element.text "Setup outline") }
+
+
+reorderChildreButton model =
+    Input.button [] { onPress = Just ReorderChildren, label = el xButtonStyle (Element.text "Reorder") }
+
+
+getTitles : List Document -> String
+getTitles docList =
+    List.map .title docList
+        |> String.join "\n"
+
+
 addSubdocumentButton2 : Document -> Element Msg
 addSubdocumentButton2 document =
     Input.button [] { onPress = Just (AddThisDocumentToMaster document), label = el [ Font.color Style.blue ] (Element.text document.title) }
 
 
 inputOutline model =
-    Input.multiline (Style.textInputStyleSimple 180 80)
+    Input.multiline (Style.textInputStyleSimple 300 500)
         { onChange = GotOutline
-        , text = model.tagString
+        , text = model.documentOutline
         , placeholder = Nothing
         , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "Outline")
         , spellcheck = False

@@ -8,7 +8,10 @@ module Document exposing
     , getById
     , getContent
     , getDocType
+    , idAndTitleList
     , insertDocumentInList
+    , reOrder
+    , reorderChildren
     , replaceInList
     , setContent
     , sortChildren
@@ -114,6 +117,50 @@ insertDocumentInList newDocument targetDocument list =
 
         Nothing ->
             list
+
+
+idAndTitleList : List Document -> List ( Uuid, String )
+idAndTitleList list =
+    List.map (\doc -> ( doc.id, doc.title )) list
+
+
+reOrder : List String -> List ( Uuid, String ) -> List Uuid
+reOrder strList annotatedList =
+    let
+        order : String -> Int
+        order str =
+            List.Extra.elemIndex str strList |> Maybe.withDefault -1
+    in
+    List.sortBy (\( uuid, str ) -> order str) annotatedList
+        |> List.map Tuple.first
+
+
+reorderChildren : Document -> List String -> List Document -> Document
+reorderChildren masterDocument titleList childDocumentList =
+    let
+        childUuidList =
+            List.map .id childDocumentList
+
+        childTitleList =
+            List.map .title childDocumentList
+
+        annotatedList =
+            List.map2 (\u v -> ( u, v )) childUuidList childTitleList
+
+        newUuidList =
+            reOrder titleList annotatedList
+    in
+    case equalUuidLists newUuidList masterDocument.children of
+        True ->
+            { masterDocument | children = newUuidList }
+
+        False ->
+            masterDocument
+
+
+equalUuidLists : List Uuid -> List Uuid -> Bool
+equalUuidLists l1 l2 =
+    List.sortBy Uuid.toString l1 == List.sortBy Uuid.toString l2
 
 
 sortChildren : Document -> List Document -> List Document

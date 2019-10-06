@@ -1,4 +1,33 @@
-module Style exposing (activeButtonStyle, basicButtonsStyle, black, blue, brighterBlue, buttonFontSize, buttonGrey, buttonSelected, buttonSelected_, charcoal, darkBlue, darkRed, green, grey, headerButton, inputStyle, lightGrey, mainColumn, makeGrey, mediumBlue, mouseDownColor, multiline, preWrap, red, signInColumn, textInputStyle, textInputStyleSimple, white)
+module Style exposing
+    ( activeButtonStyle
+    , basicButtonsStyle
+    , black
+    , blue
+    , brighterBlue
+    , buttonFontSize
+    , buttonGrey
+    , buttonSelected
+    , buttonSelected_
+    , charcoal
+    , darkBlue
+    , darkRed
+    , green
+    , grey
+    , headerButton
+    , inputStyle
+    , lightGrey
+    , mainColumn
+    , makeGrey
+    , mediumBlue
+    , mouseDownColor
+    , multiline
+    , preWrap
+    , red
+    , signInColumn
+    , textInputStyle
+    , textInputStyleSimple
+    , white
+    )
 
 import Element exposing (..)
 import Element.Background as Background
