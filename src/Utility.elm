@@ -29,32 +29,42 @@ import Time exposing (Posix)
 -}
 insertStringInList : String -> String -> List String -> List String
 insertStringInList newString targetString list =
-    case List.Extra.splitWhen (\element -> element == targetString) list of
-        Just ( a, b ) ->
-            case List.head b of
+    case list == [] of
+        True ->
+            [ newString ]
+
+        False ->
+            case List.Extra.splitWhen (\element -> element == targetString) list of
+                Just ( a, b ) ->
+                    case List.head b of
+                        Nothing ->
+                            a ++ (newString :: b)
+
+                        Just x ->
+                            a ++ (x :: newString :: List.drop 1 b)
+
                 Nothing ->
-                    a ++ (newString :: b)
-
-                Just x ->
-                    a ++ (x :: newString :: List.drop 1 b)
-
-        Nothing ->
-            list
+                    list
 
 
 insertUuidInList : Uuid -> Uuid -> List Uuid -> List Uuid
 insertUuidInList newUuid targetUuid list =
-    case List.Extra.splitWhen (\element -> element == targetUuid) list of
-        Just ( a, b ) ->
-            case List.head b of
+    case list == [] of
+        True ->
+            [ newUuid ]
+
+        False ->
+            case List.Extra.splitWhen (\element -> element == targetUuid) list of
+                Just ( a, b ) ->
+                    case List.head b of
+                        Nothing ->
+                            a ++ (newUuid :: b)
+
+                        Just x ->
+                            a ++ (x :: newUuid :: List.drop 1 b)
+
                 Nothing ->
-                    a ++ (newUuid :: b)
-
-                Just x ->
-                    a ++ (x :: newUuid :: List.drop 1 b)
-
-        Nothing ->
-            list
+                    list
 
 
 boolAsString : Bool -> String

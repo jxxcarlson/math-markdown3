@@ -1096,7 +1096,7 @@ processChildDocumentRequest model documentList =
                     documentList
 
                 Just masterDocument ->
-                    masterDocument :: documentList
+                    masterDocument :: Document.sortChildren masterDocument documentList
     in
     ( { model
         | childDocumentList = newDocumentList
@@ -1211,6 +1211,38 @@ makeNewDocument model =
             )
 
 
+addSubdocument : Model -> ( Model, Cmd Msg )
+addSubdocument model =
+    let
+        maybeNewUuid =
+            Uuid.fromString model.childDocIdString
+    in
+    case ( model.currentUser, model.currentDocument, maybeNewUuid ) of
+        ( Just user, Just masterDocument, Just newUuid ) ->
+            addSubdocument_ model user masterDocument newUuid
+
+        ( _, _, _ ) ->
+            ( model, Cmd.none )
+
+
+addSubdocument_ : Model -> User -> Document -> Uuid.Uuid -> ( Model, Cmd Msg )
+addSubdocument_ model user masterDocument newUuid =
+    let
+        newChildren =
+            masterDocument.children
+                ++ [ newUuid ]
+
+        newMasterDocument =
+            { masterDocument | children = newChildren }
+    in
+    ( { model | currentDocument = Just newMasterDocument, appMode = Reading }
+    , Cmd.batch
+        [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+        , Request.documentsInIdList hasuraToken newChildren |> Cmd.map Req
+        ]
+    )
+
+
 newSubdocument : Model -> ( Model, Cmd Msg )
 newSubdocument model =
     case ( model.currentUser, List.head model.childDocumentList, model.currentDocument ) of
@@ -1219,11 +1251,6 @@ newSubdocument model =
 
         ( _, _, _ ) ->
             ( model, Cmd.none )
-
-
-addSubdocument : Model -> ( Model, Cmd Msg )
-addSubdocument model =
-    ( model, Cmd.none )
 
 
 newSubdocument_ : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
