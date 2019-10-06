@@ -1,10 +1,60 @@
-module Utility exposing (boolAsString, compress, getId, humanDateUTC, humanTimeHM, humanTimeHMS, id0, intSlug, normalize, wordCount)
+module Utility exposing
+    ( boolAsString
+    , compress
+    , getId
+    , humanDateUTC
+    , humanTimeHM
+    , humanTimeHMS
+    , id0
+    , insertStringInList
+    , insertUuidInList
+    , intSlug
+    , normalize
+    , uuids
+    , wordCount
+    )
 
 import Api.Scalar exposing (Id(..))
 import List.Extra
 import Prng.Uuid exposing (Uuid(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import Time exposing (Posix)
+
+
+{-|
+
+    > insertString "x" "b" ["a", "b", "c"]
+    ---> ["a","b","x","c"]
+
+-}
+insertStringInList : String -> String -> List String -> List String
+insertStringInList newString targetString list =
+    case List.Extra.splitWhen (\element -> element == targetString) list of
+        Just ( a, b ) ->
+            case List.head b of
+                Nothing ->
+                    a ++ (newString :: b)
+
+                Just x ->
+                    a ++ (x :: newString :: List.drop 1 b)
+
+        Nothing ->
+            list
+
+
+insertUuidInList : Uuid -> Uuid -> List Uuid -> List Uuid
+insertUuidInList newUuid targetUuid list =
+    case List.Extra.splitWhen (\element -> element == targetUuid) list of
+        Just ( a, b ) ->
+            case List.head b of
+                Nothing ->
+                    a ++ (newUuid :: b)
+
+                Just x ->
+                    a ++ (x :: newUuid :: List.drop 1 b)
+
+        Nothing ->
+            list
 
 
 boolAsString : Bool -> String

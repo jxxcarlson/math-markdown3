@@ -85,7 +85,7 @@ documentsInIdList : String -> List Uuid -> Cmd RequestMsg
 documentsInIdList authToken uuiIdList =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| inUuidList uuiIdList))
-        (RemoteData.fromResult >> GotUserDocuments)
+        (RemoteData.fromResult >> GotChildDocuments)
 
 
 documentsWithAuthorAndTag : String -> String -> String -> Cmd RequestMsg
@@ -406,6 +406,7 @@ setDocumentSetArg document =
                 , public = OptionalArgument.Present document.public
                 , tags = Present (document.tags |> (\list -> Jsonb list))
                 , docType = Present (document.docType |> Document.stringFromDocType)
+                , children = Present (document.children |> List.map Uuid.toString |> (\list -> Jsonb list))
             }
         )
 

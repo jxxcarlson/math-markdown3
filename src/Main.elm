@@ -62,6 +62,7 @@ type alias Model =
     , windowHeight : Int
     , visibilityOfTools : Visibility
     , appMode : AppMode
+    , documentListType : DocumentListType
     , message : Message
     , pressedKeys : List Key
     , focusedElement : FocusedElement
@@ -99,6 +100,11 @@ type alias Model =
 hasuraToken : String
 hasuraToken =
     "GOc97wA7CCMm31H4UJHa-4pqdVoLf3l6gAwzczdHC"
+
+
+type DocumentListType
+    = SearchResults
+    | DocumentChildren
 
 
 type SearchMode
@@ -187,6 +193,7 @@ init flags =
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
             , appMode = UserMode SignInState
+            , documentListType = SearchResults
             , message = ( UserMessage, "Starting ..." )
             , pressedKeys = []
             , focusedElement = NoFocus
@@ -259,23 +266,25 @@ type Msg
     | SignOut
       -- Document
     | CreateDocument
+    | NewSubdocument
     | SaveDocument
     | GetUserDocuments
     | AllDocuments
     | GetPublicDocuments
     | GetHelpDocs
+    | SetDocumentListType DocumentListType
     | SetDocType DocType
     | SetCurrentDocument Document
-      -- Search
+      -- Doc Search
     | ClearSearchTerms
     | GotSearchTerms String
     | DoSearch
     | ToggleSearchMode
-      -- Delete
+      -- Doc Delete
     | ArmForDelete
     | DeleteDocument
     | CancelDeleteDocument
-      -- Update
+      -- Doc Update
     | UpdateDocumentText String
     | SetDocumentPublic Bool
     | GotSecondPart (RenderedText Msg)
@@ -375,6 +384,14 @@ update msg model =
               }
             , Cmd.none
             )
+
+        SetDocumentListType documentListType ->
+            case documentListType of
+                SearchResults ->
+                    ( { model | documentListType = SearchResults }, Cmd.none )
+
+                DocumentChildren ->
+                    ( { model | documentListType = DocumentChildren }, Cmd.none )
 
         SetDocType docType ->
             let
@@ -485,6 +502,9 @@ update msg model =
         -- DOCUMENT --
         CreateDocument ->
             makeNewDocument model
+
+        NewSubdocument ->
+            newSubdocument model
 
         SaveDocument ->
             saveDocument model
@@ -942,7 +962,7 @@ searchForUsersDocuments model =
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
     in
-    ( { model | focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 searchForPublicDocuments : Model -> ( Model, Cmd Msg )
@@ -959,7 +979,7 @@ searchForPublicDocuments model =
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
     in
-    ( { model | focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 
@@ -1059,9 +1079,18 @@ processDocumentRequest model maybeDocument documentList =
 
 processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
 processChildDocumentRequest model documentList =
+    let
+        newDocumentList =
+            case model.currentDocument of
+                Nothing ->
+                    documentList
+
+                Just masterDocument ->
+                    masterDocument :: documentList
+    in
     ( { model
-        | childDocumentList = documentList
-        , message = ( UserMessage, "Success getting document list" )
+        | childDocumentList = newDocumentList
+        , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
       }
     , Cmd.none
     )
@@ -1070,7 +1099,7 @@ processChildDocumentRequest model documentList =
 processDocument : Model -> Document -> ( Model, Cmd Msg )
 processDocument model document =
     let
-        ( newAst, newRenderedText, cmd ) =
+        ( ( newAst, newRenderedText ), cmd, documentListType ) =
             let
                 lastAst =
                     Markdown.ElmWithId.parse model.counter ExtendedMath document.content
@@ -1096,17 +1125,18 @@ processDocument model document =
                     else
                         Cmd.none
 
-                cmd2 =
+                ( cmd2, documentListType_ ) =
                     if document.children == [] then
-                        Cmd.none
+                        ( Cmd.none, model.documentListType )
 
                     else
-                        Request.documentsInIdList hasuraToken document.children |> Cmd.map Req
+                        ( Request.documentsInIdList hasuraToken document.children |> Cmd.map Req, DocumentChildren )
             in
-            ( lastAst, renderedText, Cmd.batch [ cmd1, cmd2 ] )
+            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2 ], documentListType_ )
     in
     ( { model
         | currentDocument = Just document
+        , documentListType = documentListType
         , counter = model.counter + 2
         , lastAst = newAst
         , renderedText = newRenderedText
@@ -1171,6 +1201,63 @@ makeNewDocument model =
             )
 
 
+newSubdocument : Model -> ( Model, Cmd Msg )
+newSubdocument model =
+    case ( model.currentUser, List.head model.childDocumentList, model.currentDocument ) of
+        ( Just user, Just masterDocument, Just currentDocument ) ->
+            newSubdocument_ model user masterDocument currentDocument
+
+        ( _, _, _ ) ->
+            ( model, Cmd.none )
+
+
+newSubdocument_ : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
+newSubdocument_ model user masterDocument currentDocument =
+    let
+        newDocumentText =
+            "# New subdocument of " ++ masterDocument.title ++ "\n\nWrite something here ..."
+
+        newDocument =
+            Document.create model.currentUuid user.username "New Subdocument" newDocumentText
+
+        lastAst =
+            Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+
+        ( newUuid, newSeed ) =
+            step Uuid.generator model.currentSeed
+
+        newChildren =
+            Utility.insertUuidInList model.currentUuid currentDocument.id masterDocument.children
+
+        newMasterDocument =
+            { masterDocument | children = newChildren }
+
+        newChildDocumentList =
+            Document.insertDocumentInList newDocument currentDocument model.childDocumentList
+                |> Document.replaceInList newMasterDocument
+
+        newDocumentList =
+            Document.replaceInList newMasterDocument (newDocument :: model.childDocumentList)
+    in
+    ( { model
+        | currentDocument = Just newDocument
+        , childDocumentList = newChildDocumentList
+        , documentList = newDocumentList
+        , visibilityOfTools = Invisible
+        , appMode = Editing
+        , tagString = ""
+        , currentUuid = newUuid
+        , currentSeed = newSeed
+        , lastAst = lastAst
+        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+      }
+    , Cmd.batch
+        [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
+        , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+        ]
+    )
+
+
 updateDocumentText : Model -> String -> ( Model, Cmd Msg )
 updateDocumentText model str =
     case model.currentDocument of
@@ -1195,6 +1282,7 @@ updateDocumentText model str =
                 | -- document
                   currentDocument = Just updatedDoc2
                 , documentList = Document.replaceInList updatedDoc2 model.documentList
+                , childDocumentList = Document.replaceInList updatedDoc2 model.childDocumentList
                 , currentDocumentDirty = True
 
                 -- rendering
@@ -1324,7 +1412,16 @@ setModeToReading model =
 
 setModeToEditing : Model -> ( Model, Cmd Msg )
 setModeToEditing model =
-    ( { model | appMode = Editing, visibilityOfTools = Visible }, Cmd.none )
+    let
+        visibility =
+            case model.documentListType of
+                SearchResults ->
+                    Visible
+
+                DocumentChildren ->
+                    Invisible
+    in
+    ( { model | appMode = Editing, visibilityOfTools = visibility }, Cmd.none )
 
 
 setUserMode : Model -> UserState -> ( Model, Cmd msg )
@@ -1862,8 +1959,8 @@ renderedSource viewInfo model footerText_ rt =
                 ]
             ]
         , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
-            [ column [ height (px (hToc - 100)), scrollbarY, clipX ] [ rt.toc |> Element.html ]
-            , column [ paddingXY 12 3, width fill, height (px 100), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ] [ renderFooter footerText_ ]
+            [ column [ height (px (hToc - 125)), scrollbarY, clipX ] [ rt.toc |> Element.html ]
+            , column [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ] [ renderFooter footerText_ ]
             ]
         ]
 
@@ -1943,6 +2040,18 @@ editingModeButton model =
             el (headerButtonStyle color)
                 (el headerLabelStyle (Element.text "Edit"))
         }
+
+
+newSubdocumentButton model =
+    showIf (model.appMode == Editing)
+        (Input.button
+            []
+            { onPress = Just NewSubdocument
+            , label =
+                el []
+                    (el (headingButtonStyle 140) (Element.text "New subocument"))
+            }
+        )
 
 
 readingModeButton model =
@@ -2094,6 +2203,14 @@ docListViewer viewInfo model =
     let
         h_ =
             translate -viewInfo.vInset model.windowHeight
+
+        list =
+            case model.documentListType of
+                SearchResults ->
+                    model.documentList
+
+                DocumentChildren ->
+                    model.childDocumentList
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))
@@ -2103,44 +2220,112 @@ docListViewer viewInfo model =
         , alignTop
         , clipX
         ]
-        [ column [ Font.size 13, spacing 8 ] (heading model :: List.map (tocEntry model.currentDocument) model.documentList) ]
+        [ column [ Font.size 13, spacing 8 ] (heading model :: newSubdocumentButton model :: List.map (tocEntry model.currentDocument) list) ]
 
 
 tocEntry : Maybe Document -> Document -> Element Msg
 tocEntry currentDocument_ document =
     let
+        currentDocId =
+            case currentDocument_ of
+                Nothing ->
+                    Utility.id0
+
+                Just doc ->
+                    doc.id
+
         color =
             case currentDocument_ of
                 Nothing ->
                     Style.buttonGrey
 
                 Just currentDocument ->
-                    if currentDocument.id == document.id then
-                        Style.red
+                    case ( currentDocId == document.id, document.children /= [] ) of
+                        ( True, True ) ->
+                            Style.brighterBlue
 
-                    else
-                        Style.buttonGrey
+                        ( True, False ) ->
+                            Style.red
+
+                        ( False, True ) ->
+                            Style.brighterBlue
+
+                        ( False, False ) ->
+                            Style.grey 0.2
+
+        fontWeight =
+            case currentDocId == document.id of
+                True ->
+                    Font.bold
+
+                False ->
+                    Font.regular
     in
-    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color ] (Element.text document.title) }
+    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text document.title) }
+
+
+headingButtonStyle w =
+    [ height (px 30), width (px w), padding 8, Background.color Style.charcoal, Font.color Style.white, Font.size 12 ]
 
 
 heading : Model -> Element Msg
 heading model =
     let
+        n_ =
+            case model.documentListType of
+                SearchResults ->
+                    List.length model.documentList
+
+                DocumentChildren ->
+                    List.length model.childDocumentList
+
         n =
-            List.length model.documentList
+            n_
                 |> String.fromInt
-                |> (\x -> " (" ++ x ++ ")")
+
+        w =
+            140
     in
     case model.currentUser of
         Nothing ->
-            el [ Font.size 16, Font.bold ] (Element.text ("Public documents" ++ n))
+            case model.documentListType of
+                SearchResults ->
+                    Input.button []
+                        { onPress = Just (SetDocumentListType DocumentChildren)
+                        , label =
+                            el (headingButtonStyle w)
+                                (Element.text ("Public Documents (" ++ n ++ ")"))
+                        }
+
+                DocumentChildren ->
+                    Input.button []
+                        { onPress = Just (SetDocumentListType SearchResults)
+                        , label =
+                            el (headingButtonStyle w)
+                                (Element.text ("Contents (" ++ n ++ ")"))
+                        }
 
         Just _ ->
-            el [ Font.size 16, Font.bold ] (Element.text ("Documents" ++ n))
+            case model.documentListType of
+                SearchResults ->
+                    Input.button []
+                        { onPress = Just (SetDocumentListType DocumentChildren)
+                        , label =
+                            el (headingButtonStyle w)
+                                (Element.text ("Documents (" ++ n ++ ")"))
+                        }
+
+                DocumentChildren ->
+                    Input.button []
+                        { onPress = Just (SetDocumentListType SearchResults)
+                        , label =
+                            el (headingButtonStyle w)
+                                (Element.text ("Contents (" ++ n ++ ")"))
+                        }
 
 
 
+--  el [ Font.size 16, Font.bold ] (Element.text ("Documents" ++ n))
 -- HEADER AND FOOTER --
 
 

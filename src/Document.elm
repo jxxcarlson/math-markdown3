@@ -8,6 +8,7 @@ module Document exposing
     , getById
     , getContent
     , getDocType
+    , insertDocumentInList
     , replaceInList
     , setContent
     , stringFromDocType
@@ -99,6 +100,21 @@ stringFromDocType docType =
                     "MDExtendedMath"
 
 
+insertDocumentInList : Document -> Document -> List Document -> List Document
+insertDocumentInList newDocument targetDocument list =
+    case List.Extra.splitWhen (\element -> element.id == targetDocument.id) list of
+        Just ( a, b ) ->
+            case List.head b of
+                Nothing ->
+                    a ++ (newDocument :: b)
+
+                Just x ->
+                    a ++ (x :: newDocument :: List.drop 1 b)
+
+        Nothing ->
+            list
+
+
 setContent : String -> Document -> Document
 setContent str document =
     { document | content = str }
@@ -141,12 +157,25 @@ footer document =
         ++ "Document type: "
         ++ (document.docType |> stringFromDocType)
         ++ "\n"
+        ++ "Children: "
+        ++ String.fromInt (List.length document.children)
         ++ "\n"
+        ++ "\nSummary: "
+        ++ childrenSummary document
+        ++ "\n\n"
         ++ makeSlug document
         ++ "\n"
         ++ (document.id |> Uuid.toString)
         ++ "\n"
         ++ "\n\n"
+
+
+childrenSummary : Document -> String
+childrenSummary document =
+    document.children
+        |> List.map Uuid.toString
+        |> List.map (String.right 4)
+        |> String.join ", "
 
 
 makeSlug : Document -> String

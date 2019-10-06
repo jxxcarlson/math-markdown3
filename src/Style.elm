@@ -1,4 +1,4 @@
-module Style exposing (activeButtonStyle, basicButtonsStyle, black, blue, buttonFontSize, buttonGrey, buttonSelected, buttonSelected_, charcoal, darkBlue, darkRed, green, grey, headerButton, inputStyle, lightGrey, mainColumn, makeGrey, mouseDownColor, multiline, preWrap, red, signInColumn, textInputStyle, textInputStyleSimple, white)
+module Style exposing (activeButtonStyle, basicButtonsStyle, black, blue, brighterBlue, buttonFontSize, buttonGrey, buttonSelected, buttonSelected_, charcoal, darkBlue, darkRed, green, grey, headerButton, inputStyle, lightGrey, mainColumn, makeGrey, mediumBlue, mouseDownColor, multiline, preWrap, red, signInColumn, textInputStyle, textInputStyleSimple, white)
 
 import Element exposing (..)
 import Element.Background as Background
@@ -156,6 +156,14 @@ white =
 
 blue =
     Element.rgb 0.1 0.1 0.4
+
+
+brighterBlue =
+    Element.rgb 0.1 0.1 0.7
+
+
+mediumBlue =
+    Element.rgb 0.1 0.1 0.5
 
 
 green =
