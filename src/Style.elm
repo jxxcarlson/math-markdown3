@@ -13,7 +13,6 @@ module Style exposing
     , darkRed
     , green
     , grey
-    , headerButton
     , inputStyle
     , lightGrey
     , mainColumn
@@ -24,6 +23,7 @@ module Style exposing
     , preWrap
     , red
     , signInColumn
+    , standardButton
     , textInputStyle
     , textInputStyleSimple
     , white
@@ -74,15 +74,16 @@ multiline w h =
 -- BUTTONS --
 
 
-headerButton : List (Element.Attr () msg)
-headerButton =
+standardButton : List (Element.Attr () msg)
+standardButton =
     [ Background.color white, Font.color black, paddingXY 10 6 ] ++ basicButtonsStyle
 
 
+basicButtonsStyle : List (Element.Attr () msg)
 basicButtonsStyle =
     [ buttonFontSize
     , pointer
-    , mouseDown [ buttonFontSize, Background.color mouseDownColor ]
+    , mouseDown [ buttonFontSize, Background.color darkRed, Font.color white ]
     ]
 
 

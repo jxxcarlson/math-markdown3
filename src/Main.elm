@@ -1858,6 +1858,7 @@ modeButtonStrip model lhWidth =
 -- SIGN-IN
 
 
+signInUpView : Model -> Element Msg
 signInUpView model =
     column Style.signInColumn
         [ el [ Font.size 18, Font.bold, paddingXY 0 12 ] (Element.text "Sign in/up/out")
@@ -1870,6 +1871,7 @@ signInUpView model =
         ]
 
 
+outerPasswordPanel : Model -> Element Msg
 outerPasswordPanel model =
     column [ spacing 24 ]
         [ inputUserName model
@@ -1910,6 +1912,7 @@ signedInUserView model user =
         ]
 
 
+passwordPanel : Model -> Element Msg
 passwordPanel model =
     column [ spacing 12, paddingXY 0 18 ]
         [ inputCurrentPassword model
@@ -1919,6 +1922,7 @@ passwordPanel model =
         ]
 
 
+inputCurrentPassword : Model -> Element Msg
 inputCurrentPassword model =
     Input.currentPassword (Style.inputStyle 200)
         { onChange = GotPassword
@@ -1931,6 +1935,7 @@ inputCurrentPassword model =
         }
 
 
+inputNewPassword1 : Model -> Element Msg
 inputNewPassword1 model =
     Input.newPassword (Style.inputStyle 200)
         { onChange = GotNewPassword1
@@ -1943,6 +1948,7 @@ inputNewPassword1 model =
         }
 
 
+inputNewPassword2 : Model -> Element Msg
 inputNewPassword2 model =
     Input.newPassword (Style.inputStyle 200)
         { onChange = GotNewPassword2
@@ -1957,7 +1963,7 @@ inputNewPassword2 model =
 
 changePasswordButton : Model -> Element Msg
 changePasswordButton model =
-    Input.button Style.headerButton
+    Input.button Style.standardButton
         { onPress =
             case model.appMode of
                 UserMode ChangePasswordState ->
@@ -1984,6 +1990,7 @@ adminStatus model =
                     el [ Font.size 12 ] (Element.text "Admin")
 
 
+inputUserName : Model -> Element Msg
 inputUserName model =
     Input.text (Style.inputStyle 200)
         { onChange = GotUserName
@@ -1993,6 +2000,7 @@ inputUserName model =
         }
 
 
+inputEmail : Model -> Element Msg
 inputEmail model =
     Input.text (Style.inputStyle 200)
         { onChange = GotEmail
@@ -2002,6 +2010,7 @@ inputEmail model =
         }
 
 
+inputPassword : Model -> Element Msg
 inputPassword model =
     Input.currentPassword (Style.inputStyle 200)
         { onChange = GotPassword
@@ -2016,7 +2025,7 @@ inputPassword model =
 
 signInButton : Element Msg
 signInButton =
-    Input.button Style.headerButton
+    Input.button Style.standardButton
         { onPress = Just SignIn
         , label = Element.text "Sign in"
         }
@@ -2024,7 +2033,7 @@ signInButton =
 
 signUpButton : Model -> Element Msg
 signUpButton model =
-    Input.button Style.headerButton
+    Input.button Style.standardButton
         { onPress =
             case model.appMode of
                 UserMode SignUpState ->
@@ -2038,7 +2047,7 @@ signUpButton model =
 
 cancelSignUpButton : Model -> Element Msg
 cancelSignUpButton model =
-    Input.button Style.headerButton
+    Input.button Style.standardButton
         { onPress =
             case model.appMode of
                 UserMode SignUpState ->
@@ -2052,7 +2061,7 @@ cancelSignUpButton model =
 
 cancelChangePasswordButton : Model -> Element Msg
 cancelChangePasswordButton model =
-    Input.button Style.headerButton
+    Input.button Style.standardButton
         { onPress =
             case model.appMode of
                 UserMode ChangePasswordState ->
@@ -2066,7 +2075,7 @@ cancelChangePasswordButton model =
 
 signOutButton : Model -> Element Msg
 signOutButton model =
-    Input.button Style.headerButton
+    Input.button Style.standardButton
         { onPress = Just SignOut
         , label = Element.text "Sign out"
         }
@@ -2199,7 +2208,7 @@ setupOutline_ model =
 
 
 xButtonStyle =
-    Style.headerButton ++ [ Background.color Style.charcoal, Font.color Style.white ]
+    Style.standardButton ++ [ Background.color Style.charcoal, Font.color Style.white ]
 
 
 setupOutlineButton model =
