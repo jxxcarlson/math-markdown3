@@ -11,10 +11,12 @@ module Document exposing
     , getDocType
     , idAndTitleList
     , insertDocumentInList
+    , level
     , reOrder
     , reorderChildren
     , replaceInList
     , setContent
+    , setLevelsOfChildren
     , sortChildren
     , stringFromDocType
     , updateMetaData
@@ -37,6 +39,7 @@ type alias Document =
     , slug : String
     , docType : DocType
     , children : List Uuid
+    , childLevels : List Int
     }
 
 
@@ -162,6 +165,18 @@ reorderChildren masterDocument titleList childDocumentList =
 equalUuidLists : List Uuid -> List Uuid -> Bool
 equalUuidLists l1 l2 =
     List.sortBy Uuid.toString l1 == List.sortBy Uuid.toString l2
+
+
+setLevelsOfChildren : String -> Document -> Document
+setLevelsOfChildren outline master =
+    let
+        newChildLevels =
+            outline
+                |> String.split "\n"
+                |> List.filter (\item -> item /= "")
+                |> List.map level
+    in
+    { master | childLevels = newChildLevels }
 
 
 sortChildren : Document -> List Document -> List Document
@@ -294,6 +309,7 @@ create documentUuid authorIdentifier title content =
     , slug = slug
     , docType = Markdown MDExtendedMath
     , children = []
+    , childLevels = []
     }
 
 
@@ -322,6 +338,32 @@ newTitle document =
 
         Just newTitle_ ->
             newTitle_
+
+
+
+-- PARSING
+-- PARSE LEVEL
+
+
+parseLeadingSpace : Parser String
+parseLeadingSpace =
+    getChompedString <|
+        succeed identity
+            |. parseWhile (\c -> c == ' ')
+
+
+level : String -> Int
+level str =
+    case Parser.run parseLeadingSpace str of
+        Ok leadingSpace ->
+            String.length leadingSpace // 3
+
+        _ ->
+            0
+
+
+
+-- PARSE HEADING
 
 
 getHeading : Document -> Maybe String

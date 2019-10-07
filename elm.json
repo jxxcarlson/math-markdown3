@@ -18,6 +18,7 @@
             "elm/random": "1.0.0",
             "elm/time": "1.0.0",
             "elm-community/list-extra": "8.2.2",
+            "elm-community/maybe-extra": "5.0.0",
             "jxxcarlson/elm-markdown": "2.4.0",
             "krisajenkins/remotedata": "6.0.1",
             "mdgriffith/elm-ui": "1.1.5",
@@ -34,7 +35,7 @@
             "elm/regex": "1.0.0",
             "elm/url": "1.0.0",
             "elm/virtual-dom": "1.0.2",
-            "elm-community/maybe-extra": "5.0.0",
+            "elm-explorations/test": "1.2.2",
             "jxxcarlson/htree": "2.0.1",
             "lukewestby/elm-string-interpolate": "1.0.4",
             "zwilias/elm-html-string": "2.0.2"

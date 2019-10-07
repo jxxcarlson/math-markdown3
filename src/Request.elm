@@ -52,6 +52,7 @@ import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
+import Maybe.Extra
 import Prng.Uuid as Uuid exposing (Uuid(..))
 import RemoteData exposing (RemoteData)
 import Utility
@@ -299,6 +300,8 @@ equalToBoolean_ bit =
 -- DOCUMENT --
 
 
+{-| Change this after running 'sh api.sh'
+-}
 documentListSelection : SelectionSet Document Api.Object.Document
 documentListSelection =
     SelectionSet.succeed Document
@@ -315,12 +318,19 @@ documentListSelection =
                 |> SelectionSet.map
                     (\(Jsonb x) -> List.map (Uuid.fromString >> Maybe.withDefault Utility.id0) x)
             )
+        |> with
+            (Api.Object.Document.childLevels identity
+                |> SelectionSet.map
+                    (\(Jsonb x) -> List.map (String.toInt >> Maybe.withDefault 0) x)
+            )
 
 
 
 -- DOCUMENT OBJECTS --
 
 
+{-| Change this after running 'sh api.sh'
+-}
 insertDocumentObjects : Document -> Document_insert_input
 insertDocumentObjects newDocument =
     buildDocument_insert_input
@@ -333,6 +343,8 @@ insertDocumentObjects newDocument =
                 , public = Present newDocument.public
                 , tags = Present (newDocument.tags |> (\list -> Jsonb list)) -- Present (newDocument.tags |> String.join ", ")
                 , docType = Present (newDocument.docType |> Document.stringFromDocType)
+                , children = Present (newDocument.children |> List.map Uuid.toString |> (\list -> Jsonb list))
+                , childLevels = Present (newDocument.childLevels |> List.map String.fromInt |> (\list -> Jsonb list))
             }
         )
 
@@ -408,6 +420,8 @@ type alias UpdateDocumentResponse =
     RemoteData (Graphql.Http.Error (Maybe MutationResponse)) (Maybe MutationResponse)
 
 
+{-| Change this after running 'sh api.sh'
+-}
 setDocumentSetArg : Document -> Document_set_input
 setDocumentSetArg document =
     buildDocument_set_input
@@ -420,6 +434,7 @@ setDocumentSetArg document =
                 , tags = Present (document.tags |> (\list -> Jsonb list))
                 , docType = Present (document.docType |> Document.stringFromDocType)
                 , children = Present (document.children |> List.map Uuid.toString |> (\list -> Jsonb list))
+                , childLevels = Present (document.childLevels |> List.map String.fromInt |> (\list -> Jsonb list))
             }
         )
 

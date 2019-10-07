@@ -293,7 +293,7 @@ type Msg
     | AddSubdocument
     | DeleteSubdocument
     | SetUpOutline
-    | ReorderChildren
+    | UpdateChildren
     | GotOutline String
     | AddThisDocumentToMaster Document
     | GotChildDocIdString String
@@ -576,7 +576,7 @@ update msg model =
         SetUpOutline ->
             ( setupOutline model, Cmd.none )
 
-        ReorderChildren ->
+        UpdateChildren ->
             case model.currentDocument of
                 Nothing ->
                     ( model, Cmd.none )
@@ -588,15 +588,18 @@ update msg model =
                                 |> List.map String.trim
                                 |> List.filter (\str -> str /= "")
 
-                        newMasterDocument =
+                        newMasterDocument_ =
                             Document.reorderChildren masterDocument titleList (List.drop 1 model.childDocumentList)
 
-                        newChildDocuemntList =
+                        newMasterDocument =
+                            Document.setLevelsOfChildren model.documentOutline newMasterDocument_
+
+                        newChildDocumentList =
                             newMasterDocument :: List.drop 1 model.childDocumentList
                     in
                     ( { model
                         | currentDocument = Just newMasterDocument
-                        , childDocumentList = newChildDocuemntList
+                        , childDocumentList = newChildDocumentList
                       }
                     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
                     )
@@ -2123,7 +2126,10 @@ subdocumentEditor viewInfo model =
             [ tabStrip viewInfo model
             , toolsOrDocs viewInfo model
             , subDocumentTools model
-            , column [ spacing 4, alignTop, padding 20 ] [ setupOutlineButton model, reorderChildrenButton model, inputOutline model ]
+            , column [ spacing 12, alignTop, padding 20 ]
+                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), updateChildrenButton model ]
+                , inputOutline model
+                ]
             ]
 
         -- XXX
@@ -2170,7 +2176,14 @@ setupOutline_ model =
                     model.documentOutline
 
                 True ->
-                    getTitles (List.drop 1 model.childDocumentList)
+                    let
+                        titleList =
+                            List.drop 1 model.childDocumentList |> List.map .title
+
+                        levels =
+                            doc.childLevels
+                    in
+                    List.map2 (\title level -> String.repeat (3 * level) " " ++ title) titleList levels |> String.join "\n"
 
         Nothing ->
             model.documentOutline
@@ -2184,8 +2197,8 @@ setupOutlineButton model =
     Input.button [] { onPress = Just SetUpOutline, label = el xButtonStyle (Element.text "Setup outline") }
 
 
-reorderChildrenButton model =
-    Input.button [] { onPress = Just ReorderChildren, label = el xButtonStyle (Element.text "Reorder") }
+updateChildrenButton model =
+    Input.button [] { onPress = Just UpdateChildren, label = el xButtonStyle (Element.text "Update") }
 
 
 getTitles : List Document -> String
@@ -2204,7 +2217,7 @@ inputOutline model =
         { onChange = GotOutline
         , text = model.documentOutline
         , placeholder = Nothing
-        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "Outline")
+        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "")
         , spellcheck = False
         }
 
@@ -2587,17 +2600,27 @@ docListViewer viewInfo model =
         h_ =
             translate -viewInfo.vInset model.windowHeight
 
+        master =
+            List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
+
         list =
             case model.documentListType of
                 SearchResults ->
                     model.documentList
 
                 DocumentChildren ->
-                    let
-                        master =
-                            List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
-                    in
                     Document.sortChildren master model.childDocumentList
+
+        levels =
+            List.map2 (\x y -> ( x, y )) (List.map .title (List.drop 1 list)) master.childLevels
+
+        levelOfTitle : String -> String
+        levelOfTitle title =
+            List.filter (\( t, _ ) -> title == t) levels
+                |> List.head
+                |> Maybe.withDefault ( "dummy", 0 )
+                |> Tuple.second
+                |> (\n -> String.repeat (3 * n) " ")
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))
@@ -2607,7 +2630,48 @@ docListViewer viewInfo model =
         , alignTop
         , clipX
         ]
-        [ column [ Font.size 13, spacing 8 ] (heading model :: newSubdocumentButton model :: deleteSubdocumentButton model :: List.map (tocEntry model.currentDocument) list) ]
+        [ column [ Font.size 13, spacing 8 ] (heading model :: newSubdocumentButton model :: deleteSubdocumentButton model :: List.map (tocEntryForMaster levelOfTitle model.currentDocument) list) ]
+
+
+tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
+tocEntryForMaster levelOfTitle currentDocument_ document =
+    let
+        currentDocId =
+            case currentDocument_ of
+                Nothing ->
+                    Utility.id0
+
+                Just doc ->
+                    doc.id
+
+        color =
+            case currentDocument_ of
+                Nothing ->
+                    Style.buttonGrey
+
+                Just currentDocument ->
+                    case ( currentDocId == document.id, document.children /= [] ) of
+                        ( True, True ) ->
+                            Style.brighterBlue
+
+                        ( True, False ) ->
+                            Style.red
+
+                        ( False, True ) ->
+                            Style.brighterBlue
+
+                        ( False, False ) ->
+                            Style.grey 0.2
+
+        fontWeight =
+            case currentDocId == document.id of
+                True ->
+                    Font.bold
+
+                False ->
+                    Font.regular
+    in
+    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text (levelOfTitle document.title ++ document.title)) }
 
 
 tocEntry : Maybe Document -> Document -> Element Msg
