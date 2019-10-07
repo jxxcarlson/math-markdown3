@@ -2127,7 +2127,7 @@ subdocumentEditor viewInfo model =
             , toolsOrDocs viewInfo model
             , subDocumentTools model
             , column [ spacing 12, alignTop, padding 20 ]
-                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), updateChildrenButton model ]
+                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), updateChildrenButton model, setupOutlineButton model ]
                 , inputOutline model
                 ]
             ]
@@ -2154,7 +2154,8 @@ subDocumentTools model =
     column [ spacing 12, paddingXY 18 24, alignTop ]
         [ el [ Font.size 14, width (px 300) ] (Element.text message1)
         , el [ Font.size 14, width (px 300), Font.bold ] (Element.text message2)
-        , column [ Font.size 13, spacing 8, width (px 350), height (px 500), Border.color Style.charcoal, Border.width 1, padding 12, scrollbarY ] (List.map addSubdocumentButton2 model.candidateChildDocumentList)
+        , column [ Font.size 13, spacing 8, width (px 350), height (px 500), Border.color Style.charcoal, Border.width 1, padding 12, scrollbarY ]
+            (List.map addSubdocumentButton2 model.candidateChildDocumentList)
         ]
 
 
@@ -2170,20 +2171,28 @@ setupOutline model =
 setupOutline_ : Model -> String
 setupOutline_ model =
     case model.currentDocument of
-        Just doc ->
-            case Just doc.id == Maybe.map .id (List.head model.childDocumentList) of
+        Just currentDoc ->
+            case Just currentDoc.id == Maybe.map .id (List.head model.childDocumentList) of
                 False ->
                     model.documentOutline
 
                 True ->
                     let
-                        titleList =
+                        titles =
                             List.drop 1 model.childDocumentList |> List.map .title
 
+                        levels_ =
+                            currentDoc.childLevels
+
                         levels =
-                            doc.childLevels
+                            case List.length levels_ == List.length titles of
+                                True ->
+                                    levels_
+
+                                False ->
+                                    List.repeat (List.length titles) 0
                     in
-                    List.map2 (\title level -> String.repeat (3 * level) " " ++ title) titleList levels |> String.join "\n"
+                    List.map2 (\title level -> String.repeat (3 * level) " " ++ title) titles levels |> String.join "\n"
 
         Nothing ->
             model.documentOutline
@@ -2194,7 +2203,7 @@ xButtonStyle =
 
 
 setupOutlineButton model =
-    Input.button [] { onPress = Just SetUpOutline, label = el xButtonStyle (Element.text "Setup outline") }
+    Input.button [] { onPress = Just SetUpOutline, label = el xButtonStyle (Element.text "Load") }
 
 
 updateChildrenButton model =
@@ -2209,7 +2218,7 @@ getTitles docList =
 
 addSubdocumentButton2 : Document -> Element Msg
 addSubdocumentButton2 document =
-    Input.button [] { onPress = Just (AddThisDocumentToMaster document), label = el [ Font.color Style.blue ] (Element.text document.title) }
+    Input.button Style.activeButtonStyle { onPress = Just (AddThisDocumentToMaster document), label = el [ Font.color Style.white ] (Element.text document.title) }
 
 
 inputOutline model =
