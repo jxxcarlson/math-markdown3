@@ -2292,7 +2292,8 @@ renderedSource viewInfo model footerText_ rt =
     row [ spacing 10 ]
         [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
             [ column [ width (px w2_), paddingXY 10 20 ]
-                [ rt.document |> Element.html
+                [ rt.title |> Element.html
+                , rt.document |> Element.html
                 ]
             ]
         , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
@@ -2787,23 +2788,34 @@ heading model =
 
 --  el [ Font.size 16, Font.bold ] (Element.text ("Documents" ++ n))
 -- HEADER AND FOOTER --
+--
+--type alias ViewInfo =
+--    { toolStripWidth : Float
+--    , docListWidth : Float
+--    , editorWidth : Float
+--    , renderedDisplayWidth : Float
+--    , tocWidth : Float
+--    , vInset : Float
+--    , hExtra : Float
+--    }
 
 
 readingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
 readingHeader viewInfo model rt =
     let
         lhWidth =
-            scale (1 - viewInfo.renderedDisplayWidth - viewInfo.tocWidth) model.windowWidth
+            scale (viewInfo.toolStripWidth + viewInfo.docListWidth) model.windowWidth
 
+        -- scale viewInfo.docListWidth model.windowWidth
         titleWidth =
-            scale (0.8 * viewInfo.renderedDisplayWidth) model.windowWidth
+            scale (1.0 * viewInfo.renderedDisplayWidth) model.windowWidth
 
         rhWidth =
             scale (viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
         [ modeButtonStrip model lhWidth
-        , row [ spacing 10 ]
+        , row [ spacing 10, alignLeft ]
             [ titleRow titleWidth rt
             , searchRow model
             ]
@@ -2869,7 +2881,7 @@ searchRow model =
 
 
 titleRow titleWidth rt =
-    row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignLeft ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
+    row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignLeft, moveLeft 30 ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
 
 
 editTools : Model -> Element Msg
