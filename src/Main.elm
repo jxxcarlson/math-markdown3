@@ -1345,19 +1345,44 @@ deleteSubdocument model =
 deleteSubdocument_ : Model -> Document -> Document -> ( Model, Cmd Msg )
 deleteSubdocument_ model masterDocument documentToDelete =
     let
-        newMasterDocument =
+        newMasterDocument_ =
             Document.deleteChild documentToDelete masterDocument
 
-        newChildDocumentList =
-            List.filter (\doc -> doc.id /= documentToDelete.id) model.childDocumentList
+        indexOfChildToDelete =
+            List.Extra.elemIndex documentToDelete.id masterDocument.children
+
+        newChildLevels =
+            case indexOfChildToDelete of
+                Nothing ->
+                    masterDocument.childLevels
+
+                Just idx ->
+                    List.Extra.removeAt idx masterDocument.childLevels
+
+        newMasterDocument =
+            { newMasterDocument_ | childLevels = newChildLevels }
 
         newDocumentList =
             List.filter (\doc -> doc.id /= documentToDelete.id) model.documentList
+                |> Document.replaceInList newMasterDocument
+
+        newChildDocumentList =
+            List.filter (\doc -> doc.id /= documentToDelete.id) model.childDocumentList
+                |> Document.replaceInList newMasterDocument
+
+        newDocumentOutline =
+            case computeOutline newMasterDocument newChildDocumentList of
+                Nothing ->
+                    model.documentOutline
+
+                Just outline ->
+                    outline
     in
     ( { model
         | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
         , documentList = newDocumentList
+        , documentOutline = newDocumentOutline
       }
     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
     )
@@ -1453,9 +1478,6 @@ newSubdocument_ model user masterDocument targetDocument =
         newChildDocumentList =
             Document.replaceInList newMasterDocument <|
                 Document.insertDocumentInList newDocument targetDocument model.childDocumentList
-
-        _ =
-            Debug.log "NCD" (List.map .title newChildDocumentList)
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.documentList)
@@ -2666,9 +2688,6 @@ docListViewer viewInfo model =
 
                 DocumentChildren ->
                     Document.sortChildren master model.childDocumentList
-
-        _ =
-            Debug.log "children to show" (List.map .title list)
 
         levels =
             List.map2 (\x y -> ( x, y )) (List.map .title (List.drop 1 list)) master.childLevels
