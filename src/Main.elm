@@ -1441,20 +1441,22 @@ newSubdocument_ model user masterDocument currentDocument =
             { masterDocument | children = newChildren, childLevels = newLevels }
 
         newChildDocumentList =
-            model.childDocumentList ++ [ newDocument ]
+            Document.replaceInList newMasterDocument (model.childDocumentList ++ [ newDocument ])
 
         newDocumentList =
-            Document.replaceInList newMasterDocument (newDocument :: model.childDocumentList)
+            Document.replaceInList newMasterDocument (newDocument :: model.documentList)
     in
     ( { model
         | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
         , documentList = newDocumentList
+        , documentListType = DocumentChildren
         , visibilityOfTools = Invisible
-        , appMode = Editing StandardEditing
+        , appMode = Editing SubdocumentEditing
         , tagString = ""
         , currentUuid = newUuid
         , currentSeed = newSeed
+        , message = ( UserMessage, "subdocument added" )
         , lastAst = lastAst
         , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
       }
