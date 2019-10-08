@@ -76,6 +76,10 @@ type alias RequestHandler =
     RemoteData (Graphql.Http.Error (List Document)) (List Document) -> RequestMsg
 
 
+type alias MutationHandler =
+    GraphQLResponse (Maybe MutationResponse) -> RequestMsg
+
+
 
 -- PARAMETERS --
 
@@ -146,7 +150,7 @@ publicDocumentsWithTitle authToken titleKey =
 
 insertDocument : String -> Document -> Cmd RequestMsg
 insertDocument authToken newDocument =
-    makeMutation (getDocumentInsertObject newDocument) authToken
+    makeMutation (getDocumentInsertObject newDocument) authToken InsertDocumentResponse
 
 
 updateDocument : String -> Document -> Cmd RequestMsg
@@ -390,9 +394,14 @@ mutationResponseSelection =
         DocumentMutation.affected_rows
 
 
-makeMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
-makeMutation mutation authToken =
+makeMutation1 : SelectionSet (Maybe MutationResponse) RootMutation -> String -> Cmd RequestMsg
+makeMutation1 mutation authToken =
     makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> InsertDocumentResponse)
+
+
+makeMutation : SelectionSet (Maybe MutationResponse) RootMutation -> String -> MutationHandler -> Cmd RequestMsg
+makeMutation mutation authToken mutationHahdler =
+    makeGraphQLMutation authToken mutation (RemoteData.fromResult >> GraphQLResponse >> mutationHahdler)
 
 
 type alias MutationResponse =

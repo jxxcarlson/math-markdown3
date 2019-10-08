@@ -1432,20 +1432,22 @@ newSubdocument_ model user masterDocument currentDocument =
             step Uuid.generator model.currentSeed
 
         newChildren =
-            Utility.insertUuidInList model.currentUuid currentDocument.id masterDocument.children
+            masterDocument.children ++ [ newDocument.id ]
+
+        newLevels =
+            masterDocument.childLevels ++ [ 0 ]
 
         newMasterDocument =
-            { masterDocument | children = newChildren }
+            { masterDocument | children = newChildren, childLevels = newLevels }
 
         newChildDocumentList =
-            Document.insertDocumentInList newDocument currentDocument model.childDocumentList
-                |> Document.replaceInList newMasterDocument
+            model.childDocumentList ++ [ newDocument ]
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.childDocumentList)
     in
     ( { model
-        | currentDocument = Just newDocument
+        | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
         , documentList = newDocumentList
         , visibilityOfTools = Invisible
