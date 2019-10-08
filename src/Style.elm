@@ -164,49 +164,61 @@ darkBlue =
 -- COLORS --
 
 
+makeGrey : Float -> Color
 makeGrey g =
     Element.rgb g g g
 
 
+lightGrey : Color
 lightGrey =
     makeGrey 0.95
 
 
+buttonGrey : Color
 buttonGrey =
     grey 0.5
 
 
+red : Color
 red =
     Element.rgb 0.4 0.1 0.1
 
 
+white : Color
 white =
     Element.rgb 1 1 1
 
 
+blue : Color
 blue =
     Element.rgb 0.1 0.1 0.4
 
 
+brighterBlue : Color
 brighterBlue =
     Element.rgb 0.1 0.1 0.7
 
 
+mediumBlue : Color
 mediumBlue =
     Element.rgb 0.1 0.1 0.5
 
 
+green : Color
 green =
     Element.rgb 0 0.5 0
 
 
+grey : Float -> Color
 grey g =
     Element.rgb g g g
 
 
+charcoal : Color
 charcoal =
     grey 0.3
 
 
+black : Color
 black =
     grey 0.1

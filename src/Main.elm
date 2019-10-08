@@ -2708,11 +2708,17 @@ docListViewer viewInfo model =
         , alignTop
         , clipX
         ]
-        [ column [ Font.size 13, spacing 8 ] (heading model :: newSubdocumentButton model :: deleteSubdocumentButton model :: List.map (tocEntryForMaster levelOfTitle model.currentDocument) list) ]
+        [ column [ Font.size 13, spacing 8 ]
+            (heading model
+                :: newSubdocumentButton model
+                :: deleteSubdocumentButton model
+                :: List.map (tocEntryForMaster levelOfTitle model.currentDocument) list
+            )
+        ]
 
 
-tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
-tocEntryForMaster levelOfTitle currentDocument_ document =
+tocEntryStyle : Maybe Document -> Document -> ( Color, Element.Attribute msg )
+tocEntryStyle currentDocument_ document =
     let
         currentDocId =
             case currentDocument_ of
@@ -2727,7 +2733,7 @@ tocEntryForMaster levelOfTitle currentDocument_ document =
                 Nothing ->
                     Style.buttonGrey
 
-                Just currentDocument ->
+                Just _ ->
                     case ( currentDocId == document.id, document.children /= [] ) of
                         ( True, True ) ->
                             Style.brighterBlue
@@ -2749,46 +2755,23 @@ tocEntryForMaster levelOfTitle currentDocument_ document =
                 False ->
                     Font.regular
     in
+    ( color, fontWeight )
+
+
+tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
+tocEntryForMaster levelOfTitle currentDocument_ document =
+    let
+        ( color, fontWeight ) =
+            tocEntryStyle currentDocument_ document
+    in
     Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text (levelOfTitle document.title ++ document.title)) }
 
 
 tocEntry : Maybe Document -> Document -> Element Msg
 tocEntry currentDocument_ document =
     let
-        currentDocId =
-            case currentDocument_ of
-                Nothing ->
-                    Utility.id0
-
-                Just doc ->
-                    doc.id
-
-        color =
-            case currentDocument_ of
-                Nothing ->
-                    Style.buttonGrey
-
-                Just currentDocument ->
-                    case ( currentDocId == document.id, document.children /= [] ) of
-                        ( True, True ) ->
-                            Style.brighterBlue
-
-                        ( True, False ) ->
-                            Style.red
-
-                        ( False, True ) ->
-                            Style.brighterBlue
-
-                        ( False, False ) ->
-                            Style.grey 0.2
-
-        fontWeight =
-            case currentDocId == document.id of
-                True ->
-                    Font.bold
-
-                False ->
-                    Font.regular
+        ( color, fontWeight ) =
+            tocEntryStyle currentDocument_ document
     in
     Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text document.title) }
 
