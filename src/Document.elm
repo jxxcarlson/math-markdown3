@@ -12,6 +12,7 @@ module Document exposing
     , idAndTitleList
     , insertDocumentInList
     , level
+    , makeTocStatus
     , reOrder
     , reorderChildren
     , replaceInList
@@ -53,6 +54,30 @@ type MarkdownFlavor
     = MDStandard
     | MDExtended
     | MDExtendedMath
+
+
+{-| Used to determine whether a toc entry
+displays its subdocuments or not
+-}
+type alias TocStatus =
+    List ( Uuid, Bool )
+
+
+makeTocStatus : Document -> TocStatus
+makeTocStatus document =
+    let
+        data =
+            List.map2 (\x y -> ( x, y )) document.children document.childLevels
+
+        status : ( Uuid, Int ) -> ( Uuid, Bool )
+        status ( uuid, level_ ) =
+            if level_ == 0 then
+                ( uuid, True )
+
+            else
+                ( uuid, False )
+    in
+    List.map status data
 
 
 getDocType : Maybe Document -> DocType
