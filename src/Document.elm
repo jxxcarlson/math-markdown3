@@ -241,6 +241,9 @@ footer document =
         ++ "\n"
         ++ "Children: "
         ++ String.fromInt (List.length document.children)
+        ++ "\n"
+        ++ "Levels: "
+        ++ String.fromInt (List.length document.childLevels)
         --        ++ "\n"
         --        ++ "\nSummary: "
         --        ++ childrenSummary document

@@ -16,6 +16,7 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Keyboard exposing (Key(..))
 import Keyboard.Arrows
+import List.Extra
 import Markdown.Elm
 import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
@@ -1417,7 +1418,7 @@ newSubdocument model =
 
 
 newSubdocument_ : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
-newSubdocument_ model user masterDocument currentDocument =
+newSubdocument_ model user masterDocument targetDocument =
     let
         newDocumentText =
             "# New subdocument of " ++ masterDocument.title ++ "\n\nWrite something here ..."
@@ -1431,26 +1432,48 @@ newSubdocument_ model user masterDocument currentDocument =
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed
 
+        --        newChildren =
+        --            masterDocument.children ++ [ newDocument.id ]
+        targetIndex =
+            List.Extra.elemIndex targetDocument.id masterDocument.children |> Maybe.withDefault 0
+
         newChildren =
-            masterDocument.children ++ [ newDocument.id ]
+            Utility.insertUuidInList newDocument.id targetDocument.id masterDocument.children
 
+        --        newLevels =
+        --            masterDocument.childLevels ++ [ 0 ]
         newLevels =
-            masterDocument.childLevels ++ [ 0 ]
+            Utility.insertIntegerAtIndex 0 targetIndex masterDocument.childLevels
+                |> List.take (List.length newChildren)
 
+        -- ensure that the lists have the same lengtht
         newMasterDocument =
             { masterDocument | children = newChildren, childLevels = newLevels }
 
         newChildDocumentList =
-            Document.replaceInList newMasterDocument (model.childDocumentList ++ [ newDocument ])
+            Document.replaceInList newMasterDocument <|
+                Document.insertDocumentInList newDocument targetDocument model.childDocumentList
+
+        _ =
+            Debug.log "NCD" (List.map .title newChildDocumentList)
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.documentList)
+
+        newDocumentOutline =
+            case computeOutline newMasterDocument newChildDocumentList of
+                Nothing ->
+                    model.documentOutline
+
+                Just outline ->
+                    outline
     in
     ( { model
         | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
         , documentList = newDocumentList
         , documentListType = DocumentChildren
+        , documentOutline = newDocumentOutline
         , visibilityOfTools = Invisible
         , appMode = Editing SubdocumentEditing
         , tagString = ""
@@ -2185,30 +2208,40 @@ setupOutline_ : Model -> String
 setupOutline_ model =
     case model.currentDocument of
         Just currentDoc ->
-            case Just currentDoc.id == Maybe.map .id (List.head model.childDocumentList) of
-                False ->
+            case computeOutline currentDoc model.childDocumentList of
+                Nothing ->
                     model.documentOutline
 
-                True ->
-                    let
-                        titles =
-                            List.drop 1 model.childDocumentList |> List.map .title
-
-                        levels_ =
-                            currentDoc.childLevels
-
-                        levels =
-                            case List.length levels_ == List.length titles of
-                                True ->
-                                    levels_
-
-                                False ->
-                                    List.repeat (List.length titles) 0
-                    in
-                    List.map2 (\title level -> String.repeat (3 * level) " " ++ title) titles levels |> String.join "\n"
+                Just outline ->
+                    outline
 
         Nothing ->
             model.documentOutline
+
+
+computeOutline : Document -> List Document -> Maybe String
+computeOutline currentDoc childDocumentList =
+    case Just currentDoc.id == Maybe.map .id (List.head childDocumentList) of
+        False ->
+            Nothing
+
+        True ->
+            let
+                titles =
+                    List.drop 1 childDocumentList |> List.map .title
+
+                levels_ =
+                    currentDoc.childLevels
+
+                levels =
+                    case List.length levels_ == List.length titles of
+                        True ->
+                            levels_
+
+                        False ->
+                            List.repeat (List.length titles) 0
+            in
+            Just (List.map2 (\title level -> String.repeat (3 * level) " " ++ title) titles levels |> String.join "\n")
 
 
 xButtonStyle =
@@ -2418,13 +2451,13 @@ newSubdocumentButton model =
             Maybe.map (.children >> List.length) model.currentDocument
                 |> Maybe.withDefault 0
     in
-    showIf (model.appMode == Editing SubdocumentEditing && numberOfChildren > 0)
+    showIf (model.appMode == Editing SubdocumentEditing)
         (Input.button
             []
             { onPress = Just NewSubdocument
             , label =
                 el []
-                    (el (headingButtonStyle 140) (Element.text "New subocument"))
+                    (el (headingButtonStyle 140) (Element.text "New subdocument"))
             }
         )
 
@@ -2633,6 +2666,9 @@ docListViewer viewInfo model =
 
                 DocumentChildren ->
                     Document.sortChildren master model.childDocumentList
+
+        _ =
+            Debug.log "children to show" (List.map .title list)
 
         levels =
             List.map2 (\x y -> ( x, y )) (List.map .title (List.drop 1 list)) master.childLevels

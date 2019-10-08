@@ -6,6 +6,7 @@ module Utility exposing
     , humanTimeHM
     , humanTimeHMS
     , id0
+    , insertIntegerAtIndex
     , insertStringInList
     , insertUuidInList
     , intSlug
@@ -65,6 +66,30 @@ insertUuidInList newUuid targetUuid list =
 
                 Nothing ->
                     list
+
+
+{-|
+
+> insertIntegerAtIndex 7 1 [0, 0, 0][0,0,7,0] : List Int
+
+-}
+insertIntegerAtIndex : Int -> Int -> List Int -> List Int
+insertIntegerAtIndex newInt idx list =
+    case list == [] of
+        True ->
+            [ newInt ]
+
+        False ->
+            let
+                ( a, b ) =
+                    List.Extra.splitAt idx list
+            in
+            case List.head b of
+                Nothing ->
+                    a ++ (newInt :: b)
+
+                Just x ->
+                    a ++ (x :: newInt :: List.drop 1 b)
 
 
 boolAsString : Bool -> String
