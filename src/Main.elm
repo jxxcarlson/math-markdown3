@@ -30,6 +30,7 @@ import Request exposing (GraphQLResponse(..), RequestMsg(..))
 import Style
 import Task
 import Time exposing (Posix)
+import Toc exposing (TocItem)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
 import User exposing (User)
@@ -2703,14 +2704,12 @@ docListViewer viewInfo model =
         ]
 
 
+renderTocForSearchResults : Model -> List (Element Msg)
 renderTocForSearchResults model =
     List.map (tocEntry model.currentDocument) model.documentList
 
 
-
--- renderTocForMaster : Model ->
-
-
+renderTocForMaster : Model -> List (Element Msg)
 renderTocForMaster model =
     let
         master =
@@ -2733,8 +2732,55 @@ renderTocForMaster model =
     List.map (tocEntryForMaster levelOfTitle model.currentDocument) list
 
 
+renderTocForMaster2 : Model -> List (Element Msg)
+renderTocForMaster2 model =
+    let
+        master =
+            List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
+
+        ( currentDocId, level ) =
+            case model.currentDocument of
+                Nothing ->
+                    ( Utility.getId 0, -2 )
+
+                Just doc ->
+                    ( doc.id, Document.getLevel master doc )
+
+        documentList =
+            Document.sortChildren master model.childDocumentList
+
+        tocTree_ =
+            Toc.make master (List.drop 1 model.childDocumentList)
+
+        tocTree =
+            case level < 1 of
+                True ->
+                    tocTree_ |> Toc.setVisibility True currentDocId
+
+                False ->
+                    tocTree_
+
+        renderedToc =
+            Toc.render tocTree
+    in
+    List.map2 (tocEntryForMaster2 model.currentDocument) renderedToc documentList
+
+
 
 -- TABLE OF CONTENTS
+
+
+tocEntryForMaster2 : Maybe Document -> TocItem -> Document -> Element Msg
+tocEntryForMaster2 currentDocument_ tocItem document =
+    let
+        ( color, fontWeight ) =
+            tocEntryStyle2 currentDocument_ tocItem
+
+        prefix =
+            String.repeat (3 * tocItem.level) " "
+    in
+    showIf tocItem.visible
+        (Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text (prefix ++ tocItem.title)) })
 
 
 tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
@@ -2753,6 +2799,41 @@ tocEntry currentDocument_ document =
             tocEntryStyle currentDocument_ document
     in
     Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text document.title) }
+
+
+tocEntryStyle2 : Maybe Document -> TocItem -> ( Color, Element.Attribute msg )
+tocEntryStyle2 currentDocument_ tocItem =
+    let
+        currentDocId =
+            case currentDocument_ of
+                Nothing ->
+                    Utility.id0
+
+                Just doc ->
+                    doc.id
+
+        color =
+            case currentDocument_ of
+                Nothing ->
+                    Style.buttonGrey
+
+                Just _ ->
+                    case currentDocId == tocItem.id of
+                        True ->
+                            Style.darkRed
+
+                        False ->
+                            Style.charcoal
+
+        fontWeight =
+            case currentDocId == tocItem.id of
+                True ->
+                    Font.bold
+
+                False ->
+                    Font.regular
+    in
+    ( color, fontWeight )
 
 
 tocEntryStyle : Maybe Document -> Document -> ( Color, Element.Attribute msg )

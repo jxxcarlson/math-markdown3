@@ -1,4 +1,4 @@
-module Toc exposing (TocItem, make, render, toggle)
+module Toc exposing (TocItem, make, render, setVisibility)
 
 import Document exposing (Document)
 import HTree
@@ -16,9 +16,10 @@ type alias TocItem =
     }
 
 
-rootElement =
-    { id = Utility.getId 0
-    , title = "Root"
+rootElement : Document -> TocItem
+rootElement document =
+    { id = document.id
+    , title = document.title
     , level = -1
     , visible = True
     }
@@ -57,14 +58,14 @@ prepare master childDocuments =
 
 make : Document -> List Document -> Tree TocItem
 make master childDocuments =
-    HTree.fromList rootElement level (prepare master childDocuments)
+    HTree.fromList (rootElement master) level (prepare master childDocuments)
 
 
 {-| Toggle the visibility of the chilren of the
 node with the given uuid
 -}
-toggle : Bool -> Uuid -> Tree TocItem -> Tree TocItem
-toggle bit uuid tree =
+setVisibility : Bool -> Uuid -> Tree TocItem -> Tree TocItem
+setVisibility bit uuid tree =
     let
         focusedZipper : Maybe (Zipper TocItem)
         focusedZipper =
@@ -76,7 +77,7 @@ toggle bit uuid tree =
 
         mapListTree : List (Tree TocItem) -> List (Tree TocItem)
         mapListTree list =
-            List.map (Tree.mapLabel (\label -> { label | visible = not label.visible })) list
+            List.map (Tree.mapLabel (\label -> { label | visible = bit })) list
 
         childrenAtFocus : Maybe (List (Tree TocItem))
         childrenAtFocus =

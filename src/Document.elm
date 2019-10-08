@@ -9,6 +9,7 @@ module Document exposing
     , getById
     , getContent
     , getDocType
+    , getLevel
     , idAndTitleList
     , insertDocumentInList
     , level
@@ -78,6 +79,18 @@ makeTocStatus document =
                 ( uuid, False )
     in
     List.map status data
+
+
+{-| Get level of document as defined by master
+-}
+getLevel : Document -> Document -> Int
+getLevel master document =
+    let
+        idx : Int
+        idx =
+            List.Extra.elemIndex document.id master.children |> Maybe.withDefault -1
+    in
+    List.Extra.getAt idx master.childLevels |> Maybe.withDefault -1
 
 
 getDocType : Maybe Document -> DocType
