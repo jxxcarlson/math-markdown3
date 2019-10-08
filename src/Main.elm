@@ -2678,27 +2678,13 @@ docListViewer viewInfo model =
         h_ =
             translate -viewInfo.vInset model.windowHeight
 
-        master =
-            List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
-
-        list =
+        renderedList =
             case model.documentListType of
                 SearchResults ->
-                    model.documentList
+                    renderTocForSearchResults model
 
                 DocumentChildren ->
-                    Document.sortChildren master model.childDocumentList
-
-        levels =
-            List.map2 (\x y -> ( x, y )) (List.map .title (List.drop 1 list)) master.childLevels
-
-        levelOfTitle : String -> String
-        levelOfTitle title =
-            List.filter (\( t, _ ) -> title == t) levels
-                |> List.head
-                |> Maybe.withDefault ( "dummy", 0 )
-                |> Tuple.second
-                |> (\n -> String.repeat (3 * n) " ")
+                    renderTocForMaster model
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))
@@ -2712,9 +2698,61 @@ docListViewer viewInfo model =
             (heading model
                 :: newSubdocumentButton model
                 :: deleteSubdocumentButton model
-                :: List.map (tocEntryForMaster levelOfTitle model.currentDocument) list
+                :: renderedList
             )
         ]
+
+
+renderTocForSearchResults model =
+    List.map (tocEntry model.currentDocument) model.documentList
+
+
+
+-- renderTocForMaster : Model ->
+
+
+renderTocForMaster model =
+    let
+        master =
+            List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
+
+        list =
+            Document.sortChildren master model.childDocumentList
+
+        levels =
+            List.map2 (\x y -> ( x, y )) (List.map .title (List.drop 1 list)) master.childLevels
+
+        levelOfTitle : String -> String
+        levelOfTitle title =
+            List.filter (\( t, _ ) -> title == t) levels
+                |> List.head
+                |> Maybe.withDefault ( "dummy", 0 )
+                |> Tuple.second
+                |> (\n -> String.repeat (3 * n) " ")
+    in
+    List.map (tocEntryForMaster levelOfTitle model.currentDocument) list
+
+
+
+-- TABLE OF CONTENTS
+
+
+tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
+tocEntryForMaster levelOfTitle currentDocument_ document =
+    let
+        ( color, fontWeight ) =
+            tocEntryStyle currentDocument_ document
+    in
+    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text (levelOfTitle document.title ++ document.title)) }
+
+
+tocEntry : Maybe Document -> Document -> Element Msg
+tocEntry currentDocument_ document =
+    let
+        ( color, fontWeight ) =
+            tocEntryStyle currentDocument_ document
+    in
+    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text document.title) }
 
 
 tocEntryStyle : Maybe Document -> Document -> ( Color, Element.Attribute msg )
@@ -2756,24 +2794,6 @@ tocEntryStyle currentDocument_ document =
                     Font.regular
     in
     ( color, fontWeight )
-
-
-tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
-tocEntryForMaster levelOfTitle currentDocument_ document =
-    let
-        ( color, fontWeight ) =
-            tocEntryStyle currentDocument_ document
-    in
-    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text (levelOfTitle document.title ++ document.title)) }
-
-
-tocEntry : Maybe Document -> Document -> Element Msg
-tocEntry currentDocument_ document =
-    let
-        ( color, fontWeight ) =
-            tocEntryStyle currentDocument_ document
-    in
-    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text document.title) }
 
 
 headingButtonStyle w =
