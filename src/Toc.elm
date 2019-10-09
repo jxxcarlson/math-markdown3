@@ -1,4 +1,4 @@
-module Toc exposing (TocItem, ff, make, render, setVisibility, traverse, traverse_, updateff)
+module Toc exposing (TocItem, ff, make, render, setVisibility, setVisibility2, traverse, traverse_, updateff)
 
 import Document exposing (Document)
 import HTree
@@ -22,17 +22,6 @@ rootElement : Document -> TocItem
 rootElement document =
     { id = document.id
     , title = document.title
-    , level = -1
-    , visible = True
-    , hasChildren = Just True
-    , isRoot = True
-    }
-
-
-fake : TocItem
-fake =
-    { id = Utility.getId 0
-    , title = "foo"
     , level = -1
     , visible = True
     , hasChildren = Just True
@@ -144,8 +133,14 @@ traverse_ f maybeZipper =
                     Just z
 
 
+ff : Tree a -> Int
 ff tree =
     List.length (Tree.children tree)
+
+
+gg : Tree a -> Bool
+gg tree =
+    List.length (Tree.children tree) > 0
 
 
 updateff : Tree ( Int, Int ) -> Tree ( Int, Int )
@@ -156,6 +151,18 @@ updateff tree =
 
         newLabel =
             ( a, ff tree )
+    in
+    tree |> Tree.replaceLabel newLabel
+
+
+updategg : Tree ( Int, Bool ) -> Tree ( Int, Bool )
+updategg tree =
+    let
+        ( a, _ ) =
+            Tree.label tree
+
+        newLabel =
+            ( a, gg tree )
     in
     tree |> Tree.replaceLabel newLabel
 
@@ -172,7 +179,7 @@ updateHasChildren tree =
     tree |> Tree.replaceLabel { label_ | hasChildren = hasChildren_ tree }
 
 
-{-| Toggle the visibility of the children of the
+{-| Set the visibility to 'bit' for the children of the
 node with the given uuid
 -}
 setVisibility : Bool -> Uuid -> Tree TocItem -> Tree TocItem
@@ -184,7 +191,7 @@ setVisibility bit uuid tree =
 
         subTreeLabel : Maybe TocItem
         subTreeLabel =
-            Maybe.map Zipper.label focusedZipper
+            Maybe.map Zipper.label focusedZipper |> Maybe.map (\label -> { label | visible = bit })
 
         mapListTree : List (Tree TocItem) -> List (Tree TocItem)
         mapListTree list =
@@ -200,6 +207,32 @@ setVisibility bit uuid tree =
             Maybe.map2 Tree.tree subTreeLabel childrenAtFocus
     in
     case Maybe.map2 Zipper.replaceTree newSubTree focusedZipper of
+        Nothing ->
+            tree
+
+        Just newZipper ->
+            Zipper.toTree newZipper
+
+
+{-| Set the visibility to 'bit' for the strict subtree headed by the
+node with the given uuid
+-}
+setVisibility2 : Bool -> Uuid -> Tree TocItem -> Tree TocItem
+setVisibility2 bit uuid tree =
+    let
+        focusedZipper : Maybe (Zipper TocItem)
+        focusedZipper =
+            Zipper.findFromRoot (\node -> node.id == uuid) (Zipper.fromTree tree)
+
+        subTreeAtFocus : Maybe (Tree TocItem)
+        subTreeAtFocus =
+            Maybe.map Zipper.tree focusedZipper
+
+        newSubTreeAtFocus : Maybe (Tree TocItem)
+        newSubTreeAtFocus =
+            Maybe.map (Tree.mapLabel (\label -> { label | visible = bit })) subTreeAtFocus
+    in
+    case Maybe.map2 Zipper.replaceTree newSubTreeAtFocus focusedZipper of
         Nothing ->
             tree
 
