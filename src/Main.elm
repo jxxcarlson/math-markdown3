@@ -88,6 +88,8 @@ type alias Model =
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
     , childDocumentList : List Document
+    , tocTree : Maybe (Tree TocItem)
+    , currrentTocLabel : Maybe TocItem
     , candidateChildDocumentList : List Document
     , childDocIdString : String
     , currentDocument : Maybe Document
@@ -230,6 +232,8 @@ init flags =
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
             , childDocumentList = []
+            , tocTree = Nothing
+            , currrentTocLabel = Nothing
             , candidateChildDocumentList = []
             , childDocIdString = ""
             , currentDocument = Nothing
@@ -602,6 +606,7 @@ update msg model =
                     ( { model
                         | currentDocument = Just newMasterDocument
                         , childDocumentList = newChildDocumentList
+                        , tocTree = Just <| Toc.make newMasterDocument newChildDocumentList
                       }
                     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
                     )
@@ -1187,17 +1192,21 @@ processDocumentRequest model maybeDocument documentList =
 
 processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
 processChildDocumentRequest model documentList =
+    -- XXX
     let
-        newDocumentList =
+        ( newDocumentList, tocTree ) =
             case model.currentDocument of
                 Nothing ->
-                    documentList
+                    ( documentList, Nothing )
 
                 Just masterDocument ->
-                    masterDocument :: Document.sortChildren masterDocument documentList
+                    ( masterDocument :: Document.sortChildren masterDocument documentList
+                    , Just <| Toc.make masterDocument documentList
+                    )
     in
     ( { model
         | childDocumentList = newDocumentList
+        , tocTree = tocTree
         , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
       }
     , Cmd.none
@@ -1216,6 +1225,7 @@ processCandidateChildDocumentRequest model documentList =
 
 processDocument : Model -> Document -> ( Model, Cmd Msg )
 processDocument model document =
+    -- XXX
     let
         ( ( newAst, newRenderedText ), cmd, documentListType ) =
             let
@@ -1345,6 +1355,7 @@ deleteSubdocument model =
 
 deleteSubdocument_ : Model -> Document -> Document -> ( Model, Cmd Msg )
 deleteSubdocument_ model masterDocument documentToDelete =
+    -- XXX
     let
         newMasterDocument_ =
             Document.deleteChild documentToDelete masterDocument
@@ -1382,6 +1393,7 @@ deleteSubdocument_ model masterDocument documentToDelete =
     ( { model
         | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
+        , tocTree = Just <| Toc.make newMasterDocument newChildDocumentList
         , documentList = newDocumentList
         , documentOutline = newDocumentOutline
       }
@@ -1445,6 +1457,7 @@ newSubdocument model =
 
 newSubdocument_ : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
 newSubdocument_ model user masterDocument targetDocument =
+    --- XXX
     let
         newDocumentText =
             "# New subdocument of " ++ masterDocument.title ++ "\n\nWrite something here ..."
@@ -1494,6 +1507,7 @@ newSubdocument_ model user masterDocument targetDocument =
     ( { model
         | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
+        , tocTree = Just <| Toc.make newMasterDocument newChildDocumentList
         , documentList = newDocumentList
         , documentListType = DocumentChildren
         , documentOutline = newDocumentOutline
@@ -1515,6 +1529,7 @@ newSubdocument_ model user masterDocument targetDocument =
 
 updateDocumentText : Model -> String -> ( Model, Cmd Msg )
 updateDocumentText model str =
+    --- XXX
     case model.currentDocument of
         Nothing ->
             ( model, Cmd.none )
@@ -2685,7 +2700,12 @@ docListViewer viewInfo model =
                     renderTocForSearchResults model
 
                 DocumentChildren ->
-                    renderTocForMaster model
+                    case model.tocTree of
+                        Nothing ->
+                            renderTocForMaster model
+
+                        Just tocTree_ ->
+                            renderTocForMaster2 model tocTree_
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))
@@ -2732,8 +2752,8 @@ renderTocForMaster model =
     List.map (tocEntryForMaster levelOfTitle model.currentDocument) list
 
 
-renderTocForMaster2 : Model -> List (Element Msg)
-renderTocForMaster2 model =
+renderTocForMaster2 : Model -> Tree TocItem -> List (Element Msg)
+renderTocForMaster2 model tocTree_ =
     let
         master =
             List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
@@ -2749,9 +2769,8 @@ renderTocForMaster2 model =
         documentList =
             Document.sortChildren master model.childDocumentList
 
-        tocTree_ =
-            Toc.make master (List.drop 1 model.childDocumentList)
-
+        --        tocTree_ =
+        --            Toc.make master (List.drop 1 model.childDocumentList)
         tocTree =
             case level < 1 of
                 True ->
