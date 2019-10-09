@@ -2868,7 +2868,20 @@ tocEntryForMaster2 currentDocument_ tocItem document =
             tocEntryStyle2 currentDocument_ tocItem
 
         prefix =
-            String.repeat (3 * tocItem.level) " "
+            case tocItem.isRoot of
+                True ->
+                    "  "
+
+                False ->
+                    case tocItem.hasChildren of
+                        Just True ->
+                            "+ " ++ String.repeat (3 * tocItem.level) " "
+
+                        Just False ->
+                            "  " ++ String.repeat (3 * tocItem.level) " "
+
+                        Nothing ->
+                            "  " ++ String.repeat (3 * tocItem.level) " "
     in
     showIf tocItem.visible
         (Input.button [] { onPress = Just (SetCurrentSubDocument document tocItem), label = el [ Font.color color, fontWeight ] (Element.text (prefix ++ tocItem.title)) })
@@ -2909,11 +2922,14 @@ tocEntryStyle2 currentDocument_ tocItem =
                     Style.buttonGrey
 
                 Just _ ->
-                    case currentDocId == tocItem.id of
-                        True ->
+                    case ( tocItem.isRoot, currentDocId == tocItem.id ) of
+                        ( True, _ ) ->
+                            Style.darkBlue
+
+                        ( False, True ) ->
                             Style.darkRed
 
-                        False ->
+                        ( False, False ) ->
                             Style.charcoal
 
         fontWeight =

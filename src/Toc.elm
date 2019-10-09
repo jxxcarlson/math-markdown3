@@ -1,4 +1,4 @@
-module Toc exposing (TocItem, make, render, setVisibility)
+module Toc exposing (TocItem, ff, make, render, setVisibility, traverse, traverse_, updateff)
 
 import Document exposing (Document)
 import HTree
@@ -13,7 +13,8 @@ type alias TocItem =
     , title : String
     , level : Int
     , visible : Bool
-    , hasChildren : Bool
+    , hasChildren : Maybe Bool
+    , isRoot : Bool
     }
 
 
@@ -23,7 +24,19 @@ rootElement document =
     , title = document.title
     , level = -1
     , visible = True
-    , hasChildren = True
+    , hasChildren = Just True
+    , isRoot = True
+    }
+
+
+fake : TocItem
+fake =
+    { id = Utility.getId 0
+    , title = "foo"
+    , level = -1
+    , visible = True
+    , hasChildren = Just True
+    , isRoot = True
     }
 
 
@@ -55,25 +68,75 @@ prepare master childDocuments =
         visibles =
             List.map initialVisibility levels
     in
-    List.map5 TocItem idList titles levels visibles (List.repeat (List.length idList) False)
+    List.map4 (\i t l v -> TocItem i t l v (Just False) False)
+        idList
+        titles
+        levels
+        visibles
 
 
 make : Document -> List Document -> Tree TocItem
 make master childDocuments =
     HTree.fromList (rootElement master) level (prepare master childDocuments)
+        |> traverse updateHasChildren
+        |> Maybe.withDefault (Tree.singleton (rootElement master))
 
 
-hasChildren_ : Tree TocItem -> Bool
+{-| Does the root of the tree have children?
+-}
+hasChildren_ : Tree TocItem -> Maybe Bool
 hasChildren_ tree =
-    Tree.children tree /= []
+    Just (Tree.children tree /= [])
+
+
+traverse : (Tree a -> Tree a) -> Tree a -> Maybe (Tree a)
+traverse f tree =
+    let
+        maybeZipper : Maybe (Zipper a)
+        maybeZipper =
+            Maybe.map (Zipper.mapTree f) (Just (Zipper.fromTree tree))
+    in
+    Maybe.map Zipper.toTree (traverse_ f maybeZipper)
 
 
 
---updateHasChildren2 : Tree TocItem -> Tree TocItem
---updateHasChildren2 tree =
---    Tree.mapLabel (\label -> { label | hasChildren = hasChildren_ tree })
+-- Maybe.map Zipper.toTree maybeZipper
 
 
+traverse_ : (Tree a -> Tree a) -> Maybe (Zipper a) -> Maybe (Zipper a)
+traverse_ f maybeZipper =
+    case Maybe.map Zipper.forward maybeZipper of
+        Nothing ->
+            maybeZipper
+
+        Just anotherZipper ->
+            case traverse_ f <| Maybe.map (Zipper.mapTree f) anotherZipper of
+                Nothing ->
+                    anotherZipper
+
+                Just z ->
+                    Just z
+
+
+ff tree =
+    List.length (Tree.children tree)
+
+
+updateff : Tree ( Int, Int ) -> Tree ( Int, Int )
+updateff tree =
+    let
+        ( a, _ ) =
+            Tree.label tree
+
+        newLabel =
+            ( a, ff tree )
+    in
+    tree |> Tree.replaceLabel newLabel
+
+
+{-| Update the TocItem which is the label for the root of tree.
+Note that while this function modifies the label, it depends on the tree
+-}
 updateHasChildren : Tree TocItem -> Tree TocItem
 updateHasChildren tree =
     let
