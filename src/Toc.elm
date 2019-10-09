@@ -13,6 +13,7 @@ type alias TocItem =
     , title : String
     , level : Int
     , visible : Bool
+    , hasChildren : Bool
     }
 
 
@@ -22,6 +23,7 @@ rootElement document =
     , title = document.title
     , level = -1
     , visible = True
+    , hasChildren = True
     }
 
 
@@ -53,7 +55,7 @@ prepare master childDocuments =
         visibles =
             List.map initialVisibility levels
     in
-    List.map4 TocItem idList titles levels visibles
+    List.map5 TocItem idList titles levels visibles (List.repeat (List.length idList) False)
 
 
 make : Document -> List Document -> Tree TocItem
@@ -61,7 +63,27 @@ make master childDocuments =
     HTree.fromList (rootElement master) level (prepare master childDocuments)
 
 
-{-| Toggle the visibility of the chilren of the
+hasChildren_ : Tree TocItem -> Bool
+hasChildren_ tree =
+    Tree.children tree /= []
+
+
+
+--updateHasChildren2 : Tree TocItem -> Tree TocItem
+--updateHasChildren2 tree =
+--    Tree.mapLabel (\label -> { label | hasChildren = hasChildren_ tree })
+
+
+updateHasChildren : Tree TocItem -> Tree TocItem
+updateHasChildren tree =
+    let
+        la =
+            Tree.label tree
+    in
+    tree |> Tree.replaceLabel { la | hasChildren = hasChildren_ tree }
+
+
+{-| Toggle the visibility of the children of the
 node with the given uuid
 -}
 setVisibility : Bool -> Uuid -> Tree TocItem -> Tree TocItem
