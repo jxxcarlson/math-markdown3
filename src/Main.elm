@@ -3245,9 +3245,19 @@ footer model =
         , wordCount model
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
+        , displayCurrentTocItem model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
+
+
+displayCurrentTocItem model =
+    case model.currentTocLabel of
+        Nothing ->
+            el [] (Element.text "-- tocItem --")
+
+        Just tocItem ->
+            el [] (Element.text <| "ti: " ++ tocItem.title)
 
 
 dirtyDocumentDisplay : Model -> Element Msg
