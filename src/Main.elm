@@ -89,7 +89,7 @@ type alias Model =
     , documentList : List Document
     , childDocumentList : List Document
     , tocTree : Maybe (Tree TocItem)
-    , currrentTocLabel : Maybe TocItem
+    , currentTocLabel : Maybe TocItem
     , candidateChildDocumentList : List Document
     , childDocIdString : String
     , currentDocument : Maybe Document
@@ -233,7 +233,7 @@ init flags =
             , documentList = [ Data.loadingPage ]
             , childDocumentList = []
             , tocTree = Nothing
-            , currrentTocLabel = Nothing
+            , currentTocLabel = Nothing
             , candidateChildDocumentList = []
             , childDocIdString = ""
             , currentDocument = Nothing
@@ -294,6 +294,7 @@ type Msg
     | SetDocumentListType DocumentListType
     | SetDocType DocType
     | SetCurrentDocument Document
+    | SetCurrentSubDocument Document TocItem
       -- Subdocuments
     | NewSubdocument
     | AddSubdocument
@@ -579,6 +580,9 @@ update msg model =
         SetCurrentDocument document ->
             processDocument model document
 
+        SetCurrentSubDocument document tocItem ->
+            processSubdocument model document tocItem
+
         SetUpOutline ->
             ( setupOutline model, Cmd.none )
 
@@ -601,7 +605,9 @@ update msg model =
                             Document.setLevelsOfChildren model.documentOutline newMasterDocument_
 
                         newChildDocumentList =
-                            newMasterDocument :: List.drop 1 model.childDocumentList
+                            newMasterDocument
+                                :: List.drop 1 model.childDocumentList
+                                |> Document.sortChildren newMasterDocument
                     in
                     ( { model
                         | currentDocument = Just newMasterDocument
@@ -1200,8 +1206,12 @@ processChildDocumentRequest model documentList =
                     ( documentList, Nothing )
 
                 Just masterDocument ->
-                    ( masterDocument :: Document.sortChildren masterDocument documentList
-                    , Just <| Toc.make masterDocument documentList
+                    let
+                        sortedChildDocuments =
+                            Document.sortChildren masterDocument documentList
+                    in
+                    ( masterDocument :: sortedChildDocuments
+                    , Just <| Toc.make masterDocument sortedChildDocuments
                     )
     in
     ( { model
@@ -1264,6 +1274,66 @@ processDocument model document =
     in
     ( { model
         | currentDocument = Just document
+        , documentListType = documentListType
+        , counter = model.counter + 2
+        , lastAst = newAst
+        , renderedText = newRenderedText
+        , tagString = document.tags |> String.join ", "
+        , message = ( UserMessage, "Success getting document list" )
+      }
+    , cmd
+    )
+
+
+processSubdocument : Model -> Document -> TocItem -> ( Model, Cmd Msg )
+processSubdocument model document tocItem =
+    let
+        currentLabel =
+            case tocItem.level < 1 of
+                True ->
+                    Just tocItem
+
+                False ->
+                    model.currentTocLabel
+
+        ( ( newAst, newRenderedText ), cmd, documentListType ) =
+            let
+                lastAst =
+                    Markdown.ElmWithId.parse model.counter ExtendedMath document.content
+
+                nMath =
+                    Markdown.ElmWithId.numberOfMathElements lastAst
+
+                renderedText =
+                    if nMath > 10 then
+                        let
+                            firstAst =
+                                Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
+                        in
+                        Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+
+                    else
+                        Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+
+                cmd1 =
+                    if nMath > 10 then
+                        renderAstFor lastAst
+
+                    else
+                        Cmd.none
+
+                ( cmd2, documentListType_ ) =
+                    if document.children == [] then
+                        ( Cmd.none, model.documentListType )
+
+                    else
+                        ( Request.documentsInIdList hasuraToken document.children |> Cmd.map Req, DocumentChildren )
+            in
+            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2 ], documentListType_ )
+    in
+    ( { model
+        | currentDocument = Just document
+        , currentTocLabel = currentLabel -- XXXX
         , documentListType = documentListType
         , counter = model.counter + 2
         , lastAst = newAst
@@ -1393,7 +1463,7 @@ deleteSubdocument_ model masterDocument documentToDelete =
     ( { model
         | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
-        , tocTree = Just <| Toc.make newMasterDocument newChildDocumentList
+        , tocTree = Just <| Toc.make newMasterDocument (Document.sortChildren newMasterDocument newChildDocumentList)
         , documentList = newDocumentList
         , documentOutline = newDocumentOutline
       }
@@ -1490,8 +1560,9 @@ newSubdocument_ model user masterDocument targetDocument =
             { masterDocument | children = newChildren, childLevels = newLevels }
 
         newChildDocumentList =
-            Document.replaceInList newMasterDocument <|
-                Document.insertDocumentInList newDocument targetDocument model.childDocumentList
+            Document.insertDocumentInList newDocument targetDocument model.childDocumentList
+                |> Document.replaceInList newMasterDocument
+                |> Document.sortChildren newMasterDocument
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.documentList)
@@ -2769,15 +2840,16 @@ renderTocForMaster2 model tocTree_ =
         documentList =
             Document.sortChildren master model.childDocumentList
 
-        --        tocTree_ =
-        --            Toc.make master (List.drop 1 model.childDocumentList)
+        currentActiveNodeId =
+            Maybe.map .id model.currentTocLabel |> Maybe.withDefault (Utility.getId 0)
+
         tocTree =
             case level < 1 of
                 True ->
                     tocTree_ |> Toc.setVisibility True currentDocId
 
                 False ->
-                    tocTree_
+                    tocTree_ |> Toc.setVisibility True currentActiveNodeId
 
         renderedToc =
             Toc.render tocTree
@@ -2799,7 +2871,7 @@ tocEntryForMaster2 currentDocument_ tocItem document =
             String.repeat (3 * tocItem.level) " "
     in
     showIf tocItem.visible
-        (Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text (prefix ++ tocItem.title)) })
+        (Input.button [] { onPress = Just (SetCurrentSubDocument document tocItem), label = el [ Font.color color, fontWeight ] (Element.text (prefix ++ tocItem.title)) })
 
 
 tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
