@@ -612,7 +612,7 @@ update msg model =
                     ( { model
                         | currentDocument = Just newMasterDocument
                         , childDocumentList = newChildDocumentList
-                        , tocTree = Just <| Toc.make newMasterDocument newChildDocumentList
+                        , tocTree = Just <| Toc.make newMasterDocument (List.drop 1 newChildDocumentList)
                       }
                     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
                     )
@@ -2272,7 +2272,7 @@ subdocumentEditor viewInfo model =
             , toolsOrDocs viewInfo model
             , subDocumentTools model
             , column [ spacing 12, alignTop, padding 20 ]
-                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), updateChildrenButton model, setupOutlineButton model ]
+                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), setupOutlineButton model, updateChildrenButton model ]
                 , inputOutline model
                 ]
             ]
