@@ -360,6 +360,17 @@ viewInfoEditing =
     }
 
 
+viewInfoEditingSubdocuemnt =
+    { toolStripWidth = 0.05
+    , docListWidth = 0.25
+    , editorWidth = 0.3
+    , renderedDisplayWidth = 0.3
+    , tocWidth = 0.1
+    , vInset = vInset
+    , hExtra = 0
+    }
+
+
 viewInfoReading =
     { toolStripWidth = 0.05
     , docListWidth = 0.25
@@ -581,7 +592,7 @@ update msg model =
             processDocument model document
 
         SetCurrentSubDocument document tocItem ->
-            processSubdocument model document tocItem
+            setCurrentSubdocument model document tocItem
 
         SetUpOutline ->
             ( setupOutline model, Cmd.none )
@@ -1285,15 +1296,27 @@ processDocument model document =
     )
 
 
-processSubdocument : Model -> Document -> TocItem -> ( Model, Cmd Msg )
-processSubdocument model document tocItem =
+setCurrentSubdocument : Model -> Document -> TocItem -> ( Model, Cmd Msg )
+setCurrentSubdocument model document tocItem =
     let
-        currentLabel =
-            case tocItem.level < 1 of
-                True ->
+        {- Set the currently open node.
+           At the moment this works only for the top level.
+           That is, we change it only if it has level zero.
+           At the moment this is necessary because otherwise if one
+           clicks on an interior item, it would close the enclosing
+           one.  One solution is to expose all positive levels, not
+           must level 1.
+        -}
+        currentTocLabel =
+            case tocItem.hasChildren of
+                -- case tocItem.level < 1 of
+                Just True ->
                     Just tocItem
 
-                False ->
+                Just False ->
+                    model.currentTocLabel
+
+                Nothing ->
                     model.currentTocLabel
 
         ( ( newAst, newRenderedText ), cmd, documentListType ) =
@@ -1333,7 +1356,7 @@ processSubdocument model document tocItem =
     in
     ( { model
         | currentDocument = Just document
-        , currentTocLabel = currentLabel -- XXXX
+        , currentTocLabel = currentTocLabel -- XXXX
         , documentListType = documentListType
         , counter = model.counter + 2
         , lastAst = newAst
@@ -1863,7 +1886,7 @@ view model =
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (editingDisplay viewInfoEditing model)
 
         Editing SubdocumentEditing ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (subdocumentEditor viewInfoEditing model)
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (subdocumentEditor viewInfoEditingSubdocuemnt model)
 
         UserMode _ ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (userPageDisplay viewInfoUserPage model)
@@ -2844,6 +2867,7 @@ renderTocForMaster2 model tocTree_ =
             Maybe.map .id model.currentTocLabel |> Maybe.withDefault (Utility.getId 0)
 
         tocTree =
+            -- case level < 1 of
             case level < 1 of
                 True ->
                     tocTree_ |> Toc.setVisibility True currentDocId
@@ -2875,7 +2899,7 @@ tocEntryForMaster2 currentDocument_ tocItem document =
                 False ->
                     case tocItem.hasChildren of
                         Just True ->
-                            "+ " ++ String.repeat (3 * tocItem.level) " "
+                            String.repeat ((3 * tocItem.level) - 1) " " ++ "+ "
 
                         Just False ->
                             "  " ++ String.repeat (3 * tocItem.level) " "
