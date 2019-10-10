@@ -2,6 +2,8 @@ module Toc exposing (TocItem, make, render, setLabel, setLabels, setVisibility, 
 
 {-| Note: for tests, run
 
+    Ilias' code: https://ellie-app.com/6SZgmVLt8BSa1
+
     elm - test / tests / TocTest.elm
 
 I.
@@ -161,13 +163,14 @@ NOTES.
 3.  On further thought, perhaps the best solution is an additional
     argument
 
+```
+    depth : Maybe Int
 
-        depth : Maybe Int
-
-    If it is Nothing, the full subtree is modified. If it is Just k,
-    the subtree is modified up through depth k. Just 0 and Just 1
-    would handle the cases already handled. No need to have so
-    many functions.
+If it is Nothing, the full subtree is modified. If it is Just k,
+the subtree is modified up through depth k. Just 0 and Just 1
+would handle the cases already handled. No need to have so
+many functions.
+```
 
 -}
 

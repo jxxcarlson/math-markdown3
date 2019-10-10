@@ -3,6 +3,7 @@
 .netlify/
 Main.min.js
 dist/
+tocExperiment/Main.js
 elm-stuff/
 node-modules/
 public/Main.js
