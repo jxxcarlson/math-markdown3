@@ -1,10 +1,20 @@
-module TozZ exposing (Id, Label, Msg(..), darkRed, focus, inAncestors, indexedMap, viewAfter, viewBefore, viewNode, viewSelf, viewZ)
+module Main exposing (main)
 
+import Browser
 import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
+import Html exposing (Html)
 import Tree exposing (Tree)
 import Tree.Zipper as Zipper exposing (Zipper)
+
+
+type alias Model =
+    { toggle : Bool
+    , data : Zipper Label
+    }
 
 
 type alias Id =
@@ -17,9 +27,26 @@ type alias Label =
     }
 
 
+initialModel : Model
+initialModel =
+    { data = content
+    , toggle = False
+    }
+
+
 type Msg
     = Focus Id
     | Toggle
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        Focus id ->
+            { model | data = focus id model.data }
+
+        Toggle ->
+            { model | toggle = not model.toggle }
 
 
 focus : Id -> Zipper Label -> Zipper Label
@@ -27,6 +54,23 @@ focus id zipper =
     zipper
         |> Zipper.findFromRoot (\l -> l.id == id)
         |> Maybe.withDefault zipper
+
+
+view : Model -> Html Msg
+view model =
+    layout [ padding 30, Font.size 12 ] <|
+        column [ spacing 12 ]
+            [ el [ Font.bold, Font.size 14 ] (text "Table of Contents")
+            , expandCollapseButton
+            , viewZ model.toggle model.data
+            ]
+
+
+expandCollapseButton =
+    Input.button []
+        { onPress = Just Toggle
+        , label = text "Expand/Collapse"
+        }
 
 
 viewZ : Bool -> Zipper Label -> Element Msg
@@ -107,6 +151,57 @@ inAncestors toggle zipper current =
 
         Nothing ->
             current
+
+
+main : Program () Model Msg
+main =
+    Browser.sandbox
+        { init = initialModel
+        , view = view
+        , update = update
+        }
+
+
+content : Zipper Label
+content =
+    ( Tree.singleton "Introduction"
+    , [ Tree.tree "Energy"
+            [ Tree.tree "Conversations"
+                [ Tree.singleton "A first conversation"
+                , Tree.singleton "Energy, a second conversation"
+                ]
+            , Tree.singleton "The meteor that killed the dinosaurs"
+            , Tree.singleton "The Parable of the Neutrino"
+            ]
+      , Tree.tree "Time"
+            [ Tree.singleton "The Pendulum"
+            , Tree.singleton "Atomic clocks"
+            ]
+      , Tree.tree "Speed and Acceleration"
+            [ Tree.singleton "Galileo's Experiment"
+            , Tree.singleton "Speed of sound"
+            , Tree.tree "Speed of Light"
+                [ Tree.singleton "Roemer's experiment"
+                , Tree.singleton "Bradley's experiment"
+                , Tree.singleton "Michelson's experiment"
+                ]
+            ]
+      , Tree.singleton "Distance"
+      , Tree.singleton "Light"
+      , Tree.singleton "Heat"
+      , Tree.singleton "Sound"
+      ]
+    )
+        |> indexedMap
+            (\tIdx ->
+                Tree.indexedMap
+                    (\nIdx label ->
+                        { id = ( tIdx, nIdx )
+                        , content = label
+                        }
+                    )
+            )
+        |> (\( t, ts ) -> Zipper.fromForest t ts)
 
 
 indexedMap : (Int -> a -> b) -> ( a, List a ) -> ( b, List b )
