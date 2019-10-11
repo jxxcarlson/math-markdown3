@@ -31,6 +31,7 @@ import Style
 import Task
 import Time exposing (Posix)
 import Toc exposing (TocItem)
+import TocZ exposing (TocMsg(..), viewZ)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
 import Tree.Zipper as Zipper exposing (Zipper)
@@ -92,6 +93,7 @@ type alias Model =
     , tocTree : Maybe (Tree TocItem)
     , tocData : Maybe (Zipper TocItem)
     , tocCursor : Maybe Uuid
+    , toggleToc : Bool
     , currentTocLabel : Maybe TocItem
     , candidateChildDocumentList : List Document
     , childDocIdString : String
@@ -238,6 +240,7 @@ init flags =
             , tocTree = Nothing
             , tocData = Nothing
             , tocCursor = Nothing
+            , toggleToc = False
             , currentTocLabel = Nothing
             , candidateChildDocumentList = []
             , childDocIdString = ""
@@ -325,6 +328,7 @@ type Msg
     | GotTagString String
     | Clear
     | Req RequestMsg
+    | TOC TocMsg
 
 
 type alias Flags =
@@ -654,6 +658,36 @@ update msg model =
         ClearSearchTerms ->
             clearSearchTerms model
 
+        TOC tocMsg ->
+            case tocMsg of
+                Focus id ->
+                    case model.tocData of
+                        Nothing ->
+                            ( model, Cmd.none |> Cmd.map TOC )
+
+                        Just zipper ->
+                            let
+                                currentDocument =
+                                    List.filter (\item -> item.id == id) model.childDocumentList |> List.head
+
+                                ( newModel, cmd ) =
+                                    case currentDocument of
+                                        Nothing ->
+                                            ( model, Cmd.none )
+
+                                        Just document ->
+                                            renderUpdate model document
+                            in
+                            ( { newModel
+                                | currentDocument = currentDocument
+                                , tocData = Just (TocZ.focus id zipper)
+                              }
+                            , cmd
+                            )
+
+                Toggle ->
+                    ( { model | toggleToc = not model.toggleToc }, Cmd.none |> Cmd.map TOC )
+
         Req requestMsg ->
             case requestMsg of
                 UpdateDocumentResponse (GraphQLResponse remoteData) ->
@@ -765,6 +799,13 @@ update msg model =
 
 -- UPDATE HELPERS --
 -- KEYBOARD HELPERS --
+
+
+expandCollapseTocButton =
+    Input.button []
+        { onPress = Just Toggle
+        , label = Element.text "Expand/Collapse"
+        }
 
 
 keyboardGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
@@ -1248,7 +1289,7 @@ processChildDocumentRequest model documentList =
     ( { model
         | childDocumentList = newDocumentList
         , tocTree = tocTree
-        , tocData = Debug.log "TD" tocData
+        , tocData = tocData
         , tocCursor = tocCursor
         , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
       }
@@ -1390,6 +1431,49 @@ setCurrentSubdocument model document tocItem =
     )
 
 
+renderUpdate : Model -> Document -> ( Model, Cmd Msg )
+renderUpdate model document =
+    -- XXX
+    let
+        lastAst =
+            Markdown.ElmWithId.parse model.counter ExtendedMath document.content
+
+        nMath =
+            Markdown.ElmWithId.numberOfMathElements lastAst
+
+        renderedText =
+            if nMath > 10 then
+                let
+                    firstAst =
+                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
+                in
+                Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+
+            else
+                Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+
+        cmd1 =
+            if nMath > 10 then
+                renderAstFor lastAst
+
+            else
+                Cmd.none
+
+        cmd2 =
+            if document.children == [] then
+                Cmd.none
+
+            else
+                Request.documentsInIdList hasuraToken document.children |> Cmd.map Req
+    in
+    ( { model
+        | lastAst = lastAst
+        , renderedText = renderedText
+      }
+    , Cmd.batch [ cmd1, cmd2 ]
+    )
+
+
 deleteDocument : Model -> ( Model, Cmd Msg )
 deleteDocument model =
     case model.currentDocument of
@@ -1470,7 +1554,6 @@ deleteSubdocument model =
 
 deleteSubdocument_ : Model -> Document -> Document -> ( Model, Cmd Msg )
 deleteSubdocument_ model masterDocument documentToDelete =
-    -- XXX
     let
         newMasterDocument_ =
             Document.deleteChild documentToDelete masterDocument
@@ -1572,7 +1655,6 @@ newSubdocument model =
 
 newSubdocument_ : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
 newSubdocument_ model user masterDocument targetDocument =
-    --- XXX
     let
         newDocumentText =
             "# New subdocument of " ++ masterDocument.title ++ "\n\nWrite something here ..."
@@ -1645,7 +1727,6 @@ newSubdocument_ model user masterDocument targetDocument =
 
 updateDocumentText : Model -> String -> ( Model, Cmd Msg )
 updateDocumentText model str =
-    --- XXX
     case model.currentDocument of
         Nothing ->
             ( model, Cmd.none )
@@ -2821,7 +2902,7 @@ docListViewer viewInfo model =
                             renderTocForMaster model
 
                         Just tocTree_ ->
-                            renderTocForMaster2 model tocTree_
+                            (expandCollapseTocButton |> Element.map TOC) :: renderTocForMaster2 model tocTree_
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))
@@ -2900,7 +2981,13 @@ renderTocForMaster2 model tocTree_ =
         renderedToc =
             Toc.render tocTree
     in
-    List.map2 (tocEntryForMaster2 model.currentDocument) renderedToc documentList
+    -- List.map2 (tocEntryForMaster2 model.currentDocument) renderedToc documentList
+    case model.tocData of
+        Nothing ->
+            [ el [] (Element.text <| "No TOC") ]
+
+        Just zipper ->
+            [ viewZ model.toggleToc zipper |> Element.map TOC ]
 
 
 
