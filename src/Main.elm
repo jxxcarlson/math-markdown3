@@ -1249,26 +1249,6 @@ processDocumentRequest model maybeDocument documentList =
     )
 
 
-setupTocData : Maybe Document -> List Document -> ( Maybe (Zipper TocItem), Maybe Uuid )
-setupTocData maybeMasterDocument childDocumentList =
-    case maybeMasterDocument of
-        Nothing ->
-            ( Nothing, Nothing )
-
-        Just masterDocument ->
-            let
-                sortedChildDocuments =
-                    Document.sortChildren masterDocument childDocumentList
-
-                tocData =
-                    Just <| Zipper.fromTree <| Toc.make masterDocument sortedChildDocuments
-
-                tocCursor =
-                    Just masterDocument.id
-            in
-            ( tocData, tocCursor )
-
-
 processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
 processChildDocumentRequest model documentList =
     case model.currentDocument of
@@ -1282,14 +1262,11 @@ processChildDocumentRequest model documentList =
 
                 newDocumentList =
                     masterDocument :: sortedChildDocuments
-
-                ( tocData, tocCursor ) =
-                    setupTocData (Just masterDocument) documentList
             in
             ( { model
                 | childDocumentList = newDocumentList
-                , tocData = tocData
-                , tocCursor = tocCursor
+                , tocData = TocManager.setup (Just masterDocument) documentList
+                , tocCursor = Just masterDocument.id
                 , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
               }
             , Cmd.none
@@ -1567,7 +1544,7 @@ deleteSubdocument_ model masterDocument documentToDelete =
                 |> Document.replaceInList newMasterDocument
 
         newDocumentOutline =
-            case computeOutline newMasterDocument newChildDocumentList of
+            case TocManager.computeOutline newMasterDocument newChildDocumentList of
                 Nothing ->
                     model.documentOutline
 
@@ -1579,6 +1556,8 @@ deleteSubdocument_ model masterDocument documentToDelete =
         , childDocumentList = newChildDocumentList
         , documentList = newDocumentList
         , documentOutline = newDocumentOutline
+        , tocData = TocManager.setup (Just masterDocument) newChildDocumentList
+        , tocCursor = Just newMasterDocument.id
       }
     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
     )
@@ -1657,28 +1636,26 @@ newSubdocument_ model user masterDocument targetDocument =
             TocManager.insertInMaster newDocument targetDocument masterDocument
 
         newChildDocumentList =
-            TocManager.insertInChildDocumentList newDocument targetDocument masterDocument model.childDocumentList
+            TocManager.insertInChildDocumentList newDocument targetDocument model.childDocumentList
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.documentList)
 
         newDocumentOutline =
-            case computeOutline newMasterDocument newChildDocumentList of
+            case TocManager.computeOutline newMasterDocument newChildDocumentList of
                 Nothing ->
                     model.documentOutline
 
                 Just outline ->
                     outline
-
-        ( tocData, tocCursor ) =
-            setupTocData (Just masterDocument) newChildDocumentList
     in
     ( { model
-        | currentDocument = Just newMasterDocument
+        | currentDocument = Just newDocument
         , childDocumentList = newChildDocumentList
+        , counter = model.counter + 1
         , documentList = newDocumentList
-        , tocData = tocData
-        , tocCursor = tocCursor
+        , tocData = TocManager.setup (Just newMasterDocument) newChildDocumentList
+        , tocCursor = Just newDocument.id
         , documentListType = DocumentChildren
         , documentOutline = newDocumentOutline
         , visibilityOfTools = Invisible
@@ -2415,7 +2392,7 @@ setupOutline_ : Model -> String
 setupOutline_ model =
     case model.currentDocument of
         Just currentDoc ->
-            case computeOutline currentDoc model.childDocumentList of
+            case TocManager.computeOutline currentDoc model.childDocumentList of
                 Nothing ->
                     model.documentOutline
 
@@ -2424,31 +2401,6 @@ setupOutline_ model =
 
         Nothing ->
             model.documentOutline
-
-
-computeOutline : Document -> List Document -> Maybe String
-computeOutline currentDoc childDocumentList =
-    case Just currentDoc.id == Maybe.map .id (List.head childDocumentList) of
-        False ->
-            Nothing
-
-        True ->
-            let
-                titles =
-                    List.drop 1 childDocumentList |> List.map .title
-
-                levels_ =
-                    currentDoc.childLevels
-
-                levels =
-                    case List.length levels_ == List.length titles of
-                        True ->
-                            levels_
-
-                        False ->
-                            List.repeat (List.length titles) 0
-            in
-            Just (List.map2 (\title level -> String.repeat (3 * level) " " ++ title) titles levels |> String.join "\n")
 
 
 xButtonStyle =
@@ -2907,15 +2859,6 @@ renderTocForMaster model =
 -- TABLE OF CONTENTS
 
 
-tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
-tocEntryForMaster levelOfTitle currentDocument_ document =
-    let
-        ( color, fontWeight ) =
-            tocEntryStyle currentDocument_ document
-    in
-    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text (levelOfTitle document.title ++ document.title)) }
-
-
 tocEntry : Maybe Document -> Document -> Element Msg
 tocEntry currentDocument_ document =
     let
@@ -2923,44 +2866,6 @@ tocEntry currentDocument_ document =
             tocEntryStyle currentDocument_ document
     in
     Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text document.title) }
-
-
-tocEntryStyle2 : Maybe Document -> TocItem -> ( Color, Element.Attribute msg )
-tocEntryStyle2 currentDocument_ tocItem =
-    let
-        currentDocId =
-            case currentDocument_ of
-                Nothing ->
-                    Utility.id0
-
-                Just doc ->
-                    doc.id
-
-        color =
-            case currentDocument_ of
-                Nothing ->
-                    Style.buttonGrey
-
-                Just _ ->
-                    case ( tocItem.isRoot, currentDocId == tocItem.id ) of
-                        ( True, _ ) ->
-                            Style.darkBlue
-
-                        ( False, True ) ->
-                            Style.darkRed
-
-                        ( False, False ) ->
-                            Style.charcoal
-
-        fontWeight =
-            case currentDocId == tocItem.id of
-                True ->
-                    Font.bold
-
-                False ->
-                    Font.regular
-    in
-    ( color, fontWeight )
 
 
 tocEntryStyle : Maybe Document -> Document -> ( Color, Element.Attribute msg )

@@ -51,14 +51,17 @@ viewAfter t z =
 
 
 prefix l =
-    case l.hasChildren of
-        Just True ->
-            "+ "
-
-        Just False ->
+    case ( l.isRoot, l.hasChildren ) of
+        ( True, _ ) ->
             "   "
 
-        Nothing ->
+        ( False, Just True ) ->
+            "+ "
+
+        ( False, Just False ) ->
+            "   "
+
+        ( False, Nothing ) ->
             "   "
 
 
