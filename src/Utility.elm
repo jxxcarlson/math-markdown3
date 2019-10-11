@@ -7,6 +7,7 @@ module Utility exposing
     , humanTimeHMS
     , id0
     , insertIntegerAtIndex
+    , insertItemInList
     , insertStringInList
     , insertUuidInList
     , intSlug
@@ -20,6 +21,21 @@ import List.Extra
 import Prng.Uuid exposing (Uuid(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import Time exposing (Posix)
+
+
+insertItemInList : (a -> a -> Bool) -> a -> a -> List a -> List a
+insertItemInList equal newItem targetItem list =
+    case List.Extra.splitWhen (\element -> equal element targetItem) list of
+        Just ( a, b ) ->
+            case List.head b of
+                Nothing ->
+                    a ++ (newItem :: b)
+
+                Just x ->
+                    a ++ (x :: newItem :: List.drop 1 b)
+
+        Nothing ->
+            list
 
 
 {-|

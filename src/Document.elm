@@ -147,18 +147,13 @@ stringFromDocType docType =
 
 
 insertDocumentInList : Document -> Document -> List Document -> List Document
-insertDocumentInList newDocument targetDocument list =
-    case List.Extra.splitWhen (\element -> element.id == targetDocument.id) list of
-        Just ( a, b ) ->
-            case List.head b of
-                Nothing ->
-                    a ++ (newDocument :: b)
-
-                Just x ->
-                    a ++ (x :: newDocument :: List.drop 1 b)
-
-        Nothing ->
-            list
+insertDocumentInList newDocument targetDocument documentList =
+    let
+        equal : Document -> Document -> Bool
+        equal x y =
+            x.id == y.id
+    in
+    Utility.insertItemInList equal newDocument targetDocument documentList
 
 
 idAndTitleList : List Document -> List ( Uuid, String )

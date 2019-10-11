@@ -36,8 +36,17 @@ insertInMaster newDocument targetDocument masterDocument =
     { masterDocument | children = newChildren, childLevels = newLevels }
 
 
-insertInChildDocumentList : Document -> Document -> Document -> List Document -> List Document
-insertInChildDocumentList newDocument targetDocument masterDocument childDocuments =
-    Document.insertDocumentInList newDocument targetDocument childDocuments
-        |> Document.replaceInList masterDocument
-        |> Document.sortChildren masterDocument
+equal : Document -> Document -> Bool
+equal d e =
+    d.id == e.id
+
+
+insertInChildDocumentList : Document -> Document -> List Document -> List Document
+insertInChildDocumentList newDocument targetDocument childDocuments =
+    Utility.insertItemInList equal newDocument targetDocument childDocuments
+
+
+
+--    Document.insertDocumentInList newDocument targetDocument childDocuments
+--        |> Document.replaceInList masterDocument
+--        |> Document.sortChildren masterDocument
