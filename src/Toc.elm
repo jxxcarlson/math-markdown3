@@ -200,7 +200,7 @@ rootElement : Document -> TocItem
 rootElement document =
     { id = document.id
     , title = document.title
-    , level = -1
+    , level = 0
     , visible = True
     , hasChildren = Just True
     , isRoot = True

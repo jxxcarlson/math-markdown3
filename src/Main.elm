@@ -31,6 +31,7 @@ import Style
 import Task
 import Time exposing (Posix)
 import Toc exposing (TocItem)
+import TocManager
 import TocZ exposing (TocMsg(..), viewZ)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
@@ -90,11 +91,9 @@ type alias Model =
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
     , childDocumentList : List Document
-    , tocTree : Maybe (Tree TocItem)
     , tocData : Maybe (Zipper TocItem)
     , tocCursor : Maybe Uuid
     , toggleToc : Bool
-    , currentTocLabel : Maybe TocItem
     , candidateChildDocumentList : List Document
     , childDocIdString : String
     , currentDocument : Maybe Document
@@ -237,11 +236,9 @@ init flags =
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
             , childDocumentList = []
-            , tocTree = Nothing
             , tocData = Nothing
             , tocCursor = Nothing
             , toggleToc = False
-            , currentTocLabel = Nothing
             , candidateChildDocumentList = []
             , childDocIdString = ""
             , currentDocument = Nothing
@@ -632,7 +629,6 @@ update msg model =
                     ( { model
                         | currentDocument = Just newMasterDocument
                         , childDocumentList = newChildDocumentList
-                        , tocTree = Just <| Toc.make newMasterDocument (List.drop 1 newChildDocumentList)
                       }
                     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
                     )
@@ -1253,48 +1249,51 @@ processDocumentRequest model maybeDocument documentList =
     )
 
 
+setupTocData : Maybe Document -> List Document -> ( Maybe (Zipper TocItem), Maybe Uuid )
+setupTocData maybeMasterDocument childDocumentList =
+    case maybeMasterDocument of
+        Nothing ->
+            ( Nothing, Nothing )
+
+        Just masterDocument ->
+            let
+                sortedChildDocuments =
+                    Document.sortChildren masterDocument childDocumentList
+
+                tocData =
+                    Just <| Zipper.fromTree <| Toc.make masterDocument sortedChildDocuments
+
+                tocCursor =
+                    Just masterDocument.id
+            in
+            ( tocData, tocCursor )
+
+
 processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
 processChildDocumentRequest model documentList =
-    -- XXX
-    let
-        ( newDocumentList, tocTree ) =
-            case model.currentDocument of
-                Nothing ->
-                    ( documentList, Nothing )
+    case model.currentDocument of
+        Nothing ->
+            ( model, Cmd.none )
 
-                Just masterDocument ->
-                    let
-                        sortedChildDocuments =
-                            Document.sortChildren masterDocument documentList
-                    in
-                    ( masterDocument :: sortedChildDocuments
-                    , Just <| Toc.make masterDocument sortedChildDocuments
-                    )
+        Just masterDocument ->
+            let
+                sortedChildDocuments =
+                    Document.sortChildren masterDocument documentList
 
-        ( newDocumentList1, tocData, tocCursor ) =
-            case model.currentDocument of
-                Nothing ->
-                    ( documentList, Nothing, Nothing )
+                newDocumentList =
+                    masterDocument :: sortedChildDocuments
 
-                Just masterDocument ->
-                    let
-                        sortedChildDocuments =
-                            Document.sortChildren masterDocument documentList
-                    in
-                    ( masterDocument :: sortedChildDocuments
-                    , Just <| Zipper.fromTree <| Toc.make masterDocument sortedChildDocuments
-                    , Just masterDocument.id
-                    )
-    in
-    ( { model
-        | childDocumentList = newDocumentList
-        , tocTree = tocTree
-        , tocData = tocData
-        , tocCursor = tocCursor
-        , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
-      }
-    , Cmd.none
-    )
+                ( tocData, tocCursor ) =
+                    setupTocData (Just masterDocument) documentList
+            in
+            ( { model
+                | childDocumentList = newDocumentList
+                , tocData = tocData
+                , tocCursor = tocCursor
+                , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
+              }
+            , Cmd.none
+            )
 
 
 processCandidateChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
@@ -1370,18 +1369,6 @@ setCurrentSubdocument model document tocItem =
            one.  One solution is to expose all positive levels, not
            must level 1.
         -}
-        currentTocLabel =
-            case tocItem.hasChildren of
-                -- case tocItem.level < 1 of
-                Just True ->
-                    Just tocItem
-
-                Just False ->
-                    model.currentTocLabel
-
-                Nothing ->
-                    model.currentTocLabel
-
         ( ( newAst, newRenderedText ), cmd, documentListType ) =
             let
                 lastAst =
@@ -1419,7 +1406,6 @@ setCurrentSubdocument model document tocItem =
     in
     ( { model
         | currentDocument = Just document
-        , currentTocLabel = currentTocLabel -- XXXX
         , documentListType = documentListType
         , counter = model.counter + 2
         , lastAst = newAst
@@ -1591,7 +1577,6 @@ deleteSubdocument_ model masterDocument documentToDelete =
     ( { model
         | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
-        , tocTree = Just <| Toc.make newMasterDocument (Document.sortChildren newMasterDocument newChildDocumentList)
         , documentList = newDocumentList
         , documentOutline = newDocumentOutline
       }
@@ -1668,28 +1653,11 @@ newSubdocument_ model user masterDocument targetDocument =
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed
 
-        --        newChildren =
-        --            masterDocument.children ++ [ newDocument.id ]
-        targetIndex =
-            List.Extra.elemIndex targetDocument.id masterDocument.children |> Maybe.withDefault 0
-
-        newChildren =
-            Utility.insertUuidInList newDocument.id targetDocument.id masterDocument.children
-
-        --        newLevels =
-        --            masterDocument.childLevels ++ [ 0 ]
-        newLevels =
-            Utility.insertIntegerAtIndex 0 targetIndex masterDocument.childLevels
-                |> List.take (List.length newChildren)
-
-        -- ensure that the lists have the same lengtht
         newMasterDocument =
-            { masterDocument | children = newChildren, childLevels = newLevels }
+            TocManager.insertInMaster newDocument targetDocument masterDocument
 
         newChildDocumentList =
-            Document.insertDocumentInList newDocument targetDocument model.childDocumentList
-                |> Document.replaceInList newMasterDocument
-                |> Document.sortChildren newMasterDocument
+            TocManager.insertInChildDocumentList newDocument targetDocument masterDocument model.childDocumentList
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.documentList)
@@ -1701,12 +1669,16 @@ newSubdocument_ model user masterDocument targetDocument =
 
                 Just outline ->
                     outline
+
+        ( tocData, tocCursor ) =
+            setupTocData (Just masterDocument) newChildDocumentList
     in
     ( { model
         | currentDocument = Just newMasterDocument
         , childDocumentList = newChildDocumentList
-        , tocTree = Just <| Toc.make newMasterDocument newChildDocumentList
         , documentList = newDocumentList
+        , tocData = tocData
+        , tocCursor = tocCursor
         , documentListType = DocumentChildren
         , documentOutline = newDocumentOutline
         , visibilityOfTools = Invisible
@@ -2897,12 +2869,7 @@ docListViewer viewInfo model =
                     renderTocForSearchResults model
 
                 DocumentChildren ->
-                    case model.tocTree of
-                        Nothing ->
-                            renderTocForMaster model
-
-                        Just tocTree_ ->
-                            (expandCollapseTocButton |> Element.map TOC) :: renderTocForMaster2 model tocTree_
+                    (expandCollapseTocButton |> Element.map TOC) :: renderTocForMaster model
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))
@@ -2928,60 +2895,6 @@ renderTocForSearchResults model =
 
 renderTocForMaster : Model -> List (Element Msg)
 renderTocForMaster model =
-    let
-        master =
-            List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
-
-        list =
-            Document.sortChildren master model.childDocumentList
-
-        levels =
-            List.map2 (\x y -> ( x, y )) (List.map .title (List.drop 1 list)) master.childLevels
-
-        levelOfTitle : String -> String
-        levelOfTitle title =
-            List.filter (\( t, _ ) -> title == t) levels
-                |> List.head
-                |> Maybe.withDefault ( "dummy", 0 )
-                |> Tuple.second
-                |> (\n -> String.repeat (3 * n) " ")
-    in
-    List.map (tocEntryForMaster levelOfTitle model.currentDocument) list
-
-
-renderTocForMaster2 : Model -> Tree TocItem -> List (Element Msg)
-renderTocForMaster2 model tocTree_ =
-    let
-        master =
-            List.head model.childDocumentList |> Maybe.withDefault Data.loadingPage
-
-        ( currentDocId, level ) =
-            case model.currentDocument of
-                Nothing ->
-                    ( Utility.getId 0, -2 )
-
-                Just doc ->
-                    ( doc.id, Document.getLevel master doc )
-
-        documentList =
-            Document.sortChildren master model.childDocumentList
-
-        currentActiveNodeId =
-            Maybe.map .id model.currentTocLabel |> Maybe.withDefault (Utility.getId 0)
-
-        tocTree =
-            -- case level < 1 of
-            case level < 1 of
-                True ->
-                    tocTree_ |> Toc.setVisibility True currentDocId
-
-                False ->
-                    tocTree_ |> Toc.setVisibility True currentActiveNodeId
-
-        renderedToc =
-            Toc.render tocTree
-    in
-    -- List.map2 (tocEntryForMaster2 model.currentDocument) renderedToc documentList
     case model.tocData of
         Nothing ->
             [ el [] (Element.text <| "No TOC") ]
@@ -2992,32 +2905,6 @@ renderTocForMaster2 model tocTree_ =
 
 
 -- TABLE OF CONTENTS
-
-
-tocEntryForMaster2 : Maybe Document -> TocItem -> Document -> Element Msg
-tocEntryForMaster2 currentDocument_ tocItem document =
-    let
-        ( color, fontWeight ) =
-            tocEntryStyle2 currentDocument_ tocItem
-
-        prefix =
-            case tocItem.isRoot of
-                True ->
-                    "  "
-
-                False ->
-                    case tocItem.hasChildren of
-                        Just True ->
-                            String.repeat ((3 * tocItem.level) - 1) " " ++ "+ "
-
-                        Just False ->
-                            "  " ++ String.repeat (3 * tocItem.level) " "
-
-                        Nothing ->
-                            "  " ++ String.repeat (3 * tocItem.level) " "
-    in
-    showIf tocItem.visible
-        (Input.button [] { onPress = Just (SetCurrentSubDocument document tocItem), label = el [ Font.color color, fontWeight ] (Element.text (prefix ++ tocItem.title)) })
 
 
 tocEntryForMaster : (String -> String) -> Maybe Document -> Document -> Element Msg
@@ -3354,19 +3241,9 @@ footer model =
         , wordCount model
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
-        , displayCurrentTocItem model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
-
-
-displayCurrentTocItem model =
-    case model.currentTocLabel of
-        Nothing ->
-            el [] (Element.text "-- tocItem --")
-
-        Just tocItem ->
-            el [] (Element.text <| "ti: " ++ tocItem.title)
 
 
 dirtyDocumentDisplay : Model -> Element Msg
