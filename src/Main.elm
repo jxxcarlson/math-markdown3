@@ -21,7 +21,7 @@ import Markdown.Elm
 import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
 import ParseWithId
-import Prng.Uuid as Uuid
+import Prng.Uuid as Uuid exposing (Uuid)
 import Process
 import Random
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
@@ -33,6 +33,7 @@ import Time exposing (Posix)
 import Toc exposing (TocItem)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
+import Tree.Zipper as Zipper exposing (Zipper)
 import User exposing (User)
 import Utility
 
@@ -89,6 +90,8 @@ type alias Model =
     , documentList : List Document
     , childDocumentList : List Document
     , tocTree : Maybe (Tree TocItem)
+    , tocData : Maybe (Zipper TocItem)
+    , tocCursor : Maybe Uuid
     , currentTocLabel : Maybe TocItem
     , candidateChildDocumentList : List Document
     , childDocIdString : String
@@ -233,6 +236,8 @@ init flags =
             , documentList = [ Data.loadingPage ]
             , childDocumentList = []
             , tocTree = Nothing
+            , tocData = Nothing
+            , tocCursor = Nothing
             , currentTocLabel = Nothing
             , candidateChildDocumentList = []
             , childDocIdString = ""
@@ -1224,10 +1229,27 @@ processChildDocumentRequest model documentList =
                     ( masterDocument :: sortedChildDocuments
                     , Just <| Toc.make masterDocument sortedChildDocuments
                     )
+
+        ( newDocumentList1, tocData, tocCursor ) =
+            case model.currentDocument of
+                Nothing ->
+                    ( documentList, Nothing, Nothing )
+
+                Just masterDocument ->
+                    let
+                        sortedChildDocuments =
+                            Document.sortChildren masterDocument documentList
+                    in
+                    ( masterDocument :: sortedChildDocuments
+                    , Just <| Zipper.fromTree <| Toc.make masterDocument sortedChildDocuments
+                    , Just masterDocument.id
+                    )
     in
     ( { model
         | childDocumentList = newDocumentList
         , tocTree = tocTree
+        , tocData = Debug.log "TD" tocData
+        , tocCursor = tocCursor
         , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
       }
     , Cmd.none
