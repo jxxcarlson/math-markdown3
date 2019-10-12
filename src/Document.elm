@@ -228,7 +228,7 @@ sortChildren master list =
 
 deleteChild : Document -> Document -> Document
 deleteChild documentToDelete masterDocument =
-    { masterDocument | children = List.filter (\uuid -> uuid /= documentToDelete.id) masterDocument.children }
+    { masterDocument | childInfo = List.filter (\item -> Tuple.first item /= documentToDelete.id) masterDocument.childInfo }
 
 
 setContent : String -> Document -> Document

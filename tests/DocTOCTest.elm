@@ -11,6 +11,20 @@ import TocZ
 import Utility exposing (getId)
 
 
+suite : Test
+suite =
+    describe "Toc operations"
+        [ doTest "1. insert new document at position 1 in Master" newMaster1 expectedNewMaster1
+        , doTest "2. insert new document at position 2 in Master" newMaster2 expectedNewMaster2
+        , doTest "3. insert new document at position 3 in Master" newMaster3 expectedNewMaster3
+        , doTest "4. insert new document at position 1 in ChildDocumentList" newChildDocumentList1 expectedNewChildDocumentList1
+        , doTest "5. insert new document at position 2 in ChildDocumentList" newChildDocumentList2 expectedNewChildDocumentList2
+        , doTest "6. insert new document at position 3 in ChildDocumentList" newChildDocumentList3 expectedNewChildDocumentList3
+        , doTest "7. Compare computed and expected outlines " computedOutline (Just expectedOutline)
+        , doTest "8. Delete document " masterAfterDelete expectedMasterAfterDelete
+        ]
+
+
 
 -- CONVENIENCE FUNCTION FOR TESTING --
 
@@ -36,31 +50,52 @@ dummy =
     , docType = Markdown MDExtendedMath
     , children = []
     , childLevels = []
+    , childInfo = []
     }
 
 
+id1 =
+    getId 1
+
+
+id2 =
+    getId 2
+
+
+id3 =
+    getId 3
+
+
+id4 =
+    getId 4
+
+
+id5 =
+    getId 5
+
+
+ch1 =
+    { dummy | id = getId 1, title = "A" }
+
+
+ch2 =
+    { dummy | id = getId 2, title = "B" }
+
+
+ch3 =
+    { dummy | id = getId 3, title = "C" }
+
+
+dx =
+    { dummy | id = getId 4, title = "X" }
+
+
 master =
-    { dummy | title = "master", children = [ getId 2, getId 3, getId 4 ], childLevels = [ 0, 1, 0 ] }
+    { dummy | title = "master", childInfo = [ ( id1, 0 ), ( id2, 1 ), ( id3, 0 ) ] }
 
 
 childDocuments =
     [ ch1, ch2, ch3 ]
-
-
-ch1 =
-    { dummy | id = getId 2, title = "A" }
-
-
-ch2 =
-    { dummy | id = getId 3, title = "B" }
-
-
-ch3 =
-    { dummy | id = getId 4, title = "C" }
-
-
-dx =
-    { dummy | id = getId 5, title = "X" }
 
 
 
@@ -72,7 +107,7 @@ newMaster1 =
 
 
 expectedNewMaster1 =
-    { dummy | title = "master", children = [ getId 2, getId 5, getId 3, getId 4 ], childLevels = [ 0, 1, 1, 0 ] }
+    { dummy | title = "master", childInfo = [ ( id1, 0 ), ( id4, 1 ), ( id2, 1 ), ( id3, 0 ) ] }
 
 
 
@@ -84,7 +119,7 @@ newMaster2 =
 
 
 expectedNewMaster2 =
-    { dummy | title = "master", children = [ getId 2, getId 3, getId 5, getId 4 ], childLevels = [ 0, 1, 1, 0 ] }
+    { dummy | title = "master", childInfo = [ ( id1, 0 ), ( id2, 1 ), ( id4, 1 ), ( id3, 0 ) ] }
 
 
 
@@ -96,56 +131,11 @@ newMaster3 =
 
 
 expectedNewMaster3 =
-    { dummy | title = "master", children = [ getId 2, getId 3, getId 4, getId 5 ], childLevels = [ 0, 1, 0, 0 ] }
+    { dummy | title = "master", childInfo = [ ( id1, 0 ), ( id2, 1 ), ( id3, 0 ), ( id4, 0 ) ] }
 
 
 
 -- TEST 4 --
-
-
-equal : ( Int, Int ) -> ( Int, Int ) -> Bool
-equal x y =
-    Tuple.first x == Tuple.first y
-
-
-primes =
-    [ ( 1, 2 ), ( 2, 3 ), ( 3, 5 ) ]
-
-
-newPrimes1 =
-    Utility.insertItemInList equal ( 4, 7 ) ( 1, 2 ) primes
-
-
-expectedNewPrimes1 =
-    [ ( 1, 2 ), ( 4, 7 ), ( 2, 3 ), ( 3, 5 ) ]
-
-
-
--- TEST 5 --
-
-
-newPrimes2 =
-    Utility.insertItemInList equal ( 4, 7 ) ( 2, 3 ) primes
-
-
-expectedNewPrimes2 =
-    [ ( 1, 2 ), ( 2, 3 ), ( 4, 7 ), ( 3, 5 ) ]
-
-
-
--- TEST 6 --
-
-
-newPrimes3 =
-    Utility.insertItemInList equal ( 4, 7 ) ( 3, 5 ) primes
-
-
-expectedNewPrimes3 =
-    [ ( 1, 2 ), ( 2, 3 ), ( 3, 5 ), ( 4, 7 ) ]
-
-
-
--- TEST 7 --
 
 
 newChildDocumentList1 =
@@ -157,7 +147,7 @@ expectedNewChildDocumentList1 =
 
 
 
--- TEST 8 --
+-- TEST 5 --
 
 
 newChildDocumentList2 =
@@ -169,7 +159,7 @@ expectedNewChildDocumentList2 =
 
 
 
--- TEST 9 --
+-- TEST 6 --
 
 
 newChildDocumentList3 =
@@ -180,16 +170,55 @@ expectedNewChildDocumentList3 =
     [ ch1, ch2, ch3, dx ]
 
 
-suite : Test
-suite =
-    describe "Toc operations"
-        [ doTest "1. insert new document at position 1 in Master" newMaster1 expectedNewMaster1
-        , doTest "2. insert new document at position 2 in Master" newMaster2 expectedNewMaster2
-        , doTest "3. insert new document at position 3 in Master" newMaster3 expectedNewMaster3
-        , doTest "4. insert new pair at position 1 in primes" newPrimes1 expectedNewPrimes1
-        , doTest "5. insert new pair at position 2 in primes" newPrimes2 expectedNewPrimes2
-        , doTest "6. insert new pair at position 3 in primes" newPrimes3 expectedNewPrimes3
-        , doTest "7. insert new document at position 1 in ChildDocumentList" newChildDocumentList1 expectedNewChildDocumentList1
-        , doTest "8. insert new document at position 2 in ChildDocumentList" newChildDocumentList2 expectedNewChildDocumentList2
-        , doTest "9. insert new document at position 3 in ChildDocumentList" newChildDocumentList3 expectedNewChildDocumentList3
-        ]
+
+-- TEST 7: Document outline --
+
+
+documentList =
+    [ newMaster1, d1, d4, d2, d3 ]
+
+
+d1 =
+    { dummy | id = id1, title = "A" }
+
+
+d2 =
+    { dummy | id = id1, title = "B" }
+
+
+d3 =
+    { dummy | id = id1, title = "C" }
+
+
+d4 =
+    { dummy | id = id1, title = "X" }
+
+
+expectedOutline =
+    String.trim
+        """
+A
+   X
+   B
+C
+    """
+
+
+computedOutline =
+    TocManager.computeOutline newMaster1 documentList
+
+
+
+--- TEST 8: delete document --
+
+
+newMasterX =
+    TocManager.insertInMaster dx ch1 master
+
+
+masterAfterDelete =
+    Document.deleteChild dx newMasterX
+
+
+expectedMasterAfterDelete =
+    master

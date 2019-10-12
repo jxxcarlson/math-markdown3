@@ -1,6 +1,7 @@
 module TocManager exposing
-    ( computeOutline
-    , deleteDocumentInMaster
+    (  computeOutline
+       -- , deleteDocumentInMaster
+
     , insertInChildDocumentList
     , insertInMaster
     , setup
@@ -45,29 +46,37 @@ insertInMaster newDocument targetDocument masterDocument =
     let
         {- The plan is to insert the new document after the target index -}
         targetIndex =
-            List.Extra.elemIndex targetDocument.id masterDocument.children |> Maybe.withDefault 0
+            Debug.log "TI"
+                (List.Extra.findIndex (\item -> Tuple.first item == targetDocument.id)
+                    masterDocument.childInfo
+                    |> Maybe.withDefault 0
+                )
 
         levelOfNewChild =
-            case ( List.Extra.getAt targetIndex masterDocument.childLevels, List.Extra.getAt (targetIndex + 1) masterDocument.childLevels ) of
-                ( Just l, Just m ) ->
+            case ( List.Extra.getAt targetIndex masterDocument.childInfo, List.Extra.getAt (targetIndex + 1) masterDocument.childInfo ) of
+                ( Just ( _, l ), Just ( _, m ) ) ->
                     max l m
 
-                ( Just l, Nothing ) ->
+                ( Just ( _, l ), Nothing ) ->
                     l
 
                 ( _, _ ) ->
                     0
 
-        newChildren =
-            Utility.insertUuidInList newDocument.id targetDocument.id masterDocument.children
+        newItem =
+            ( newDocument.id, levelOfNewChild )
 
-        newLevels =
-            Utility.insertIntegerAtIndex levelOfNewChild targetIndex masterDocument.childLevels
-                |> List.take (List.length newChildren)
+        targetItem =
+            ( targetDocument.id, 0 )
 
-        -- ensure that the lists have the same length
+        eq : ( Uuid, Int ) -> ( Uuid, Int ) -> Bool
+        eq ( uuid1, _ ) ( uuid2, _ ) =
+            uuid1 == uuid2
+
+        newChildInfo =
+            Utility.insertItemInList eq newItem targetItem masterDocument.childInfo
     in
-    { masterDocument | children = newChildren, childLevels = newLevels }
+    { masterDocument | childInfo = newChildInfo }
 
 
 equal : Document -> Document -> Bool
@@ -82,24 +91,26 @@ insertInChildDocumentList newDocument targetDocument documentList =
     Utility.insertItemInList equal newDocument targetDocument documentList
 
 
-deleteDocumentInMaster : Document -> Document -> Document
-deleteDocumentInMaster subDocument masterDocument =
-    let
-        newMasterDocument_ =
-            Document.deleteChild subDocument masterDocument
 
-        indexOfChildToDelete =
-            List.Extra.elemIndex subDocument.id masterDocument.children
-
-        newChildLevels =
-            case indexOfChildToDelete of
-                Nothing ->
-                    masterDocument.childLevels
-
-                Just idx ->
-                    List.Extra.removeAt idx masterDocument.childLevels
-    in
-    { newMasterDocument_ | childLevels = newChildLevels }
+--deleteDocumentInMaster : Document -> Document -> Document
+--deleteDocumentInMaster subDocument masterDocument =
+--    let
+--        indexOfChildToDelete =
+--            List.Extra.findIndex (\item -> Tuple.first item == subDocument.id) masterDocument.childInfo
+--
+--        newMasterDocument_ =
+--            Document.deleteChild subDocument masterDocument
+--
+--        newChildInfo =
+--            case indexOfChildToDelete of
+--                Nothing ->
+--                    masterDocument.childInfo
+--
+--                Just idx ->
+--                    List.Extra.removeAt idx masterDocument.childInfo
+--    in
+--    { newMasterDocument_ | childInfo = newChildInfo }
+--
 
 
 {-| Compte an indented outline (a string) from a master document
@@ -125,7 +136,7 @@ computeOutline masterDocument childDocumentList =
                     List.drop 1 childDocumentList |> List.map .title
 
                 levels_ =
-                    masterDocument.childLevels
+                    masterDocument.childInfo |> List.map Tuple.second
 
                 ( levels, titles ) =
                     case List.length levels_ == List.length titles_ of
