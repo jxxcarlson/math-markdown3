@@ -181,10 +181,8 @@ reorderChildrenInMaster masterDocument childTitleList newChildTitleList =
             List.map2 (\u v -> ( u, v )) childTitleList masterDocument.childInfo
 
         newChildInfo =
-            Debug.log "NCI"
-                (reOrder newChildTitleList annotatedList
-                    |> List.map Tuple.second
-                )
+            reOrder newChildTitleList annotatedList
+                |> List.map Tuple.second
     in
     case equalUuidSets newChildInfo masterDocument.childInfo of
         True ->
