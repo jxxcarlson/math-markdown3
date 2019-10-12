@@ -1304,11 +1304,11 @@ processDocument model document =
                         Cmd.none
 
                 ( cmd2, documentListType_ ) =
-                    if document.children == [] then
+                    if document.childInfo == [] then
                         ( Cmd.none, model.documentListType )
 
                     else
-                        ( Request.documentsInIdList hasuraToken document.children |> Cmd.map Req, DocumentChildren )
+                        ( Request.documentsInIdList hasuraToken (Document.idList document) |> Cmd.map Req, DocumentChildren )
             in
             ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2 ], documentListType_ )
     in
@@ -1363,11 +1363,11 @@ setCurrentSubdocument model document tocItem =
                         Cmd.none
 
                 ( cmd2, documentListType_ ) =
-                    if document.children == [] then
+                    if document.childInfo == [] then
                         ( Cmd.none, model.documentListType )
 
                     else
-                        ( Request.documentsInIdList hasuraToken document.children |> Cmd.map Req, DocumentChildren )
+                        ( Request.documentsInIdList hasuraToken (Document.idList document) |> Cmd.map Req, DocumentChildren )
             in
             ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2 ], documentListType_ )
     in
@@ -1413,11 +1413,11 @@ renderUpdate model document =
                 Cmd.none
 
         cmd2 =
-            if document.children == [] then
+            if document.childInfo == [] then
                 Cmd.none
 
             else
-                Request.documentsInIdList hasuraToken document.children |> Cmd.map Req
+                Request.documentsInIdList hasuraToken (Document.idList document) |> Cmd.map Req
     in
     ( { model
         | lastAst = lastAst
@@ -1542,17 +1542,17 @@ deleteSubdocument_ model masterDocument documentToDelete =
 addSubdocument_ : Model -> User -> Document -> Uuid.Uuid -> ( Model, Cmd Msg )
 addSubdocument_ model user masterDocument newUuid =
     let
-        newChildren =
-            masterDocument.children
-                ++ [ newUuid ]
+        newChildInfo =
+            masterDocument.childInfo
+                ++ [ ( newUuid, 0 ) ]
 
         newMasterDocument =
-            { masterDocument | children = newChildren }
+            { masterDocument | childInfo = newChildInfo }
     in
     ( { model | currentDocument = Just newMasterDocument, appMode = Reading }
     , Cmd.batch
         [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
-        , Request.documentsInIdList hasuraToken newChildren |> Cmd.map Req
+        , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first) |> Cmd.map Req
         ]
     )
 
@@ -1568,17 +1568,17 @@ addDocumentToMaster model document =
 
 addDocumentToMaster_ model document master =
     let
-        newChildren =
-            master.children
-                ++ [ document.id ]
+        newChildInfo =
+            master.childInfo
+                ++ [ ( document.id, 0 ) ]
 
         newMasterDocument =
-            { master | children = newChildren }
+            { master | childInfo = newChildInfo }
     in
     ( { model | currentDocument = Just newMasterDocument }
     , Cmd.batch
         [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
-        , Request.documentsInIdList hasuraToken newChildren |> Cmd.map Req
+        , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first) |> Cmd.map Req
         ]
     )
 
@@ -2587,7 +2587,7 @@ subDocumentEditingModeButton model =
 newSubdocumentButton model =
     let
         numberOfChildren =
-            Maybe.map (.children >> List.length) model.currentDocument
+            Maybe.map (.childInfo >> List.length) model.currentDocument
                 |> Maybe.withDefault 0
     in
     showIf (model.appMode == Editing SubdocumentEditing)
@@ -2605,7 +2605,7 @@ deleteSubdocumentButton : Model -> Element Msg
 deleteSubdocumentButton model =
     let
         numberOfChildren =
-            Maybe.map (.children >> List.length) model.currentDocument
+            Maybe.map (.childInfo >> List.length) model.currentDocument
                 |> Maybe.withDefault 0
     in
     showIf (model.appMode == Editing SubdocumentEditing)
@@ -2865,7 +2865,7 @@ tocEntryStyle currentDocument_ document =
                     Style.buttonGrey
 
                 Just _ ->
-                    case ( currentDocId == document.id, document.children /= [] ) of
+                    case ( currentDocId == document.id, document.childInfo /= [] ) of
                         ( True, True ) ->
                             Style.brighterBlue
 
@@ -3125,19 +3125,9 @@ footer model =
         [ currentAuthorDisplay model
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
-        , debugDisplay model --wordCount model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
-
-
-debugDisplay model =
-    model.childDocumentList
-        |> List.take 3
-        |> List.map .title
-        |> List.map (String.left 8)
-        |> String.join ", "
-        |> (\s -> el [] (Element.text <| "children: " ++ s))
 
 
 dirtyDocumentDisplay : Model -> Element Msg

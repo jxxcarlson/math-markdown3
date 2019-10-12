@@ -46,6 +46,7 @@ import Api.Object
 import Api.Object.Document exposing (authorIdentifier)
 import Api.Object.Document_mutation_response as DocumentMutation
 import Api.Query as Query exposing (DocumentOptionalArguments)
+import Codec
 import CustomScalarCodecs exposing (Jsonb(..))
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Graphql.Http
@@ -55,7 +56,6 @@ import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
 import Maybe.Extra
 import Prng.Uuid as Uuid exposing (Uuid(..))
 import RemoteData exposing (RemoteData)
-import Utility
 
 
 
@@ -310,35 +310,10 @@ documentListSelection =
         |> with Api.Object.Document.slug
         |> with (Api.Object.Document.docType |> SelectionSet.map Document.docTypeFromString)
         |> with
-            (Api.Object.Document.children identity
-                |> SelectionSet.map
-                    (\(Jsonb x) -> List.map (Uuid.fromString >> Maybe.withDefault Utility.id0) x)
-            )
-        |> with
-            (Api.Object.Document.childLevels identity
-                |> SelectionSet.map
-                    (\(Jsonb x) -> List.map (String.toInt >> Maybe.withDefault 0) x)
-            )
-        |> with
             (Api.Object.Document.childInfo identity
                 |> SelectionSet.map
-                    (\(Jsonb x) -> List.map decodeUuidIntPair x |> Maybe.Extra.values)
+                    (\(Jsonb x) -> List.map Codec.getPair x |> Maybe.Extra.values)
             )
-
-
-decodeUuidIntPair : String -> Maybe ( Uuid, Int )
-decodeUuidIntPair str =
-    case String.split "," str |> List.map String.trim of
-        [ a, b ] ->
-            case Uuid.fromString a of
-                Just uuid ->
-                    Just ( uuid, (String.toInt >> Maybe.withDefault 0) b )
-
-                _ ->
-                    Nothing
-
-        _ ->
-            Nothing
 
 
 
@@ -359,8 +334,6 @@ insertDocumentObjects newDocument =
                 , public = Present newDocument.public
                 , tags = Present (newDocument.tags |> (\list -> Jsonb list)) -- Present (newDocument.tags |> String.join ", ")
                 , docType = Present (newDocument.docType |> Document.stringFromDocType)
-                , children = Present (newDocument.children |> List.map Uuid.toString |> (\list -> Jsonb list))
-                , childLevels = Present (newDocument.childLevels |> List.map String.fromInt |> (\list -> Jsonb list))
                 , childInfo = Present (newDocument.childInfo |> List.map uuidIntPairToString |> (\list -> Jsonb list))
             }
         )
@@ -455,8 +428,6 @@ setDocumentSetArg document =
                 , public = OptionalArgument.Present document.public
                 , tags = Present (document.tags |> (\list -> Jsonb list))
                 , docType = Present (document.docType |> Document.stringFromDocType)
-                , children = Present (document.children |> List.map Uuid.toString |> (\list -> Jsonb list))
-                , childLevels = Present (document.childLevels |> List.map String.fromInt |> (\list -> Jsonb list))
                 , childInfo = Present (document.childInfo |> List.map uuidIntPairToString |> (\list -> Jsonb list))
             }
         )

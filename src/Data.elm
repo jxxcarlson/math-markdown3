@@ -14,8 +14,6 @@ loadingPage =
     , public = True
     , slug = "loading"
     , docType = Markdown MDExtendedMath
-    , children = []
-    , childLevels = []
     , childInfo = []
     }
 

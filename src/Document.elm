@@ -9,8 +9,8 @@ module Document exposing
     , getById
     , getContent
     , getDocType
-    , getLevel
     , idAndTitleList
+    , idList
     , insertDocumentInList
     , level
     , makeTocStatus
@@ -18,7 +18,6 @@ module Document exposing
     , reorderChildrenInMaster
     , replaceInList
     , setContent
-    , setLevelsOfChildren
     , sortChildren
     , stringFromDocType
     , updateMetaData
@@ -40,8 +39,6 @@ type alias Document =
     , tags : List String
     , slug : String
     , docType : DocType
-    , children : List Uuid
-    , childLevels : List Int
     , childInfo : List ( Uuid, Int )
     }
 
@@ -65,12 +62,15 @@ type alias TocStatus =
     List ( Uuid, Bool )
 
 
+idList : Document -> List Uuid
+idList document =
+    document.childInfo
+        |> List.map Tuple.first
+
+
 makeTocStatus : Document -> TocStatus
 makeTocStatus document =
     let
-        data =
-            List.map2 (\x y -> ( x, y )) document.children document.childLevels
-
         status : ( Uuid, Int ) -> ( Uuid, Bool )
         status ( uuid, level_ ) =
             if level_ == 0 then
@@ -79,19 +79,7 @@ makeTocStatus document =
             else
                 ( uuid, False )
     in
-    List.map status data
-
-
-{-| Get level of document as defined by master
--}
-getLevel : Document -> Document -> Int
-getLevel master document =
-    let
-        idx : Int
-        idx =
-            List.Extra.elemIndex document.id master.children |> Maybe.withDefault -1
-    in
-    List.Extra.getAt idx master.childLevels |> Maybe.withDefault -1
+    List.map status document.childInfo
 
 
 getDocType : Maybe Document -> DocType
@@ -201,29 +189,17 @@ equalUuidSets l1 l2 =
     List.sortBy order l1 == List.sortBy order l2
 
 
-setLevelsOfChildren : String -> Document -> Document
-setLevelsOfChildren outline master =
-    let
-        newChildLevels =
-            outline
-                |> String.split "\n"
-                |> List.filter (\item -> item /= "")
-                |> List.map level
-    in
-    { master | childLevels = newChildLevels }
-
-
 {-| Assume that the master is not part of the document list
 -}
 sortChildren : Document -> List Document -> List Document
 sortChildren master documentList =
     let
-        idList =
+        idList_ =
             master.id :: (master.childInfo |> List.map Tuple.first)
 
         order : Document -> Int
         order doc =
-            List.Extra.elemIndex doc.id idList |> Maybe.withDefault -1
+            List.Extra.elemIndex doc.id idList_ |> Maybe.withDefault -1
     in
     List.sortBy order documentList
 
@@ -276,27 +252,13 @@ footer document =
         ++ (document.docType |> stringFromDocType)
         ++ "\n"
         ++ "Children: "
-        ++ String.fromInt (List.length document.children)
-        ++ "\n"
-        ++ "Levels: "
-        ++ String.fromInt (List.length document.childLevels)
-        --        ++ "\n"
-        --        ++ "\nSummary: "
-        --        ++ childrenSummary document
+        ++ String.fromInt (List.length document.childInfo)
         ++ "\n\n"
         ++ makeSlug document
         ++ "\n"
         ++ (document.id |> Uuid.toString)
         ++ "\n"
         ++ "\n\n"
-
-
-childrenSummary : Document -> String
-childrenSummary document =
-    document.children
-        |> List.map Uuid.toString
-        |> List.map (String.right 4)
-        |> String.join ", "
 
 
 makeSlug : Document -> String
@@ -347,8 +309,6 @@ create documentUuid authorIdentifier title content =
     , public = False
     , slug = slug
     , docType = Markdown MDExtendedMath
-    , children = []
-    , childLevels = []
     , childInfo = []
     }
 

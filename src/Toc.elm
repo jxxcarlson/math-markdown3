@@ -215,12 +215,6 @@ level tocItem =
 prepare : Document -> List Document -> List TocItem
 prepare master childDocuments =
     let
-        idList =
-            master.children
-
-        levels =
-            master.childLevels
-
         titles =
             List.map .title childDocuments
 
@@ -233,12 +227,11 @@ prepare master childDocuments =
                 False
 
         visibles =
-            List.map initialVisibility levels
+            List.map initialVisibility (master.childInfo |> List.map Tuple.second)
     in
-    List.map4 (\i t l v -> TocItem i t l v (Just False) False)
-        idList
+    List.map3 (\( i, l ) t v -> TocItem i t l v (Just False) False)
+        master.childInfo
         titles
-        levels
         visibles
 
 
