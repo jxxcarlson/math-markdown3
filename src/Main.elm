@@ -604,34 +604,24 @@ update msg model =
             ( setupOutline model, Cmd.none )
 
         UpdateChildren ->
-            case model.currentDocument of
+            case List.head model.childDocumentList of
                 Nothing ->
                     ( model, Cmd.none )
 
                 Just masterDocument ->
-                    let
-                        titleList =
-                            String.split "\n" model.documentOutline
-                                |> List.map String.trim
-                                |> List.filter (\str -> str /= "")
+                    case TocManager.updateChildren model.documentOutline model.childDocumentList of
+                        Nothing ->
+                            ( model, Cmd.none )
 
-                        newMasterDocument_ =
-                            Document.reorderChildren masterDocument titleList (List.drop 1 model.childDocumentList)
-
-                        newMasterDocument =
-                            Document.setLevelsOfChildren model.documentOutline newMasterDocument_
-
-                        newChildDocumentList =
-                            newMasterDocument
-                                :: List.drop 1 model.childDocumentList
-                                |> Document.sortChildren newMasterDocument
-                    in
-                    ( { model
-                        | currentDocument = Just newMasterDocument
-                        , childDocumentList = newChildDocumentList
-                      }
-                    , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
-                    )
+                        Just ( newMasterDocument, newDocumentList ) ->
+                            ( { model
+                                | currentDocument = Just newMasterDocument
+                                , childDocumentList = newDocumentList
+                                , tocData = TocManager.setup (Just newMasterDocument) newDocumentList
+                                , tocCursor = Just masterDocument.id
+                              }
+                            , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+                            )
 
         SetDocumentPublic bit ->
             setDocumentPublic model bit
@@ -1518,22 +1508,8 @@ deleteSubdocument model =
 deleteSubdocument_ : Model -> Document -> Document -> ( Model, Cmd Msg )
 deleteSubdocument_ model masterDocument documentToDelete =
     let
-        newMasterDocument_ =
-            Document.deleteChild documentToDelete masterDocument
-
-        indexOfChildToDelete =
-            List.Extra.elemIndex documentToDelete.id masterDocument.children
-
-        newChildLevels =
-            case indexOfChildToDelete of
-                Nothing ->
-                    masterDocument.childLevels
-
-                Just idx ->
-                    List.Extra.removeAt idx masterDocument.childLevels
-
         newMasterDocument =
-            { newMasterDocument_ | childLevels = newChildLevels }
+            TocManager.deleteDocumentInMaster documentToDelete masterDocument
 
         newDocumentList =
             List.filter (\doc -> doc.id /= documentToDelete.id) model.documentList
@@ -1620,23 +1596,27 @@ newSubdocument model =
 newSubdocument_ : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
 newSubdocument_ model user masterDocument targetDocument =
     let
+        -- Prepare the new document
         newDocumentText =
-            "# New subdocument of " ++ masterDocument.title ++ "\n\nWrite something here ..."
+            "# New subdocument:\n\n###" ++ masterDocument.title ++ "\n\nWrite something here ..."
 
         newDocument =
             Document.create model.currentUuid user.username "New Subdocument" newDocumentText
 
+        -- Prepare AST and udpate uuid
         lastAst =
             Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
 
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed
 
+        -- Prepare new master document, document lists, and document outlne
         newMasterDocument =
             TocManager.insertInMaster newDocument targetDocument masterDocument
 
+        -- drop the master document for processing, then put it back after processing
         newChildDocumentList =
-            TocManager.insertInChildDocumentList newDocument targetDocument model.childDocumentList
+            newMasterDocument :: TocManager.insertInChildDocumentList newDocument targetDocument (List.drop 1 model.childDocumentList)
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.documentList)
@@ -1652,7 +1632,7 @@ newSubdocument_ model user masterDocument targetDocument =
     ( { model
         | currentDocument = Just newDocument
         , childDocumentList = newChildDocumentList
-        , counter = model.counter + 1
+        , counter = model.counter + 1 -- Necessary?
         , documentList = newDocumentList
         , tocData = TocManager.setup (Just newMasterDocument) newChildDocumentList
         , tocCursor = Just newDocument.id
@@ -3143,12 +3123,21 @@ footer : Model -> Element Msg
 footer model =
     row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
         [ currentAuthorDisplay model
-        , wordCount model
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
+        , debugDisplay model --wordCount model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
+
+
+debugDisplay model =
+    model.childDocumentList
+        |> List.take 3
+        |> List.map .title
+        |> List.map (String.left 8)
+        |> String.join ", "
+        |> (\s -> el [] (Element.text <| "children: " ++ s))
 
 
 dirtyDocumentDisplay : Model -> Element Msg

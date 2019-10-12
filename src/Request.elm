@@ -272,10 +272,6 @@ inUuidList_ uuiIdList =
     buildUuid_comparison_exp (\args -> { args | in_ = OptionalArgument.Present uuiIdList })
 
 
-
--- XXXXX --
-
-
 hasTag : String -> Document_bool_exp
 hasTag key =
     buildDocument_bool_exp (\args -> { args | tags = Present <| hasTag_ key })
@@ -284,10 +280,6 @@ hasTag key =
 hasTag_ : String -> Api.InputObject.Jsonb_comparison_exp
 hasTag_ x =
     buildJsonb_comparison_exp (\args -> { args | has_key_ = OptionalArgument.Present x })
-
-
-
--- XXXXX --
 
 
 likeString : String -> String_comparison_exp
@@ -327,6 +319,26 @@ documentListSelection =
                 |> SelectionSet.map
                     (\(Jsonb x) -> List.map (String.toInt >> Maybe.withDefault 0) x)
             )
+        |> with
+            (Api.Object.Document.childInfo identity
+                |> SelectionSet.map
+                    (\(Jsonb x) -> List.map decodeUuidIntPair x |> Maybe.Extra.values)
+            )
+
+
+decodeUuidIntPair : String -> Maybe ( Uuid, Int )
+decodeUuidIntPair str =
+    case String.split "," str |> List.map String.trim of
+        [ a, b ] ->
+            case Uuid.fromString a of
+                Just uuid ->
+                    Just ( uuid, (String.toInt >> Maybe.withDefault 0) b )
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
 
 
 
@@ -349,6 +361,7 @@ insertDocumentObjects newDocument =
                 , docType = Present (newDocument.docType |> Document.stringFromDocType)
                 , children = Present (newDocument.children |> List.map Uuid.toString |> (\list -> Jsonb list))
                 , childLevels = Present (newDocument.childLevels |> List.map String.fromInt |> (\list -> Jsonb list))
+                , childInfo = Present (newDocument.childInfo |> List.map uuidIntPairToString |> (\list -> Jsonb list))
             }
         )
 
@@ -444,8 +457,18 @@ setDocumentSetArg document =
                 , docType = Present (document.docType |> Document.stringFromDocType)
                 , children = Present (document.children |> List.map Uuid.toString |> (\list -> Jsonb list))
                 , childLevels = Present (document.childLevels |> List.map String.fromInt |> (\list -> Jsonb list))
+                , childInfo = Present (document.childInfo |> List.map uuidIntPairToString |> (\list -> Jsonb list))
             }
         )
+
+
+
+-- XXX
+
+
+uuidIntPairToString : ( Uuid, Int ) -> String
+uuidIntPairToString ( uuid, k ) =
+    "(" ++ Uuid.toString uuid ++ "," ++ String.fromInt k ++ ")"
 
 
 setDocumentUpdateOptionalArgs : Document -> UpdateDocumentOptionalArguments -> UpdateDocumentOptionalArguments

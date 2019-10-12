@@ -42,6 +42,7 @@ type alias Document =
     , docType : DocType
     , children : List Uuid
     , childLevels : List Int
+    , childInfo : List ( Uuid, Int )
     }
 
 
@@ -346,6 +347,7 @@ create documentUuid authorIdentifier title content =
     , docType = Markdown MDExtendedMath
     , children = []
     , childLevels = []
+    , childInfo = []
     }
 
 

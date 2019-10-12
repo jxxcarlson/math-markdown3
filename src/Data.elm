@@ -16,6 +16,7 @@ loadingPage =
     , docType = Markdown MDExtendedMath
     , children = []
     , childLevels = []
+    , childInfo = []
     }
 
 

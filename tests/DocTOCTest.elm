@@ -180,10 +180,6 @@ expectedNewChildDocumentList3 =
     [ ch1, ch2, ch3, dx ]
 
 
-bozo =
-    [ dx, ch1, ch2, ch3 ]
-
-
 suite : Test
 suite =
     describe "Toc operations"

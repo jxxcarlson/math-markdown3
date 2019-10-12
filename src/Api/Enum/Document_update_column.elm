@@ -10,6 +10,7 @@ import Json.Decode as Decode exposing (Decoder)
 {-| update columns of table "document"
 
   - AuthorIdentifier - column name
+  - ChildInfo - column name
   - ChildLevels - column name
   - Children - column name
   - Content - column name
@@ -24,6 +25,7 @@ import Json.Decode as Decode exposing (Decoder)
 -}
 type Document_update_column
     = AuthorIdentifier
+    | ChildInfo
     | ChildLevels
     | Children
     | Content
@@ -38,7 +40,7 @@ type Document_update_column
 
 list : List Document_update_column
 list =
-    [ AuthorIdentifier, ChildLevels, Children, Content, DocType, Id, Public, Slug, Tags, TimeStamp, Title ]
+    [ AuthorIdentifier, ChildInfo, ChildLevels, Children, Content, DocType, Id, Public, Slug, Tags, TimeStamp, Title ]
 
 
 decoder : Decoder Document_update_column
@@ -49,6 +51,9 @@ decoder =
                 case string of
                     "authorIdentifier" ->
                         Decode.succeed AuthorIdentifier
+
+                    "childInfo" ->
+                        Decode.succeed ChildInfo
 
                     "childLevels" ->
                         Decode.succeed ChildLevels
@@ -92,6 +97,9 @@ toString enum =
     case enum of
         AuthorIdentifier ->
             "authorIdentifier"
+
+        ChildInfo ->
+            "childInfo"
 
         ChildLevels ->
             "childLevels"
@@ -140,6 +148,9 @@ fromString enumString =
     case enumString of
         "authorIdentifier" ->
             Just AuthorIdentifier
+
+        "childInfo" ->
+            Just ChildInfo
 
         "childLevels" ->
             Just ChildLevels
