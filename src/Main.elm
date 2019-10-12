@@ -609,7 +609,7 @@ update msg model =
                     ( model, Cmd.none )
 
                 Just masterDocument ->
-                    case TocManager.updateChildren model.documentOutline model.childDocumentList of
+                    case TocManager.updateMasterAndDocumentListFromOutline model.documentOutline model.childDocumentList of
                         Nothing ->
                             ( model, Cmd.none )
 
@@ -1509,7 +1509,7 @@ deleteSubdocument_ : Model -> Document -> Document -> ( Model, Cmd Msg )
 deleteSubdocument_ model masterDocument documentToDelete =
     let
         newMasterDocument =
-            TocManager.deleteDocumentInMaster documentToDelete masterDocument
+            Document.deleteChild documentToDelete masterDocument
 
         newDocumentList =
             List.filter (\doc -> doc.id /= documentToDelete.id) model.documentList

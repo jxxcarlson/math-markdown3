@@ -162,43 +162,41 @@ idAndTitleList list =
     List.map (\doc -> ( doc.id, doc.title )) list
 
 
-reOrder : List String -> List ( Uuid, String ) -> List Uuid
-reOrder strList annotatedList =
+reOrder : List String -> List ( String, a ) -> List ( String, a )
+reOrder titleList annotatedList =
     let
         order : String -> Int
         order str =
-            List.Extra.elemIndex str strList |> Maybe.withDefault -1
+            List.Extra.elemIndex str titleList |> Maybe.withDefault -1
     in
-    List.sortBy (\( uuid, str ) -> order str) annotatedList
-        |> List.map Tuple.first
+    List.sortBy (\( str, _ ) -> order str) annotatedList
 
 
-reorderChildren : Document -> List String -> List Document -> Document
-reorderChildren masterDocument titleList childDocumentList =
+reorderChildren : Document -> List String -> List String -> Document
+reorderChildren masterDocument childTitleList newChildTitleList =
     let
-        childUuidList =
-            List.map .id childDocumentList
-
-        childTitleList =
-            List.map .title childDocumentList
-
         annotatedList =
-            List.map2 (\u v -> ( u, v )) childUuidList childTitleList
+            List.map2 (\u v -> ( u, v )) childTitleList masterDocument.childInfo
 
-        newUuidList =
-            reOrder titleList annotatedList
+        newChildInfo =
+            reOrder newChildTitleList annotatedList
+                |> List.map Tuple.second
     in
-    case equalUuidLists newUuidList masterDocument.children of
+    case equalUuidSets newChildInfo masterDocument.childInfo of
         True ->
-            { masterDocument | children = newUuidList }
+            { masterDocument | childInfo = newChildInfo }
 
         False ->
             masterDocument
 
 
-equalUuidLists : List Uuid -> List Uuid -> Bool
-equalUuidLists l1 l2 =
-    List.sortBy Uuid.toString l1 == List.sortBy Uuid.toString l2
+equalUuidSets : List ( Uuid, a ) -> List ( Uuid, a ) -> Bool
+equalUuidSets l1 l2 =
+    let
+        order =
+            \item -> Uuid.toString (Tuple.first item)
+    in
+    List.sortBy order l1 == List.sortBy order l2
 
 
 setLevelsOfChildren : String -> Document -> Document

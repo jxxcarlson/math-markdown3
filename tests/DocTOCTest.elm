@@ -22,6 +22,10 @@ suite =
         , doTest "6. insert new document at position 3 in ChildDocumentList" newChildDocumentList3 expectedNewChildDocumentList3
         , doTest "7. Compare computed and expected outlines " computedOutline (Just expectedOutline)
         , doTest "8. Delete document " masterAfterDelete expectedMasterAfterDelete
+        , doTest "9. Document.reOrder " transformedList expectedTransformedList
+        , doTest "10. Document.reorderChildren " reorderMaster expectedReorderMaster
+        , doTest "11 Update from outline - check master " newMasterXX expectedNewMasterXX
+        , doTest "12. Update from outline - check document list " newDocumentListXX expectedDocumentListXX
         ]
 
 
@@ -74,15 +78,15 @@ id5 =
     getId 5
 
 
-ch1 =
+da =
     { dummy | id = getId 1, title = "A" }
 
 
-ch2 =
+db =
     { dummy | id = getId 2, title = "B" }
 
 
-ch3 =
+dc =
     { dummy | id = getId 3, title = "C" }
 
 
@@ -95,7 +99,7 @@ master =
 
 
 childDocuments =
-    [ ch1, ch2, ch3 ]
+    [ da, db, dc ]
 
 
 
@@ -103,7 +107,7 @@ childDocuments =
 
 
 newMaster1 =
-    TocManager.insertInMaster dx ch1 master
+    TocManager.insertInMaster dx da master
 
 
 expectedNewMaster1 =
@@ -115,7 +119,7 @@ expectedNewMaster1 =
 
 
 newMaster2 =
-    TocManager.insertInMaster dx ch2 master
+    TocManager.insertInMaster dx db master
 
 
 expectedNewMaster2 =
@@ -127,7 +131,7 @@ expectedNewMaster2 =
 
 
 newMaster3 =
-    TocManager.insertInMaster dx ch3 master
+    TocManager.insertInMaster dx dc master
 
 
 expectedNewMaster3 =
@@ -139,11 +143,11 @@ expectedNewMaster3 =
 
 
 newChildDocumentList1 =
-    TocManager.insertInChildDocumentList dx ch1 childDocuments
+    TocManager.insertInChildDocumentList dx da childDocuments
 
 
 expectedNewChildDocumentList1 =
-    [ ch1, dx, ch2, ch3 ]
+    [ da, dx, db, dc ]
 
 
 
@@ -151,11 +155,11 @@ expectedNewChildDocumentList1 =
 
 
 newChildDocumentList2 =
-    TocManager.insertInChildDocumentList dx ch2 childDocuments
+    TocManager.insertInChildDocumentList dx db childDocuments
 
 
 expectedNewChildDocumentList2 =
-    [ ch1, ch2, dx, ch3 ]
+    [ da, db, dx, dc ]
 
 
 
@@ -163,11 +167,11 @@ expectedNewChildDocumentList2 =
 
 
 newChildDocumentList3 =
-    TocManager.insertInChildDocumentList dx ch3 childDocuments
+    TocManager.insertInChildDocumentList dx dc childDocuments
 
 
 expectedNewChildDocumentList3 =
-    [ ch1, ch2, ch3, dx ]
+    [ da, db, dc, dx ]
 
 
 
@@ -175,23 +179,7 @@ expectedNewChildDocumentList3 =
 
 
 documentList =
-    [ newMaster1, d1, d4, d2, d3 ]
-
-
-d1 =
-    { dummy | id = id1, title = "A" }
-
-
-d2 =
-    { dummy | id = id1, title = "B" }
-
-
-d3 =
-    { dummy | id = id1, title = "C" }
-
-
-d4 =
-    { dummy | id = id1, title = "X" }
+    [ newMaster1, da, dx, db, dc ]
 
 
 expectedOutline =
@@ -213,7 +201,7 @@ computedOutline =
 
 
 newMasterX =
-    TocManager.insertInMaster dx ch1 master
+    TocManager.insertInMaster dx da master
 
 
 masterAfterDelete =
@@ -222,3 +210,77 @@ masterAfterDelete =
 
 expectedMasterAfterDelete =
     master
+
+
+
+-- TEST 12: update from outline
+
+
+newOutline =
+    String.trim
+        """
+A
+   B
+   X
+C
+    """
+
+
+{-| ABXC
+-}
+newMasterXX =
+    TocManager.updateMasterAndDocumentListFromOutline newOutline [ newMaster1, da, dx, db, dc ]
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault da
+
+
+{-| ABXC
+-}
+newDocumentListXX =
+    TocManager.updateMasterAndDocumentListFromOutline newOutline [ newMaster1, da, dx, db, dc ]
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault []
+
+
+{-| ABXC
+-}
+expectedNewMasterXX =
+    TocManager.insertInMaster dx db master
+
+
+{-| ABXC
+-}
+expectedDocumentListXX =
+    [ newMasterXX, da, db, dx, dc ]
+
+
+
+-- TEST 9: reOrder
+
+
+titleList =
+    [ "A", "C", "B" ]
+
+
+annotatedList =
+    [ ( "A", 1 ), ( "B", 2 ), ( "C", 3 ) ]
+
+
+transformedList =
+    Document.reOrder titleList annotatedList
+
+
+expectedTransformedList =
+    [ ( "A", 1 ), ( "C", 3 ), ( "B", 2 ) ]
+
+
+
+-- TEST 10: reorderChildren
+
+
+reorderMaster =
+    reorderChildren newMaster1 [ "A", "X", "B", "C" ] [ "A", "B", "X", "C" ]
+
+
+expectedReorderMaster =
+    newMaster2

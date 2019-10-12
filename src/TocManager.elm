@@ -1,11 +1,9 @@
 module TocManager exposing
-    (  computeOutline
-       -- , deleteDocumentInMaster
-
+    ( computeOutline
     , insertInChildDocumentList
     , insertInMaster
     , setup
-    , updateChildren
+    , updateMasterAndDocumentListFromOutline
     )
 
 import Document exposing (Document)
@@ -30,9 +28,6 @@ setup maybeMasterDocument childDocumentList =
 
                 tocData =
                     Just <| Zipper.fromTree <| Toc.make masterDocument sortedChildDocuments
-
-                tocCursor =
-                    Just masterDocument.id
             in
             tocData
 
@@ -46,11 +41,9 @@ insertInMaster newDocument targetDocument masterDocument =
     let
         {- The plan is to insert the new document after the target index -}
         targetIndex =
-            Debug.log "TI"
-                (List.Extra.findIndex (\item -> Tuple.first item == targetDocument.id)
-                    masterDocument.childInfo
-                    |> Maybe.withDefault 0
-                )
+            List.Extra.findIndex (\item -> Tuple.first item == targetDocument.id)
+                masterDocument.childInfo
+                |> Maybe.withDefault 0
 
         levelOfNewChild =
             case ( List.Extra.getAt targetIndex masterDocument.childInfo, List.Extra.getAt (targetIndex + 1) masterDocument.childInfo ) of
@@ -91,29 +84,7 @@ insertInChildDocumentList newDocument targetDocument documentList =
     Utility.insertItemInList equal newDocument targetDocument documentList
 
 
-
---deleteDocumentInMaster : Document -> Document -> Document
---deleteDocumentInMaster subDocument masterDocument =
---    let
---        indexOfChildToDelete =
---            List.Extra.findIndex (\item -> Tuple.first item == subDocument.id) masterDocument.childInfo
---
---        newMasterDocument_ =
---            Document.deleteChild subDocument masterDocument
---
---        newChildInfo =
---            case indexOfChildToDelete of
---                Nothing ->
---                    masterDocument.childInfo
---
---                Just idx ->
---                    List.Extra.removeAt idx masterDocument.childInfo
---    in
---    { newMasterDocument_ | childInfo = newChildInfo }
---
-
-
-{-| Compte an indented outline (a string) from a master document
+{-| Compute an indented outline (a string) from a master document
 and its list of child documents. Return Nothing if the given
 master document is not the document at the head of the list.
 
@@ -159,8 +130,8 @@ on an outline of its child documents.
 NB: We assume that the documentList is headed by the master document.
 
 -}
-updateChildren : String -> List Document -> Maybe ( Document, List Document )
-updateChildren documentOutline documentList =
+updateMasterAndDocumentListFromOutline : String -> List Document -> Maybe ( Document, List Document )
+updateMasterAndDocumentListFromOutline documentOutline documentList =
     case List.head documentList of
         Nothing ->
             Nothing
@@ -175,11 +146,8 @@ updateChildren documentOutline documentList =
                         |> List.map String.trim
                         |> List.filter (\str -> str /= "")
 
-                newMasterDocument_ =
-                    Document.reorderChildren masterDocument titleList childDocuments
-
                 newMasterDocument =
-                    Document.setLevelsOfChildren documentOutline newMasterDocument_
+                    Document.reorderChildren masterDocument (List.map .title childDocuments) titleList
 
                 newDocumentList =
                     newMasterDocument
