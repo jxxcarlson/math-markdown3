@@ -213,7 +213,39 @@ expectedMasterAfterDelete =
 
 
 
--- TEST 12: update from outline
+-- TEST 9: reOrder
+
+
+titleList =
+    [ "A", "C", "B" ]
+
+
+annotatedList =
+    [ ( "A", 1 ), ( "B", 2 ), ( "C", 3 ) ]
+
+
+transformedList =
+    Document.reOrder titleList annotatedList
+
+
+expectedTransformedList =
+    [ ( "A", 1 ), ( "C", 3 ), ( "B", 2 ) ]
+
+
+
+-- TEST 10: reorderChildren
+
+
+reorderMaster =
+    reorderChildren newMaster1 [ "A", "X", "B", "C" ] [ "A", "B", "X", "C" ]
+
+
+expectedReorderMaster =
+    newMaster2
+
+
+
+-- TEST 11, 12: update from outline
 
 
 newOutline =
@@ -252,35 +284,3 @@ expectedNewMasterXX =
 -}
 expectedDocumentListXX =
     [ newMasterXX, da, db, dx, dc ]
-
-
-
--- TEST 9: reOrder
-
-
-titleList =
-    [ "A", "C", "B" ]
-
-
-annotatedList =
-    [ ( "A", 1 ), ( "B", 2 ), ( "C", 3 ) ]
-
-
-transformedList =
-    Document.reOrder titleList annotatedList
-
-
-expectedTransformedList =
-    [ ( "A", 1 ), ( "C", 3 ), ( "B", 2 ) ]
-
-
-
--- TEST 10: reorderChildren
-
-
-reorderMaster =
-    reorderChildren newMaster1 [ "A", "X", "B", "C" ] [ "A", "B", "X", "C" ]
-
-
-expectedReorderMaster =
-    newMaster2
