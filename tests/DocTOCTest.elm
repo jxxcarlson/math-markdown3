@@ -237,7 +237,7 @@ expectedTransformedList =
 
 
 reorderMaster =
-    reorderChildren newMaster1 [ "A", "X", "B", "C" ] [ "A", "B", "X", "C" ]
+    reorderChildrenInMaster newMaster1 [ "A", "X", "B", "C" ] [ "A", "B", "X", "C" ]
 
 
 expectedReorderMaster =
@@ -268,19 +268,21 @@ newMasterXX =
 
 {-| ABXC
 -}
-newDocumentListXX =
-    TocManager.updateMasterAndDocumentListFromOutline newOutline [ newMaster1, da, dx, db, dc ]
-        |> Maybe.map Tuple.second
-        |> Maybe.withDefault []
-
-
-{-| ABXC
--}
 expectedNewMasterXX =
     TocManager.insertInMaster dx db master
 
 
 {-| ABXC
 -}
+newDocumentListXX =
+    TocManager.updateMasterAndDocumentListFromOutline newOutline [ newMaster1, da, dx, db, dc ]
+        |> Maybe.map Tuple.second
+        |> Maybe.withDefault []
+        |> List.drop 1
+        |> List.map .title
+
+
+{-| ABXC
+-}
 expectedDocumentListXX =
-    [ newMasterXX, da, db, dx, dc ]
+    [ da, db, dx, dc ] |> List.map .title

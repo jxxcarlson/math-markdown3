@@ -141,17 +141,23 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                 childDocuments =
                     List.drop 1 documentList
 
+                _ =
+                    Debug.log "CDT" (List.map .title childDocuments)
+
                 titleList =
                     String.split "\n" documentOutline
                         |> List.map String.trim
                         |> List.filter (\str -> str /= "")
+                        |> Debug.log "NTL"
 
                 newMasterDocument =
-                    Document.reorderChildren masterDocument (List.map .title childDocuments) titleList
+                    Document.reorderChildrenInMaster masterDocument (List.map .title childDocuments) titleList
+
+                _ =
+                    Debug.log "CHI" newMasterDocument.childInfo
 
                 newDocumentList =
-                    newMasterDocument
-                        :: childDocuments
+                    documentList
                         |> Document.sortChildren newMasterDocument
             in
             Just ( newMasterDocument, newDocumentList )

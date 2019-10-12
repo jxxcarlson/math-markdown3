@@ -15,7 +15,7 @@ module Document exposing
     , level
     , makeTocStatus
     , reOrder
-    , reorderChildren
+    , reorderChildrenInMaster
     , replaceInList
     , setContent
     , setLevelsOfChildren
@@ -172,15 +172,19 @@ reOrder titleList annotatedList =
     List.sortBy (\( str, _ ) -> order str) annotatedList
 
 
-reorderChildren : Document -> List String -> List String -> Document
-reorderChildren masterDocument childTitleList newChildTitleList =
+{-| Assumption: the two lists do no refer at all to master
+-}
+reorderChildrenInMaster : Document -> List String -> List String -> Document
+reorderChildrenInMaster masterDocument childTitleList newChildTitleList =
     let
         annotatedList =
             List.map2 (\u v -> ( u, v )) childTitleList masterDocument.childInfo
 
         newChildInfo =
-            reOrder newChildTitleList annotatedList
-                |> List.map Tuple.second
+            Debug.log "NCI"
+                (reOrder newChildTitleList annotatedList
+                    |> List.map Tuple.second
+                )
     in
     case equalUuidSets newChildInfo masterDocument.childInfo of
         True ->
@@ -211,17 +215,19 @@ setLevelsOfChildren outline master =
     { master | childLevels = newChildLevels }
 
 
+{-| Assume that the master is not part of the document list
+-}
 sortChildren : Document -> List Document -> List Document
-sortChildren master list =
+sortChildren master documentList =
     let
         idList =
-            master.id :: master.children
+            master.id :: (master.childInfo |> List.map Tuple.first)
 
         order : Document -> Int
         order doc =
             List.Extra.elemIndex doc.id idList |> Maybe.withDefault -1
     in
-    List.sortBy order list
+    List.sortBy order documentList
 
 
 deleteChild : Document -> Document -> Document
