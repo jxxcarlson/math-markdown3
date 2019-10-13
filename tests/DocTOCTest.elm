@@ -26,6 +26,7 @@ suite =
         , doTest "10. Document.reorderChildren " reorderMaster expectedReorderMaster
         , doTest "11 Update from outline - check master " newMasterXX expectedNewMasterXX
         , doTest "12. Update from outline - check document list " newDocumentListXX expectedDocumentListXX
+        , doTest "13. Update from outline - change level, check master " newMaster2X master3
         ]
 
 
@@ -52,8 +53,6 @@ dummy =
     , tags = []
     , slug = "yada123"
     , docType = Markdown MDExtendedMath
-    , children = []
-    , childLevels = []
     , childInfo = []
     }
 
@@ -286,3 +285,30 @@ newDocumentListXX =
 -}
 expectedDocumentListXX =
     [ da, db, dx, dc ] |> List.map .title
+
+
+
+-- TEST 13, 14: update from outline
+
+
+master2 =
+    { dummy | title = "master", childInfo = [ ( id1, 0 ), ( id2, 0 ), ( id3, 0 ) ] }
+
+
+master3 =
+    { dummy | title = "master", childInfo = [ ( id1, 0 ), ( id2, 1 ), ( id3, 0 ) ] }
+
+
+newOutline2 =
+    String.trim
+        """
+A
+   B
+C
+"""
+
+
+newMaster2X =
+    TocManager.updateMasterAndDocumentListFromOutline newOutline2 [ master2, da, db, dc ]
+        |> Maybe.map Tuple.first
+        |> Maybe.withDefault da

@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (ChildInfoOptionalArguments, ChildLevelsOptionalArguments, ChildrenOptionalArguments, TagsOptionalArguments, authorIdentifier, childInfo, childLevels, children, content, docType, id, public, slug, tags, timeStamp, title, user)
+module Api.Object.Document exposing (ChildInfoOptionalArguments, TagsOptionalArguments, authorIdentifier, childInfo, content, docType, id, public, slug, tags, timeStamp, title, user)
 
 import Api.InputObject
 import Api.Interface
@@ -44,50 +44,6 @@ childInfo fillInOptionals =
                 |> List.filterMap identity
     in
     Object.selectionForField "CustomScalarCodecs.Jsonb" "childInfo" optionalArgs (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
-
-
-type alias ChildLevelsOptionalArguments =
-    { path : OptionalArgument String }
-
-
-{-|
-
-  - path - JSON select path
-
--}
-childLevels : (ChildLevelsOptionalArguments -> ChildLevelsOptionalArguments) -> SelectionSet CustomScalarCodecs.Jsonb Api.Object.Document
-childLevels fillInOptionals =
-    let
-        filledInOptionals =
-            fillInOptionals { path = Absent }
-
-        optionalArgs =
-            [ Argument.optional "path" filledInOptionals.path Encode.string ]
-                |> List.filterMap identity
-    in
-    Object.selectionForField "CustomScalarCodecs.Jsonb" "childLevels" optionalArgs (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
-
-
-type alias ChildrenOptionalArguments =
-    { path : OptionalArgument String }
-
-
-{-|
-
-  - path - JSON select path
-
--}
-children : (ChildrenOptionalArguments -> ChildrenOptionalArguments) -> SelectionSet CustomScalarCodecs.Jsonb Api.Object.Document
-children fillInOptionals =
-    let
-        filledInOptionals =
-            fillInOptionals { path = Absent }
-
-        optionalArgs =
-            [ Argument.optional "path" filledInOptionals.path Encode.string ]
-                |> List.filterMap identity
-    in
-    Object.selectionForField "CustomScalarCodecs.Jsonb" "children" optionalArgs (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
 
 
 content : SelectionSet String Api.Object.Document

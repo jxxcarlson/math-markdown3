@@ -15,6 +15,10 @@ import Tree.Zipper as Zipper exposing (Zipper)
 import Utility
 
 
+
+-- YYY
+
+
 setup : Maybe Document -> List Document -> Maybe (Zipper TocItem)
 setup maybeMasterDocument childDocumentList =
     case maybeMasterDocument of
@@ -25,6 +29,9 @@ setup maybeMasterDocument childDocumentList =
             let
                 sortedChildDocuments =
                     Document.sortChildren masterDocument childDocumentList
+
+                _ =
+                    Debug.log "SOCH" (sortedChildDocuments |> List.map .title)
 
                 tocData =
                     Just <| Zipper.fromTree <| Toc.make masterDocument sortedChildDocuments
@@ -128,6 +135,7 @@ computeOutline masterDocument childDocumentList =
 on an outline of its child documents.
 
 NB: We assume that the documentList is headed by the master document.
+This function returns a document list headed by the updated master document
 
 -}
 updateMasterAndDocumentListFromOutline : String -> List Document -> Maybe ( Document, List Document )
@@ -150,7 +158,9 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                     Document.reorderChildrenInMaster masterDocument (List.map .title childDocuments) titleList
 
                 newDocumentList =
-                    documentList
-                        |> Document.sortChildren newMasterDocument
+                    newMasterDocument
+                        :: (childDocuments
+                                |> Document.sortChildren newMasterDocument
+                           )
             in
             Just ( newMasterDocument, newDocumentList )

@@ -617,7 +617,7 @@ update msg model =
                             ( { model
                                 | currentDocument = Just newMasterDocument
                                 , childDocumentList = newDocumentList
-                                , tocData = TocManager.setup (Just newMasterDocument) newDocumentList
+                                , tocData = TocManager.setup (Just newMasterDocument) (List.drop 1 newDocumentList)
                                 , tocCursor = Just masterDocument.id
                               }
                             , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
@@ -1598,7 +1598,7 @@ newSubdocument_ model user masterDocument targetDocument =
     let
         -- Prepare the new document
         newDocumentText =
-            "# New subdocument:\n\n###" ++ masterDocument.title ++ "\n\nWrite something here ..."
+            "# New subdocument:\n\n### " ++ masterDocument.title ++ "\n\nWrite something here ..."
 
         newDocument =
             Document.create model.currentUuid user.username "New Subdocument" newDocumentText
@@ -1616,7 +1616,7 @@ newSubdocument_ model user masterDocument targetDocument =
 
         -- drop the master document for processing, then put it back after processing
         newChildDocumentList =
-            newMasterDocument :: TocManager.insertInChildDocumentList newDocument targetDocument (List.drop 1 model.childDocumentList)
+            TocManager.insertInChildDocumentList newDocument targetDocument (List.drop 1 model.childDocumentList)
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.documentList)
@@ -2947,21 +2947,6 @@ heading model =
                             el (headingButtonStyle w)
                                 (Element.text ("Contents (" ++ n ++ ")"))
                         }
-
-
-
---  el [ Font.size 16, Font.bold ] (Element.text ("Documents" ++ n))
--- HEADER AND FOOTER --
---
---type alias ViewInfo =
---    { toolStripWidth : Float
---    , docListWidth : Float
---    , editorWidth : Float
---    , renderedDisplayWidth : Float
---    , tocWidth : Float
---    , vInset : Float
---    , hExtra : Float
---    }
 
 
 readingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg

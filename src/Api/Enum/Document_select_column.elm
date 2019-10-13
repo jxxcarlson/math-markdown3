@@ -11,8 +11,6 @@ import Json.Decode as Decode exposing (Decoder)
 
   - AuthorIdentifier - column name
   - ChildInfo - column name
-  - ChildLevels - column name
-  - Children - column name
   - Content - column name
   - DocType - column name
   - Id - column name
@@ -26,8 +24,6 @@ import Json.Decode as Decode exposing (Decoder)
 type Document_select_column
     = AuthorIdentifier
     | ChildInfo
-    | ChildLevels
-    | Children
     | Content
     | DocType
     | Id
@@ -40,7 +36,7 @@ type Document_select_column
 
 list : List Document_select_column
 list =
-    [ AuthorIdentifier, ChildInfo, ChildLevels, Children, Content, DocType, Id, Public, Slug, Tags, TimeStamp, Title ]
+    [ AuthorIdentifier, ChildInfo, Content, DocType, Id, Public, Slug, Tags, TimeStamp, Title ]
 
 
 decoder : Decoder Document_select_column
@@ -54,12 +50,6 @@ decoder =
 
                     "childInfo" ->
                         Decode.succeed ChildInfo
-
-                    "childLevels" ->
-                        Decode.succeed ChildLevels
-
-                    "children" ->
-                        Decode.succeed Children
 
                     "content" ->
                         Decode.succeed Content
@@ -100,12 +90,6 @@ toString enum =
 
         ChildInfo ->
             "childInfo"
-
-        ChildLevels ->
-            "childLevels"
-
-        Children ->
-            "children"
 
         Content ->
             "content"
@@ -151,12 +135,6 @@ fromString enumString =
 
         "childInfo" ->
             Just ChildInfo
-
-        "childLevels" ->
-            Just ChildLevels
-
-        "children" ->
-            Just Children
 
         "content" ->
             Just Content
