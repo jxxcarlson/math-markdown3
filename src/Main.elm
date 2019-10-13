@@ -788,7 +788,7 @@ update msg model =
 
 
 expandCollapseTocButton =
-    Input.button []
+    Input.button (Style.activeButtonStyle ++ [ Font.size 12 ])
         { onPress = Just Toggle
         , label = Element.text "Expand/Collapse"
         }
@@ -3110,10 +3110,25 @@ footer model =
         [ currentAuthorDisplay model
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
-        , displayToggle model
+        , displayLevels model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
+
+
+displayLevels model =
+    case model.currentDocument of
+        Nothing ->
+            Element.none
+
+        Just doc ->
+            let
+                levels =
+                    doc.childInfo
+                        |> List.map (Tuple.second >> String.fromInt)
+                        |> String.join ", "
+            in
+            el [] (Element.text <| "Levels: " ++ levels)
 
 
 displayToggle model =

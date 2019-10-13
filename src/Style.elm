@@ -89,7 +89,7 @@ basicButtonsStyle =
 
 activeButtonStyle : List (Element.Attr () msg)
 activeButtonStyle =
-    [ Background.color darkBlue, Font.color white, Element.paddingXY 10 6 ] ++ basicButtonsStyle
+    [ Background.color charcoal, Font.color white, Element.paddingXY 10 6 ] ++ basicButtonsStyle
 
 
 buttonFontSize =
