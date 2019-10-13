@@ -80,9 +80,16 @@ viewSelf toggle t =
     let
         l =
             Tree.label t
+
+        color =
+            if l.isRoot then
+                darkBlue
+
+            else
+                darkRed
     in
     column []
-        [ el [ Font.bold, Font.color darkRed ] (text <| prefix l ++ l.title)
+        [ el [ Font.bold, Font.color color ] (text <| prefix l ++ l.title)
         , column [ horizontalPadding, Font.size fontSize ] (List.map (viewNode toggle) (Tree.children t))
         ]
 
@@ -97,6 +104,10 @@ edges =
 
 darkRed =
     rgb 0.5 0.0 0.0
+
+
+darkBlue =
+    rgb 0.0 0.0 0.65
 
 
 fontSize =
@@ -140,7 +151,7 @@ inAncestors toggle zipper current =
             List.concat
                 [ viewBefore toggle parent
                 , [ column [ Font.size fontSize ]
-                        [ Input.button [ buttonPadding ]
+                        [ Input.button [ buttonPadding, Font.color (buttonColor (Zipper.label parent)) ]
                             { onPress = Just (Focus (Zipper.label parent).id), label = text (Zipper.label parent).title }
                         , current
                         ]
@@ -152,6 +163,19 @@ inAncestors toggle zipper current =
 
         Nothing ->
             current
+
+
+buttonColor l =
+    case l.isRoot of
+        True ->
+            darkBlue
+
+        False ->
+            charcoal
+
+
+charcoal =
+    Element.rgb 0.4 0.4 0.4
 
 
 indexedMap : (Int -> a -> b) -> ( a, List a ) -> ( b, List b )
