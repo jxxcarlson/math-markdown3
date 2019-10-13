@@ -36,7 +36,7 @@ viewZ t z =
         , [ viewSelf t (Zipper.tree z) ]
         , viewAfter t z
         ]
-        |> column [ Font.size fontSize, spacing spacingAmount ]
+        |> column [ Font.size fontSize, spacing (spacingXAlways t) ]
         |> inAncestors t z
 
 
@@ -72,8 +72,8 @@ viewSelf toggle t =
             Tree.label t
     in
     column []
-        [ el [ Font.bold, Font.color darkRed, paddingEach { edges | bottom = 3 } ] (text <| prefix l ++ l.title)
-        , column [ spacing spacingAmount, paddingXY 12 0, Font.size fontSize, spacing spacingAmount ] (List.map (viewNode toggle) (Tree.children t))
+        [ el [ Font.bold, Font.color darkRed, paddingEach { edges | bottom = 8 } ] (text <| prefix l ++ l.title)
+        , column [ spacing (spacingXAlways toggle), thePadding, Font.size fontSize ] (List.map (viewNode toggle) (Tree.children t))
         ]
 
 
@@ -94,7 +94,15 @@ fontSize =
 
 
 spacingAmount =
-    4
+    8
+
+
+thePadding =
+    paddingXY 12 0
+
+
+
+--- paddingXY 12 0
 
 
 viewNode : Bool -> Tree Label -> Element TocMsg
@@ -105,12 +113,12 @@ viewNode showAll t =
 
         xs =
             if showAll then
-                [ column [ paddingXY 12 0, spacing 4, Font.size fontSize ] (List.map (viewNode showAll) (Tree.children t)) ]
+                [ column [ thePadding, Font.size fontSize ] (List.map (viewNode showAll) (Tree.children t)) ]
 
             else
                 []
     in
-    column [ Font.size fontSize ]
+    column [ Font.size fontSize, spacing (spacingXIfToggleOn showAll) ]
         (Input.button []
             { onPress = Just (Focus l.id)
             , label = el [] (text <| prefix l ++ l.title)
@@ -125,7 +133,7 @@ inAncestors toggle zipper current =
         Just parent ->
             List.concat
                 [ viewBefore toggle parent
-                , [ column [ paddingXY 12 0, Font.size fontSize, spacing spacingAmount ]
+                , [ column [ thePadding, Font.size fontSize, spacing (spacingXAlways toggle) ]
                         [ Input.button []
                             { onPress = Just (Focus (Zipper.label parent).id), label = text (Zipper.label parent).title }
                         , current
@@ -133,7 +141,7 @@ inAncestors toggle zipper current =
                   ]
                 , viewAfter toggle parent
                 ]
-                |> column [ spacing spacingAmount ]
+                |> column [ spacing (spacingXAlways toggle) ]
                 |> inAncestors toggle parent
 
         Nothing ->
@@ -143,3 +151,31 @@ inAncestors toggle zipper current =
 indexedMap : (Int -> a -> b) -> ( a, List a ) -> ( b, List b )
 indexedMap f ( x, xs ) =
     ( f 0 x, List.indexedMap (\idx -> f (idx + 1)) xs )
+
+
+spacingXNever : Bool -> Int
+spacingXNever bit =
+    0
+
+
+spacingXAlways : Bool -> Int
+spacingXAlways bit =
+    spacingAmount
+
+
+spacingXIfToggleOn : Bool -> Int
+spacingXIfToggleOn bit =
+    if bit then
+        spacingAmount
+
+    else
+        0
+
+
+spacingXIfToggleOff : Bool -> Int
+spacingXIfToggleOff bit =
+    if bit then
+        0
+
+    else
+        spacingAmount

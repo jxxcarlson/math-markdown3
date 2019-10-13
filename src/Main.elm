@@ -3110,9 +3110,18 @@ footer model =
         [ currentAuthorDisplay model
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
+        , displayToggle model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
+
+
+displayToggle model =
+    if model.toggleToc then
+        el [] (Element.text "Toggle ON")
+
+    else
+        el [] (Element.text "Toggle OFF")
 
 
 dirtyDocumentDisplay : Model -> Element Msg
