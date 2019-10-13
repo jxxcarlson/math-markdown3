@@ -3110,6 +3110,7 @@ footer model =
         [ currentAuthorDisplay model
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
+        , wordCount model
         , displayLevels model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
