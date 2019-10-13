@@ -30,9 +30,6 @@ setup maybeMasterDocument childDocumentList =
                 sortedChildDocuments =
                     Document.sortChildren masterDocument childDocumentList
 
-                _ =
-                    Debug.log "SOCH" (sortedChildDocuments |> List.map .title)
-
                 tocData =
                     Just <| Zipper.fromTree <| Toc.make masterDocument sortedChildDocuments
             in

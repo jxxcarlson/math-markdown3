@@ -1532,7 +1532,7 @@ deleteSubdocument_ model masterDocument documentToDelete =
         , childDocumentList = newChildDocumentList
         , documentList = newDocumentList
         , documentOutline = newDocumentOutline
-        , tocData = TocManager.setup (Just masterDocument) newChildDocumentList
+        , tocData = TocManager.setup (Just masterDocument) (List.drop 1 newChildDocumentList)
         , tocCursor = Just newMasterDocument.id
       }
     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
