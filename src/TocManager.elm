@@ -10,7 +10,6 @@ import Document exposing (Document)
 import List.Extra
 import Prng.Uuid as Uuid exposing (Uuid)
 import Toc exposing (TocItem)
-import TocZ
 import Tree.Zipper as Zipper exposing (Zipper)
 import Utility
 
@@ -146,13 +145,25 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                 childDocuments =
                     List.drop 1 documentList
 
-                titleList =
+                titleListUnfiltered =
                     String.split "\n" documentOutline
+
+                titleList =
+                    titleListUnfiltered
                         |> List.map String.trim
                         |> List.filter (\str -> str /= "")
 
+                levels =
+                    List.map Document.level titleListUnfiltered
+
+                newChildInfo =
+                    List.map2 (\( id, _ ) l -> ( id, l )) masterDocument.childInfo levels
+
+                newMasterDocument_ =
+                    { masterDocument | childInfo = newChildInfo }
+
                 newMasterDocument =
-                    Document.reorderChildrenInMaster masterDocument (List.map .title childDocuments) titleList
+                    Document.reorderChildrenInMaster newMasterDocument_ (List.map .title childDocuments) titleList
 
                 newDocumentList =
                     newMasterDocument
