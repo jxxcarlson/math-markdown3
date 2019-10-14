@@ -76,7 +76,13 @@ multiline w h =
 
 standardButton : List (Element.Attr () msg)
 standardButton =
-    [ Background.color white, Font.color black, paddingXY 10 6 ] ++ basicButtonsStyle
+    [ buttonFontSize
+    , pointer
+    , Background.color white
+    , Font.color black
+    , paddingXY 10 6
+    , mouseDown [ buttonFontSize, Background.color darkRed, Font.color white ]
+    ]
 
 
 basicButtonsStyle : List (Element.Attr () msg)

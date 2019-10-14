@@ -11,6 +11,7 @@ module Request exposing
     , publicDocuments
     , publicDocumentsWithTag
     , publicDocumentsWithTitle
+    , signInUser
     , signUpUser
     , updateDocument
     )
@@ -500,19 +501,27 @@ setDocumentDeleteWhere uuid =
 
 signUpUser : String -> String -> String -> Cmd RequestMsg
 signUpUser username password confirmPassword =
-    Http.post
-        { url = authorizationEndpoint
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "Content-Type" "application/json" ]
+        , url = authorizationEndpoint
         , body = Http.jsonBody (encodeAuthorizedUserForSignUp username password confirmPassword)
         , expect = Http.expectJson GotUserSignUp decodeAuthorizedUser
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 
-signInUser : String -> String -> String -> Cmd RequestMsg
-signInUser username password confirmPassword =
-    Http.post
-        { url = authorizationEndpoint
+signInUser : String -> String -> Cmd RequestMsg
+signInUser username password =
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "Content-Type" "application/json" ]
+        , url = authorizationEndpoint
         , body = Http.jsonBody (encodeAuthorizedUserForSignIn username password)
         , expect = Http.expectJson GotUserSignIn decodeAuthorizedUser
+        , timeout = Nothing
+        , tracker = Nothing
         }
 
 

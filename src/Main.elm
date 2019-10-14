@@ -949,22 +949,18 @@ handleTime model newTime =
 
 signIn : Model -> ( Model, Cmd Msg )
 signIn model =
-    if
-        (model.username == "jxxcarlson" && model.password == "locoLobo")
-            || (model.username == "boris" && model.password == "locoLobo")
-            || (model.username == "cervone" && model.password == "mathjax3")
-    then
-        ( { model
-            | currentUser = Just (User.dummy model.username)
-            , appMode = Reading
-            , visibilityOfTools = Invisible
-            , searchMode = UserSearch
-          }
-        , Request.documentsWithAuthor hasuraToken model.username |> Cmd.map Req
-        )
-
-    else
-        ( { model | currentUser = Nothing, appMode = UserMode SignInState, password = "" }, Cmd.none )
+    ( { model
+        | currentUser = Nothing
+        , authorizedUser = Nothing
+        , visibilityOfTools = Invisible
+        , searchMode = UserSearch
+        , message = ( UserMessage, "Signing in ..." )
+      }
+    , Cmd.batch
+        [ --Request.documentsWithAuthor hasuraToken model.username |> Cmd.map Req
+          Request.signInUser model.username model.password |> Cmd.map Req
+        ]
+    )
 
 
 
@@ -2059,6 +2055,7 @@ userPageFooter : Model -> Element Msg
 userPageFooter model =
     row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
         [ el [] (Element.text <| appStateAsString model)
+        , showToken model
         , el [] (Element.text <| (model.message |> Tuple.second))
         ]
 
@@ -3152,10 +3149,21 @@ footer model =
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
         , wordCount model
+        , showToken model
         , displayLevels model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
+
+
+showToken : Model -> Element Msg
+showToken model =
+    case model.authorizedUser of
+        Nothing ->
+            el [] (Element.text "Token: --")
+
+        Just authorizedUser ->
+            el [] (Element.text <| "Token: " ++ authorizedUser.token)
 
 
 displayLevels model =
