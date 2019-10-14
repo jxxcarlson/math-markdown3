@@ -189,7 +189,3 @@ indexedMap f ( x, xs ) =
 
 horizontalPadding =
     paddingXY 12 0
-
-
-smallVerticalPadding =
-    paddingXY 0 8

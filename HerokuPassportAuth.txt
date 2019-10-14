@@ -1,0 +1,3 @@
+curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "XXX", "confirmPassword": "lobo4795"}' https://offcenter-auth.herokuapp.com/signup
+
+curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "XXX"}' https://offcenter-auth.herokuapp.com/login

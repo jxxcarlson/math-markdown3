@@ -11,6 +11,7 @@ module Request exposing
     , publicDocuments
     , publicDocumentsWithTag
     , publicDocumentsWithTitle
+    , signUpUser
     , updateDocument
     )
 
@@ -53,9 +54,13 @@ import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
+import Http
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode
 import Maybe.Extra
 import Prng.Uuid as Uuid exposing (Uuid(..))
 import RemoteData exposing (RemoteData)
+import User exposing (AuthorizedUser, User)
 
 
 
@@ -70,6 +75,8 @@ type RequestMsg
     | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | DeleteDocumentResponse (GraphQLResponse (Maybe MutationResponse))
+    | GotUserSignUp (Result Http.Error AuthorizedUser)
+    | GotUserSignIn (Result Http.Error AuthorizedUser)
 
 
 type alias RequestHandler =
@@ -86,6 +93,10 @@ type alias MutationHandler =
 
 endpoint =
     "https://math-markdown-heroku.herokuapp.com/v1/graphql"
+
+
+authorizationEndpoint =
+    "https://offcenter-auth.herokuapp.com/login"
 
 
 documentsWithAuthorAndTag : String -> String -> String -> RequestHandler -> Cmd RequestMsg
@@ -481,3 +492,50 @@ setDocumentDeleteWhere uuid =
                 }
             )
         )
+
+
+
+-- USER AUTHENTICATION --
+
+
+signUpUser : String -> String -> String -> Cmd RequestMsg
+signUpUser username password confirmPassword =
+    Http.post
+        { url = authorizationEndpoint
+        , body = Http.jsonBody (encodeAuthorizedUserForSignUp username password confirmPassword)
+        , expect = Http.expectJson GotUserSignUp decodeAuthorizedUser
+        }
+
+
+signInUser : String -> String -> String -> Cmd RequestMsg
+signInUser username password confirmPassword =
+    Http.post
+        { url = authorizationEndpoint
+        , body = Http.jsonBody (encodeAuthorizedUserForSignIn username password)
+        , expect = Http.expectJson GotUserSignIn decodeAuthorizedUser
+        }
+
+
+encodeAuthorizedUserForSignUp : String -> String -> String -> Encode.Value
+encodeAuthorizedUserForSignUp username password confirmPassword =
+    Encode.object
+        [ ( "username", Encode.string username )
+        , ( "password", Encode.string password )
+        , ( "confirmPassword", Encode.string confirmPassword )
+        ]
+
+
+encodeAuthorizedUserForSignIn : String -> String -> Encode.Value
+encodeAuthorizedUserForSignIn username password =
+    Encode.object
+        [ ( "username", Encode.string username )
+        , ( "password", Encode.string password )
+        ]
+
+
+decodeAuthorizedUser : Decoder AuthorizedUser
+decodeAuthorizedUser =
+    Decode.map3 AuthorizedUser
+        (Decode.field "id" Decode.int)
+        (Decode.field "username" Decode.string)
+        (Decode.field "token" Decode.string)

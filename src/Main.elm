@@ -14,6 +14,7 @@ import Element.Keyed
 import Element.Lazy
 import Html exposing (..)
 import Html.Attributes as HA
+import Http exposing (Error(..))
 import Keyboard exposing (Key(..))
 import Keyboard.Arrows
 import List.Extra
@@ -36,7 +37,7 @@ import TocZ exposing (TocMsg(..), viewZ)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
 import Tree.Zipper as Zipper exposing (Zipper)
-import User exposing (User)
+import User exposing (AuthorizedUser, User)
 import Utility
 
 
@@ -80,6 +81,7 @@ type alias Model =
 
     -- USER
     , currentUser : Maybe User
+    , authorizedUser : Maybe AuthorizedUser
     , username : String
     , email : String
     , password : String
@@ -225,6 +227,9 @@ init flags =
 
             -- USER
             , currentUser = Nothing
+
+            --, maybeUser = Nothing
+            , authorizedUser = Nothing
             , username = ""
             , email = ""
             , password = ""
@@ -674,6 +679,7 @@ update msg model =
                 Toggle ->
                     ( { model | toggleToc = not model.toggleToc }, Cmd.none |> Cmd.map TOC )
 
+        -- REQ --
         Req requestMsg ->
             case requestMsg of
                 UpdateDocumentResponse (GraphQLResponse remoteData) ->
@@ -781,8 +787,43 @@ update msg model =
                 InsertDocumentResponse _ ->
                     ( { model | message = ( UserMessage, "New document saved" ) }, Cmd.none )
 
+                GotUserSignUp result ->
+                    case result of
+                        Ok authorizedUser ->
+                            ( { model
+                                | authorizedUser = Just authorizedUser
+                                , message = ( UserMessage, "Signup successful" )
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( { model | authorizedUser = Nothing, message = ( UserMessage, "Error signing up" ) }, Cmd.none )
+
+                GotUserSignIn result ->
+                    case result of
+                        Ok authorizedUser ->
+                            ( { model
+                                | authorizedUser = Just authorizedUser
+                                , message = ( UserMessage, "Sign-in successful" )
+                              }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( { model | authorizedUser = Nothing, message = ( UserMessage, "Error signing in" ) }, Cmd.none )
 
 
+
+-- type alias User =
+--     { id : Uuid
+--     , username : String
+--     , email : String
+--     , public : Bool
+--     , firstName : String
+--     , lastName : String
+--     , admin : Bool
+--     }
 -- UPDATE HELPERS --
 -- KEYBOARD HELPERS --
 
