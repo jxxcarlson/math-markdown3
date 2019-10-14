@@ -94,6 +94,10 @@ viewSelf toggle t =
         ]
 
 
+elementHeight =
+    px 20
+
+
 edges =
     { top = 0
     , right = 0
@@ -136,7 +140,7 @@ viewNode showAll t =
                 []
     in
     column [ Font.size fontSize ]
-        (Input.button [ buttonPadding ]
+        (Input.button [ buttonPadding, height elementHeight ]
             { onPress = Just (Focus l.id)
             , label = el [] (text <| prefix l ++ l.title)
             }
