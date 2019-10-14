@@ -536,7 +536,9 @@ update msg model =
             signIn model
 
         SignUp ->
-            ( { model | appMode = UserMode SignUpState, message = ( DebugMessage, "At SignUp msg" ) }, Cmd.none )
+            ( { model | appMode = UserMode SignUpState, message = ( DebugMessage, "At SignUp msg" ) }
+            , Request.signUpUser model.username model.password model.password |> Cmd.map Req
+            )
 
         SignOut ->
             ( { model

@@ -1,3 +1,8 @@
 curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "XXX", "confirmPassword": "lobo4795"}' https://offcenter-auth.herokuapp.com/signup
 
-curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "XXX"}' https://offcenter-auth.herokuapp.com/login
+curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "XXX"}'
+
+567  npm install http-server -g
+568  http-server
+
+heroku config:set HASURA_GRAPHQL_CORS_DOMAIN=* --app offcenter-auth
