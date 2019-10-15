@@ -2451,7 +2451,7 @@ subdocumentEditor viewInfo model =
     let
         footerText =
             Maybe.map Document.footer model.currentDocument
-                |> Maybe.withDefault "FOOTER"
+                |> Maybe.withDefault "XXX"
     in
     column []
         [ simpleEditingHeader viewInfo model
@@ -2548,7 +2548,7 @@ editingDisplay viewInfo model =
     let
         footerText =
             Maybe.map Document.footer model.currentDocument
-                |> Maybe.withDefault "FOOTER"
+                |> Maybe.withDefault "---"
 
         rt : RenderedText Msg
         rt =
@@ -2566,7 +2566,7 @@ readingDisplay viewInfo model =
     let
         footerText =
             Maybe.map Document.footer model.currentDocument
-                |> Maybe.withDefault "FOOTER"
+                |> Maybe.withDefault "---"
 
         rt : RenderedText Msg
         rt =
@@ -3235,7 +3235,6 @@ footer model =
         , dirtyDocumentDisplay model
         , wordCount model
         , tocCursorDisplay model
-        , displayLevels model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]

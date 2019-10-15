@@ -699,3 +699,32 @@ stringFromHttpError error =
 
 
 -- Ellie for troubleshooting requests: https://ellie-app.com/6VWhRnBgXsga1
+{- SIGNUP ERRORS:
+
+      {
+       "errors": [
+         {
+           "location": "params",
+           "param": "confirmPassword",
+           "msg": "Passwords do not match"
+         }
+       ]
+      }
+
+     {
+       "message": "insert into \"users\" (\"email\", \"password\", \"token\", \"username\") values ($1, $2, $3, $4) returning \"id\" - duplicate key value violates unique constraint \"users_username_unique\"",
+       "type": "UnknownError",
+       "data": {}
+     }
+
+    SIGNIN ERRORS
+
+      {
+        "error": "Invalid password"
+      }
+
+   {
+     "error": "Unknown user"
+   }
+
+-}
