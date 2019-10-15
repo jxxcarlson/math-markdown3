@@ -17,6 +17,7 @@ type alias User =
 type alias AuthorizedUser =
     { id : Int
     , username : String
+    , email : String
     , token : String
     }
 
@@ -25,7 +26,7 @@ barebonesUser : Uuid -> AuthorizedUser -> User
 barebonesUser uuid authorizedUser =
     { id = uuid
     , username = authorizedUser.username
-    , email = "not_yet"
+    , email = authorizedUser.email
     , firstName = "not_yet"
     , lastName = "not_yet"
     , admin = False

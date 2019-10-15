@@ -543,7 +543,7 @@ update msg model =
 
         SignUp ->
             ( { model | appMode = UserMode SignUpState, message = ( DebugMessage, "At SignUp msg" ) }
-            , Request.signUpUser model.username model.password model.passwordConfirmation |> Cmd.map Req
+            , Request.signUpUser model.username model.email model.password model.passwordConfirmation |> Cmd.map Req
             )
 
         SignOut ->
@@ -809,6 +809,8 @@ update msg model =
                             ( { model
                                 | authorizedUser = Just authorizedUser
                                 , currentUser = Just newUser
+                                , currentUuid = newUuid
+                                , currentSeed = newSeed
                                 , appMode = UserMode SignedInState
                                 , message = ( UserMessage, "Signup successful" )
                               }

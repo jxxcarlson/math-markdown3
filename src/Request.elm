@@ -112,7 +112,7 @@ endpoint =
 
 
 authorizationEndpoint =
-    "https://offcenter-auth.herokuapp.com"
+    "https://tlogic-auth.herokuapp.com"
 
 
 documentsWithAuthorAndTag : String -> String -> String -> RequestHandler -> Cmd RequestMsg
@@ -510,13 +510,13 @@ setDocumentDeleteWhere uuid =
 -- USER AUTHENTICATION --
 
 
-signUpUser : String -> String -> String -> Cmd RequestMsg
-signUpUser username password confirmPassword =
+signUpUser : String -> String -> String -> String -> Cmd RequestMsg
+signUpUser username email password confirmPassword =
     Http.request
         { method = "POST"
         , headers = []
         , url = authorizationEndpoint ++ "/signup"
-        , body = Http.jsonBody (encodeAuthorizedUserForSignUp username password confirmPassword)
+        , body = Http.jsonBody (encodeAuthorizedUserForSignUp username email password confirmPassword)
         , expect = Http.expectJson GotUserSignUp decodeAuthorizedUser
         , timeout = Nothing
         , tracker = Nothing
@@ -536,10 +536,11 @@ signInUser username password =
         }
 
 
-encodeAuthorizedUserForSignUp : String -> String -> String -> Encode.Value
-encodeAuthorizedUserForSignUp username password confirmPassword =
+encodeAuthorizedUserForSignUp : String -> String -> String -> String -> Encode.Value
+encodeAuthorizedUserForSignUp username email password confirmPassword =
     Encode.object
         [ ( "username", Encode.string username )
+        , ( "email", Encode.string email )
         , ( "password", Encode.string password )
         , ( "confirmPassword", Encode.string confirmPassword )
         ]
@@ -555,9 +556,10 @@ encodeAuthorizedUserForSignIn username password =
 
 decodeAuthorizedUser : Decoder AuthorizedUser
 decodeAuthorizedUser =
-    Decode.map3 AuthorizedUser
+    Decode.map4 AuthorizedUser
         (Decode.field "id" Decode.int)
         (Decode.field "username" Decode.string)
+        (Decode.field "email" Decode.string)
         (Decode.field "token" Decode.string)
 
 
