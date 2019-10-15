@@ -14,4 +14,5 @@ yarn.lock
 node_modules/
 package-lock.json
 api.sh
-elm-graphql https://math-markdown-heroku.herokuapp.com/v1/graphql --header "x-hasura-admin-secret: GOc97wA7CCMm31H4UJHa-4pqdVoLf3l6gAwzczdHC"
+node-stuff/
+graphql-engine/

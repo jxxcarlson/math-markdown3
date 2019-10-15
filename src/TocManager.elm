@@ -18,6 +18,8 @@ import Utility
 -- YYY
 
 
+{-| Assume that the master is not part of the child document list
+-}
 setup : Maybe Document -> List Document -> Maybe (Zipper TocItem)
 setup maybeMasterDocument childDocumentList =
     case maybeMasterDocument of
