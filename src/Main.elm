@@ -85,6 +85,7 @@ type alias Model =
     , username : String
     , email : String
     , password : String
+    , passwordConfirmation : String
     , newPassword1 : String
     , newPassword2 : String
 
@@ -159,8 +160,8 @@ type UserState
     | SignedInState
 
 
-appStateAsString : Model -> String
-appStateAsString model =
+appModeAsString : Model -> String
+appModeAsString model =
     case model.appMode of
         Reading ->
             "Reading"
@@ -172,16 +173,16 @@ appStateAsString model =
             "Editing subdocuments"
 
         UserMode SignInState ->
-            "Signing in"
+            "U, Signing in"
 
         UserMode SignUpState ->
-            "Signing up"
+            "U, Signing up"
 
         UserMode ChangePasswordState ->
-            "Changing Password"
+            "U, Changing Password"
 
         UserMode SignedInState ->
-            "Signed in"
+            "U, Signed in"
 
 
 type DocumentDeleteState
@@ -233,6 +234,7 @@ init flags =
             , username = ""
             , email = ""
             , password = ""
+            , passwordConfirmation = ""
             , newPassword1 = ""
             , newPassword2 = ""
 
@@ -287,6 +289,7 @@ type Msg
       -- User
     | GotUserName String
     | GotPassword String
+    | GotPasswordConfirmation String
     | GotNewPassword1 String
     | GotNewPassword2 String
     | ChangePassword
@@ -520,6 +523,9 @@ update msg model =
         GotPassword str ->
             ( { model | password = str }, Cmd.none )
 
+        GotPasswordConfirmation str ->
+            ( { model | passwordConfirmation = str }, Cmd.none )
+
         GotNewPassword1 _ ->
             ( model, Cmd.none )
 
@@ -529,15 +535,15 @@ update msg model =
         ChangePassword ->
             ( model, Cmd.none )
 
-        GotEmail _ ->
-            ( model, Cmd.none )
+        GotEmail str ->
+            ( { model | email = str }, Cmd.none )
 
         SignIn ->
             signIn model
 
         SignUp ->
             ( { model | appMode = UserMode SignUpState, message = ( DebugMessage, "At SignUp msg" ) }
-            , Request.signUpUser model.username model.password model.password |> Cmd.map Req
+            , Request.signUpUser model.username model.password model.passwordConfirmation |> Cmd.map Req
             )
 
         SignOut ->
@@ -792,15 +798,22 @@ update msg model =
                 GotUserSignUp result ->
                     case result of
                         Ok authorizedUser ->
+                            let
+                                ( newUuid, newSeed ) =
+                                    step Uuid.generator model.currentSeed
+
+                                newUser =
+                                    User.barebonesUser model.currentUuid authorizedUser
+                            in
                             ( { model
                                 | authorizedUser = Just authorizedUser
                                 , message = ( UserMessage, "Signup successful" )
                               }
-                            , Cmd.none
+                            , Request.insertUser hasuraToken newUser |> Cmd.map Req
                             )
 
-                        _ ->
-                            ( { model | authorizedUser = Nothing, message = ( UserMessage, "Error signing up" ) }, Cmd.none )
+                        Err error ->
+                            ( { model | authorizedUser = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
 
                 GotUserSignIn result ->
                     case result of
@@ -814,6 +827,24 @@ update msg model =
 
                         Err error ->
                             ( { model | authorizedUser = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
+
+                InsertUserResponse (GraphQLResponse remoteData) ->
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "Update doc: not asked" ) }, Cmd.none )
+
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "Update doc: loading" ) }, Cmd.none )
+
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "Update doc: failed request" ) }, Cmd.none )
+
+                        Success user ->
+                            ( { model
+                                | message = ( UserMessage, "User signup successful (2)" )
+                              }
+                            , Cmd.none
+                            )
 
 
 
@@ -1867,12 +1898,7 @@ setModeToEditing model editMode =
 
 setUserMode : Model -> UserState -> ( Model, Cmd msg )
 setUserMode model s =
-    case model.currentUser of
-        Nothing ->
-            ( { model | appMode = UserMode SignInState }, Cmd.none )
-
-        Just _ ->
-            ( { model | appMode = UserMode s }, Cmd.none )
+    ( { model | appMode = UserMode s }, Cmd.none )
 
 
 toggleKeyboardTools : Model -> ( Model, Cmd Msg )
@@ -2056,8 +2082,9 @@ rhsViewInfoPage viewInfo model =
 userPageFooter : Model -> Element Msg
 userPageFooter model =
     row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
-        [ el [] (Element.text <| appStateAsString model)
+        [ el [] (Element.text <| appModeAsString model)
         , showToken model
+        , el [] (Element.text <| "appMode: " ++ appModeAsString model)
         , el [] (Element.text <| (model.message |> Tuple.second))
         ]
 
@@ -2107,6 +2134,7 @@ outerPasswordPanel model =
     column [ spacing 24 ]
         [ inputUserName model
         , inputPassword model
+        , showIf (model.appMode == UserMode SignUpState) (inputPasswordConfirmation model)
         , showIf (model.appMode == UserMode SignUpState) (inputEmail model)
         , showIf (model.appMode == UserMode SignUpState) (el [ Font.size 12 ] (Element.text "A real email address is only needed for password recovery in real production."))
         , row [ spacing 12, paddingXY 0 12 ]
@@ -2251,6 +2279,19 @@ inputPassword model =
 
         ---, show = False
         , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Password")
+        }
+
+
+inputPasswordConfirmation : Model -> Element Msg
+inputPasswordConfirmation model =
+    Input.currentPassword (Style.inputStyle 200)
+        { onChange = GotPasswordConfirmation
+        , text = model.passwordConfirmation
+        , placeholder = Nothing
+        , show = False
+
+        ---, show = False
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Password (2)")
         }
 
 
@@ -3152,6 +3193,7 @@ footer model =
         , dirtyDocumentDisplay model
         , wordCount model
         , showToken model
+        , el [] (Element.text <| "appMode: " ++ appModeAsString model)
         , displayLevels model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model

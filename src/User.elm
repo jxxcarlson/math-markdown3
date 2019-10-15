@@ -1,4 +1,4 @@
-module User exposing (AuthorizedUser, User, dummy)
+module User exposing (AuthorizedUser, User, barebonesUser, dummy)
 
 import Prng.Uuid exposing (Uuid(..))
 import Utility exposing (getId)
@@ -8,7 +8,6 @@ type alias User =
     { id : Uuid
     , username : String
     , email : String
-    , public : Bool
     , firstName : String
     , lastName : String
     , admin : Bool
@@ -19,6 +18,17 @@ type alias AuthorizedUser =
     { id : Int
     , username : String
     , token : String
+    }
+
+
+barebonesUser : Uuid -> AuthorizedUser -> User
+barebonesUser uuid authorizedUser =
+    { id = uuid
+    , username = authorizedUser.username
+    , email = "not_yet"
+    , firstName = "not_yet"
+    , lastName = "not_yet"
+    , admin = False
     }
 
 

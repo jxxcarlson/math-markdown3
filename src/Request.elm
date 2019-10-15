@@ -8,6 +8,7 @@ module Request exposing
     , documentsWithAuthorAndTag
     , documentsWithAuthorAndTitle
     , insertDocument
+    , insertUser
     , publicDocuments
     , publicDocumentsWithTag
     , publicDocumentsWithTitle
@@ -25,6 +26,8 @@ import Api.InputObject
         , Document_insert_input
         , Document_set_input
         , String_comparison_exp
+        , User_insert_input
+        , User_set_input
         , Uuid_comparison_exp
         , Uuid_comparison_expOptionalFields
         , buildBoolean_comparison_exp
@@ -33,21 +36,27 @@ import Api.InputObject
         , buildDocument_set_input
         , buildJsonb_comparison_exp
         , buildString_comparison_exp
+        , buildUser_insert_input
+        , buildUser_set_input
         , buildUuid_comparison_exp
         )
 import Api.Mutation
     exposing
         ( DeleteDocumentRequiredArguments
         , InsertDocumentRequiredArguments
+        , InsertUserRequiredArguments
         , UpdateDocumentOptionalArguments
         , UpdateDocumentRequiredArguments
         , delete_document
         , insert_document
+        , insert_user
         , update_document
         )
 import Api.Object
 import Api.Object.Document exposing (authorIdentifier)
 import Api.Object.Document_mutation_response as DocumentMutation
+import Api.Object.User exposing (id)
+import Api.Object.User_mutation_response as UserMutation
 import Api.Query as Query exposing (DocumentOptionalArguments)
 import Codec
 import CustomScalarCodecs exposing (Jsonb(..))
@@ -75,6 +84,7 @@ type RequestMsg
     | GotCandidateChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotPublicDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
+    | InsertUserResponse (GraphQLResponse (Maybe MutationResponse))
     | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | DeleteDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | GotUserSignUp (Result Http.Error AuthorizedUser)
@@ -352,14 +362,14 @@ insertDocumentObjects newDocument =
         )
 
 
-insertArgs : Document -> InsertDocumentRequiredArguments
-insertArgs newDocument =
+insertDocumentArgs : Document -> InsertDocumentRequiredArguments
+insertDocumentArgs newDocument =
     InsertDocumentRequiredArguments [ insertDocumentObjects newDocument ]
 
 
 getDocumentInsertObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
 getDocumentInsertObject newDocument =
-    insert_document identity (insertArgs newDocument) mutationResponseSelection
+    insert_document identity (insertDocumentArgs newDocument) mutationResponseDocumentSelection
 
 
 getDocumentUpdateObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
@@ -367,14 +377,14 @@ getDocumentUpdateObject document =
     update_document
         (setDocumentUpdateOptionalArgs document)
         (setDocumentUpdateWhere document.id)
-        mutationResponseSelection
+        mutationResponseDocumentSelection
 
 
 getDocumentDeleteObject : Document -> SelectionSet (Maybe MutationResponse) RootMutation
 getDocumentDeleteObject document =
     delete_document
         (setDocumentDeleteWhere document.id)
-        mutationResponseSelection
+        mutationResponseDocumentSelection
 
 
 
@@ -387,8 +397,8 @@ getDocumentDeleteObject document =
 -}
 
 
-mutationResponseSelection : SelectionSet MutationResponse Api.Object.Document_mutation_response
-mutationResponseSelection =
+mutationResponseDocumentSelection : SelectionSet MutationResponse Api.Object.Document_mutation_response
+mutationResponseDocumentSelection =
     SelectionSet.map MutationResponse
         DocumentMutation.affected_rows
 
@@ -504,7 +514,7 @@ signUpUser : String -> String -> String -> Cmd RequestMsg
 signUpUser username password confirmPassword =
     Http.request
         { method = "POST"
-        , headers = [ Http.header "Content-Type" "application/json" ]
+        , headers = []
         , url = authorizationEndpoint ++ "/signup"
         , body = Http.jsonBody (encodeAuthorizedUserForSignUp username password confirmPassword)
         , expect = Http.expectJson GotUserSignUp decodeAuthorizedUser
@@ -517,8 +527,8 @@ signInUser : String -> String -> Cmd RequestMsg
 signInUser username password =
     Http.request
         { method = "POST"
-        , headers = [ Http.header "Content-Type" "application/json" ]
-        , url = "https://offcenter-auth.herokuapp.com/login"
+        , headers = []
+        , url = authorizationEndpoint ++ "/login"
         , body = Http.jsonBody (encodeAuthorizedUserForSignIn username password)
         , expect = Http.expectJson GotUserSignIn decodeAuthorizedUser
         , timeout = Nothing
@@ -551,6 +561,82 @@ decodeAuthorizedUser =
         (Decode.field "token" Decode.string)
 
 
+
+-- USER --
+
+
+insertUser : String -> User -> Cmd RequestMsg
+insertUser authToken newUser =
+    makeMutation (getUserInsertObject newUser) authToken InsertUserResponse
+
+
+getUserInsertObject : User -> SelectionSet (Maybe MutationResponse) RootMutation
+getUserInsertObject newUser =
+    insert_user identity (insertUserArgs newUser) mutationResponseUserSelection
+
+
+insertUserArgs : User -> InsertUserRequiredArguments
+insertUserArgs newUser =
+    InsertUserRequiredArguments [ insertUserObject newUser ]
+
+
+mutationResponseUserSelection : SelectionSet MutationResponse Api.Object.User_mutation_response
+mutationResponseUserSelection =
+    SelectionSet.map MutationResponse
+        UserMutation.affected_rows
+
+
+{-| Change this after running 'sh api.sh'
+-}
+userSelection : SelectionSet User Api.Object.User
+userSelection =
+    SelectionSet.succeed User
+        |> with Api.Object.User.id
+        |> with Api.Object.User.username
+        |> with Api.Object.User.email
+        |> with Api.Object.User.firstName
+        |> with Api.Object.User.lastName
+        |> with Api.Object.User.admin
+
+
+{-| Change this after running 'sh api.sh'
+-}
+insertUserObject : User -> User_insert_input
+insertUserObject newUser =
+    buildUser_insert_input
+        (\args ->
+            { args
+                | id = Present newUser.id
+                , username = Present newUser.username
+                , email = Present newUser.email
+                , firstName = Present newUser.firstName
+                , lastName = Present newUser.lastName
+                , admin = Present newUser.admin
+            }
+        )
+
+
+{-| Change this after running 'sh api.sh'
+-}
+setUsertSetArg : User -> User_set_input
+setUsertSetArg user =
+    buildUser_set_input
+        (\args ->
+            { args
+                | id = Present user.id
+                , username = Present user.username
+                , email = Present user.email
+                , firstName = Present user.firstName
+                , lastName = Present user.lastName
+                , admin = Present user.admin
+            }
+        )
+
+
+
+-- HELPERS ---
+
+
 stringFromHttpError : Error -> String
 stringFromHttpError error =
     case error of
@@ -568,3 +654,7 @@ stringFromHttpError error =
 
         BadBody body ->
             "Bad body: " ++ body
+
+
+
+-- Ellie for troubleshooting requests: https://ellie-app.com/6VWhRnBgXsga1

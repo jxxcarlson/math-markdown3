@@ -2,7 +2,24 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Mutation exposing (DeleteDocumentRequiredArguments, DeleteUserRequiredArguments, InsertDocumentOptionalArguments, InsertDocumentRequiredArguments, InsertUserOptionalArguments, InsertUserRequiredArguments, UpdateDocumentOptionalArguments, UpdateDocumentRequiredArguments, UpdateUserOptionalArguments, UpdateUserRequiredArguments, delete_document, delete_user, insert_document, insert_user, update_document, update_user)
+module Api.Mutation exposing
+    ( DeleteDocumentRequiredArguments
+    , DeleteUserRequiredArguments
+    , InsertDocumentOptionalArguments
+    , InsertDocumentRequiredArguments
+    , InsertUserOptionalArguments
+    , InsertUserRequiredArguments
+    , UpdateDocumentOptionalArguments
+    , UpdateDocumentRequiredArguments
+    , UpdateUserOptionalArguments
+    , UpdateUserRequiredArguments
+    , delete_document
+    , delete_user
+    , insert_document
+    , insert_user
+    , update_document
+    , update_user
+    )
 
 import Api.InputObject
 import Api.Interface
