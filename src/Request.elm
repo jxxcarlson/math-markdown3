@@ -7,6 +7,7 @@ module Request exposing
     , documentsWithAuthor
     , documentsWithAuthorAndTag
     , documentsWithAuthorAndTitle
+    , getUserByUsername
     , insertDocument
     , insertUser
     , publicDocuments
@@ -26,6 +27,7 @@ import Api.InputObject
         , Document_insert_input
         , Document_set_input
         , String_comparison_exp
+        , User_bool_exp(..)
         , User_insert_input
         , User_set_input
         , Uuid_comparison_exp
@@ -36,6 +38,7 @@ import Api.InputObject
         , buildDocument_set_input
         , buildJsonb_comparison_exp
         , buildString_comparison_exp
+        , buildUser_bool_exp
         , buildUser_insert_input
         , buildUser_set_input
         , buildUuid_comparison_exp
@@ -57,7 +60,7 @@ import Api.Object.Document exposing (authorIdentifier)
 import Api.Object.Document_mutation_response as DocumentMutation
 import Api.Object.User exposing (id)
 import Api.Object.User_mutation_response as UserMutation
-import Api.Query as Query exposing (DocumentOptionalArguments)
+import Api.Query as Query exposing (DocumentOptionalArguments, UserOptionalArguments)
 import Codec
 import CustomScalarCodecs exposing (Jsonb(..))
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
@@ -83,6 +86,7 @@ type RequestMsg
     | GotChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotCandidateChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotPublicDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+    | GotUserAtSignin (RemoteData (Graphql.Http.Error (List User)) (List User))
     | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | InsertUserResponse (GraphQLResponse (Maybe MutationResponse))
     | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
@@ -456,10 +460,6 @@ setDocumentSetArg document =
         )
 
 
-
--- XXX
-
-
 uuidIntPairToString : ( Uuid, Int ) -> String
 uuidIntPairToString ( uuid, k ) =
     "(" ++ Uuid.toString uuid ++ "," ++ String.fromInt k ++ ")"
@@ -568,6 +568,45 @@ decodeAuthorizedUser =
 insertUser : String -> User -> Cmd RequestMsg
 insertUser authToken newUser =
     makeMutation (getUserInsertObject newUser) authToken InsertUserResponse
+
+
+
+-- XXX
+
+
+getUserByUsername : String -> String -> Cmd RequestMsg
+getUserByUsername authToken userName =
+    makeGraphQLQuery authToken
+        (fetchUsersQuery (Present <| hasUsername_ userName))
+        (RemoteData.fromResult >> GotUserAtSignin)
+
+
+hasUsername_ : String -> User_bool_exp
+hasUsername_ username =
+    buildUser_bool_exp (\args -> { args | username = Present <| equalToString username })
+
+
+fetchUsersQuery : OptionalArgument User_bool_exp -> SelectionSet (List User) RootQuery
+fetchUsersQuery user_bool_exp =
+    Query.user (userListOptionalArgument user_bool_exp) userListSelection
+
+
+{-| Change this after running 'sh api.sh'
+-}
+userListSelection : SelectionSet User Api.Object.User
+userListSelection =
+    SelectionSet.succeed User
+        |> with Api.Object.User.id
+        |> with Api.Object.User.username
+        |> with Api.Object.User.email
+        |> with Api.Object.User.firstName
+        |> with Api.Object.User.lastName
+        |> with Api.Object.User.admin
+
+
+userListOptionalArgument : OptionalArgument User_bool_exp -> UserOptionalArguments -> UserOptionalArguments
+userListOptionalArgument user_bool_exp optionalArgs =
+    { optionalArgs | where_ = user_bool_exp }
 
 
 getUserInsertObject : User -> SelectionSet (Maybe MutationResponse) RootMutation

@@ -807,6 +807,8 @@ update msg model =
                             in
                             ( { model
                                 | authorizedUser = Just authorizedUser
+                                , currentUser = Just newUser
+                                , appMode = UserMode SignedInState
                                 , message = ( UserMessage, "Signup successful" )
                               }
                             , Request.insertUser hasuraToken newUser |> Cmd.map Req
@@ -822,7 +824,7 @@ update msg model =
                                 | authorizedUser = Just authorizedUser
                                 , message = ( UserMessage, "Sign-in successful" )
                               }
-                            , Cmd.none
+                            , Request.getUserByUsername hasuraToken authorizedUser.username |> Cmd.map Req
                             )
 
                         Err error ->
@@ -845,6 +847,35 @@ update msg model =
                               }
                             , Cmd.none
                             )
+
+                GotUserAtSignin remoteData ->
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "Update doc: not asked" ) }, Cmd.none )
+
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "Update doc: loading" ) }, Cmd.none )
+
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "Update doc: failed request" ) }, Cmd.none )
+
+                        Success userList ->
+                            case List.head userList of
+                                Nothing ->
+                                    ( { model
+                                        | message = ( ErrorMessage, "Could not match authurized user in Hasura" )
+                                        , currentUser = Nothing
+                                      }
+                                    , Cmd.none
+                                    )
+
+                                Just user ->
+                                    ( { model
+                                        | message = ( UserMessage, "User signup successful (2)" )
+                                        , currentUser = Just user
+                                      }
+                                    , Cmd.none
+                                    )
 
 
 
