@@ -89,13 +89,17 @@ viewSelf toggle t =
                 darkRed
     in
     column []
-        [ el [ Font.bold, Font.color color ] (text <| prefix l ++ l.title)
+        [ el [ paddingEach { edges | bottom = 2, top = 2 }, Font.bold, Font.color color ] (text <| prefix l ++ l.title)
         , column [ horizontalPadding, Font.size fontSize ] (List.map (viewNode toggle) (Tree.children t))
         ]
 
 
 elementHeight =
     px 20
+
+
+focusedElementHeight =
+    px 22
 
 
 edges =
