@@ -1,6 +1,6 @@
 curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "XXX", "confirmPassword": "lobo4795"}' https://offcenter-auth.herokuapp.com/signup
 
-curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "XXX"}'
+curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "lobo4795"}' https://offcenter-auth.herokuapp.com/login
 
 567  npm install http-server -g
 568  http-server

@@ -812,8 +812,8 @@ update msg model =
                             , Cmd.none
                             )
 
-                        _ ->
-                            ( { model | authorizedUser = Nothing, message = ( UserMessage, "Error signing in" ) }, Cmd.none )
+                        Err error ->
+                            ( { model | authorizedUser = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
 
 
 

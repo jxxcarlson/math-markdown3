@@ -13,6 +13,7 @@ module Request exposing
     , publicDocumentsWithTitle
     , signInUser
     , signUpUser
+    , stringFromHttpError
     , updateDocument
     )
 
@@ -55,7 +56,7 @@ import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
 import Graphql.SelectionSet as SelectionSet exposing (SelectionSet, with)
-import Http
+import Http exposing (Error(..))
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Maybe.Extra
@@ -97,7 +98,7 @@ endpoint =
 
 
 authorizationEndpoint =
-    "https://offcenter-auth.herokuapp.com/login"
+    "https://offcenter-auth.herokuapp.com"
 
 
 documentsWithAuthorAndTag : String -> String -> String -> RequestHandler -> Cmd RequestMsg
@@ -504,7 +505,7 @@ signUpUser username password confirmPassword =
     Http.request
         { method = "POST"
         , headers = [ Http.header "Content-Type" "application/json" ]
-        , url = authorizationEndpoint
+        , url = authorizationEndpoint ++ "/signup"
         , body = Http.jsonBody (encodeAuthorizedUserForSignUp username password confirmPassword)
         , expect = Http.expectJson GotUserSignUp decodeAuthorizedUser
         , timeout = Nothing
@@ -517,7 +518,7 @@ signInUser username password =
     Http.request
         { method = "POST"
         , headers = [ Http.header "Content-Type" "application/json" ]
-        , url = authorizationEndpoint
+        , url = "https://offcenter-auth.herokuapp.com/login"
         , body = Http.jsonBody (encodeAuthorizedUserForSignIn username password)
         , expect = Http.expectJson GotUserSignIn decodeAuthorizedUser
         , timeout = Nothing
@@ -548,3 +549,22 @@ decodeAuthorizedUser =
         (Decode.field "id" Decode.int)
         (Decode.field "username" Decode.string)
         (Decode.field "token" Decode.string)
+
+
+stringFromHttpError : Error -> String
+stringFromHttpError error =
+    case error of
+        BadUrl str ->
+            "Bad url: " ++ str
+
+        Timeout ->
+            "Timeout"
+
+        NetworkError ->
+            "Network error"
+
+        BadStatus k ->
+            "Bad status: " ++ String.fromInt k
+
+        BadBody body ->
+            "Bad body: " ++ body
