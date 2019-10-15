@@ -549,6 +549,7 @@ update msg model =
         SignOut ->
             ( { model
                 | currentUser = Nothing
+                , authorizedUser = Nothing
                 , appMode = UserMode SignInState
                 , username = ""
                 , password = ""
@@ -873,6 +874,7 @@ update msg model =
                                     ( { model
                                         | message = ( UserMessage, "User signup successful (2)" )
                                         , currentUser = Just user
+                                        , appMode = Reading
                                       }
                                     , Cmd.none
                                     )
