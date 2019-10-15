@@ -1,5 +1,6 @@
 module TocManager exposing
     ( computeOutline
+    , index
     , insertInChildDocumentList
     , insertInMaster
     , setup
@@ -99,9 +100,9 @@ fails.
 
 -}
 computeOutline : Document -> List Document -> Maybe String
-computeOutline masterDocument childDocumentList =
+computeOutline masterDocument tableOfContents =
     case
-        Just masterDocument.id == Maybe.map .id (List.head childDocumentList)
+        Just masterDocument.id == Maybe.map .id (List.head tableOfContents)
     of
         False ->
             Nothing
@@ -109,7 +110,7 @@ computeOutline masterDocument childDocumentList =
         True ->
             let
                 titles_ =
-                    List.drop 1 childDocumentList |> List.map .title
+                    List.drop 1 tableOfContents |> List.map .title
 
                 levels_ =
                     masterDocument.childInfo |> List.map Tuple.second
@@ -174,3 +175,10 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                            )
             in
             Just ( newMasterDocument, newDocumentList )
+
+
+{-| Find index of subDocument in Master
+-}
+index : Document -> Document -> Maybe Int
+index subDocument master =
+    List.Extra.findIndex (\item -> Tuple.first item == subDocument.id) master.childInfo

@@ -93,7 +93,7 @@ type alias Model =
     , counter : Int
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
-    , childDocumentList : List Document
+    , tableOfContents : List Document
     , tocData : Maybe (Zipper TocItem)
     , tocCursor : Maybe Uuid
     , toggleToc : Bool
@@ -242,7 +242,7 @@ init flags =
             , counter = 0
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
-            , childDocumentList = []
+            , tableOfContents = []
             , tocData = Nothing
             , tocCursor = Nothing
             , toggleToc = False
@@ -618,19 +618,19 @@ update msg model =
             ( setupOutline model, Cmd.none )
 
         UpdateChildren ->
-            case List.head model.childDocumentList of
+            case List.head model.tableOfContents of
                 Nothing ->
                     ( model, Cmd.none )
 
                 Just masterDocument ->
-                    case TocManager.updateMasterAndDocumentListFromOutline model.documentOutline model.childDocumentList of
+                    case TocManager.updateMasterAndDocumentListFromOutline model.documentOutline model.tableOfContents of
                         Nothing ->
                             ( model, Cmd.none )
 
                         Just ( newMasterDocument, newDocumentList ) ->
                             ( { model
                                 | currentDocument = Just newMasterDocument
-                                , childDocumentList = newDocumentList
+                                , tableOfContents = newDocumentList
                                 , tocData = TocManager.setup (Just newMasterDocument) (List.drop 1 newDocumentList)
                                 , tocCursor = Just masterDocument.id
                               }
@@ -668,7 +668,7 @@ update msg model =
                         Just zipper ->
                             let
                                 currentDocument =
-                                    List.filter (\item -> item.id == id) model.childDocumentList |> List.head
+                                    List.filter (\item -> item.id == id) model.tableOfContents |> List.head
 
                                 ( newModel, cmd ) =
                                     case currentDocument of
@@ -1357,7 +1357,7 @@ processChildDocumentRequest model documentList =
                     masterDocument :: sortedChildDocuments
             in
             ( { model
-                | childDocumentList = newDocumentList
+                | tableOfContents = newDocumentList
                 , tocData = TocManager.setup (Just masterDocument) documentList
                 , tocCursor = Just masterDocument.id
                 , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
@@ -1598,7 +1598,7 @@ addSubdocument model =
 
 deleteSubdocument : Model -> ( Model, Cmd Msg )
 deleteSubdocument model =
-    case ( List.head model.childDocumentList, model.currentDocument ) of
+    case ( List.head model.tableOfContents, model.currentDocument ) of
         ( Just masterDocument, Just documentToDelete ) ->
             deleteSubdocument_ model masterDocument documentToDelete
 
@@ -1609,6 +1609,9 @@ deleteSubdocument model =
 deleteSubdocument_ : Model -> Document -> Document -> ( Model, Cmd Msg )
 deleteSubdocument_ model masterDocument documentToDelete =
     let
+        indexOfDocumentToDelete =
+            TocManager.index documentToDelete masterDocument
+
         newMasterDocument =
             Document.deleteChild documentToDelete masterDocument
 
@@ -1616,12 +1619,29 @@ deleteSubdocument_ model masterDocument documentToDelete =
             List.filter (\doc -> doc.id /= documentToDelete.id) model.documentList
                 |> Document.replaceInList newMasterDocument
 
-        newChildDocumentList =
-            List.filter (\doc -> doc.id /= documentToDelete.id) model.childDocumentList
+        tableOfContents =
+            List.filter (\doc -> doc.id /= documentToDelete.id) model.tableOfContents
                 |> Document.replaceInList newMasterDocument
 
+        currentDocument =
+            case indexOfDocumentToDelete of
+                Nothing ->
+                    newMasterDocument
+
+                Just idx ->
+                    if idx == 0 then
+                        newMasterDocument
+
+                    else
+                        case List.Extra.getAt (idx - 1) (List.drop 1 tableOfContents) of
+                            Nothing ->
+                                newMasterDocument
+
+                            Just doc ->
+                                doc
+
         newDocumentOutline =
-            case TocManager.computeOutline newMasterDocument newChildDocumentList of
+            case TocManager.computeOutline newMasterDocument tableOfContents of
                 Nothing ->
                     model.documentOutline
 
@@ -1629,12 +1649,12 @@ deleteSubdocument_ model masterDocument documentToDelete =
                     outline
     in
     ( { model
-        | currentDocument = Just newMasterDocument
-        , childDocumentList = newChildDocumentList
+        | currentDocument = Just currentDocument
+        , tableOfContents = tableOfContents
         , documentList = newDocumentList
         , documentOutline = newDocumentOutline
-        , tocData = TocManager.setup (Just masterDocument) (List.drop 1 newChildDocumentList)
-        , tocCursor = Just newMasterDocument.id
+        , tocData = TocManager.setup (Just masterDocument) (List.drop 1 tableOfContents)
+        , tocCursor = Just currentDocument.id
       }
     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
     )
@@ -1686,7 +1706,7 @@ addDocumentToMaster_ model document master =
 
 newSubdocument : Model -> ( Model, Cmd Msg )
 newSubdocument model =
-    case ( model.currentUser, List.head model.childDocumentList, model.currentDocument ) of
+    case ( model.currentUser, List.head model.tableOfContents, model.currentDocument ) of
         ( Just user, Just masterDocument, Just currentDocument ) ->
             newSubdocument_ model user masterDocument currentDocument
 
@@ -1717,7 +1737,7 @@ newSubdocument_ model user masterDocument targetDocument =
 
         -- drop the master document for processing, then put it back after processing
         newChildDocumentList =
-            TocManager.insertInChildDocumentList newDocument targetDocument (List.drop 1 model.childDocumentList)
+            TocManager.insertInChildDocumentList newDocument targetDocument (List.drop 1 model.tableOfContents)
 
         newDocumentList =
             Document.replaceInList newMasterDocument (newDocument :: model.documentList)
@@ -1732,7 +1752,7 @@ newSubdocument_ model user masterDocument targetDocument =
     in
     ( { model
         | currentDocument = Just newDocument
-        , childDocumentList = newMasterDocument :: newChildDocumentList
+        , tableOfContents = newMasterDocument :: newChildDocumentList
         , counter = model.counter + 1 -- Necessary?
         , documentList = newDocumentList
         , tocData = TocManager.setup (Just newMasterDocument) newChildDocumentList
@@ -1779,7 +1799,7 @@ updateDocumentText model str =
                 | -- document
                   currentDocument = Just updatedDoc2
                 , documentList = Document.replaceInList updatedDoc2 model.documentList
-                , childDocumentList = Document.replaceInList updatedDoc2 model.childDocumentList
+                , tableOfContents = Document.replaceInList updatedDoc2 model.tableOfContents
                 , currentDocumentDirty = True
 
                 -- rendering
@@ -2473,7 +2493,7 @@ setupOutline_ : Model -> String
 setupOutline_ model =
     case model.currentDocument of
         Just currentDoc ->
-            case TocManager.computeOutline currentDoc model.childDocumentList of
+            case TocManager.computeOutline currentDoc model.tableOfContents of
                 Nothing ->
                     model.documentOutline
 
@@ -3003,7 +3023,7 @@ heading model =
                     List.length model.documentList
 
                 DocumentChildren ->
-                    List.length model.childDocumentList
+                    List.length model.tableOfContents
 
         n =
             n_
