@@ -275,6 +275,7 @@ compress str =
         |> fixup
         |> List.Extra.groupsOf 2
         |> List.indexedMap join
+        |> List.filter (\item -> item /= "")
         |> String.join "-"
 
 
@@ -302,7 +303,7 @@ fixup list =
         list
 
     else
-        list ++ [ "" ]
+        list ++ [ "1" ]
 
 
 filterNoise : List String -> List String
