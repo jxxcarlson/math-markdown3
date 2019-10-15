@@ -3071,10 +3071,10 @@ readingHeader viewInfo model rt =
 
         -- scale viewInfo.docListWidth model.windowWidth
         titleWidth =
-            scale (1.0 * viewInfo.renderedDisplayWidth) model.windowWidth
+            scale (0.75 * viewInfo.renderedDisplayWidth) model.windowWidth
 
         rhWidth =
-            scale (viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
+            scale (0.25 * viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
         [ modeButtonStrip model lhWidth
