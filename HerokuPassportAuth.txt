@@ -1,8 +1,31 @@
 curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "XXX", "confirmPassword": "lobo4795"}' https://offcenter-auth.herokuapp.com/signup
 
+
 curl -H "Content-Type: application/json" -d'{"username": "jxxcarlson", "password": "lobo4795"}' https://offcenter-auth.herokuapp.com/login
+
+
+curl -H "Content-Type: application/json" -d'{"username": "boris", "password": "lobo4795", "confirmPassword": "lobo4795"}' https://offcenter-auth.herokuapp.com/signup
+
+curl -H "Content-Type: application/json" -d'{"username": "boris", "password": "lobo4795"}' https://offcenter-auth.herokuapp.com/login
+
 
 567  npm install http-server -g
 568  http-server
 
+
 heroku config:set HASURA_GRAPHQL_CORS_DOMAIN=* --app offcenter-auth
+
+
+heroku addons:create autobus:trip --app=math-markdown-heroku
+heroku addons:docs autobus
+heroku addons:open autobus --app=math-markdown-heroku
+heroku access:add heroku@autobus.io --app=math-markdown-heroku
+
+[USE THIS](https://medium.com/@timtamimi/getting-started-with-authentication-in-node-js-with-passport-and-postgresql-2219664b568c)
+
+[OR THIS (JWT)](https://medium.com/front-end-weekly/learn-using-jwt-with-passport-authentication-9761539c4314)
+
+[OR THIS](https://dev.to/santypk4/you-don-t-need-passport-js-guide-to-node-js-authentication-26ig)
+
+[NODE APP TUTORIAL](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/development_environment )
+
