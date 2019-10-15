@@ -1378,7 +1378,6 @@ processCandidateChildDocumentRequest model documentList =
 
 processDocument : Model -> Document -> ( Model, Cmd Msg )
 processDocument model document =
-    -- XXX
     let
         ( ( newAst, newRenderedText ), cmd, documentListType ) =
             let
@@ -1489,7 +1488,6 @@ setCurrentSubdocument model document tocItem =
 
 renderUpdate : Model -> Document -> ( Model, Cmd Msg )
 renderUpdate model document =
-    -- XXX
     let
         lastAst =
             Markdown.ElmWithId.parse model.counter ExtendedMath document.content
@@ -1734,7 +1732,7 @@ newSubdocument_ model user masterDocument targetDocument =
     in
     ( { model
         | currentDocument = Just newDocument
-        , childDocumentList = newChildDocumentList
+        , childDocumentList = newMasterDocument :: newChildDocumentList
         , counter = model.counter + 1 -- Necessary?
         , documentList = newDocumentList
         , tocData = TocManager.setup (Just newMasterDocument) newChildDocumentList
@@ -2116,7 +2114,6 @@ userPageFooter : Model -> Element Msg
 userPageFooter model =
     row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
         [ el [] (Element.text <| appModeAsString model)
-        , showToken model
         , el [] (Element.text <| "appMode: " ++ appModeAsString model)
         , el [] (Element.text <| (model.message |> Tuple.second))
         ]
@@ -2445,14 +2442,8 @@ subdocumentEditor viewInfo model =
                 , inputOutline model
                 ]
             ]
-
-        -- XXX
         , footer model
         ]
-
-
-
--- XXX
 
 
 subDocumentTools model =
@@ -2471,10 +2462,6 @@ subDocumentTools model =
         , column [ Font.size 13, spacing 8, width (px 350), height (px 500), Border.color Style.charcoal, Border.width 1, padding 12, scrollbarY ]
             (List.map addSubdocumentButton2 model.candidateChildDocumentList)
         ]
-
-
-
--- XXX: Deprecated
 
 
 setupOutline : Model -> Model
@@ -3225,8 +3212,7 @@ footer model =
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
         , wordCount model
-        , showToken model
-        , el [] (Element.text <| "appMode: " ++ appModeAsString model)
+        , tocCursorDisplay model
         , displayLevels model
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
@@ -3264,6 +3250,16 @@ displayToggle model =
 
     else
         el [] (Element.text "Toggle OFF")
+
+
+tocCursorDisplay : Model -> Element Msg
+tocCursorDisplay model =
+    case model.tocCursor of
+        Nothing ->
+            el [] (Element.text "No focus")
+
+        Just uuid ->
+            el [] (Element.text <| "Focus: " ++ Uuid.toString uuid)
 
 
 dirtyDocumentDisplay : Model -> Element Msg
