@@ -11,6 +11,7 @@ module Request exposing
     , publicDocuments
     , publicDocumentsWithTag
     , publicDocumentsWithTitle
+    , signInUser
     , signUpUser
     , updateDocument
     )
