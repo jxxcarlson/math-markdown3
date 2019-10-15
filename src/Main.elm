@@ -1796,13 +1796,18 @@ updateDocumentText model str =
 
                 newAst =
                     Diff.mergeWith ParseWithId.equal model.lastAst newAst_
+
+                tableOfContents =
+                    Document.replaceInList updatedDoc2 model.tableOfContents
             in
             ( { model
                 | -- document
                   currentDocument = Just updatedDoc2
                 , documentList = Document.replaceInList updatedDoc2 model.documentList
-                , tableOfContents = Document.replaceInList updatedDoc2 model.tableOfContents
+                , tableOfContents = tableOfContents
                 , currentDocumentDirty = True
+                , tocData = TocManager.setup (List.head tableOfContents) (List.drop 1 tableOfContents)
+                , tocCursor = Just updatedDoc2.id
 
                 -- rendering
                 , lastAst = newAst
