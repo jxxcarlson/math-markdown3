@@ -8,9 +8,13 @@ module Request exposing
     , documentsWithAuthor
     , documentsWithAuthorAndTag
     , documentsWithAuthorAndTitle
+    , documentsWithAuthorAndTitleSorted
+    , documentsWithAuthorSorted
     , getUserByUsername
     , insertDocument
     , insertUser
+    , orderByMostRecentFirst
+    , orderByTitleAsc
     , publicDocuments
     , publicDocumentsWithTag
     , publicDocumentsWithTitle
@@ -162,10 +166,24 @@ documentsWithAuthor authToken authorIdentifier =
         (RemoteData.fromResult >> GotUserDocuments)
 
 
+documentsWithAuthorSorted : String -> String -> OptionalArgument (List Document_order_by) -> Cmd RequestMsg
+documentsWithAuthorSorted authToken authorIdentifier sortData =
+    makeGraphQLQuery authToken
+        (fetchSortedDocumentsQuery (Present <| hasAuthor_ authorIdentifier) sortData)
+        (RemoteData.fromResult >> GotUserDocuments)
+
+
 documentsWithAuthorAndTitle : String -> String -> String -> RequestHandler -> Cmd RequestMsg
 documentsWithAuthorAndTitle authToken authorIdentifier titleKey requestHandler =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")))
+        (RemoteData.fromResult >> requestHandler)
+
+
+documentsWithAuthorAndTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+documentsWithAuthorAndTitleSorted authToken authorIdentifier titleKey sortData requestHandler =
+    makeGraphQLQuery authToken
+        (fetchSortedDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")) sortData)
         (RemoteData.fromResult >> requestHandler)
 
 
@@ -253,20 +271,31 @@ fetchDocumentsQuery doc_bool_exp =
 
 
 fetchSortedDocumentsQuery :
-    List Api.InputObject.Document_order_by
-    -> OptionalArgument Document_bool_exp
+    OptionalArgument Document_bool_exp
+    -> OptionalArgument (List Document_order_by)
     -> SelectionSet (List Document) RootQuery
-fetchSortedDocumentsQuery sortData doc_bool_exp =
-    Query.document (documentListOptionalArgument doc_bool_exp) documentListSelection
+fetchSortedDocumentsQuery doc_bool_exp sortData =
+    Query.document (documentListOptionalArgument2 doc_bool_exp sortData) documentListSelection
 
 
 documentListOptionalArgument : OptionalArgument Document_bool_exp -> DocumentOptionalArguments -> DocumentOptionalArguments
 documentListOptionalArgument doc_bool_exp optionalArgs =
-    { optionalArgs | where_ = doc_bool_exp, order_by = orderByTitle Asc }
+    { optionalArgs | where_ = doc_bool_exp, order_by = orderByMostRecent Desc }
 
 
+orderByMostRecentFirst : OptionalArgument (List Document_order_by)
+orderByMostRecentFirst =
+    orderByMostRecent Desc
 
--- BOOLEAN EXPRESSIONS --
+
+orderByTitleAsc : OptionalArgument (List Document_order_by)
+orderByTitleAsc =
+    orderByTitle Asc
+
+
+documentListOptionalArgument2 : OptionalArgument Document_bool_exp -> OptionalArgument (List Document_order_by) -> DocumentOptionalArguments -> DocumentOptionalArguments
+documentListOptionalArgument2 doc_bool_exp sortData optionalArgs =
+    { optionalArgs | where_ = doc_bool_exp, order_by = sortData }
 
 
 orderByTitle : Order_by -> OptionalArgument (List Document_order_by)
@@ -274,13 +303,13 @@ orderByTitle order =
     Present <| [ buildDocument_order_by (\args -> { args | title = OptionalArgument.Present order }) ]
 
 
+orderByMostRecent : Order_by -> OptionalArgument (List Document_order_by)
+orderByMostRecent order =
+    Present <| [ buildDocument_order_by (\args -> { args | timeStamp = OptionalArgument.Present order }) ]
 
---foo : Document_order_by
---foo =
---    buildDocument_order_by (\args -> { args |   = Present <| order_by })
--- equalToBoolean_ : Bool -> Boolean_comparison_exp
--- buildDocument_order_by : (Document_order_byOptionalFields -> Document_order_byOptionalFields) -> Document_order_by
--- buildDocument_bool_exp : (Document_bool_expOptionalFields -> Document_bool_expOptionalFields) -> Document_bool_exp
+
+
+-- BOOLEAN EXPRESSIONS --
 
 
 isPublic_ : Document_bool_exp

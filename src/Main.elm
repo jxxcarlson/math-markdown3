@@ -1,5 +1,6 @@
 module Main exposing (main, parseSearchTerm)
 
+import Api.InputObject exposing (Document_order_by(..))
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -12,6 +13,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
 import Element.Lazy
+import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Html exposing (..)
 import Html.Attributes as HA
 import Http exposing (Error(..))
@@ -27,7 +29,7 @@ import Process
 import Random
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
-import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..))
+import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
 import Style
 import Task
 import Time exposing (Posix)
@@ -107,7 +109,9 @@ type alias Model =
     , renderedText : RenderedText Msg
     , tagString : String
     , searchTerms : String
+    , sortTerm : OptionalArgument (List Document_order_by)
     , searchMode : SearchMode
+    , sortMode : SortMode
     , documentOutline : String
     }
 
@@ -125,6 +129,11 @@ type DocumentListType
 type SearchMode
     = UserSearch
     | PublicSearch
+
+
+type SortMode
+    = MostRecentFirst
+    | Alphabetical
 
 
 type alias Message =
@@ -258,7 +267,9 @@ init flags =
             , renderedText = emptyRenderedText
             , tagString = ""
             , searchTerms = ""
+            , sortTerm = orderByMostRecentFirst
             , searchMode = PublicSearch
+            , sortMode = MostRecentFirst
             , documentOutline = ""
             }
     in
@@ -307,6 +318,7 @@ type Msg
     | AllDocuments
     | GetPublicDocuments
     | GetHelpDocs
+    | SetSortMode SortMode
     | SetDocumentListType DocumentListType
     | SetDocType DocType
     | SetCurrentDocument Document
@@ -450,6 +462,32 @@ update msg model =
 
                 DocumentChildren ->
                     ( { model | documentListType = DocumentChildren }, Cmd.none )
+
+        SetSortMode sortMode ->
+            let
+                sortTerm =
+                    case sortMode of
+                        Alphabetical ->
+                            orderByTitleAsc
+
+                        MostRecentFirst ->
+                            orderByMostRecentFirst
+
+                cmd =
+                    case model.currentUser of
+                        Just user ->
+                            Request.documentsWithAuthorAndTitleSorted
+                                hasuraToken
+                                user.username
+                                model.searchTerms
+                                sortTerm
+                                GotUserDocuments
+                                |> Cmd.map Req
+
+                        Nothing ->
+                            Cmd.none
+            in
+            ( { model | sortMode = sortMode, sortTerm = sortTerm }, cmd )
 
         SetDocType docType ->
             let
@@ -1045,10 +1083,7 @@ signIn model =
         , searchMode = UserSearch
         , message = ( AuthMessage, "Signing in ..." )
       }
-    , Cmd.batch
-        [ --Request.documentsWithAuthor hasuraToken model.username |> Cmd.map Req
-          Request.signInUser model.username model.password |> Cmd.map Req
-        ]
+    , Request.signInUser model.username model.password |> Cmd.map Req
     )
 
 
@@ -1142,6 +1177,40 @@ searchButton model =
         }
 
 
+sortAlphabeticalButton : Model -> Element Msg
+sortAlphabeticalButton model =
+    let
+        color =
+            case model.sortMode == Alphabetical of
+                True ->
+                    Style.darkRed
+
+                False ->
+                    Style.charcoal
+    in
+    Input.button (Style.standardButton ++ [ Background.color color, Font.color Style.white ])
+        { onPress = Just (SetSortMode Alphabetical)
+        , label = el [] (Element.text "A")
+        }
+
+
+sortByMostRecentFirstButton : Model -> Element Msg
+sortByMostRecentFirstButton model =
+    let
+        color =
+            case model.sortMode == MostRecentFirst of
+                True ->
+                    Style.darkRed
+
+                False ->
+                    Style.charcoal
+    in
+    Input.button (Style.standardButton ++ [ Background.color color, Font.color Style.white ])
+        { onPress = Just (SetSortMode MostRecentFirst)
+        , label = el [] (Element.text "R")
+        }
+
+
 allDocumentsButton : Element Msg
 allDocumentsButton =
     Input.button []
@@ -1188,7 +1257,7 @@ getAllDocuments model =
                             Cmd.none
 
                         Just user ->
-                            Request.documentsWithAuthorAndTitle hasuraToken user.username "" GotUserDocuments |> Cmd.map Req
+                            Request.documentsWithAuthorAndTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
                 PublicSearch ->
                     Request.publicDocumentsWithTitle hasuraToken "" |> Cmd.map Req
@@ -1222,7 +1291,7 @@ searchForUsersDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTitle hasuraToken authorIdentifier searchTerm GotUserDocuments |> Cmd.map Req
+                    Request.documentsWithAuthorAndTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
                     Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm GotUserDocuments |> Cmd.map Req
@@ -3091,12 +3160,7 @@ heading model =
         Just _ ->
             case model.documentListType of
                 SearchResults ->
-                    Input.button []
-                        { onPress = Just (SetDocumentListType DocumentChildren)
-                        , label =
-                            el (headingButtonStyle w)
-                                (Element.text ("Documents (" ++ n ++ ")"))
-                        }
+                    row [ spacing 10 ] [ setDocumentListTypeButton w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model ]
 
                 DocumentChildren ->
                     Input.button []
@@ -3105,6 +3169,15 @@ heading model =
                             el (headingButtonStyle w)
                                 (Element.text ("Contents (" ++ n ++ ")"))
                         }
+
+
+setDocumentListTypeButton w n =
+    Input.button []
+        { onPress = Just (SetDocumentListType DocumentChildren)
+        , label =
+            el (headingButtonStyle w)
+                (Element.text ("Documents (" ++ n ++ ")"))
+        }
 
 
 readingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
