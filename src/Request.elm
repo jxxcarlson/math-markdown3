@@ -91,8 +91,8 @@ type RequestMsg
     | InsertUserResponse (GraphQLResponse (Maybe MutationResponse))
     | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | DeleteDocumentResponse (GraphQLResponse (Maybe MutationResponse))
-    | GotUserSignUp (Result Http.Error AuthorizedUser)
-    | GotUserSignIn (Result Http.Error AuthorizedUser)
+    | GotUserSignUp (Result Http.Error String)
+    | GotUserSignIn (Result Http.Error String)
 
 
 type alias RequestHandler =
@@ -517,7 +517,7 @@ signUpUser username email password confirmPassword =
         , headers = []
         , url = authorizationEndpoint ++ "/signup"
         , body = Http.jsonBody (encodeAuthorizedUserForSignUp username email password confirmPassword)
-        , expect = Http.expectJson GotUserSignUp decodeAuthorizedUser
+        , expect = expectJsonFromTLogicAuth GotUserSignUp decodeToken
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -530,10 +530,41 @@ signInUser username password =
         , headers = []
         , url = authorizationEndpoint ++ "/login"
         , body = Http.jsonBody (encodeAuthorizedUserForSignIn username password)
-        , expect = Http.expectJson GotUserSignIn decodeAuthorizedUser
+        , expect = expectJsonFromTLogicAuth GotUserSignIn decodeToken
         , timeout = Nothing
         , tracker = Nothing
         }
+
+
+expectJsonFromTLogicAuth : (Result Http.Error String -> msg) -> Decoder String -> Http.Expect msg
+expectJsonFromTLogicAuth toMsg decoder =
+    Http.expectStringResponse toMsg <|
+        \response ->
+            case response of
+                Http.BadUrl_ url ->
+                    Err (Http.BadUrl url)
+
+                Http.Timeout_ ->
+                    Err Http.Timeout
+
+                Http.NetworkError_ ->
+                    Err Http.NetworkError
+
+                Http.BadStatus_ metadata body ->
+                    case String.contains "duplicate key" body of
+                        True ->
+                            Ok "Username already exists"
+
+                        False ->
+                            Err (Http.BadStatus metadata.statusCode)
+
+                Http.GoodStatus_ metadata body ->
+                    case Decode.decodeString decodeToken body of
+                        Ok value ->
+                            Ok value
+
+                        Err err ->
+                            Err (Http.BadBody (Decode.errorToString err))
 
 
 encodeAuthorizedUserForSignUp : String -> String -> String -> String -> Encode.Value
@@ -561,6 +592,11 @@ decodeAuthorizedUser =
         (Decode.field "username" Decode.string)
         (Decode.field "email" Decode.string)
         (Decode.field "token" Decode.string)
+
+
+decodeToken : Decoder String
+decodeToken =
+    Decode.field "token" Decode.string
 
 
 

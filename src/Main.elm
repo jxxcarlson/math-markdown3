@@ -81,7 +81,7 @@ type alias Model =
 
     -- USER
     , currentUser : Maybe User
-    , authorizedUser : Maybe AuthorizedUser
+    , token : Maybe String
     , username : String
     , email : String
     , password : String
@@ -231,7 +231,7 @@ init flags =
             , currentUser = Nothing
 
             --, maybeUser = Nothing
-            , authorizedUser = Nothing
+            , token = Nothing
             , username = ""
             , email = ""
             , password = ""
@@ -552,7 +552,7 @@ update msg model =
         SignOut ->
             ( { model
                 | currentUser = Nothing
-                , authorizedUser = Nothing
+                , token = Nothing
                 , appMode = UserMode SignInState
                 , username = ""
                 , password = ""
@@ -805,19 +805,21 @@ update msg model =
 
                 GotUserSignUp result ->
                     case result of
-                        Ok authorizedUser ->
+                        Ok token ->
                             let
                                 ( newUuid, newSeed ) =
                                     step Uuid.generator model.currentSeed
 
                                 newUser =
-                                    User.barebonesUser model.currentUuid authorizedUser
+                                    User.barebonesUser model.currentUuid model.username model.email
                             in
                             ( { model
-                                | authorizedUser = Just authorizedUser
+                                | token = Just token
                                 , currentUser = Just newUser
                                 , currentUuid = newUuid
                                 , currentSeed = newSeed
+                                , username = ""
+                                , email = ""
                                 , appMode = UserMode SignedInState
                                 , message = ( UserMessage, "Signup successful" )
                               }
@@ -825,20 +827,25 @@ update msg model =
                             )
 
                         Err error ->
-                            ( { model | authorizedUser = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
+                            ( { model | token = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
 
                 GotUserSignIn result ->
                     case result of
-                        Ok authorizedUser ->
+                        Ok token ->
+                            let
+                                username =
+                                    model.username
+                            in
                             ( { model
-                                | authorizedUser = Just authorizedUser
+                                | token = Just token
+                                , username = ""
                                 , message = ( UserMessage, "Sign-in successful" )
                               }
-                            , Request.getUserByUsername hasuraToken authorizedUser.username |> Cmd.map Req
+                            , Request.getUserByUsername hasuraToken username |> Cmd.map Req
                             )
 
                         Err error ->
-                            ( { model | authorizedUser = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
+                            ( { model | token = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
 
                 InsertUserResponse (GraphQLResponse remoteData) ->
                     case remoteData of
@@ -1026,7 +1033,7 @@ signIn : Model -> ( Model, Cmd Msg )
 signIn model =
     ( { model
         | currentUser = Nothing
-        , authorizedUser = Nothing
+        , token = Nothing
         , visibilityOfTools = Invisible
         , searchMode = UserSearch
         , message = ( UserMessage, "Signing in ..." )
@@ -3275,12 +3282,12 @@ totalWordCountDisplay model =
 
 showToken : Model -> Element Msg
 showToken model =
-    case model.authorizedUser of
+    case model.token of
         Nothing ->
             el [] (Element.text "Token: --")
 
-        Just authorizedUser ->
-            el [] (Element.text <| "Token: " ++ authorizedUser.token)
+        Just token ->
+            el [] (Element.text <| "Token: " ++ token)
 
 
 displayLevels model =

@@ -22,11 +22,11 @@ type alias AuthorizedUser =
     }
 
 
-barebonesUser : Uuid -> AuthorizedUser -> User
-barebonesUser uuid authorizedUser =
+barebonesUser : Uuid -> String -> String -> User
+barebonesUser uuid username email =
     { id = uuid
-    , username = authorizedUser.username
-    , email = authorizedUser.email
+    , username = username
+    , email = email
     , firstName = "not_yet"
     , lastName = "not_yet"
     , admin = False
