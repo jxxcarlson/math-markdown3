@@ -312,7 +312,7 @@ filterNoise list =
 
 
 lowInfoWords =
-    [ "a", "about", "the", "in", "is", "on", "of", "for", "to", "from", "with", "without", "that", "this", "and", "or" ]
+    [ "a", "about", "the", "in", "is", "it", "its", "on", "of", "for", "to", "from", "with", "without", "that", "this", "and", "or" ]
 
 
 msp : Int -> String
