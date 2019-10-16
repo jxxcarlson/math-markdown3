@@ -1,5 +1,6 @@
 module Request exposing
-    ( GraphQLResponse(..)
+    ( AuthReply(..)
+    , GraphQLResponse(..)
     , RequestHandler
     , RequestMsg(..)
     , deleteDocument
@@ -63,6 +64,7 @@ import Api.Object.User_mutation_response as UserMutation
 import Api.Query as Query exposing (DocumentOptionalArguments, UserOptionalArguments)
 import Codec
 import CustomScalarCodecs exposing (Jsonb(..))
+import Dict exposing (Dict)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
@@ -91,8 +93,8 @@ type RequestMsg
     | InsertUserResponse (GraphQLResponse (Maybe MutationResponse))
     | UpdateDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | DeleteDocumentResponse (GraphQLResponse (Maybe MutationResponse))
-    | GotUserSignUp (Result Http.Error String)
-    | GotUserSignIn (Result Http.Error String)
+    | GotUserSignUp (Result Http.Error AuthReply)
+    | GotUserSignIn (Result Http.Error AuthReply)
 
 
 type alias RequestHandler =
@@ -536,7 +538,7 @@ signInUser username password =
         }
 
 
-expectJsonFromTLogicAuth : (Result Http.Error String -> msg) -> Decoder String -> Http.Expect msg
+expectJsonFromTLogicAuth : (Result Http.Error AuthReply -> msg) -> Decoder AuthReply -> Http.Expect msg
 expectJsonFromTLogicAuth toMsg decoder =
     Http.expectStringResponse toMsg <|
         \response ->
@@ -551,17 +553,34 @@ expectJsonFromTLogicAuth toMsg decoder =
                     Err Http.NetworkError
 
                 Http.BadStatus_ metadata body ->
-                    case String.contains "duplicate key" body of
-                        True ->
-                            Ok "Username already exists"
+                    if String.contains "duplicate key" body then
+                        Ok (AuthError "Username already exists")
 
-                        False ->
-                            Err (Http.BadStatus metadata.statusCode)
+                    else if String.contains "Passwords do not match" body then
+                        Ok (AuthError "Passwords do not match")
+
+                    else if String.contains "Invalid password" body then
+                        Ok (AuthError "Invalid password or username")
+
+                    else if String.contains "Unknown user" body then
+                        Ok (AuthError "Invalid password or username")
+
+                    else if String.contains "Password must be at least" body then
+                        Ok (AuthError "Password must be at least 8 characters long")
+
+                    else if String.contains "email" body && String.contains "shorter" body then
+                        Ok (AuthError "Email should not be shorter than 7 characters")
+
+                    else
+                        Err (Http.BadStatus metadata.statusCode)
 
                 Http.GoodStatus_ metadata body ->
                     case Decode.decodeString decodeToken body of
-                        Ok value ->
-                            Ok value
+                        Ok (AuthToken value) ->
+                            Ok (AuthToken value)
+
+                        Ok (AuthError message) ->
+                            Err (Http.BadBody message)
 
                         Err err ->
                             Err (Http.BadBody (Decode.errorToString err))
@@ -594,9 +613,14 @@ decodeAuthorizedUser =
         (Decode.field "token" Decode.string)
 
 
-decodeToken : Decoder String
+type AuthReply
+    = AuthToken String
+    | AuthError String
+
+
+decodeToken : Decoder AuthReply
 decodeToken =
-    Decode.field "token" Decode.string
+    Decode.field "token" Decode.string |> Decode.map AuthToken
 
 
 

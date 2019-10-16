@@ -27,7 +27,7 @@ import Process
 import Random
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
-import Request exposing (GraphQLResponse(..), RequestMsg(..))
+import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..))
 import Style
 import Task
 import Time exposing (Posix)
@@ -134,6 +134,7 @@ type alias Message =
 type MessageType
     = SignInMessage
     | UserMessage
+    | AuthMessage
     | ErrorMessage
     | DebugMessage
 
@@ -545,7 +546,7 @@ update msg model =
             signIn model
 
         SignUp ->
-            ( { model | appMode = UserMode SignUpState, message = ( DebugMessage, "At SignUp msg" ) }
+            ( { model | appMode = UserMode SignUpState, message = ( AuthMessage, "Signing up ..." ) }
             , Request.signUpUser model.username model.email model.password model.passwordConfirmation |> Cmd.map Req
             )
 
@@ -805,7 +806,7 @@ update msg model =
 
                 GotUserSignUp result ->
                     case result of
-                        Ok token ->
+                        Ok (AuthToken token) ->
                             let
                                 ( newUuid, newSeed ) =
                                     step Uuid.generator model.currentSeed
@@ -826,12 +827,15 @@ update msg model =
                             , Request.insertUser hasuraToken newUser |> Cmd.map Req
                             )
 
+                        Ok (AuthError msg_) ->
+                            ( { model | token = Nothing, message = ( AuthMessage, msg_ ) }, Cmd.none )
+
                         Err error ->
                             ( { model | token = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
 
                 GotUserSignIn result ->
                     case result of
-                        Ok token ->
+                        Ok (AuthToken token) ->
                             let
                                 username =
                                     model.username
@@ -843,6 +847,9 @@ update msg model =
                               }
                             , Request.getUserByUsername hasuraToken username |> Cmd.map Req
                             )
+
+                        Ok (AuthError msg_) ->
+                            ( { model | token = Nothing, message = ( AuthMessage, msg_ ) }, Cmd.none )
 
                         Err error ->
                             ( { model | token = Nothing, message = ( UserMessage, Request.stringFromHttpError error ) }, Cmd.none )
@@ -1036,7 +1043,7 @@ signIn model =
         , token = Nothing
         , visibilityOfTools = Invisible
         , searchMode = UserSearch
-        , message = ( UserMessage, "Signing in ..." )
+        , message = ( AuthMessage, "Signing in ..." )
       }
     , Cmd.batch
         [ --Request.documentsWithAuthor hasuraToken model.username |> Cmd.map Req
@@ -2155,9 +2162,17 @@ userPageFooter : Model -> Element Msg
 userPageFooter model =
     row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
         [ el [] (Element.text <| appModeAsString model)
-        , el [] (Element.text <| "appMode: " ++ appModeAsString model)
-        , el [] (Element.text <| (model.message |> Tuple.second))
         ]
+
+
+authMessageDisplay : Model -> Element Msg
+authMessageDisplay model =
+    case model.message of
+        ( AuthMessage, str ) ->
+            el [ Font.color Style.white, Font.size 18 ] (Element.text str)
+
+        _ ->
+            Element.none
 
 
 userPageHeader : ViewInfoUserPage -> Model -> Element Msg
@@ -2215,6 +2230,7 @@ outerPasswordPanel model =
                 , showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
                 ]
             ]
+        , authMessageDisplay model
         , el [ Font.size 16, Font.color Style.white ] (Element.text (signInMessage model.message))
         ]
 
