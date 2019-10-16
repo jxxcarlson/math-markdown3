@@ -2,7 +2,6 @@ module TocZ exposing
     ( Id
     , Label
     , TocMsg(..)
-    , darkRed
     , focus
     , inAncestors
     , indexedMap
@@ -13,9 +12,10 @@ module TocZ exposing
     , viewZ
     )
 
-import Element exposing (..)
-import Element.Font as Font
-import Element.Input as Input
+import Element exposing (Element)
+import Html exposing (Html)
+import Html.Attributes as Attr
+import Html.Events as Events
 import Prng.Uuid as Uuid exposing (Uuid)
 import Toc exposing (TocItem)
 import Tree exposing (Tree)
@@ -65,18 +65,18 @@ viewZ t z =
         , [ viewSelf t (Zipper.tree z) ]
         , viewAfter t z
         ]
-        |> column [ horizontalPadding ]
+        |> Html.ul []
         |> inAncestors t z
     )
-        |> Element.el [ moveRight offset ]
+        |> Element.html
 
 
-viewBefore : Bool -> Zipper Label -> List (Element TocMsg)
+viewBefore : Bool -> Zipper Label -> List (Html TocMsg)
 viewBefore t z =
     List.map (viewNode t) (Zipper.siblingsBeforeFocus z)
 
 
-viewAfter : Bool -> Zipper Label -> List (Element TocMsg)
+viewAfter : Bool -> Zipper Label -> List (Html TocMsg)
 viewAfter t z =
     List.map (viewNode t) (Zipper.siblingsAfterFocus z)
 
@@ -96,31 +96,31 @@ prefix l =
             "   "
 
 
-viewSelf : Bool -> Tree Label -> Element TocMsg
+viewSelf : Bool -> Tree Label -> Html TocMsg
 viewSelf toggle t =
     let
         l =
             Tree.label t
 
-        color =
-            if l.isRoot then
-                darkBlue
+        class =
+            case l.isRoot of
+                True ->
+                    "current-root"
 
-            else
-                darkRed
+                False ->
+                    "current"
     in
-    column []
-        [ el [ paddingEach { edges | bottom = 2, top = 2 }, Font.bold, Font.color color ] (text <| prefix l ++ l.title)
-        , column [ horizontalPadding ] (List.map (viewNode toggle) (Tree.children t))
+    Html.li []
+        [ Html.span [ Attr.class class ] [ Html.text <| prefix l ++ l.title ]
+        , Html.ul [] (List.map (viewNode toggle) (Tree.children t))
         ]
 
 
-elementHeight =
-    px 20
 
-
-focusedElementHeight =
-    px 22
+--    column []
+--        [ el [ paddingEach { edges | bottom = 2, top = 2 }, Font.bold, Font.color color ] (text <| prefix l ++ l.title)
+--        , column [ horizontalPadding ] (List.map (viewNode toggle) (Tree.children t))
+--        ]
 
 
 edges =
@@ -131,44 +131,31 @@ edges =
     }
 
 
-darkRed =
-    rgb 0.5 0.0 0.0
-
-
-darkBlue =
-    rgb 0.0 0.0 0.65
-
-
-fontSize =
-    12
-
-
-buttonPadding =
-    paddingXY 0 4
-
-
-thePadding =
-    paddingXY 12 0
-
-
-viewNode : Bool -> Tree Label -> Element TocMsg
+viewNode : Bool -> Tree Label -> Html TocMsg
 viewNode showAll t =
     let
         l =
             Tree.label t
 
+        class =
+            case l.isRoot of
+                True ->
+                    "root"
+
+                False ->
+                    ""
+
         xs =
             if showAll then
-                [ column [ horizontalPadding ] (List.map (viewNode showAll) (Tree.children t)) ]
+                [ Html.ul [] (List.map (viewNode showAll) (Tree.children t)) ]
 
             else
                 []
     in
-    column []
-        (Input.button [ buttonPadding, height elementHeight ]
-            { onPress = Just (Focus l.id)
-            , label = el [] (text <| prefix l ++ l.title)
-            }
+    Html.li []
+        (Html.span
+            [ Events.onClick (Focus l.id), Attr.class class ]
+            [ Html.text <| prefix l ++ l.title ]
             :: xs
         )
 
@@ -177,7 +164,7 @@ viewNode showAll t =
 --XXXXX
 
 
-inAncestors : Bool -> Zipper Label -> Element TocMsg -> Element TocMsg
+inAncestors : Bool -> Zipper Label -> Html TocMsg -> Html TocMsg
 inAncestors toggle zipper current =
     case Zipper.parent zipper of
         Just parent ->
@@ -185,47 +172,50 @@ inAncestors toggle zipper current =
                 l =
                     Zipper.label parent
 
-                color =
-                    if l.isRoot then
-                        darkBlue
+                class =
+                    case l.isRoot of
+                        True ->
+                            "root"
 
-                    else
-                        darkRed
+                        False ->
+                            ""
             in
             List.concat
                 [ viewBefore toggle parent
-                , [ column []
-                        [ Input.button [ buttonPadding, Font.color (buttonColor (Zipper.label parent)) ]
-                            { onPress = Just (Focus (Zipper.label parent).id), label = text <| prefix l ++ (Zipper.label parent).title }
+                , [ Html.li []
+                        [ Html.span
+                            [ Events.onClick (Focus (Zipper.label parent).id), Attr.class class ]
+                            [ Html.text <| prefix l ++ (Zipper.label parent).title ]
                         , current
                         ]
                   ]
                 , viewAfter toggle parent
                 ]
-                |> column []
+                |> Html.ul []
                 |> inAncestors toggle parent
 
         Nothing ->
             current
 
 
-buttonColor l =
-    case l.isRoot of
-        True ->
-            darkBlue
 
-        False ->
-            charcoal
-
-
-charcoal =
-    Element.rgb 0.4 0.4 0.4
+--            List.concat
+--                [ viewBefore toggle parent
+--                , [ column []
+--                        [ Input.button [ buttonPadding, Font.color (buttonColor (Zipper.label parent)) ]
+--                            { onPress = Just (Focus (Zipper.label parent).id), label = text <| prefix l ++ (Zipper.label parent).title }
+--                        , current
+--                        ]
+--                  ]
+--                , viewAfter toggle parent
+--                ]
+--                |> column []
+--                |> inAncestors toggle parent
+--
+--        Nothing ->
+--            current
 
 
 indexedMap : (Int -> a -> b) -> ( a, List a ) -> ( b, List b )
 indexedMap f ( x, xs ) =
     ( f 0 x, List.indexedMap (\idx -> f (idx + 1)) xs )
-
-
-horizontalPadding =
-    paddingXY 12 0

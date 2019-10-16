@@ -7,7 +7,7 @@ import Prng.Uuid as Uuid exposing (Uuid)
 import Test exposing (..)
 import Toc
 import TocManager
-import TocZ
+import TocZW
 import Utility exposing (getId)
 
 

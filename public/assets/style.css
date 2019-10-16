@@ -6,6 +6,21 @@ p {
 	font-size: 10pt;
 }
 
+.current { font-weight: bold; color: darkred; }
+
+.current-root { font-weight: bold; color: darkblue; }
+
+.root { color: darkblue;}
+
+ul {
+  padding-left: 12px;
+}
+
+li { list-style-type:none; line-height: 25px;}
+
+
+
+
 
 a:link {color: #00a;}      /* unvisited link */
 a:visited {color: #00a;}   /* visited link */
