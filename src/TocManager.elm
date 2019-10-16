@@ -4,6 +4,7 @@ module TocManager exposing
     , insertInChildDocumentList
     , insertInMaster
     , setup
+    , setupWithFocus
     , updateMasterAndDocumentListFromOutline
     )
 
@@ -11,6 +12,7 @@ import Document exposing (Document)
 import List.Extra
 import Prng.Uuid as Uuid exposing (Uuid)
 import Toc exposing (TocItem)
+import TocZ
 import Tree.Zipper as Zipper exposing (Zipper)
 import Utility
 
@@ -34,6 +36,28 @@ setup maybeMasterDocument childDocumentList =
 
                 tocData =
                     Just <| Zipper.fromTree <| Toc.make masterDocument sortedChildDocuments
+            in
+            tocData
+
+
+{-| Assume that the master is not part of the child document list
+-}
+setupWithFocus : Uuid -> Maybe Document -> List Document -> Maybe (Zipper TocItem)
+setupWithFocus uuid maybeMasterDocument childDocumentList =
+    case maybeMasterDocument of
+        Nothing ->
+            Nothing
+
+        Just masterDocument ->
+            let
+                sortedChildDocuments =
+                    Document.sortChildren masterDocument childDocumentList
+
+                tocData =
+                    Toc.make masterDocument sortedChildDocuments
+                        |> Zipper.fromTree
+                        |> TocZ.focus uuid
+                        |> Just
             in
             tocData
 

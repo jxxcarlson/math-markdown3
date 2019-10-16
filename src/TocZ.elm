@@ -1,4 +1,17 @@
-module TocZ exposing (Id, Label, TocMsg(..), darkRed, focus, inAncestors, indexedMap, viewAfter, viewBefore, viewNode, viewSelf, viewZ)
+module TocZ exposing
+    ( Id
+    , Label
+    , TocMsg(..)
+    , darkRed
+    , focus
+    , inAncestors
+    , indexedMap
+    , viewAfter
+    , viewBefore
+    , viewNode
+    , viewSelf
+    , viewZ
+    )
 
 import Element exposing (..)
 import Element.Font as Font
@@ -44,7 +57,7 @@ viewZ t z =
         , [ viewSelf t (Zipper.tree z) ]
         , viewAfter t z
         ]
-        |> column [ Font.size fontSize ]
+        |> column []
         |> inAncestors t z
     )
         |> Element.el [ moveRight offset ]
@@ -90,7 +103,7 @@ viewSelf toggle t =
     in
     column []
         [ el [ paddingEach { edges | bottom = 2, top = 2 }, Font.bold, Font.color color ] (text <| prefix l ++ l.title)
-        , column [ horizontalPadding, Font.size fontSize ] (List.map (viewNode toggle) (Tree.children t))
+        , column [ horizontalPadding ] (List.map (viewNode toggle) (Tree.children t))
         ]
 
 
@@ -138,12 +151,12 @@ viewNode showAll t =
 
         xs =
             if showAll then
-                [ column [ horizontalPadding, Font.size fontSize ] (List.map (viewNode showAll) (Tree.children t)) ]
+                [ column [ horizontalPadding ] (List.map (viewNode showAll) (Tree.children t)) ]
 
             else
                 []
     in
-    column [ Font.size fontSize ]
+    column []
         (Input.button [ buttonPadding, height elementHeight ]
             { onPress = Just (Focus l.id)
             , label = el [] (text <| prefix l ++ l.title)
@@ -158,7 +171,7 @@ inAncestors toggle zipper current =
         Just parent ->
             List.concat
                 [ viewBefore toggle parent
-                , [ column [ Font.size fontSize ]
+                , [ column []
                         [ Input.button [ buttonPadding, Font.color (buttonColor (Zipper.label parent)) ]
                             { onPress = Just (Focus (Zipper.label parent).id), label = text (Zipper.label parent).title }
                         , current

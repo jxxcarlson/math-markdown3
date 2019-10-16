@@ -94,6 +94,7 @@ type alias Model =
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
     , tableOfContents : List Document
+    , totalWordCount : Int
     , tocData : Maybe (Zipper TocItem)
     , tocCursor : Maybe Uuid
     , toggleToc : Bool
@@ -243,6 +244,7 @@ init flags =
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
             , tableOfContents = []
+            , totalWordCount = 0
             , tocData = Nothing
             , tocCursor = Nothing
             , toggleToc = False
@@ -317,6 +319,7 @@ type Msg
     | GotOutline String
     | AddThisDocumentToMaster Document
     | GotChildDocIdString String
+    | DoTotalWordCount
       -- Doc Search
     | ClearSearchTerms
     | GotSearchTerms String
@@ -631,7 +634,7 @@ update msg model =
                             ( { model
                                 | currentDocument = Just newMasterDocument
                                 , tableOfContents = newDocumentList
-                                , tocData = TocManager.setup (Just newMasterDocument) (List.drop 1 newDocumentList)
+                                , tocData = TocManager.setupWithFocus masterDocument.id (Just newMasterDocument) (List.drop 1 newDocumentList)
                                 , tocCursor = Just masterDocument.id
                               }
                             , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
@@ -645,6 +648,9 @@ update msg model =
 
         GotChildDocIdString str ->
             ( { model | childDocIdString = str }, Cmd.none )
+
+        DoTotalWordCount ->
+            ( { model | totalWordCount = Document.totalWordCount model.tableOfContents }, Cmd.none )
 
         GotSearchTerms str ->
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
@@ -681,6 +687,7 @@ update msg model =
                             ( { newModel
                                 | currentDocument = currentDocument
                                 , tocData = Just (TocZ.focus id zipper)
+                                , tocCursor = Just id
                               }
                             , cmd
                             )
@@ -1655,7 +1662,7 @@ deleteSubdocument_ model masterDocument documentToDelete =
         , tableOfContents = tableOfContents
         , documentList = newDocumentList
         , documentOutline = newDocumentOutline
-        , tocData = TocManager.setup (Just masterDocument) (List.drop 1 tableOfContents)
+        , tocData = TocManager.setupWithFocus masterDocument.id (Just masterDocument) (List.drop 1 tableOfContents)
         , tocCursor = Just currentDocument.id
       }
     , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
@@ -1757,7 +1764,7 @@ newSubdocument_ model user masterDocument targetDocument =
         , tableOfContents = newMasterDocument :: newChildDocumentList
         , counter = model.counter + 1 -- Necessary?
         , documentList = newDocumentList
-        , tocData = TocManager.setup (Just newMasterDocument) newChildDocumentList
+        , tocData = TocManager.setupWithFocus newDocument.id (Just newMasterDocument) newChildDocumentList
         , tocCursor = Just newDocument.id
         , documentListType = DocumentChildren
         , documentOutline = newDocumentOutline
@@ -1806,7 +1813,7 @@ updateDocumentText model str =
                 , documentList = Document.replaceInList updatedDoc2 model.documentList
                 , tableOfContents = tableOfContents
                 , currentDocumentDirty = True
-                , tocData = TocManager.setup (List.head tableOfContents) (List.drop 1 tableOfContents)
+                , tocData = TocManager.setupWithFocus updatedDoc2.id (List.head tableOfContents) (List.drop 1 tableOfContents)
                 , tocCursor = Just updatedDoc2.id
 
                 -- rendering
@@ -2456,7 +2463,7 @@ subdocumentEditor viewInfo model =
     let
         footerText =
             Maybe.map Document.footer model.currentDocument
-                |> Maybe.withDefault "XXX"
+                |> Maybe.withDefault "--"
     in
     column []
         [ simpleEditingHeader viewInfo model
@@ -3239,10 +3246,31 @@ footer model =
         , el [] (Element.text <| slugOfCurrentDocument model)
         , dirtyDocumentDisplay model
         , wordCount model
-        , tocCursorDisplay model
+        , row [ spacing 4 ] [ totalWordCountButton, totalWordCountDisplay model ]
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
+
+
+totalWordCountButton =
+    Input.button []
+        { onPress = Just DoTotalWordCount
+        , label = el [] (Element.text "Total word count: ")
+        }
+
+
+totalWordCountDisplay model =
+    let
+        words =
+            model.totalWordCount
+
+        pages =
+            Basics.round <| toFloat words / 300.0
+
+        t =
+            String.fromInt words ++ " (" ++ String.fromInt pages ++ " pages)"
+    in
+    el [] (Element.text t)
 
 
 showToken : Model -> Element Msg

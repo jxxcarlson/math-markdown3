@@ -20,6 +20,7 @@ module Document exposing
     , setContent
     , sortChildren
     , stringFromDocType
+    , totalWordCount
     , updateMetaData
     )
 
@@ -391,3 +392,10 @@ parseHeading =
 parseWhile : (Char -> Bool) -> Parser String
 parseWhile accepting =
     chompWhile accepting |> getChompedString
+
+
+totalWordCount : List Document -> Int
+totalWordCount documentList =
+    documentList
+        |> List.map (.content >> String.words >> List.length)
+        |> List.sum
