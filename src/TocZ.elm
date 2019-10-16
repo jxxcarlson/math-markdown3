@@ -68,7 +68,10 @@ viewZ t z =
         |> Html.ul []
         |> inAncestors t z
     )
-        |> Element.html
+        |> (\x ->
+                Html.div [ Attr.style "margin-left" "-24px" ] [ x ]
+                    |> Element.html
+           )
 
 
 viewBefore : Bool -> Zipper Label -> List (Html TocMsg)
