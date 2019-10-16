@@ -57,7 +57,7 @@ viewZ t z =
         , [ viewSelf t (Zipper.tree z) ]
         , viewAfter t z
         ]
-        |> column []
+        |> column [ horizontalPadding ]
         |> inAncestors t z
     )
         |> Element.el [ moveRight offset ]
@@ -165,15 +165,30 @@ viewNode showAll t =
         )
 
 
+
+--XXXXX
+
+
 inAncestors : Bool -> Zipper Label -> Element TocMsg -> Element TocMsg
 inAncestors toggle zipper current =
     case Zipper.parent zipper of
         Just parent ->
+            let
+                l =
+                    Zipper.label parent
+
+                color =
+                    if l.isRoot then
+                        darkBlue
+
+                    else
+                        darkRed
+            in
             List.concat
                 [ viewBefore toggle parent
                 , [ column []
                         [ Input.button [ buttonPadding, Font.color (buttonColor (Zipper.label parent)) ]
-                            { onPress = Just (Focus (Zipper.label parent).id), label = text (Zipper.label parent).title }
+                            { onPress = Just (Focus (Zipper.label parent).id), label = text <| prefix l ++ (Zipper.label parent).title }
                         , current
                         ]
                   ]
