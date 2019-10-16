@@ -20,12 +20,14 @@ module Request exposing
     , updateDocument
     )
 
+import Api.Enum.Order_by exposing (Order_by(..))
 import Api.InputObject
     exposing
         ( Boolean_comparison_exp
         , Document_bool_exp(..)
         , Document_bool_expOptionalFields
         , Document_insert_input
+        , Document_order_by(..)
         , Document_set_input
         , String_comparison_exp
         , User_bool_exp(..)
@@ -36,6 +38,7 @@ import Api.InputObject
         , buildBoolean_comparison_exp
         , buildDocument_bool_exp
         , buildDocument_insert_input
+        , buildDocument_order_by
         , buildDocument_set_input
         , buildJsonb_comparison_exp
         , buildString_comparison_exp
@@ -64,7 +67,6 @@ import Api.Object.User_mutation_response as UserMutation
 import Api.Query as Query exposing (DocumentOptionalArguments, UserOptionalArguments)
 import Codec
 import CustomScalarCodecs exposing (Jsonb(..))
-import Dict exposing (Dict)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
@@ -147,6 +149,10 @@ publicDocumentsWithTag authToken tag =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| hasTagAndIsPublic tag))
         (RemoteData.fromResult >> GotUserDocuments)
+
+
+
+-- XXX:HERE:
 
 
 documentsWithAuthor : String -> String -> Cmd RequestMsg
@@ -242,13 +248,39 @@ fetchDocumentsQuery doc_bool_exp =
     Query.document (documentListOptionalArgument doc_bool_exp) documentListSelection
 
 
+
+-- order_by : OptionalArgument (List Api.InputObject.Document_order_by)
+
+
+fetchSortedDocumentsQuery :
+    List Api.InputObject.Document_order_by
+    -> OptionalArgument Document_bool_exp
+    -> SelectionSet (List Document) RootQuery
+fetchSortedDocumentsQuery sortData doc_bool_exp =
+    Query.document (documentListOptionalArgument doc_bool_exp) documentListSelection
+
+
 documentListOptionalArgument : OptionalArgument Document_bool_exp -> DocumentOptionalArguments -> DocumentOptionalArguments
 documentListOptionalArgument doc_bool_exp optionalArgs =
-    { optionalArgs | where_ = doc_bool_exp }
+    { optionalArgs | where_ = doc_bool_exp, order_by = orderByTitle Asc }
 
 
 
 -- BOOLEAN EXPRESSIONS --
+
+
+orderByTitle : Order_by -> OptionalArgument (List Document_order_by)
+orderByTitle order =
+    Present <| [ buildDocument_order_by (\args -> { args | title = OptionalArgument.Present order }) ]
+
+
+
+--foo : Document_order_by
+--foo =
+--    buildDocument_order_by (\args -> { args |   = Present <| order_by })
+-- equalToBoolean_ : Bool -> Boolean_comparison_exp
+-- buildDocument_order_by : (Document_order_byOptionalFields -> Document_order_byOptionalFields) -> Document_order_by
+-- buildDocument_bool_exp : (Document_bool_expOptionalFields -> Document_bool_expOptionalFields) -> Document_bool_exp
 
 
 isPublic_ : Document_bool_exp
