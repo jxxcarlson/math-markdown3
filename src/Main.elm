@@ -1861,7 +1861,7 @@ newSubdocument_ model user masterDocument targetDocument =
         , documentListType = DocumentChildren
         , documentOutline = newDocumentOutline
         , visibilityOfTools = Invisible
-        , appMode = Editing SubdocumentEditing
+        , appMode = Editing StandardEditing
         , tagString = ""
         , currentUuid = newUuid
         , currentSeed = newSeed
@@ -2819,12 +2819,12 @@ subDocumentEditingModeButton model =
             else
                 Style.buttonGrey
     in
-    showIf (model.currentUser /= Nothing)
+    showIf (model.currentUser /= Nothing && List.length model.tableOfContents > 0)
         (Input.button []
             { onPress = Just (SetAppMode (Editing SubdocumentEditing))
             , label =
                 el (headerButtonStyle color)
-                    (el headerLabelStyle (Element.text "Edit/S"))
+                    (el headerLabelStyle (Element.text "Edit/C"))
             }
         )
 
