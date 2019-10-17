@@ -27,12 +27,14 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
   connectedCallback() {
+    this.www = this.getAttribute('width') ||  300
+    this.hhh = this.getAttribute('height') || 400
     this._editor = CodeMirror(this, {
       identUnit: 4,
       mode: 'elm',
       lineNumbers: true,
       value: this._editorValue
-    });
+    }).setSize(this.www, this.hhh);
 
     this._editor.on('changes', () => {
       this._editorValue = this._editor.getValue();
