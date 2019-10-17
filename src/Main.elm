@@ -4,6 +4,7 @@ import Api.InputObject exposing (Document_order_by(..))
 import Browser
 import Browser.Dom
 import Browser.Events
+import CustomElement.CodeEditor as Editor
 import Data
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Element exposing (..)
