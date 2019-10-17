@@ -2765,17 +2765,6 @@ editor_ model w_ h_ =
         |> Element.html
 
 
-editor1 : Model -> Float -> Float -> Element Msg
-editor1 model w_ h_ =
-    Input.multiline (Style.textInputStyle w_ h_)
-        { onChange = UpdateDocumentText
-        , text = Document.getContent model.currentDocument
-        , placeholder = Nothing
-        , label = Input.labelBelow [ Font.size 0, Font.bold ] (Element.text "")
-        , spellcheck = False
-        }
-
-
 userPageModeButton model =
     let
         color =
