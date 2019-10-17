@@ -27,16 +27,20 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
   connectedCallback() {
+      var w_ = this.getAttribute('width')
+      var h_ = this.getAttribute('height')
+      console.log("w: " + w_)
+      console.log("h: " + h_)
     this._editor = CodeMirror(this, {
       identUnit: 4,
       mode: 'elm',
       lineNumbers: true,
       lineSeparator: null,
       lineWrapping: true,
-      width : 300,
-      height: 500,
+      width: w_,
+      height: h_,
       value: this._editorValue
-    });
+    })
 
     this._editor.on('changes', () => {
       this._editorValue = this._editor.getValue();

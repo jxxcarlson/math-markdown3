@@ -2763,12 +2763,14 @@ editor viewInfo model =
 
 editor_ : Model -> Float -> Float -> Element Msg
 editor_ model w_ h_ =
-    -- XXX
     Editor.codeEditor
         [ Editor.editorValue (Document.getContent model.currentDocument)
         , Editor.onEditorChanged UpdateDocumentText
-        , HA.property "width" (Encode.float w_)
-        , HA.property "height" (Encode.float h_)
+
+        --        , HA.property "width" (Encode.float w_)
+        --        , HA.property "height" (Encode.float h_)
+        , HA.attribute "width" (String.fromFloat w_)
+        , HA.attribute "height" (String.fromFloat h_)
         ]
         []
         |> (\x -> Html.div [] [ x ])
