@@ -17,9 +17,8 @@ import Element.Lazy
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Html exposing (..)
 import Html.Attributes as HA
-import Http exposing (Error(..))
+import Json.Encode as Encode
 import Keyboard exposing (Key(..))
-import Keyboard.Arrows
 import List.Extra
 import Markdown.Elm
 import Markdown.ElmWithId
@@ -2747,23 +2746,26 @@ editor viewInfo model =
     column []
         [ Element.Keyed.el []
             ( String.fromInt 0
-            , editor2 model
+            , editor_ model w_ h_
             )
         ]
 
 
-editor2 model =
+editor_ : Model -> Float -> Float -> Element Msg
+editor_ model w_ h_ =
+    -- XXX
     Editor.codeEditor
         [ Editor.editorValue (Document.getContent model.currentDocument)
         , Editor.onEditorChanged UpdateDocumentText
-        , HA.style "width" "300px"
-        , HA.style "height" "500px"
+        , HA.property "width" (Encode.float w_)
+        , HA.property "height" (Encode.float h_)
         ]
         []
         |> (\x -> Html.div [] [ x ])
         |> Element.html
 
 
+editor1 : Model -> Float -> Float -> Element Msg
 editor1 model w_ h_ =
     Input.multiline (Style.textInputStyle w_ h_)
         { onChange = UpdateDocumentText
