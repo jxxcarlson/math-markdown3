@@ -74,6 +74,7 @@ type alias Model =
     , message : Message
     , pressedKeys : List Key
     , focusedElement : FocusedElement
+    , flashCount : Int
 
     -- SYSTEM
     , currentSeed : Seed
@@ -230,6 +231,7 @@ init flags =
             , message = ( UserMessage, "Starting ..." )
             , pressedKeys = []
             , focusedElement = NoFocus
+            , flashCount = 0
 
             -- SYSTEM
             , currentSeed = newSeed -- initialSeed flags.seed flags.randInts
@@ -689,7 +691,7 @@ update msg model =
             ( { model | childDocIdString = str }, Cmd.none )
 
         DoTotalWordCount ->
-            ( { model | totalWordCount = Document.totalWordCount model.tableOfContents }, Cmd.none )
+            ( { model | totalWordCount = Document.totalWordCount model.tableOfContents, flashCount = config.maxFlashCount }, Cmd.none )
 
         GotSearchTerms str ->
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
@@ -1039,6 +1041,13 @@ headKey keyList =
 handleTime : Model -> Posix -> ( Model, Cmd Msg )
 handleTime model newTime =
     let
+        flashCount =
+            if model.flashCount > 0 then
+                model.flashCount - 1
+
+            else
+                0
+
         secondsWhileDirty =
             if model.currentDocumentDirty then
                 model.secondsWhileDirty + 1
@@ -1065,7 +1074,7 @@ handleTime model newTime =
             else
                 Cmd.none
     in
-    ( { model | time = newTime, secondsWhileDirty = secondsWhileDirty }
+    ( { model | time = newTime, secondsWhileDirty = secondsWhileDirty, flashCount = flashCount }
     , cmd
     )
 
@@ -2542,6 +2551,7 @@ config =
     , timeoutInMs = 5 * 1000
     , panelHeight = 550
     , panelWidth = 450
+    , maxFlashCount = 30
     }
 
 
@@ -3364,17 +3374,21 @@ totalWordCountButton =
 
 
 totalWordCountDisplay model =
-    let
-        words =
-            model.totalWordCount
+    if model.flashCount == 0 then
+        Element.none
 
-        pages =
-            Basics.round <| toFloat words / 300.0
+    else
+        let
+            words =
+                model.totalWordCount
 
-        t =
-            String.fromInt words ++ " (" ++ String.fromInt pages ++ " pages)"
-    in
-    el [] (Element.text t)
+            pages =
+                Basics.round <| toFloat words / 300.0
+
+            t =
+                String.fromInt words ++ " (" ++ String.fromInt pages ++ " pages)"
+        in
+        el [] (Element.text t)
 
 
 showToken : Model -> Element Msg
