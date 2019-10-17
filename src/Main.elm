@@ -2747,15 +2747,31 @@ editor viewInfo model =
     column []
         [ Element.Keyed.el []
             ( String.fromInt 0
-            , Input.multiline (Style.textInputStyle w_ h_)
-                { onChange = UpdateDocumentText
-                , text = Document.getContent model.currentDocument
-                , placeholder = Nothing
-                , label = Input.labelBelow [ Font.size 0, Font.bold ] (Element.text "")
-                , spellcheck = False
-                }
+            , editor2 model
             )
         ]
+
+
+editor2 model =
+    Editor.codeEditor
+        [ Editor.editorValue (Document.getContent model.currentDocument)
+        , Editor.onEditorChanged UpdateDocumentText
+        , HA.style "width" "300px"
+        , HA.style "height" "500px"
+        ]
+        []
+        |> (\x -> Html.div [] [ x ])
+        |> Element.html
+
+
+editor1 model w_ h_ =
+    Input.multiline (Style.textInputStyle w_ h_)
+        { onChange = UpdateDocumentText
+        , text = Document.getContent model.currentDocument
+        , placeholder = Nothing
+        , label = Input.labelBelow [ Font.size 0, Font.bold ] (Element.text "")
+        , spellcheck = False
+        }
 
 
 userPageModeButton model =

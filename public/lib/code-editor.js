@@ -31,10 +31,6 @@ customElements.define('code-editor', class extends HTMLElement {
       identUnit: 4,
       mode: 'elm',
       lineNumbers: true,
-      lineSeparator: null,
-      lineWrapping: true,
-      width : 300,
-      height: 500,
       value: this._editorValue
     });
 
