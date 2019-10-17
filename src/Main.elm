@@ -2761,19 +2761,29 @@ editor viewInfo model =
         ]
 
 
+pxFromFloat : Float -> String
+pxFromFloat f =
+    f
+        |> round
+        |> String.fromInt
+        |> (\s -> s ++ "px")
+
+
 editor_ : Model -> Float -> Float -> Element Msg
 editor_ model w_ h_ =
+    let
+        wpx =
+            pxFromFloat w_
+
+        hpx =
+            pxFromFloat h_
+    in
     Editor.codeEditor
         [ Editor.editorValue (Document.getContent model.currentDocument)
         , Editor.onEditorChanged UpdateDocumentText
-
-        --        , HA.property "width" (Encode.float w_)
-        --        , HA.property "height" (Encode.float h_)
-        , HA.attribute "width" (String.fromFloat w_)
-        , HA.attribute "height" (String.fromFloat h_)
         ]
         []
-        |> (\x -> Html.div [] [ x ])
+        |> (\x -> Html.div [ HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
         |> Element.html
 
 
