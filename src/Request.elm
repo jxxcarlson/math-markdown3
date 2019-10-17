@@ -5,9 +5,7 @@ module Request exposing
     , RequestMsg(..)
     , deleteDocument
     , documentsInIdList
-    , documentsWithAuthor
-    , documentsWithAuthorAndTag
-    , documentsWithAuthorAndTitle
+    , documentsWithAuthorAndTagSorted
     , documentsWithAuthorAndTitleSorted
     , documentsWithAuthorSorted
     , getUserByUsername
@@ -123,10 +121,17 @@ authorizationEndpoint =
     "https://tlogic-auth.herokuapp.com"
 
 
-documentsWithAuthorAndTag : String -> String -> String -> RequestHandler -> Cmd RequestMsg
-documentsWithAuthorAndTag authToken author tag requestHandler =
+documentsWithAuthorAndTagSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+documentsWithAuthorAndTagSorted authToken author tag sortData requestHandler =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (Present <| hasAuthorAndTag author tag))
+        (fetchSortedDocumentsQuery (Present <| hasAuthorAndTag author tag) sortData)
+        (RemoteData.fromResult >> requestHandler)
+
+
+documentsWithAuthorAndTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+documentsWithAuthorAndTitleSorted authToken authorIdentifier titleKey sortData requestHandler =
+    makeGraphQLQuery authToken
+        (fetchSortedDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")) sortData)
         (RemoteData.fromResult >> requestHandler)
 
 
@@ -159,32 +164,11 @@ publicDocumentsWithTag authToken tag =
 -- XXX:HERE:
 
 
-documentsWithAuthor : String -> String -> Cmd RequestMsg
-documentsWithAuthor authToken authorIdentifier =
-    makeGraphQLQuery authToken
-        (fetchDocumentsQuery (Present <| hasAuthor_ authorIdentifier))
-        (RemoteData.fromResult >> GotUserDocuments)
-
-
 documentsWithAuthorSorted : String -> String -> OptionalArgument (List Document_order_by) -> Cmd RequestMsg
 documentsWithAuthorSorted authToken authorIdentifier sortData =
     makeGraphQLQuery authToken
         (fetchSortedDocumentsQuery (Present <| hasAuthor_ authorIdentifier) sortData)
         (RemoteData.fromResult >> GotUserDocuments)
-
-
-documentsWithAuthorAndTitle : String -> String -> String -> RequestHandler -> Cmd RequestMsg
-documentsWithAuthorAndTitle authToken authorIdentifier titleKey requestHandler =
-    makeGraphQLQuery authToken
-        (fetchDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")))
-        (RemoteData.fromResult >> requestHandler)
-
-
-documentsWithAuthorAndTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
-documentsWithAuthorAndTitleSorted authToken authorIdentifier titleKey sortData requestHandler =
-    makeGraphQLQuery authToken
-        (fetchSortedDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")) sortData)
-        (RemoteData.fromResult >> requestHandler)
 
 
 publicDocuments : String -> Cmd RequestMsg

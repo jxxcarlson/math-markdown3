@@ -17,7 +17,6 @@ import Element.Lazy
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Html exposing (..)
 import Html.Attributes as HA
-import Json.Encode as Encode
 import Keyboard exposing (Key(..))
 import List.Extra
 import Markdown.Elm
@@ -466,6 +465,7 @@ update msg model =
                     ( { model | documentListType = DocumentChildren }, Cmd.none )
 
         SetSortMode sortMode ->
+            -- XXX
             let
                 sortTerm =
                     case sortMode of
@@ -478,13 +478,7 @@ update msg model =
                 cmd =
                     case model.currentUser of
                         Just user ->
-                            Request.documentsWithAuthorAndTitleSorted
-                                hasuraToken
-                                user.username
-                                model.searchTerms
-                                sortTerm
-                                GotUserDocuments
-                                |> Cmd.map Req
+                            Tuple.second <| doSearch model
 
                         Nothing ->
                             Cmd.none
@@ -1303,7 +1297,7 @@ searchForUsersDocuments model =
                     Request.documentsWithAuthorAndTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm GotUserDocuments |> Cmd.map Req
+                    Request.documentsWithAuthorAndTagSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
@@ -1320,10 +1314,10 @@ searchForChildDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTitle hasuraToken authorIdentifier searchTerm GotCandidateChildDocuments |> Cmd.map Req
+                    Request.documentsWithAuthorAndTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTag hasuraToken authorIdentifier searchTerm GotCandidateChildDocuments |> Cmd.map Req
+                    Request.documentsWithAuthorAndTagSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
