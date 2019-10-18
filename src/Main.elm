@@ -23,6 +23,7 @@ import Markdown.Elm
 import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
 import ParseWithId
+import Preprocessor
 import Prng.Uuid as Uuid exposing (Uuid)
 import Process
 import Random
@@ -644,7 +645,7 @@ update msg model =
             ( { model | documentOutline = str }, Cmd.none )
 
         UpdateDocumentText str ->
-            updateDocumentText model str
+            updateDocumentText model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
             processDocument model document

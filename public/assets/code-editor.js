@@ -26,6 +26,8 @@ customElements.define('code-editor', class extends HTMLElement {
     this._editor.setValue(value);
   }
 
+
+
   connectedCallback() {
     this._editor = CodeMirror(this, {
       identUnit: 4,
@@ -35,6 +37,14 @@ customElements.define('code-editor', class extends HTMLElement {
       lineWrapping: true,
       value: this._editorValue
     })
+
+
+      this._editor.on("gutterClick", function(cm, n) {
+        var info = cm.lineInfo(n);
+        console.log("line: " + n)
+        console.log("line content: " + cm.getLine(n))
+      });
+
 
     this._editor.on('changes', () => {
       this._editorValue = this._editor.getValue();

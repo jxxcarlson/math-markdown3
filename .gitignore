@@ -17,3 +17,5 @@ api.sh
 node-stuff/
 graphql-engine/
 elm-custom-element/
+elm
+test.sh

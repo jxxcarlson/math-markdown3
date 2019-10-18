@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "elm": "^0.19.0-no-deps",
+    "elm-test": "^0.19.1-beta3",
     "parcel-bundler": "^1.12.3"
   }
 }
-
