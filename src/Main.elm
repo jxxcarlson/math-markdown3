@@ -43,6 +43,42 @@ import User exposing (AuthorizedUser, User)
 import Utility
 
 
+
+{-
+
+   OUTLINE
+
+      MODEL
+      TYPES FOR MODEL
+      INIT
+      MSG
+      SUBSCRIPTIONS
+      UPDATE FUNCTION
+      KEYBOARD HELPERS
+      TIME HELPERS
+
+      DOCUMENT HELPERS
+      PARSE AND RENDER
+      UI HELPERS: scale, etc.
+
+      USER PAGE
+      SIGN-IN-UP-OUT
+      SUBDOCUMENT EDITOR
+      TEXT EDITOR
+      READER
+
+      DOCUMENT TOOL PANEL: BUTTONS AND INPUTS
+      DOCUMENT LIST
+      TABLE OF CONTENTS
+      HEADERS
+
+
+      VIEW UTILITIES: showIf, etc.
+
+
+-}
+
+
 main : Program Flags Model Msg
 main =
     Browser.element
@@ -117,9 +153,8 @@ type alias Model =
     }
 
 
-hasuraToken : String
-hasuraToken =
-    "GOc97wA7CCMm31H4UJHa-4pqdVoLf3l6gAwzczdHC"
+
+-- TYPES FOR MODEL
 
 
 type DocumentListType
@@ -172,31 +207,6 @@ type UserState
     | SignedInState
 
 
-appModeAsString : Model -> String
-appModeAsString model =
-    case model.appMode of
-        Reading ->
-            "Reading"
-
-        Editing StandardEditing ->
-            "Editing"
-
-        Editing SubdocumentEditing ->
-            "Editing subdocuments"
-
-        UserMode SignInState ->
-            "U, Signing in"
-
-        UserMode SignUpState ->
-            "U, Signing up"
-
-        UserMode ChangePasswordState ->
-            "U, Changing Password"
-
-        UserMode SignedInState ->
-            "U, Signed in"
-
-
 type DocumentDeleteState
     = SafetyOn
     | Armed
@@ -205,6 +215,93 @@ type DocumentDeleteState
 type Visibility
     = Visible
     | Invisible
+
+
+type SearchType
+    = TitleSearch
+    | KeywordSearch
+    | NoSearchTerm
+
+
+type alias Flags =
+    { width : Int
+    , height : Int
+    , seed : Int
+    , randInts : List Int
+    }
+
+
+type alias ViewInfo =
+    { toolStripWidth : Float
+    , docListWidth : Float
+    , editorWidth : Float
+    , renderedDisplayWidth : Float
+    , tocWidth : Float
+    , vInset : Float
+    , hExtra : Float
+    }
+
+
+
+-- CONFIGURATION
+
+
+config =
+    { debounceInterval = 500
+    , timeoutInMs = 5 * 1000
+    , panelHeight = 550
+    , panelWidth = 450
+    , maxFlashCount = 30
+    }
+
+
+hasuraToken : String
+hasuraToken =
+    "GOc97wA7CCMm31H4UJHa-4pqdVoLf3l6gAwzczdHC"
+
+
+viewInfoEditing =
+    { toolStripWidth = 0.05
+    , docListWidth = 0.15
+    , editorWidth = 0.3
+    , renderedDisplayWidth = 0.3
+    , tocWidth = 0.2
+    , vInset = vInset
+    , hExtra = 0
+    }
+
+
+viewInfoEditingSubdocuemnt =
+    { toolStripWidth = 0.05
+    , docListWidth = 0.25
+    , editorWidth = 0.3
+    , renderedDisplayWidth = 0.3
+    , tocWidth = 0.1
+    , vInset = vInset
+    , hExtra = 0
+    }
+
+
+viewInfoReading =
+    { toolStripWidth = 0.05
+    , docListWidth = 0.25
+    , editorWidth = 0
+    , renderedDisplayWidth = 0.45
+    , tocWidth = 0.25
+    , vInset = vInset
+    , hExtra = 0
+    }
+
+
+viewInfoUserPage =
+    { lhsFraction = 0.45
+    , rhsFraction = 0.55
+    , vInset = vInset
+    }
+
+
+vInset =
+    75
 
 
 
@@ -327,6 +424,7 @@ type Msg
     | SetCurrentSubDocument Document TocItem
       -- Subdocuments
     | NewSubdocument
+    | FirstSubdocument
     | AddSubdocument
     | DeleteSubdocument
     | SetUpOutline
@@ -354,79 +452,8 @@ type Msg
     | TOC TocMsg
 
 
-type alias Flags =
-    { width : Int
-    , height : Int
-    , seed : Int
-    , randInts : List Int
-    }
 
-
-type alias ViewInfo =
-    { toolStripWidth : Float
-    , docListWidth : Float
-    , editorWidth : Float
-    , renderedDisplayWidth : Float
-    , tocWidth : Float
-    , vInset : Float
-    , hExtra : Float
-    }
-
-
-vInset =
-    75
-
-
-
--- 208
-
-
-viewInfoEditing =
-    { toolStripWidth = 0.05
-    , docListWidth = 0.15
-    , editorWidth = 0.3
-    , renderedDisplayWidth = 0.3
-    , tocWidth = 0.2
-    , vInset = vInset
-    , hExtra = 0
-    }
-
-
-viewInfoEditingSubdocuemnt =
-    { toolStripWidth = 0.05
-    , docListWidth = 0.25
-    , editorWidth = 0.3
-    , renderedDisplayWidth = 0.3
-    , tocWidth = 0.1
-    , vInset = vInset
-    , hExtra = 0
-    }
-
-
-viewInfoReading =
-    { toolStripWidth = 0.05
-    , docListWidth = 0.25
-    , editorWidth = 0
-    , renderedDisplayWidth = 0.45
-    , tocWidth = 0.25
-    , vInset = vInset
-    , hExtra = 0
-    }
-
-
-scale : Float -> Int -> Int
-scale factor input =
-    factor * toFloat input |> round
-
-
-affine : Float -> Float -> Int -> Int
-affine factor shift input =
-    factor * (toFloat input - shift) |> round
-
-
-translate : Float -> Int -> Int
-translate amount input =
-    toFloat input + amount |> round
+-- SUBSCRIPTION
 
 
 subscriptions : Model -> Sub Msg
@@ -436,6 +463,10 @@ subscriptions model =
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         ]
+
+
+
+-- UPDATE FUNCTION
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -466,7 +497,6 @@ update msg model =
                     ( { model | documentListType = DocumentChildren }, Cmd.none )
 
         SetSortMode sortMode ->
-            -- XXX
             let
                 sortTerm =
                     case sortMode of
@@ -604,6 +634,9 @@ update msg model =
 
         NewSubdocument ->
             newSubdocument model
+
+        FirstSubdocument ->
+            firstSubdocument model
 
         AddSubdocument ->
             addSubdocument model
@@ -933,30 +966,17 @@ update msg model =
                                         | message = ( UserMessage, "User signup successful (2)" )
                                         , currentUser = Just user
                                         , appMode = Reading
+                                        , documentListType = SearchResults
+                                        , focusedElement = NoFocus
+                                        , visibilityOfTools = Invisible
                                       }
-                                    , Cmd.none
+                                    , Request.documentsWithAuthorAndTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+                                      -- XXX
                                     )
 
 
 
--- type alias User =
---     { id : Uuid
---     , username : String
---     , email : String
---     , public : Bool
---     , firstName : String
---     , lastName : String
---     , admin : Bool
---     }
--- UPDATE HELPERS --
--- KEYBOARD HELPERS --
-
-
-expandCollapseTocButton =
-    Input.button (Style.activeButtonStyle ++ [ Font.size 12 ])
-        { onPress = Just Toggle
-        , label = Element.text "Expand/Collapse"
-        }
+-- KEYBOARD HELPERS -
 
 
 keyboardGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
@@ -1030,7 +1050,36 @@ headKey keyList =
 
 
 
--- SYSTEM HELPERS
+-- STRINGS
+
+
+appModeAsString : Model -> String
+appModeAsString model =
+    case model.appMode of
+        Reading ->
+            "Reading"
+
+        Editing StandardEditing ->
+            "Editing"
+
+        Editing SubdocumentEditing ->
+            "Editing subdocuments"
+
+        UserMode SignInState ->
+            "U, Signing in"
+
+        UserMode SignUpState ->
+            "U, Signing up"
+
+        UserMode ChangePasswordState ->
+            "U, Changing Password"
+
+        UserMode SignedInState ->
+            "U, Signed in"
+
+
+
+-- TIME HELPERS
 
 
 handleTime : Model -> Posix -> ( Model, Cmd Msg )
@@ -1093,12 +1142,6 @@ signIn model =
 
 
 -- SEARCH HELPERS
-
-
-type SearchType
-    = TitleSearch
-    | KeywordSearch
-    | NoSearchTerm
 
 
 stringValueOfSearchType : String -> SearchType
@@ -1344,7 +1387,6 @@ searchForPublicDocuments model =
 
 
 
--- END SEARCH
 -- DOCUMENT HELPERS --
 
 
@@ -1810,8 +1852,151 @@ newSubdocument model =
             ( model, Cmd.none )
 
 
+firstSubdocument : Model -> ( Model, Cmd Msg )
+firstSubdocument model =
+    case ( model.currentUser, model.currentDocument ) of
+        ( Just user, Just document ) ->
+            firstSubdocument_ model user document
+
+        ( _, _ ) ->
+            ( model, Cmd.none )
+
+
+{-| Add a first subdocument to the given document
+-}
+firstSubdocument_ : Model -> User -> Document -> ( Model, Cmd Msg )
+firstSubdocument_ model user document =
+    let
+        -- Prepare the new document
+        newDocumentText =
+            "# New subdocument:\n\n### " ++ document.title ++ "\n\nWrite something here ..."
+
+        newDocument =
+            Document.create model.currentUuid user.username "New Subdocument" newDocumentText
+
+        -- Prepare AST and udpate uuid
+        lastAst =
+            Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+
+        ( newUuid, newSeed ) =
+            step Uuid.generator model.currentSeed
+
+        -- Prepare new master document, document lists, and document outlne
+        masterDocument =
+            { document | childInfo = [ ( newDocument.id, 0 ) ] }
+
+        newChildDocumentList =
+            [ newDocument ]
+
+        newDocumentList =
+            Document.replaceInList masterDocument (masterDocument :: newDocument :: model.documentList)
+
+        newDocumentOutline =
+            case TocManager.computeOutline masterDocument newChildDocumentList of
+                Nothing ->
+                    model.documentOutline
+
+                Just outline ->
+                    outline
+    in
+    ( { model
+        | currentDocument = Just newDocument
+        , tableOfContents = masterDocument :: newChildDocumentList
+        , counter = model.counter + 1 -- Necessary?
+        , documentList = newDocumentList
+        , tocData = TocManager.setupWithFocus newDocument.id (Just masterDocument) newChildDocumentList
+        , tocCursor = Just newDocument.id
+        , documentListType = DocumentChildren
+        , documentOutline = newDocumentOutline
+        , visibilityOfTools = Invisible
+        , appMode = Editing StandardEditing
+        , tagString = ""
+        , currentUuid = newUuid
+        , currentSeed = newSeed
+        , message = ( UserMessage, "subdocument added" )
+        , lastAst = lastAst
+        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+      }
+    , Cmd.batch
+        [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
+        , Request.updateDocument hasuraToken masterDocument |> Cmd.map Req
+        ]
+    )
+
+
 newSubdocument_ : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
 newSubdocument_ model user masterDocument targetDocument =
+    case masterDocument == targetDocument of
+        True ->
+            newSubdocumentAtHead model user masterDocument
+
+        False ->
+            newSubdocumentWithChildren model user masterDocument targetDocument
+
+
+newSubdocumentAtHead : Model -> User -> Document -> ( Model, Cmd Msg )
+newSubdocumentAtHead model user masterDocument =
+    let
+        -- Prepare the new document
+        newDocumentText =
+            "# New subdocument:\n\n### " ++ masterDocument.title ++ "\n\nWrite something here ..."
+
+        newDocument =
+            Document.create model.currentUuid user.username "New Subdocument" newDocumentText
+
+        -- Prepare AST and udpate uuid
+        lastAst =
+            Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+
+        ( newUuid, newSeed ) =
+            step Uuid.generator model.currentSeed
+
+        -- Prepare new master document, document lists, and document outlne
+        newMasterDocument =
+            TocManager.insertInMasterAtHead newDocument masterDocument
+
+        -- drop the master document for processing, then put it back after processing
+        newChildDocumentList =
+            newDocument :: List.drop 1 model.tableOfContents
+
+        newDocumentList =
+            Document.replaceInList newMasterDocument (newDocument :: model.documentList)
+
+        newDocumentOutline =
+            case TocManager.computeOutline newMasterDocument newChildDocumentList of
+                Nothing ->
+                    model.documentOutline
+
+                Just outline ->
+                    outline
+    in
+    ( { model
+        | currentDocument = Just newDocument
+        , tableOfContents = newMasterDocument :: newChildDocumentList
+        , counter = model.counter + 1 -- Necessary?
+        , documentList = newDocumentList
+        , tocData = TocManager.setupWithFocus newDocument.id (Just newMasterDocument) newChildDocumentList
+        , tocCursor = Just newDocument.id
+        , documentListType = DocumentChildren
+        , documentOutline = newDocumentOutline
+        , visibilityOfTools = Invisible
+        , appMode = Editing StandardEditing
+        , tagString = ""
+        , currentUuid = newUuid
+        , currentSeed = newSeed
+        , message = ( UserMessage, "subdocument added" )
+        , lastAst = lastAst
+        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+      }
+    , Cmd.batch
+        [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
+        , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+        ]
+    )
+
+
+newSubdocumentWithChildren : Model -> User -> Document -> Document -> ( Model, Cmd Msg )
+newSubdocumentWithChildren model user masterDocument targetDocument =
     let
         -- Prepare the new document
         newDocumentText =
@@ -1912,38 +2097,6 @@ updateDocumentText model str =
             )
 
 
-
--- PARSE AND RENDER
-
-
-parse : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId
-parse docType counter str =
-    case docType of
-        Markdown flavor ->
-            Markdown.ElmWithId.parse counter (markdownOptionOfFlavor flavor) str
-
-        _ ->
-            emptyAst
-
-
-render : DocType -> Tree ParseWithId.MDBlockWithId -> RenderedText Msg
-render docType ast =
-    Markdown.ElmWithId.renderHtmlWithExternaTOC ast
-
-
-markdownOptionOfFlavor : MarkdownFlavor -> Markdown.Option.Option
-markdownOptionOfFlavor flavor =
-    case flavor of
-        MDStandard ->
-            Standard
-
-        MDExtended ->
-            Extended
-
-        MDExtendedMath ->
-            ExtendedMath
-
-
 saveDocument : Model -> ( Model, Cmd Msg )
 saveDocument model =
     case ( model.currentUser, model.currentDocument ) of
@@ -2020,7 +2173,54 @@ processTagString model str =
 
 
 
+-- PARSE AND RENDER
+
+
+parse : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId
+parse docType counter str =
+    case docType of
+        Markdown flavor ->
+            Markdown.ElmWithId.parse counter (markdownOptionOfFlavor flavor) str
+
+        _ ->
+            emptyAst
+
+
+render : DocType -> Tree ParseWithId.MDBlockWithId -> RenderedText Msg
+render docType ast =
+    Markdown.ElmWithId.renderHtmlWithExternaTOC ast
+
+
+markdownOptionOfFlavor : MarkdownFlavor -> Markdown.Option.Option
+markdownOptionOfFlavor flavor =
+    case flavor of
+        MDStandard ->
+            Standard
+
+        MDExtended ->
+            Extended
+
+        MDExtendedMath ->
+            ExtendedMath
+
+
+
 -- UI HELPERS
+
+
+scale : Float -> Int -> Int
+scale factor input =
+    factor * toFloat input |> round
+
+
+affine : Float -> Float -> Int -> Int
+affine factor shift input =
+    factor * (toFloat input - shift) |> round
+
+
+translate : Float -> Int -> Int
+translate amount input =
+    toFloat input + amount |> round
 
 
 setModeToReading : Model -> ( Model, Cmd Msg )
@@ -2030,18 +2230,9 @@ setModeToReading model =
 
 setModeToEditing : Model -> EditMode -> ( Model, Cmd Msg )
 setModeToEditing model editMode =
-    let
-        visibility =
-            case model.documentListType of
-                SearchResults ->
-                    Visible
-
-                DocumentChildren ->
-                    Invisible
-    in
     ( { model
         | appMode = Editing editMode
-        , visibilityOfTools = visibility
+        , visibilityOfTools = Invisible
         , documentOutline = setupOutline_ model
       }
     , Cmd.none
@@ -2166,13 +2357,6 @@ type alias ViewInfoUserPage =
     { lhsFraction : Float, rhsFraction : Float, vInset : Float }
 
 
-viewInfoUserPage =
-    { lhsFraction = 0.45
-    , rhsFraction = 0.55
-    , vInset = vInset
-    }
-
-
 userPageDisplay : ViewInfoUserPage -> Model -> Element Msg
 userPageDisplay viewInfo model =
     let
@@ -2272,7 +2456,7 @@ modeButtonStrip model lhWidth =
 
 
 
--- SIGN-IN
+-- SIGN-IN-UP-OUT
 
 
 signInUpView : Model -> Element Msg
@@ -2513,45 +2697,7 @@ signOutButton model =
         }
 
 
-showIf : Bool -> Element Msg -> Element Msg
-showIf bit element =
-    if bit then
-        element
 
-    else
-        Element.none
-
-
-hideIf : Bool -> Element Msg -> Element Msg
-hideIf bit element =
-    if not bit then
-        element
-
-    else
-        Element.none
-
-
-showOne : Bool -> String -> String -> String
-showOne bit str1 str2 =
-    case bit of
-        True ->
-            str1
-
-        False ->
-            str2
-
-
-config =
-    { debounceInterval = 500
-    , timeoutInMs = 5 * 1000
-    , panelHeight = 550
-    , panelWidth = 450
-    , maxFlashCount = 30
-    }
-
-
-
--- VIEW: DISPLAY RENDERED TEXT --
 -- SUBDOCUMENT EDITOR
 
 
@@ -2649,7 +2795,7 @@ inputOutline model =
 
 
 
--- EDITOR
+-- TEXT EDITOR
 
 
 editingDisplay : ViewInfo -> Model -> Element Msg
@@ -2670,6 +2816,10 @@ editingDisplay viewInfo model =
         ]
 
 
+
+-- READER
+
+
 readingDisplay : ViewInfo -> Model -> Element Msg
 readingDisplay viewInfo model =
     let
@@ -2683,7 +2833,11 @@ readingDisplay viewInfo model =
     in
     column [ paddingXY 0 0 ]
         [ readingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, Element.Lazy.lazy (renderedSource viewInfo model footerText) rt ]
+        , row []
+            [ tabStrip viewInfo model
+            , toolsOrDocs viewInfo model
+            , Element.Lazy.lazy (renderedSource viewInfo model footerText) rt
+            ]
         , footer model
         ]
 
@@ -2715,7 +2869,8 @@ renderedSource viewInfo model footerText_ rt =
             ]
         , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
             [ column [ height (px (hToc - 125)), scrollbarY, clipX ] [ rt.toc |> Element.html ]
-            , column [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ] [ renderFooter footerText_ ]
+            , column [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ]
+                [ renderFooter footerText_ ]
             ]
         ]
 
@@ -2735,7 +2890,6 @@ toolsOrDocs viewInfo model =
 
 
 
--- DOCUMENT VIEWS (EDITOR, RENDERED, TOC) --
 -- EDITOR --
 
 
@@ -2826,7 +2980,7 @@ subDocumentEditingModeButton model =
             else
                 Style.buttonGrey
     in
-    showIf (model.currentUser /= Nothing && List.length model.tableOfContents > 0)
+    showIf (model.currentUser /= Nothing && List.length model.tableOfContents > 0 && model.documentListType == DocumentChildren)
         (Input.button []
             { onPress = Just (SetAppMode (Editing SubdocumentEditing))
             , label =
@@ -2871,32 +3025,6 @@ deleteSubdocumentButton model =
         )
 
 
-
---)
---
---addSubdocumentButton model =
---    showIf (model.currentUser /= Nothing)
---        (Input.button
---            []
---            { onPress = Just AddSubdocument
---            , label =
---                el []
---                    (el (headingButtonStyle 140) (Element.text "Add subdocument"))
---            }
---        )
-
-
-inputDocumentId model =
-    showIf (model.currentUser /= Nothing)
-        (Input.text (Style.inputStyle 140 ++ [ Font.size 11 ])
-            { onChange = GotChildDocIdString
-            , text = model.childDocIdString
-            , placeholder = Nothing
-            , label = Input.labelRight [ Font.size 12, Font.color Style.white, width (px 0) ] (Element.text "")
-            }
-        )
-
-
 readingModeButton model =
     let
         color =
@@ -2923,7 +3051,7 @@ headerLabelStyle =
 
 
 
--- TOOL PANEL --
+-- DOCUMENT TOOL PANEL: BUTTONS AND INPUTS --
 
 
 toolPanel viewInfo model =
@@ -2991,6 +3119,18 @@ newDocumentButton model =
             Input.button []
                 { onPress = Just CreateDocument
                 , label = el toolButtonStyleInHeader (Element.text "New")
+                }
+
+
+firstSubDocumentButton model =
+    case model.currentUser of
+        Nothing ->
+            Element.none
+
+        Just _ ->
+            Input.button []
+                { onPress = Just FirstSubdocument
+                , label = el toolButtonStyleInHeader (Element.text "New/S")
                 }
 
 
@@ -3072,6 +3212,10 @@ docListViewer viewInfo model =
         ]
 
 
+
+-- TABLE OF CONTENTS
+
+
 renderTocForSearchResults : Model -> List (Element Msg)
 renderTocForSearchResults model =
     List.map (tocEntry model.currentDocument) model.documentList
@@ -3087,8 +3231,11 @@ renderTocForMaster model =
             [ viewZ model.toggleToc zipper |> Element.map TOC ]
 
 
-
--- TABLE OF CONTENTS
+expandCollapseTocButton =
+    Input.button (Style.activeButtonStyle ++ [ Font.size 12 ])
+        { onPress = Just Toggle
+        , label = Element.text "Expand/Collapse"
+        }
 
 
 tocEntry : Maybe Document -> Document -> Element Msg
@@ -3205,6 +3352,10 @@ setDocumentListTypeButton w n =
         }
 
 
+
+-- HEADERS
+
+
 readingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
 readingHeader viewInfo model rt =
     let
@@ -3274,7 +3425,7 @@ editingHeader viewInfo model rt =
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
         [ modeButtonStrip model lhWidth
         , row [ spacing 10, width fill ]
-            [ titleRow titleWidth rt
+            [ titleRowForEditing titleWidth rt
             , searchRow model
             , el [ width (px 20) ] (Element.text "")
             ]
@@ -3285,8 +3436,14 @@ searchRow model =
     row [ spacing 10, alignRight ] [ inputSearchTerms model, clearSearchTermsButton, searchButton model, allDocumentsButton, helpDocsButton ]
 
 
+titleRowForEditing titleWidth rt =
+    row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
+        [ row [ alignRight, clipX, moveUp 12 ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ] ]
+
+
 titleRow titleWidth rt =
-    row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignLeft, moveLeft 30 ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
+    row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
+        [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
 
 
 editTools : Model -> Element Msg
@@ -3296,6 +3453,7 @@ editTools model =
             [ editingModeButton model
             , subDocumentEditingModeButton model
             , newDocumentButton model
+            , firstSubDocumentButton model
             , saveDocumentButton model
             , deleteDocumentButton model
             , cancelDeleteDocumentButtonInHeader model
@@ -3578,3 +3736,35 @@ extendedMathMarkdownButton model width =
     in
     Input.button (Style.buttonSelected width bit)
         { onPress = Just (SetDocType (Markdown MDExtendedMath)), label = el [ paddingXY 8 0 ] (Element.text "Markdown math") }
+
+
+
+-- VIEW UTILITIES: showIf, etc.
+
+
+showIf : Bool -> Element Msg -> Element Msg
+showIf bit element =
+    if bit then
+        element
+
+    else
+        Element.none
+
+
+hideIf : Bool -> Element Msg -> Element Msg
+hideIf bit element =
+    if not bit then
+        element
+
+    else
+        Element.none
+
+
+showOne : Bool -> String -> String -> String
+showOne bit str1 str2 =
+    case bit of
+        True ->
+            str1
+
+        False ->
+            str2
