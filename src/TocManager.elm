@@ -3,6 +3,7 @@ module TocManager exposing
     , index
     , insertInChildDocumentList
     , insertInMaster
+    , insertInMasterAtHead
     , setup
     , setupWithFocus
     , updateMasterAndDocumentListFromOutline
@@ -98,6 +99,21 @@ insertInMaster newDocument targetDocument masterDocument =
 
         newChildInfo =
             Utility.insertItemInList eq newItem targetItem masterDocument.childInfo
+    in
+    { masterDocument | childInfo = newChildInfo }
+
+
+{-| Insert a new document at the head of the list of child
+documents of the master document, returning the new master.
+-}
+insertInMasterAtHead : Document -> Document -> Document
+insertInMasterAtHead newDocument masterDocument =
+    let
+        newItem =
+            ( newDocument.id, 0 )
+
+        newChildInfo =
+            newItem :: masterDocument.childInfo
     in
     { masterDocument | childInfo = newChildInfo }
 
