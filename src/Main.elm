@@ -2,7 +2,7 @@ module Main exposing (main, parseSearchTerm)
 
 import Api.InputObject exposing (Document_order_by(..))
 import Browser
-import Browser.Dom
+import Browser.Dom as Dom
 import Browser.Events
 import CustomElement.CodeEditor as Editor
 import Data
@@ -23,6 +23,7 @@ import Markdown.Elm
 import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
 import ParseWithId
+import Task exposing(Task)
 import Preprocessor
 import Prng.Uuid as Uuid exposing (Uuid)
 import Process
@@ -57,6 +58,7 @@ import Utility
       KEYBOARD HELPERS
       TIME HELPERS
 
+      EDITOR HELPERS
       DOCUMENT HELPERS
       PARSE AND RENDER
       UI HELPERS: scale, etc.
@@ -398,7 +400,7 @@ type Msg
     | SetAppMode AppMode
     | WindowSize Int Int
     | KeyMsg Keyboard.Msg
-    | SetFocusOnSearchBox (Result Browser.Dom.Error ())
+    | SetFocusOnSearchBox (Result Dom.Error ())
       -- User
     | GotUserName String
     | GotPassword String
@@ -410,6 +412,9 @@ type Msg
     | SignIn
     | SignUp
     | SignOut
+      -- Editor
+    | ProcessLine String
+    | SetViewPortForElement (Result Dom.Error ( Dom.Element, Dom.Viewport ))
       -- Document
     | CreateDocument
     | SaveDocument
@@ -627,6 +632,25 @@ update msg model =
               }
             , Request.publicDocuments hasuraToken |> Cmd.map Req
             )
+
+        -- EDITOR --
+        ProcessLine str ->
+              let
+                 id = (case Markdown.ElmWithId.searchAST str model.lastAst of
+                     Nothing -> "??"
+                     Just id_ -> id_ |>  ParseWithId.stringOfId)
+
+              in
+                 ({ model | message = (ErrorMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id)}
+                    , setViewportForElement id  )
+
+
+        SetViewPortForElement result ->
+            case result of
+                Ok (element, viewport) ->
+                      ( model, setViewPortForSelectedLine element viewport)
+                -- Err _ -> ({ model | message =  (ErrorMessage, "doc VP ERROR") }, Cmd.none )
+                Err _ -> (model  , Cmd.none )
 
         -- DOCUMENT --
         CreateDocument ->
@@ -1123,6 +1147,27 @@ handleTime model newTime =
     )
 
 
+-- EDITOR HELPERS
+
+setViewportForElement : String -> Cmd Msg
+setViewportForElement id =
+    Dom.getViewportOf "_rendered_text_"
+      |> Task.andThen (\vp -> getElementWithViewPort vp id)
+      |> Task.attempt SetViewPortForElement
+
+getElementWithViewPort : Dom.Viewport -> String -> Task Dom.Error (Dom.Element, Dom.Viewport)
+getElementWithViewPort vp id =
+    Dom.getElement id
+      |> Task.map (\el -> (el, vp))
+
+setViewPortForSelectedLine : Dom.Element -> Dom.Viewport -> Cmd Msg
+setViewPortForSelectedLine element viewport =
+    let
+        y =  viewport.viewport.y + element.element.y - element.element.height - 100
+    in
+    Task.attempt (\_ -> NoOp) (Dom.setViewportOf "_rendered_text_" 0 y)
+
+
 
 -- USER HELPERS
 
@@ -1290,7 +1335,7 @@ clearSearchTermsButton =
 
 focusSearchBox : Cmd Msg
 focusSearchBox =
-    Task.attempt SetFocusOnSearchBox (Browser.Dom.focus "search-box")
+    Task.attempt SetFocusOnSearchBox (Dom.focus "search-box")
 
 
 getAllDocuments : Model -> ( Model, Cmd Msg )
@@ -1403,7 +1448,11 @@ emptyRenderedText =
 renderAstFor : Tree ParseWithId.MDBlockWithId -> Cmd Msg
 renderAstFor ast =
     Process.sleep 10
-        |> Task.andThen (\_ -> Process.sleep 100 |> Task.andThen (\_ -> Task.succeed (Markdown.ElmWithId.renderHtmlWithExternaTOC ast)))
+        |> Task.andThen
+            (\_ ->
+                Process.sleep 100
+                    |> Task.andThen (\_ -> Task.succeed (Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast))
+            )
         |> Task.perform GotSecondPart
 
 
@@ -1531,10 +1580,10 @@ processDocument model document =
                             firstAst =
                                 Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
                         in
-                        Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
 
                     else
-                        Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
 
                 cmd1 =
                     if nMath > 10 then
@@ -1590,10 +1639,10 @@ setCurrentSubdocument model document tocItem =
                             firstAst =
                                 Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
                         in
-                        Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
 
                     else
-                        Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
 
                 cmd1 =
                     if nMath > 10 then
@@ -1639,10 +1688,10 @@ renderUpdate model document =
                     firstAst =
                         Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
                 in
-                Markdown.ElmWithId.renderHtmlWithExternaTOC <| firstAst
+                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
 
             else
-                Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
 
         cmd1 =
             if nMath > 10 then
@@ -1714,7 +1763,7 @@ makeNewDocument model =
                 , currentUuid = newUuid
                 , currentSeed = newSeed
                 , lastAst = lastAst
-                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
               }
             , Request.insertDocument hasuraToken newDocument |> Cmd.map Req
             )
@@ -1915,7 +1964,7 @@ firstSubdocument_ model user document =
         , currentSeed = newSeed
         , message = ( UserMessage, "subdocument added" )
         , lastAst = lastAst
-        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
       }
     , Cmd.batch
         [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
@@ -1986,7 +2035,7 @@ newSubdocumentAtHead model user masterDocument =
         , currentSeed = newSeed
         , message = ( UserMessage, "subdocument added" )
         , lastAst = lastAst
-        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
       }
     , Cmd.batch
         [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
@@ -2047,7 +2096,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
         , currentSeed = newSeed
         , message = ( UserMessage, "subdocument added" )
         , lastAst = lastAst
-        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC lastAst
+        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
       }
     , Cmd.batch
         [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
@@ -2188,7 +2237,7 @@ parse docType counter str =
 
 render : DocType -> Tree ParseWithId.MDBlockWithId -> RenderedText Msg
 render docType ast =
-    Markdown.ElmWithId.renderHtmlWithExternaTOC ast
+    Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast
 
 
 markdownOptionOfFlavor : MarkdownFlavor -> Markdown.Option.Option
@@ -2930,6 +2979,7 @@ editor_ model w_ h_ =
     Editor.codeEditor
         [ Editor.editorValue (Document.getContent model.currentDocument)
         , Editor.onEditorChanged UpdateDocumentText
+        , Editor.onGutterClicked ProcessLine
         ]
         []
         |> (\x -> Html.div [ HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])

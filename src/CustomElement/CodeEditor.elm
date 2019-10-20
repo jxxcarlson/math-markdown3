@@ -7,6 +7,7 @@
 -- Distributed under the MIT License
 -- See LICENSE.txt
 --
+-- Modified 2019 by James Carlson (see the onGutterClicked function)
 ----------------------------------------------------------------------
 
 
@@ -14,6 +15,7 @@ module CustomElement.CodeEditor exposing
     ( codeEditor
     , editorValue
     , onEditorChanged
+    , onGutterClicked
     )
 
 {-| The Elm interface to the `code-editor` custom element.
@@ -71,4 +73,14 @@ onEditorChanged tagger =
     on "editorChanged" <|
         JD.map tagger <|
             JD.at [ "target", "editorValue" ]
+                JD.string
+
+
+{-| This is how you receive the content of the line clicked.
+-}
+onGutterClicked : (String -> msg) -> Attribute msg
+onGutterClicked tagger =
+    on "gutterClicked" <|
+        JD.map tagger <|
+            JD.at [ "target", "lineValue" ]
                 JD.string

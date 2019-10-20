@@ -19,6 +19,10 @@ customElements.define('code-editor', class extends HTMLElement {
     return this._editorValue
   }
 
+  get lineValue() {
+      return this._lineValue
+   }
+
   set editorValue(value) {
     if (this._editorValue === value) return;
     this._editorValue = value;
@@ -27,10 +31,9 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
 
-
   connectedCallback() {
     this._editor = CodeMirror(this, {
-      identUnit: 4,
+      identUnit: 3,
       mode: 'elm',
       lineNumbers: true,
       lineSeparator: null,
@@ -39,16 +42,18 @@ customElements.define('code-editor', class extends HTMLElement {
     })
 
 
-      this._editor.on("gutterClick", function(cm, n) {
-        var info = cm.lineInfo(n);
-        console.log("line: " + n)
-        console.log("line content: " + cm.getLine(n))
-      });
+    this._editor.on('gutterClick', (cm, n) => {
+        this._lineValue = this._editor.getLine(n);
+        console.log("n: " + n);
+        console.log("line: " + this._lineValue)
+        this.dispatchEvent(new CustomEvent('gutterClicked'));
+    });
 
 
     this._editor.on('changes', () => {
       this._editorValue = this._editor.getValue();
       this.dispatchEvent(new CustomEvent('editorChanged'));
     });
+
   }
 })
