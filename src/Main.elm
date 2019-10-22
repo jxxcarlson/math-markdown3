@@ -2,7 +2,6 @@ module Main exposing (main, parseSearchTerm)
 
 import Api.InputObject exposing (Document_order_by(..))
 import Browser
-import Outside
 import Browser.Dom as Dom
 import Browser.Events
 import CustomElement.CodeEditor as Editor
@@ -18,6 +17,8 @@ import Element.Lazy
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Html exposing (..)
 import Html.Attributes as HA
+import Json.Decode as D
+import Json.Encode as E
 import Keyboard exposing (Key(..))
 import List.Extra
 import Outside
@@ -381,6 +382,7 @@ init flags =
         , Request.publicDocuments hasuraToken |> Cmd.map Req
         , resetViewportOfRenderedText
         , resetViewportOfEditor
+        , Outside.sendInfo (Outside.AskToReconnectUser E.null)
 
         ]
     )
@@ -396,6 +398,9 @@ type Msg
     | NewUuid
     | Tick Time.Posix
     | AdjustTimeZone Time.Zone
+    -- Ports
+    | Outside Outside.InfoForElm
+    | LogErr String
       -- Random
     | GenerateSeed
     | NewSeed Int
@@ -471,7 +476,7 @@ subscriptions model =
         [ Time.every 1000 Tick
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
-        --, Outside.getInfo Outside.Outside LogErr
+        , Outside.getInfo Outside LogErr
         ]
 
 
@@ -490,6 +495,17 @@ update msg model =
 
         NewSeed newSeed ->
             ( { model | seed = newSeed }, Cmd.none )
+
+        -- PORTS --
+
+        Outside infoForElm ->
+            case infoForElm of
+                Outside.UserDataFromOutside outsideUser ->
+                      ({model | currentUser = Just <| User.fromOutside outsideUser, token =  Just outsideUser.token}, Cmd.none)
+
+        LogErr err ->
+            ({model | message = (ErrorMessage, err)}, Cmd.none)
+
 
         Clear ->
             ( { model
@@ -996,7 +1012,6 @@ update msg model =
 
                                 Just user ->
                                    let
-                                       _ = Debug.log "INFO" (model.token, "preparing to send info outside")
                                        cmd  = case model.token of
                                           Nothing -> Cmd.none
                                           Just token -> Outside.sendInfo (Outside.UserData <| User.outsideUserEncoder (User.outsideUserWithToken token user))

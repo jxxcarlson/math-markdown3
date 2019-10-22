@@ -1,4 +1,4 @@
-module User exposing (AuthorizedUser, OutsideUser, User, barebonesUser, dummy, outsideUserDecoder, outsideUserEncoder, outsideUserWithToken)
+module User exposing (AuthorizedUser, OutsideUser, User, barebonesUser, dummy, fromOutside, outsideUserDecoder, outsideUserEncoder, outsideUserWithToken)
 
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as E
@@ -90,6 +90,17 @@ outsideUserDecoder =
         (D.field "lastName" D.string)
         (D.field "admin" D.bool)
         (D.field "token" D.string)
+
+
+fromOutside : OutsideUser -> User
+fromOutside u =
+    { id = u.id
+    , username = u.username
+    , email = u.email
+    , firstName = u.firstName
+    , lastName = u.lastName
+    , admin = u.admin
+    }
 
 
 outsideUserEncoder : OutsideUser -> E.Value
