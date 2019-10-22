@@ -9,18 +9,19 @@
   "devDependencies": {
     "@dillonkearns/elm-graphql": "^3.6.2",
     "elm-hot": "^1.0.1",
+    "elm-test": "^0.19.1",
     "node-elm-compiler": "^5.0.4",
     "parcel-bundler": "^1.12.3"
   },
   "scripts": {
-    "build-local": "elm make src/Main.elm --output=Main.js",
+    "make": "elm make src/Main.elm --output=Main.js",
+    "publish": "git push",
     "build": "yarn run parcel build public/index.html",
     "api": "elm-graphql https://elm-graphql.herokuapp.com/api --base StarWars",
-    "test": "jest"
+    "test": "elm-test"
   },
   "dependencies": {
     "elm": "^0.19.0-no-deps",
-    "elm-test": "^0.19.1-beta3",
     "parcel-bundler": "^1.12.3"
   }
 }

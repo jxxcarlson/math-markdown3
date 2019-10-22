@@ -23,7 +23,6 @@ import Markdown.Elm
 import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
 import ParseWithId
-import Task exposing(Task)
 import Preprocessor
 import Prng.Uuid as Uuid exposing (Uuid)
 import Process
@@ -32,7 +31,7 @@ import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
 import Style
-import Task
+import Task exposing (Task)
 import Time exposing (Posix)
 import Toc exposing (TocItem)
 import TocManager
@@ -635,22 +634,26 @@ update msg model =
 
         -- EDITOR --
         ProcessLine str ->
-              let
-                 id = (case Markdown.ElmWithId.searchAST str model.lastAst of
-                     Nothing -> "??"
-                     Just id_ -> id_ |>  ParseWithId.stringOfId)
+            let
+                id =
+                    (case Markdown.ElmWithId.searchAST str model.lastAst of
+                        Nothing ->
+                            "??"
 
-              in
-                 ({ model | message = (ErrorMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id)}
-                    , setViewportForElement id  )
-
+                        Just id_ ->
+                            id_ |> ParseWithId.stringOfId)
+            in
+            ( { model | message = ( ErrorMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id ) }
+            , setViewportForElement id
+            )
 
         SetViewPortForElement result ->
             case result of
-                Ok (element, viewport) ->
-                      ( model, setViewPortForSelectedLine element viewport)
-                -- Err _ -> ({ model | message =  (ErrorMessage, "doc VP ERROR") }, Cmd.none )
-                Err _ -> (model  , Cmd.none )
+                Ok ( element, viewport ) ->
+                    ( model, setViewPortForSelectedLine element viewport )
+
+                Err _ ->
+                   ({ model | message =  (ErrorMessage, (Tuple.second model.message) ++ ", doc VP ERROR") }, Cmd.none )
 
         -- DOCUMENT --
         CreateDocument ->
@@ -1147,25 +1150,31 @@ handleTime model newTime =
     )
 
 
+
 -- EDITOR HELPERS
+
+masterId = "_rendered_text_"
 
 setViewportForElement : String -> Cmd Msg
 setViewportForElement id =
-    Dom.getViewportOf "_rendered_text_"
-      |> Task.andThen (\vp -> getElementWithViewPort vp id)
-      |> Task.attempt SetViewPortForElement
+    Dom.getViewportOf  masterId
+        |> Task.andThen (\vp -> getElementWithViewPort vp id)
+        |> Task.attempt SetViewPortForElement
 
-getElementWithViewPort : Dom.Viewport -> String -> Task Dom.Error (Dom.Element, Dom.Viewport)
+
+getElementWithViewPort : Dom.Viewport -> String -> Task Dom.Error ( Dom.Element, Dom.Viewport )
 getElementWithViewPort vp id =
     Dom.getElement id
-      |> Task.map (\el -> (el, vp))
+        |> Task.map (\el -> ( el, vp ))
+
 
 setViewPortForSelectedLine : Dom.Element -> Dom.Viewport -> Cmd Msg
 setViewPortForSelectedLine element viewport =
     let
-        y =  viewport.viewport.y + element.element.y - element.element.height - 100
+        y =
+            viewport.viewport.y + element.element.y - element.element.height - 150
     in
-    Task.attempt (\_ -> NoOp) (Dom.setViewportOf "_rendered_text_" 0 y)
+    Task.attempt (\_ -> NoOp) (Dom.setViewportOf masterId 0 y)
 
 
 
@@ -1242,7 +1251,7 @@ clearSearchTerms model =
 
 
 inputSearchTerms model =
-    Input.text (Style.inputStyle 200 ++ [ Element.htmlAttribute <| HA.attribute "id" "search-box" ])
+    Input.text (Style.inputStyle 200 ++ [ setHtmlId "search-box" ])
         { onChange = GotSearchTerms
         , text = model.searchTerms
         , placeholder = Nothing
@@ -2257,6 +2266,11 @@ markdownOptionOfFlavor flavor =
 -- UI HELPERS
 
 
+
+setHtmlId : String -> Element.Attribute msg
+setHtmlId id =
+   Element.htmlAttribute <| HA.attribute "id" id
+
 scale : Float -> Int -> Int
 scale factor input =
     factor * toFloat input |> round
@@ -2890,6 +2904,9 @@ readingDisplay viewInfo model =
         , footer model
         ]
 
+-- VIEW RENDERED SOURCE --
+
+
 
 renderedSource : ViewInfo -> Model -> String -> RenderedText Msg -> Element Msg
 renderedSource viewInfo model footerText_ rt =
@@ -2913,11 +2930,11 @@ renderedSource viewInfo model footerText_ rt =
         [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
             [ column [ width (px w2_), paddingXY 10 20 ]
                 [ rt.title |> Element.html
-                , rt.document |> Element.html
+                , column [setHtmlId masterId, scrollbarY, height (px h_)] [ rt.document |> Element.html ]
                 ]
             ]
         , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
-            [ column [ height (px (hToc - 125)), scrollbarY, clipX ] [ rt.toc |> Element.html ]
+            [ column [  height (px (hToc - 125)), scrollbarY, clipX ] [ rt.toc |> Element.html ]
             , column [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ]
                 [ renderFooter footerText_ ]
             ]
