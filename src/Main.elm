@@ -2,6 +2,7 @@ module Main exposing (main, parseSearchTerm)
 
 import Api.InputObject exposing (Document_order_by(..))
 import Browser
+import Outside
 import Browser.Dom as Dom
 import Browser.Events
 import CustomElement.CodeEditor as Editor
@@ -19,6 +20,7 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Keyboard exposing (Key(..))
 import List.Extra
+import Outside
 import Markdown.Elm
 import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
@@ -469,6 +471,7 @@ subscriptions model =
         [ Time.every 1000 Tick
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
+        --, Outside.getInfo Outside.Outside LogErr
         ]
 
 
@@ -992,6 +995,12 @@ update msg model =
                                     )
 
                                 Just user ->
+                                   let
+                                       _ = Debug.log "INFO" (model.token, "preparing to send info outside")
+                                       cmd  = case model.token of
+                                          Nothing -> Cmd.none
+                                          Just token -> Outside.sendInfo (Outside.UserData <| User.outsideUserEncoder (User.outsideUserWithToken token user))
+                                   in
                                     ( { model
                                         | message = ( UserMessage, "User signup successful (2)" )
                                         , currentUser = Just user
@@ -1000,7 +1009,11 @@ update msg model =
                                         , focusedElement = NoFocus
                                         , visibilityOfTools = Invisible
                                       }
-                                    , Request.documentsWithAuthorAndTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+                                    ,
+                                    Cmd.batch [
+                                      Request.documentsWithAuthorAndTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+                                      , cmd
+                                      ]
                                       -- XXX
                                     )
 
@@ -2923,8 +2936,6 @@ readerView viewInfo model =
         ]
 
 -- VIEW RENDERED SOURCE --
-
-
 
 renderedSource : ViewInfo -> Model -> String -> RenderedText Msg -> Element Msg
 renderedSource viewInfo model footerText_ rt =
