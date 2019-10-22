@@ -1719,6 +1719,7 @@ renderUpdate model document =
     ( { model
         | lastAst = lastAst
         , renderedText = renderedText
+        , counter = model.counter + 2
       }
     , Cmd.batch [ cmd1, cmd2 ]
     )
