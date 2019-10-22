@@ -377,6 +377,9 @@ init flags =
     , Cmd.batch
         [ Task.perform AdjustTimeZone Time.here
         , Request.publicDocuments hasuraToken |> Cmd.map Req
+        , resetViewportOfRenderedText
+        , resetViewportOfEditor
+
         ]
     )
 
@@ -789,7 +792,7 @@ update msg model =
                             )
 
                 Toggle ->
-                    ( { model | toggleToc = not model.toggleToc }, Cmd.none |> Cmd.map TOC )
+                    ( { model | toggleToc = not model.toggleToc }, Cmd.batch [resetViewportOfRenderedText, resetViewportOfRenderedText])  -- Cmd.none |> Cmd.map TOC )
 
         -- REQ --
         Req requestMsg ->
@@ -1151,9 +1154,19 @@ handleTime model newTime =
 
 
 
--- EDITOR HELPERS
+-- EDITOR HELPERS, VIEWPORT
 
 masterId = "_rendered_text_"
+
+resetViewportOfRenderedText : Cmd Msg
+resetViewportOfRenderedText =
+  Task.attempt (\_ -> NoOp) (Dom.setViewportOf masterId 0 0)
+
+resetViewportOfEditor : Cmd Msg
+resetViewportOfEditor =
+  Task.attempt (\_ -> NoOp) (Dom.setViewportOf "_editor_" 0 0)
+
+
 
 setViewportForElement : String -> Cmd Msg
 setViewportForElement id =
@@ -1251,7 +1264,7 @@ clearSearchTerms model =
 
 
 inputSearchTerms model =
-    Input.text (Style.inputStyle 200 ++ [ setHtmlId "search-box" ])
+    Input.text (Style.inputStyle 200 ++ [ setElementId "search-box" ])
         { onChange = GotSearchTerms
         , text = model.searchTerms
         , placeholder = Nothing
@@ -1619,7 +1632,7 @@ processDocument model document =
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
-    , cmd
+    , Cmd.batch [cmd, resetViewportOfRenderedText, resetViewportOfEditor]
     )
 
 
@@ -1667,7 +1680,7 @@ setCurrentSubdocument model document tocItem =
                     else
                         ( Request.documentsInIdList hasuraToken (Document.idList document) |> Cmd.map Req, DocumentChildren )
             in
-            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2 ], documentListType_ )
+            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, resetViewportOfRenderedText, resetViewportOfEditor ], documentListType_ )
     in
     ( { model
         | currentDocument = Just document
@@ -2268,9 +2281,13 @@ markdownOptionOfFlavor flavor =
 
 
 
-setHtmlId : String -> Element.Attribute msg
-setHtmlId id =
+setElementId : String -> Element.Attribute msg
+setElementId id =
    Element.htmlAttribute <| HA.attribute "id" id
+
+setHtmlId : String -> Html.Attribute msg
+setHtmlId id =
+    HA.attribute "id" id
 
 scale : Float -> Int -> Int
 scale factor input =
@@ -2384,16 +2401,16 @@ view : Model -> Html Msg
 view model =
     case model.appMode of
         Reading ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (readingDisplay viewInfoReading model)
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (readerView viewInfoReading model)
 
         Editing StandardEditing ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (editingDisplay viewInfoEditing model)
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (editorView viewInfoEditing model)
 
         Editing SubdocumentEditing ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (subdocumentEditor viewInfoEditingSubdocuemnt model)
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (subdocumentEditorView viewInfoEditingSubdocuemnt model)
 
         UserMode _ ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (userPageDisplay viewInfoUserPage model)
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (userView viewInfoUserPage model)
 
 
 
@@ -2421,8 +2438,8 @@ type alias ViewInfoUserPage =
     { lhsFraction : Float, rhsFraction : Float, vInset : Float }
 
 
-userPageDisplay : ViewInfoUserPage -> Model -> Element Msg
-userPageDisplay viewInfo model =
+userView : ViewInfoUserPage -> Model -> Element Msg
+userView viewInfo model =
     let
         h_ =
             translate -viewInfo.vInset model.windowHeight
@@ -2765,8 +2782,8 @@ signOutButton model =
 -- SUBDOCUMENT EDITOR
 
 
-subdocumentEditor : ViewInfo -> Model -> Element Msg
-subdocumentEditor viewInfo model =
+subdocumentEditorView : ViewInfo -> Model -> Element Msg
+subdocumentEditorView viewInfo model =
     let
         footerText =
             Maybe.map Document.footer model.currentDocument
@@ -2862,8 +2879,8 @@ inputOutline model =
 -- TEXT EDITOR
 
 
-editingDisplay : ViewInfo -> Model -> Element Msg
-editingDisplay viewInfo model =
+editorView : ViewInfo -> Model -> Element Msg
+editorView viewInfo model =
     let
         footerText =
             Maybe.map Document.footer model.currentDocument
@@ -2884,8 +2901,8 @@ editingDisplay viewInfo model =
 -- READER
 
 
-readingDisplay : ViewInfo -> Model -> Element Msg
-readingDisplay viewInfo model =
+readerView : ViewInfo -> Model -> Element Msg
+readerView viewInfo model =
     let
         footerText =
             Maybe.map Document.footer model.currentDocument
@@ -2931,7 +2948,7 @@ renderedSource viewInfo model footerText_ rt =
         [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
             [ column [ width (px w2_), paddingXY 10 20 ]
                 [ rt.title |> Element.html
-                , column [setHtmlId masterId, scrollbarY, height (px h_)] [ rt.document |> Element.html ]
+                , column [setElementId masterId, scrollbarY, height (px h_)] [ rt.document |> Element.html ]
                 ]
             ]
         , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
@@ -3000,7 +3017,7 @@ editor_ model w_ h_ =
         , Editor.onGutterClicked ProcessLine
         ]
         []
-        |> (\x -> Html.div [ HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
+        |> (\x -> Html.div [ setHtmlId "_editor_",  HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
         |> Element.html
 
 
