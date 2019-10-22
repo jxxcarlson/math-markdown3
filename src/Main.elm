@@ -424,6 +424,7 @@ type Msg
       -- Editor
     | ProcessLine String
     | SetViewPortForElement (Result Dom.Error ( Dom.Element, Dom.Viewport ))
+    | GetTextSelection
       -- Document
     | CreateDocument
     | SaveDocument
@@ -502,6 +503,9 @@ update msg model =
             case infoForElm of
                 Outside.UserDataFromOutside outsideUser ->
                       ({model | currentUser = Just <| User.fromOutside outsideUser, token =  Just outsideUser.token}, Cmd.none)
+
+                Outside.GotSelection selection ->
+                    ({model | message = (UserMessage, String.left 16 selection)}, Cmd.none)
 
         LogErr err ->
             ({model | message = (ErrorMessage, err)}, Cmd.none)
@@ -671,11 +675,14 @@ update msg model =
 
         SetViewPortForElement result ->
             case result of
-                Ok ( element, viewport ) ->
+                Ok ( element, viewport )  ->
                     ( model, setViewPortForSelectedLine element viewport )
 
                 Err _ ->
                    ({ model | message =  (ErrorMessage, (Tuple.second model.message) ++ ", doc VP ERROR") }, Cmd.none )
+
+        GetTextSelection ->
+            (model, Outside.sendInfo (Outside.GetTextSelectionFromOutside E.null))
 
         -- DOCUMENT --
         CreateDocument ->
@@ -3633,13 +3640,21 @@ footer : Model -> Element Msg
 footer model =
     row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
         [ currentAuthorDisplay model
-        , el [] (Element.text <| slugOfCurrentDocument model)
+        -- , el [] (Element.text <| slugOfCurrentDocument model)
+        , getTextSelectionButton
         , dirtyDocumentDisplay model
         , wordCount model
         , row [ spacing 4 ] [ totalWordCountButton, totalWordCountDisplay model ]
         , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
         , currentTime model
         ]
+
+
+getTextSelectionButton =
+    Input.button [] {
+       onPress = Just GetTextSelection
+       , label = el [] (Element.text "Sync L <- R")
+    }
 
 
 totalWordCountButton =

@@ -6,6 +6,7 @@ port module Outside exposing
     )
 
 import Document exposing (Document)
+import Editor
 import Json.Decode as D
 import Json.Encode as E
 import User exposing (OutsideUser, User)
@@ -23,11 +24,13 @@ type alias GenericOutsideData =
 
 type InfoForElm
     = UserDataFromOutside OutsideUser
+    | GotSelection String
 
 
 type InfoForOutside
     = UserData E.Value
     | AskToReconnectUser E.Value
+    | GetTextSelectionFromOutside E.Value
 
 
 getInfo : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -39,6 +42,14 @@ getInfo tagger onError =
                     case D.decodeValue User.outsideUserDecoder outsideInfo.data of
                         Ok result ->
                             tagger <| UserDataFromOutside result
+
+                        Err e ->
+                            onError <| ""
+
+                "GotSelection" ->
+                    case D.decodeValue Editor.selectionDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| GotSelection result
 
                         Err e ->
                             onError <| ""
@@ -56,3 +67,6 @@ sendInfo info =
 
         AskToReconnectUser value ->
             infoForOutside { tag = "AskToReconnectUser", data = E.null }
+
+        GetTextSelectionFromOutside value ->
+            infoForOutside { tag = "GetSelection", data = E.null }
