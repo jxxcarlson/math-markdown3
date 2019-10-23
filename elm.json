@@ -22,6 +22,7 @@
             "elm/time": "1.0.0",
             "elm-community/list-extra": "8.2.2",
             "elm-community/maybe-extra": "5.0.0",
+            "folkertdev/elm-deque": "3.0.1",
             "jxxcarlson/htree": "2.0.1",
             "krisajenkins/remotedata": "6.0.1",
             "mdgriffith/elm-ui": "1.1.5",

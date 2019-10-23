@@ -13,6 +13,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
+import BoundedDeque exposing(BoundedDeque)
 import Element.Lazy
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Html exposing (..)
@@ -140,6 +141,7 @@ type alias Model =
     , documentDeleteState : DocumentDeleteState
     , documentList : List Document
     , tableOfContents : List Document
+    , deque : BoundedDeque Document
     , totalWordCount : Int
     , tocData : Maybe (Zipper TocItem)
     , tocCursor : Maybe Uuid
@@ -166,6 +168,7 @@ type alias Model =
 
 type DocumentListType
     = SearchResults
+    | DequeView
     | DocumentChildren
 
 
@@ -360,6 +363,7 @@ init flags =
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
             , tableOfContents = []
+            , deque = BoundedDeque.empty 20
             , totalWordCount = 0
             , tocData = Nothing
             , tocCursor = Nothing
@@ -540,6 +544,10 @@ update msg model =
 
                 DocumentChildren ->
                     ( { model | documentListType = DocumentChildren }, Cmd.none )
+
+                DequeView ->
+                    ( { model | documentListType = DequeView }, Cmd.none )
+
 
         SetSortMode sortMode ->
             let
@@ -1210,7 +1218,7 @@ masterId = "_rendered_text_"
 
 resetViewportOfRenderedText : Cmd Msg
 resetViewportOfRenderedText =
-  Task.attempt (\_ -> NoOp) (Dom.setViewportOf masterId 0 0)
+  Task.attempt (\_ -> NoOp) (Dom.setViewportOf masterId -100 0)
 
 resetViewportOfEditor : Cmd Msg
 resetViewportOfEditor =
@@ -1679,6 +1687,7 @@ processDocument model document =
         | currentDocument = Just document
         , documentListType = documentListType
         , counter = model.counter + 2
+        , deque = Document.pushFrontUnique document model.deque
         , lastAst = newAst
         , renderedText = newRenderedText
         , tagString = document.tags |> String.join ", "
@@ -3328,6 +3337,9 @@ docListViewer viewInfo model =
                 SearchResults ->
                     renderTocForSearchResults model
 
+                DequeView ->
+                    renderTocForDeque model
+
                 DocumentChildren ->
                     (expandCollapseTocButton |> Element.map TOC) :: renderTocForMaster model
     in
@@ -3356,6 +3368,10 @@ renderTocForSearchResults : Model -> List (Element Msg)
 renderTocForSearchResults model =
     List.map (tocEntry model.currentDocument) model.documentList
 
+
+renderTocForDeque: Model -> List (Element Msg)
+renderTocForDeque model =
+    List.map (tocEntry model.currentDocument) (BoundedDeque.toList model.deque)
 
 renderTocForMaster : Model -> List (Element Msg)
 renderTocForMaster model =
@@ -3439,6 +3455,9 @@ heading model =
                 DocumentChildren ->
                     List.length model.tableOfContents
 
+                DequeView ->
+                   BoundedDeque.length model.deque
+
         n =
             n_
                 |> String.fromInt
@@ -3465,18 +3484,42 @@ heading model =
                                 (Element.text ("Contents (" ++ n ++ ")"))
                         }
 
+                DequeView ->
+                    Input.button []
+                        { onPress = Just (SetDocumentListType DequeView)
+                        , label =
+                            el (headingButtonStyle w)
+                                (Element.text ("Recent (" ++ n ++ ")"))
+                      }
+
         Just _ ->
             case model.documentListType of
                 SearchResults ->
-                    row [ spacing 10 ] [ setDocumentListTypeButton w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model ]
+                    row [ spacing 10 ] [ setDocumentListTypeButton w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model, setDequeViewButton ]
 
                 DocumentChildren ->
-                    Input.button []
-                        { onPress = Just (SetDocumentListType SearchResults)
-                        , label =
-                            el (headingButtonStyle w)
-                                (Element.text ("Contents (" ++ n ++ ")"))
-                        }
+                    row [ spacing 10 ] [setDocumentChildrenButton w n, setDequeViewButtonX w n]
+
+                DequeView ->
+                    row [ spacing 10 ] [ setDocumentListTypeButton w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model, setDequeViewButton ]
+
+
+setDequeViewButtonX w n =
+    Input.button []
+        { onPress = Just (SetDocumentListType DequeView)
+        , label =
+            el (headingButtonStyle w)
+                (Element.text ("Recent (" ++ n ++ ")"))
+        }
+
+setDocumentChildrenButton w n =
+    Input.button []
+        { onPress = Just (SetDocumentListType SearchResults)
+        , label =
+            el (headingButtonStyle w)
+                (Element.text ("Contents (" ++ n ++ ")"))
+                }
+
 
 
 setDocumentListTypeButton w n =
@@ -3487,6 +3530,13 @@ setDocumentListTypeButton w n =
                 (Element.text ("Documents (" ++ n ++ ")"))
         }
 
+setDequeViewButton  =
+    Input.button []
+        { onPress = Just (SetDocumentListType DequeView)
+        , label =
+            el (headingButtonStyle 60)
+                (Element.text "Recent")
+        }
 
 
 -- HEADERS

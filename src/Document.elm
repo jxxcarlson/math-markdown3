@@ -11,9 +11,11 @@ module Document exposing
     , getDocType
     , idAndTitleList
     , idList
+    , idListOfDeque
     , insertDocumentInList
     , level
     , makeTocStatus
+    , pushFrontUnique
     , reOrder
     , reorderChildrenInMaster
     , replaceInList
@@ -22,9 +24,12 @@ module Document exposing
     , stringFromDocType
     , totalWordCount
     , updateMetaData
+    , uuidListFromStrings
     )
 
+import BoundedDeque exposing (BoundedDeque)
 import List.Extra
+import Maybe.Extra
 import Parser exposing ((|.), Parser, chompWhile, getChompedString, succeed, symbol)
 import Prng.Uuid as Uuid exposing (Uuid)
 import Time exposing (Posix)
@@ -312,6 +317,27 @@ create documentUuid authorIdentifier title content =
     , docType = Markdown MDExtendedMath
     , childInfo = []
     }
+
+
+pushFrontUnique : Document -> BoundedDeque Document -> BoundedDeque Document
+pushFrontUnique doc deque =
+    deque
+        |> BoundedDeque.filter (\d -> d.id /= doc.id)
+        |> BoundedDeque.pushFront doc
+
+
+idListOfDeque : BoundedDeque Document -> List String
+idListOfDeque deque =
+    deque
+        |> BoundedDeque.toList
+        |> List.map (.id >> Uuid.toString)
+
+
+uuidListFromStrings : List String -> List Uuid
+uuidListFromStrings strList =
+    strList
+        |> List.map Uuid.fromString
+        |> Maybe.Extra.values
 
 
 {-| Replace by the target document any occurrence of a document in
