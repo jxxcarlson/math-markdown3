@@ -132,6 +132,9 @@ type alias Model =
     , newPassword1 : String
     , newPassword2 : String
 
+    -- EDITOR
+    , selectedText : String
+
     -- DOCUMENT
     , counter : Int
     , documentDeleteState : DocumentDeleteState
@@ -351,7 +354,7 @@ init flags =
             , passwordConfirmation = ""
             , newPassword1 = ""
             , newPassword2 = ""
-
+             , selectedText = ""
             -- documents
             , counter = 0
             , documentDeleteState = SafetyOn
@@ -517,7 +520,7 @@ update msg model =
 
 
                 Outside.GotSelection selection ->
-                    ({model | message = (UserMessage, String.left 16 selection)}, Cmd.none)
+                    ({model | selectedText = selection, message = (UserMessage, String.left 16 selection)}, Cmd.none)
 
         LogErr err ->
             ({model | message = (ErrorMessage, err)}, Cmd.none)
@@ -3357,7 +3360,7 @@ renderTocForMaster : Model -> List (Element Msg)
 renderTocForMaster model =
     case model.tocData of
         Nothing ->
-            [ el [] (Element.text <| "No TOC") ]
+            [ el [] (Element.text <| "Loading TOC ...") ]
 
         Just zipper ->
             [ viewZ model.toggleToc zipper |> Element.map TOC ]

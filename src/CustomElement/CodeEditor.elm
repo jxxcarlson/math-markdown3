@@ -66,6 +66,13 @@ editorValue value =
         JE.string value
 
 
+
+--searchTargetValue : String -> Attribute msg
+--searchTargetValue value =
+--    property "searchTarget" <|
+--        JE.string value
+
+
 {-| This is how you receive changes to the contents of the code editor.
 -}
 onEditorChanged : (String -> msg) -> Attribute msg
