@@ -3063,6 +3063,7 @@ editor_ model w_ h_ =
     in
     Editor.codeEditor
         [ Editor.editorValue (Document.getContent model.currentDocument)
+        , Editor.searchTargetValue model.selectedText
         , Editor.onEditorChanged UpdateDocumentText
         , Editor.onGutterClicked ProcessLine
         ]

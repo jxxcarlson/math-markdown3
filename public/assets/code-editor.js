@@ -31,6 +31,14 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
 
+  set searchTargetValue(value) {
+     console.log("TARGET", value)
+//       if (this._targetValue === value) return;
+//       this._targetValue = value;
+//       if (!this._editor) return;
+//       this._editor.setValue(value);
+     }
+
   connectedCallback() {
     this._editor = CodeMirror(this, {
       identUnit: 3,
