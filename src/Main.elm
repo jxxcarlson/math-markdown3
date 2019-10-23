@@ -502,7 +502,19 @@ update msg model =
         Outside infoForElm ->
             case infoForElm of
                 Outside.UserDataFromOutside outsideUser ->
-                      ({model | currentUser = Just <| User.fromOutside outsideUser, token =  Just outsideUser.token}, Cmd.none)
+                    let
+                        user = User.fromOutside outsideUser
+                    in
+                      ({model | currentUser = Just user
+                                 ,appMode = Reading
+                                  , documentListType = SearchResults
+                                  , focusedElement = NoFocus
+                                  , visibilityOfTools = Invisible
+                                , token =  Just outsideUser.token}
+                            , getUserDocumentsAtSignIn user)
+
+
+
 
                 Outside.GotSelection selection ->
                     ({model | message = (UserMessage, String.left 16 selection)}, Cmd.none)
@@ -1011,7 +1023,7 @@ update msg model =
                             case List.head userList of
                                 Nothing ->
                                     ( { model
-                                        | message = ( ErrorMessage, "Could not match authurized user in Hasura" )
+                                        | message = ( ErrorMessage, "Could not match authorized user in Hasura" )
                                         , currentUser = Nothing
                                       }
                                     , Cmd.none
@@ -1033,7 +1045,7 @@ update msg model =
                                       }
                                     ,
                                     Cmd.batch [
-                                      Request.documentsWithAuthorAndTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+                                      getUserDocumentsAtSignIn user
                                       , cmd
                                       ]
                                       -- XXX
@@ -1241,7 +1253,9 @@ signIn model =
     , Request.signInUser model.username model.password |> Cmd.map Req
     )
 
-
+getUserDocumentsAtSignIn : User -> Cmd Msg
+getUserDocumentsAtSignIn user =
+    Request.documentsWithAuthorAndTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
 -- SEARCH HELPERS
 
@@ -1417,7 +1431,7 @@ getAllDocuments model =
 getHelpDocs : Model -> ( Model, Cmd Msg )
 getHelpDocs model =
     ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
-    , Request.publicDocumentsWithTag hasuraToken "help" |> Cmd.map Req
+    , Request.publicDocumentsWithTag hasuraToken "usermanual" |> Cmd.map Req
     )
 
 

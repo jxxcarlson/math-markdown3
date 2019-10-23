@@ -38,6 +38,7 @@ customElements.define('code-editor', class extends HTMLElement {
       lineNumbers: true,
       lineSeparator: null,
       lineWrapping: true,
+      spellcheck: true,
       value: this._editorValue
     })
 
