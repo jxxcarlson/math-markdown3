@@ -5,10 +5,12 @@ port module Outside exposing
     , sendInfo
     )
 
+import BoundedDeque exposing (BoundedDeque)
 import Document exposing (Document)
 import Editor
 import Json.Decode as D
 import Json.Encode as E
+import Prng.Uuid as Uuid exposing (Uuid)
 import User exposing (OutsideUser, User)
 
 
@@ -25,11 +27,14 @@ type alias GenericOutsideData =
 type InfoForElm
     = UserDataFromOutside OutsideUser
     | GotSelection String
+    | UuidList (List Uuid)
 
 
 type InfoForOutside
-    = UserData E.Value
-    | AskToReconnectUser E.Value
+    = AskToReconnectUser E.Value
+    | UserData E.Value
+    | AskForDequeData E.Value
+    | DequeData E.Value
     | GetTextSelectionFromOutside E.Value
 
 
@@ -54,6 +59,14 @@ getInfo tagger onError =
                         Err e ->
                             onError <| ""
 
+                "UuidList" ->
+                    case D.decodeValue Document.uuidListDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| UuidList result
+
+                        Err e ->
+                            onError <| ""
+
                 _ ->
                     onError <| "Unexpected info from outside"
         )
@@ -64,6 +77,12 @@ sendInfo info =
     case info of
         UserData value ->
             infoForOutside { tag = "UserData", data = value }
+
+        DequeData value ->
+            infoForOutside { tag = "DequeData", data = value }
+
+        AskForDequeData value ->
+            infoForOutside { tag = "AskForDequeData", data = E.null }
 
         AskToReconnectUser value ->
             infoForOutside { tag = "AskToReconnectUser", data = E.null }

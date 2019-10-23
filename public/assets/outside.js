@@ -13,12 +13,26 @@ app.ports.infoForOutside.subscribe(msg => {
         }
         break;
 
+        case "DequeData":
+        console.log("DequeData")
+        if (msg.data != null) {
+          localStorage.setItem("deque", JSON.stringify(msg.data));
+        }
+        break;
+
         case "AskToReconnectUser":
         console.log("AskToReconnectUser")
         if (sessionStorage.currentUser != null) {
             app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(sessionStorage.currentUser)})
         }
         break;
+
+        case "AskForDequeData":
+            console.log("AskForDequeData")
+            if (localStorage.deque != null) {
+                app.ports.infoForElm.send({tag: "UuidList", data: JSON.parse(localStorage.deque)})
+            }
+            break;
 
        case "GetSelection":
            console.log("GetSelection (2)")

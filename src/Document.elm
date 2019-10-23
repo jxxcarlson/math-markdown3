@@ -5,6 +5,7 @@ module Document exposing
     , create
     , deleteChild
     , docTypeFromString
+    , encodeStringList
     , footer
     , getById
     , getContent
@@ -24,15 +25,17 @@ module Document exposing
     , stringFromDocType
     , totalWordCount
     , updateMetaData
+    , uuidListDecoder
     , uuidListFromStrings
     )
 
 import BoundedDeque exposing (BoundedDeque)
+import Json.Decode as D exposing (Decoder)
+import Json.Encode as E
 import List.Extra
 import Maybe.Extra
 import Parser exposing ((|.), Parser, chompWhile, getChompedString, succeed, symbol)
 import Prng.Uuid as Uuid exposing (Uuid)
-import Time exposing (Posix)
 import Utility
 
 
@@ -338,6 +341,17 @@ uuidListFromStrings strList =
     strList
         |> List.map Uuid.fromString
         |> Maybe.Extra.values
+
+
+encodeStringList : String -> List String -> E.Value
+encodeStringList name strList =
+    E.object
+        [ ( name, E.list E.string strList ) ]
+
+
+uuidListDecoder : Decoder (List Uuid)
+uuidListDecoder =
+    D.field "deque" (D.list D.string) |> D.map (List.map Uuid.fromString) |> D.map Maybe.Extra.values
 
 
 {-| Replace by the target document any occurrence of a document in

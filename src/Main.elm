@@ -61,6 +61,8 @@ import Utility
       KEYBOARD HELPERS
       TIME HELPERS
 
+      OUTSIDE HELPERS
+
       EDITOR HELPERS
       DOCUMENT HELPERS
       PARSE AND RENDER
@@ -262,6 +264,7 @@ config =
     , panelHeight = 550
     , panelWidth = 450
     , maxFlashCount = 30
+    , dequeLength = 20
     }
 
 
@@ -363,7 +366,7 @@ init flags =
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
             , tableOfContents = []
-            , deque = BoundedDeque.empty 20
+            , deque = BoundedDeque.empty config.dequeLength
             , totalWordCount = 0
             , tocData = Nothing
             , tocCursor = Nothing
@@ -390,6 +393,7 @@ init flags =
         , resetViewportOfRenderedText
         , resetViewportOfEditor
         , Outside.sendInfo (Outside.AskToReconnectUser E.null)
+        , Outside.sendInfo (Outside.AskForDequeData E.null)
 
         ]
     )
@@ -520,11 +524,14 @@ update msg model =
                                 , token =  Just outsideUser.token}
                             , getUserDocumentsAtSignIn user)
 
-
-
-
                 Outside.GotSelection selection ->
                     ({model | selectedText = selection, message = (UserMessage, String.left 16 selection)}, Cmd.none)
+
+                Outside.UuidList uuidList ->
+                    let
+                        _ = Debug.log "UuidList (2)" uuidList
+                    in
+                    (model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req)
 
         LogErr err ->
             ({model | message = (ErrorMessage, err)}, Cmd.none)
@@ -760,7 +767,8 @@ update msg model =
             updateDocumentText model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
-            processDocument model document
+            processDocument model document (sendDequeOutside  model)
+
 
         SetCurrentSubDocument document tocItem ->
             setCurrentSubdocument model document tocItem
@@ -907,6 +915,20 @@ update msg model =
 
                         Success documentList ->
                             processChildDocumentRequest model documentList
+
+                GotDequeDocuments remoteData ->
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "Get child docs: not asked" ) }, Cmd.none )
+
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "Get child docs:: loading" ) }, Cmd.none )
+
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "Get child docs:: request failed" ) }, Cmd.none )
+
+                        Success documentList ->
+                            ({model | deque = BoundedDeque.fromList config.dequeLength documentList}, Cmd.none)
 
                 GotCandidateChildDocuments remoteData ->
                     case remoteData of
@@ -1210,6 +1232,19 @@ handleTime model newTime =
     , cmd
     )
 
+
+-- OUTSIDE HELPERS --
+
+sendDequeOutside : Model -> Cmd Msg
+sendDequeOutside  model =
+    let
+       data : E.Value
+       data =
+           model.deque
+             |> Document.idListOfDeque
+             |> Document.encodeStringList "deque"
+    in
+      Outside.sendInfo (Outside.DequeData data) |> Cmd.map Req
 
 
 -- EDITOR HELPERS, VIEWPORT
@@ -1645,8 +1680,8 @@ processCandidateChildDocumentRequest model documentList =
     )
 
 
-processDocument : Model -> Document -> ( Model, Cmd Msg )
-processDocument model document =
+processDocument : Model -> Document -> (Cmd Msg) -> ( Model, Cmd Msg )
+processDocument model document extraCmd =
     let
         ( ( newAst, newRenderedText ), cmd, documentListType ) =
             let
@@ -1679,9 +1714,9 @@ processDocument model document =
                         ( Cmd.none, model.documentListType )
 
                     else
-                        ( Request.documentsInIdList hasuraToken (Document.idList document) |> Cmd.map Req, DocumentChildren )
+                        ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, DocumentChildren )
             in
-            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2 ], documentListType_ )
+            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, extraCmd ], documentListType_ )
     in
     ( { model
         | currentDocument = Just document
@@ -1739,7 +1774,7 @@ setCurrentSubdocument model document tocItem =
                         ( Cmd.none, model.documentListType )
 
                     else
-                        ( Request.documentsInIdList hasuraToken (Document.idList document) |> Cmd.map Req, DocumentChildren )
+                        ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, DocumentChildren )
             in
             ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, resetViewportOfRenderedText, resetViewportOfEditor ], documentListType_ )
     in
@@ -1788,7 +1823,7 @@ renderUpdate model document =
                 Cmd.none
 
             else
-                Request.documentsInIdList hasuraToken (Document.idList document) |> Cmd.map Req
+                Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req
     in
     ( { model
         | lastAst = lastAst
@@ -1944,7 +1979,7 @@ addSubdocument_ model user masterDocument newUuid =
     ( { model | currentDocument = Just newMasterDocument, appMode = Reading }
     , Cmd.batch
         [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
-        , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first) |> Cmd.map Req
+        , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first) GotChildDocuments |> Cmd.map Req
         ]
     )
 
@@ -1970,7 +2005,7 @@ addDocumentToMaster_ model document master =
     ( { model | currentDocument = Just newMasterDocument }
     , Cmd.batch
         [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
-        , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first) |> Cmd.map Req
+        , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first)  GotChildDocuments |> Cmd.map Req
         ]
     )
 

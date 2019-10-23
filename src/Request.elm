@@ -90,6 +90,7 @@ import User exposing (AuthorizedUser, User)
 type RequestMsg
     = GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+    | GotDequeDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotCandidateChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotPublicDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotUserAtSignin (RemoteData (Graphql.Http.Error (List User)) (List User))
@@ -139,11 +140,11 @@ documentsWithAuthorAndTitleSorted authToken authorIdentifier titleKey sortData r
 -- CMD: Top level, exported --
 
 
-documentsInIdList : String -> List Uuid -> Cmd RequestMsg
-documentsInIdList authToken uuiIdList =
+documentsInIdList : String -> List Uuid -> RequestHandler -> Cmd RequestMsg
+documentsInIdList authToken uuiIdList requestHandler =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| inUuidList uuiIdList))
-        (RemoteData.fromResult >> GotChildDocuments)
+        (RemoteData.fromResult >> requestHandler)
 
 
 documentsWithAuthorAndTag1 : String -> String -> String -> Cmd RequestMsg
