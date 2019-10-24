@@ -264,7 +264,7 @@ config =
     , panelHeight = 550
     , panelWidth = 450
     , maxFlashCount = 30
-    , dequeLength = 20
+    , dequeLength = 10
     }
 
 
@@ -528,9 +528,6 @@ update msg model =
                     ({model | selectedText = selection, message = (UserMessage, String.left 16 selection)}, Cmd.none)
 
                 Outside.UuidList uuidList ->
-                    let
-                        _ = Debug.log "UuidList (2)" uuidList
-                    in
                     (model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req)
 
         LogErr err ->
