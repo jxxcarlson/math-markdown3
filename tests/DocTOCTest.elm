@@ -226,12 +226,25 @@ transformedList =
     Document.reOrder titleList annotatedList
 
 
+{-| } Reorder the annotatedList using the
+ordereing specified in the titleList
+-}
 expectedTransformedList =
     [ ( "A", 1 ), ( "C", 3 ), ( "B", 2 ) ]
 
 
 
 -- TEST 10: reorderChildren
+{-
+   newMaster1 = TocManager.insertInMaster dx da master
+                A X B C
+   newMaster2 = TocManager.insertInMaster dx db master
+                A B X c
+
+   newMaster1 ~ [ ( id1, 0 ), ( id4, 1 ), ( id2, 1 ), ( id3, 0 ) ] }
+   newMaster2 ~ [ ( id1, 0 ), ( id2, 1 ), ( id4, 1 ), ( id3, 0 ) ]
+
+-}
 
 
 reorderMaster =

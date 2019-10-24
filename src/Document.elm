@@ -169,7 +169,14 @@ reOrder titleList annotatedList =
     List.sortBy (\( str, _ ) -> order str) annotatedList
 
 
-{-| Assumption: the two lists do no refer at all to master
+{-| Reorder children in master given given (1) the list of
+curretnt child document titles, (2) a different ordering of
+the titles.
+
+Assumption: the two lists do not refer at all to master
+
+Safety: p
+
 -}
 reorderChildrenInMaster : Document -> List String -> List String -> Document
 reorderChildrenInMaster masterDocument childTitleList newChildTitleList =
