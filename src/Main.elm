@@ -780,10 +780,10 @@ update msg model =
 
                 Just masterDocument ->
                     case TocManager.updateMasterAndDocumentListFromOutline model.documentOutline model.tableOfContents of
-                        Nothing ->
-                            ( model, Cmd.none )
+                        Err error ->
+                            ( {model | message = (ErrorMessage, Document.stringOfError   error)}, Cmd.none )
 
-                        Just ( newMasterDocument, newDocumentList ) ->
+                        Ok ( newMasterDocument, newDocumentList ) ->
                             ( { model
                                 | currentDocument = Just newMasterDocument
                                 , tableOfContents = newDocumentList

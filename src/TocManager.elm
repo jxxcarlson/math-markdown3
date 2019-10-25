@@ -9,7 +9,7 @@ module TocManager exposing
     , updateMasterAndDocumentListFromOutline
     )
 
-import Document exposing (Document)
+import Document exposing (Document, DocumentError(..))
 import List.Extra
 import Prng.Uuid as Uuid exposing (Uuid)
 import Toc exposing (TocItem)
@@ -177,11 +177,11 @@ NB: We assume that the documentList is headed by the master document.
 This function returns a document list headed by the updated master document
 
 -}
-updateMasterAndDocumentListFromOutline : String -> List Document -> Maybe ( Document, List Document )
+updateMasterAndDocumentListFromOutline : String -> List Document -> Result DocumentError ( Document, List Document )
 updateMasterAndDocumentListFromOutline documentOutline documentList =
     case List.head documentList of
         Nothing ->
-            Nothing
+            Err DocumentListIsEmpty
 
         Just masterDocument ->
             let
@@ -200,21 +200,23 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                     List.map Document.level titleListUnfiltered
 
                 newChildInfo =
+                    -- childInfo with updated levels
                     List.map2 (\( id, _ ) l -> ( id, l )) masterDocument.childInfo levels
 
                 newMasterDocument_ =
+                    -- masterDocument_ with updated levels
                     { masterDocument | childInfo = newChildInfo }
-
-                newMasterDocument =
-                    Document.reorderChildrenInMaster newMasterDocument_ (List.map .title childDocuments) titleList
-
-                newDocumentList =
-                    newMasterDocument
-                        :: (childDocuments
-                                |> Document.sortChildren newMasterDocument
-                           )
             in
-            Just ( newMasterDocument, newDocumentList )
+            case Document.reorderChildrenInMaster newMasterDocument_ (List.map .title childDocuments) titleList of
+                Ok newMasterDocument ->
+                    let
+                        newDocumentList =
+                            newMasterDocument :: (childDocuments |> Document.sortChildren newMasterDocument)
+                    in
+                    Ok ( newMasterDocument, newDocumentList )
+
+                Err error ->
+                    Err error
 
 
 {-| Find index of subDocument in Master

@@ -1,9 +1,12 @@
 module DocTOCTest exposing (suite)
 
+import Dict exposing (Dict)
 import Document exposing (..)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
+import Maybe.Extra
 import Prng.Uuid as Uuid exposing (Uuid)
+import Result exposing (Result(..))
 import Test exposing (..)
 import Toc
 import TocManager
@@ -14,18 +17,60 @@ suite : Test
 suite =
     describe "Toc operations"
         [ doTest "1. insert new document at position 1 in Master" newMaster1 expectedNewMaster1
-        , doTest "2. insert new document at position 2 in Master" newMaster2 expectedNewMaster2
-        , doTest "3. insert new document at position 3 in Master" newMaster3 expectedNewMaster3
-        , doTest "4. insert new document at position 1 in ChildDocumentList" newChildDocumentList1 expectedNewChildDocumentList1
-        , doTest "5. insert new document at position 2 in ChildDocumentList" newChildDocumentList2 expectedNewChildDocumentList2
-        , doTest "6. insert new document at position 3 in ChildDocumentList" newChildDocumentList3 expectedNewChildDocumentList3
-        , doTest "7. Compare computed and expected outlines " computedOutline (Just expectedOutline)
-        , doTest "8. Delete document " masterAfterDelete expectedMasterAfterDelete
-        , doTest "9. Document.reOrder " transformedList expectedTransformedList
-        , doTest "10. Document.reorderChildren " reorderMaster expectedReorderMaster
-        , doTest "11 Update from outline - check master " newMasterXX expectedNewMasterXX
-        , doTest "12. Update from outline - check document list " newDocumentListXX expectedDocumentListXX
-        , doTest "13. Update from outline - change level, check master " newMaster2X master3
+
+        --        , doTest "2. insert new document at position 2 in Master" newMaster2 expectedNewMaster2
+        --        , doTest "3. insert new document at position 3 in Master" newMaster3 expectedNewMaster3
+        --        , doTest "4. insert new document at position 1 in ChildDocumentList" newChildDocumentList1 expectedNewChildDocumentList1
+        --        , doTest "5. insert new document at position 2 in ChildDocumentList" newChildDocumentList2 expectedNewChildDocumentList2
+        --        , doTest "6. insert new document at position 3 in ChildDocumentList" newChildDocumentList3 expectedNewChildDocumentList3
+        --        , doTest "7. Compare computed and expected outlines " computedOutline (Just expectedOutline)
+        --        , doTest "8. Delete document " masterAfterDelete expectedMasterAfterDelete
+        --        , doTest "9. Document.reOrder " transformedList expectedTransformedList
+        --        , doTest "10. Document.reorderChildren " reorderMaster (Ok expectedReorderMaster)
+        --        , doTest "11 Update from outline - check master " newMasterXX expectedNewMasterXX
+        --        , doTest "12. Update from outline - check document list " newDocumentListXX expectedDocumentListXX
+        --        , doTest "13. Update from outline - change level, check master " newMaster2X master3
+        --
+        --        , doTest "14. Update from bad outline - missing title" newMasterFromBadOutline (Ok master3)
+        , doTest "Identity test for reordering by titles"
+            (docReorderBy [ "A", "B", "C" ] |> Result.map childTitlesFromDoc)
+            (Ok [ "A", "B", "C" ])
+        , doTest "Reordering by titles, list too short"
+            (docReorderBy [ "A", "B" ] |> Result.map childTitlesFromDoc)
+            (Err ListsOfDifferentLengths)
+        , doTest "Reordering by titles, list too long"
+            (docReorderBy [ "A", "B", "C", "D" ] |> Result.map childTitlesFromDoc)
+            (Err ListsOfDifferentLengths)
+        , doTest "Reordering by titles, list empty"
+            (docReorderBy [] |> Result.map childTitlesFromDoc)
+            (Err ListsOfDifferentLengths)
+        , doTest "Reordering by titles, list has extraneous element"
+            (docReorderBy [ "A", "X", "C" ] |> Result.map childTitlesFromDoc)
+            (Err UnequalSets)
+        , doTest "Permutation test for reordering by titles"
+            (docReorderBy [ "B", "A", "C" ] |> Result.map childTitlesFromDoc)
+            (Ok [ "B", "A", "C" ])
+        , doTest "try to reorder with title list which is too short"
+            (docReorderBy [ "A", "B" ] |> Result.map childTitlesFromDoc)
+            (Err ListsOfDifferentLengths)
+        , doTest "try to reorder with title list which is too long"
+            (docReorderBy [ "A", "B", "C", "D" ] |> Result.map childTitlesFromDoc)
+            (Err ListsOfDifferentLengths)
+        , doTest "try to reorder with title list has extraneous element"
+            (docReorderBy [ "A", "X", "C" ] |> Result.map childTitlesFromDoc)
+            (Err UnequalSets)
+        , doTest "equalUuid, identity"
+            (Document.equalUuidSets [ ( id1, "A" ), ( id2, "A" ), ( id3, "A" ) ] [ ( id1, "A" ), ( id2, "A" ), ( id3, "A" ) ])
+            True
+        , doTest "equalUuid, permuted"
+            (Document.equalUuidSets [ ( id2, "A" ), ( id1, "A" ), ( id3, "A" ) ] [ ( id1, "A" ), ( id2, "A" ), ( id3, "A" ) ])
+            True
+        , doTest "equalUuid, extraneous element"
+            (Document.equalUuidSets [ ( id4, "A" ), ( id1, "A" ), ( id3, "A" ) ] [ ( id1, "A" ), ( id2, "A" ), ( id3, "A" ) ])
+            False
+        , doTest "equalUuid, unequal length"
+            (Document.equalUuidSets [ ( id2, "A" ), ( id3, "A" ) ] [ ( id1, "A" ), ( id2, "A" ), ( id3, "A" ) ])
+            False
         ]
 
 
@@ -41,6 +86,7 @@ doTest comment expr expectedValue =
 
 
 -- DATA FOR TESTS --
+-- DUMMY DOCUMENT --
 
 
 dummy =
@@ -54,6 +100,10 @@ dummy =
     , docType = Markdown MDExtendedMath
     , childInfo = []
     }
+
+
+
+-- IDS --
 
 
 id1 =
@@ -76,6 +126,10 @@ id5 =
     getId 5
 
 
+
+-- DOCUMENTS --
+
+
 da =
     { dummy | id = getId 1, title = "A" }
 
@@ -90,6 +144,41 @@ dc =
 
 dx =
     { dummy | id = getId 4, title = "X" }
+
+
+
+-- ID/TITLE HELPER --
+
+
+idStringTitleDict : Dict String String
+idStringTitleDict =
+    Dict.fromList [ ( Uuid.toString id1, "A" ), ( Uuid.toString id2, "B" ), ( Uuid.toString id3, "C" ) ]
+
+
+titleIdDict : Dict String String
+titleIdDict =
+    let
+        pairs =
+            Dict.toList idStringTitleDict
+    in
+    List.map (\( a, b ) -> ( b, a )) pairs
+        |> Dict.fromList
+
+
+titleOfUuid : Uuid -> Maybe String
+titleOfUuid uuid =
+    Dict.get (Uuid.toString uuid) idStringTitleDict
+
+
+childTitlesFromDoc : Document -> List String
+childTitlesFromDoc doc =
+    doc.childInfo
+        |> List.map (Tuple.first >> titleOfUuid)
+        |> Maybe.Extra.values
+
+
+
+-- MASTER DOCUMMENT FOR TESTING --
 
 
 master =
@@ -247,6 +336,7 @@ expectedTransformedList =
 -}
 
 
+reorderMaster : Result DocumentError Document
 reorderMaster =
     reorderChildrenInMaster newMaster1 [ "A", "X", "B", "C" ] [ "A", "B", "X", "C" ]
 
@@ -273,6 +363,7 @@ C
 -}
 newMasterXX =
     TocManager.updateMasterAndDocumentListFromOutline newOutline [ newMaster1, da, dx, db, dc ]
+        |> Result.toMaybe
         |> Maybe.map Tuple.first
         |> Maybe.withDefault da
 
@@ -287,6 +378,7 @@ expectedNewMasterXX =
 -}
 newDocumentListXX =
     TocManager.updateMasterAndDocumentListFromOutline newOutline [ newMaster1, da, dx, db, dc ]
+        |> Result.toMaybe
         |> Maybe.map Tuple.second
         |> Maybe.withDefault []
         |> List.drop 1
@@ -322,5 +414,33 @@ C
 
 newMaster2X =
     TocManager.updateMasterAndDocumentListFromOutline newOutline2 [ master2, da, db, dc ]
+        |> Result.toMaybe
         |> Maybe.map Tuple.first
         |> Maybe.withDefault da
+
+
+badOutline =
+    String.trim
+        """
+A
+B
+"""
+
+
+newMasterFromBadOutline =
+    TocManager.updateMasterAndDocumentListFromOutline badOutline [ master2, da, db, dc ]
+        |> Result.map Tuple.first
+
+
+{-|
+
+    > reorderedMasterABC_ABC |> Result.map childTitlesFromDoc
+    Ok ["A","B","C"]
+
+-}
+reorderedMasterABC_ABC =
+    Document.reorderChildrenInMaster master [ "A", "B", "C" ] [ "A", "B", "C" ]
+
+
+docReorderBy =
+    Document.reorderChildrenInMaster master [ "A", "B", "C" ]

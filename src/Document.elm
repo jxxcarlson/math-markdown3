@@ -1,11 +1,14 @@
 module Document exposing
     ( DocType(..)
     , Document
+    , DocumentError(..)
     , MarkdownFlavor(..)
     , create
     , deleteChild
     , docTypeFromString
+    , elementsAreUnique
     , encodeStringList
+    , equalUuidSets
     , footer
     , getById
     , getContent
@@ -23,6 +26,7 @@ module Document exposing
     , setContent
     , sortChildren
     , stringFromDocType
+    , stringOfError
     , totalWordCount
     , updateMetaData
     , uuidListDecoder
@@ -62,6 +66,33 @@ type MarkdownFlavor
     = MDStandard
     | MDExtended
     | MDExtendedMath
+
+
+type DocumentError
+    = RepeatedListElements
+    | ListsOfDifferentLengths
+    | UnequalSets
+    | UuidListsDoNotMatch
+    | DocumentListIsEmpty
+
+
+stringOfError : DocumentError -> String
+stringOfError docError =
+    case docError of
+        RepeatedListElements ->
+            "Repeated list elements"
+
+        ListsOfDifferentLengths ->
+            "Lists of different lengths"
+
+        UnequalSets ->
+            "Undqual sets"
+
+        UuidListsDoNotMatch ->
+            "Uuid lists don't  match'"
+
+        DocumentListIsEmpty ->
+            "Document list is emptys"
 
 
 {-| Used to determine whether a toc entry
@@ -159,18 +190,42 @@ idAndTitleList list =
     List.map (\doc -> ( doc.id, doc.title )) list
 
 
-reOrder : List String -> List ( String, a ) -> List ( String, a )
+elementsAreUnique : List comparable -> Bool
+elementsAreUnique list =
+    List.length list == List.length (List.Extra.unique list)
+
+
+{-| Reorder the annotatedList so that its projection onto the
+first component is the same as the titleList
+-}
+reOrder : List String -> List ( String, a ) -> Result DocumentError (List ( String, a ))
 reOrder titleList annotatedList =
-    let
-        order : String -> Int
-        order str =
-            List.Extra.elemIndex str titleList |> Maybe.withDefault -1
-    in
-    List.sortBy (\( str, _ ) -> order str) annotatedList
+    case
+        ( elementsAreUnique titleList
+        , List.length titleList == List.length annotatedList
+        , List.sort titleList == List.sort (List.map Tuple.first annotatedList)
+        )
+    of
+        ( False, _, _ ) ->
+            Err RepeatedListElements
+
+        ( _, False, _ ) ->
+            Err ListsOfDifferentLengths
+
+        ( _, _, False ) ->
+            Err UnequalSets
+
+        ( True, True, True ) ->
+            let
+                order : String -> Int
+                order str =
+                    List.Extra.elemIndex str titleList |> Maybe.withDefault -1
+            in
+            Ok (List.sortBy (\( str, _ ) -> order str) annotatedList)
 
 
 {-| Reorder children in master given given (1) the list of
-curretnt child document titles, (2) a different ordering of
+current child document titles, (2) a different ordering of
 the titles.
 
 Assumption: the two lists do not refer at all to master
@@ -178,22 +233,28 @@ Assumption: the two lists do not refer at all to master
 Safety: p
 
 -}
-reorderChildrenInMaster : Document -> List String -> List String -> Document
+reorderChildrenInMaster : Document -> List String -> List String -> Result DocumentError Document
 reorderChildrenInMaster masterDocument childTitleList newChildTitleList =
     let
         annotatedList =
             List.map2 (\u v -> ( u, v )) childTitleList masterDocument.childInfo
 
-        newChildInfo =
-            reOrder newChildTitleList annotatedList
-                |> List.map Tuple.second
+        --        newChildInfo =
+        --            reOrder newChildTitleList annotatedList
+        --                |> List.map Tuple.second
+        --
     in
-    case equalUuidSets newChildInfo masterDocument.childInfo of
-        True ->
-            { masterDocument | childInfo = newChildInfo }
+    case reOrder newChildTitleList annotatedList |> Result.map (List.map Tuple.second) of
+        Err err ->
+            Err err
 
-        False ->
-            masterDocument
+        Ok newChildInfo ->
+            case equalUuidSets newChildInfo masterDocument.childInfo of
+                True ->
+                    Ok { masterDocument | childInfo = newChildInfo }
+
+                False ->
+                    Err UuidListsDoNotMatch
 
 
 equalUuidSets : List ( Uuid, a ) -> List ( Uuid, a ) -> Bool
