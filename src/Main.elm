@@ -4,6 +4,7 @@ import Api.InputObject exposing (Document_order_by(..))
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
+import Browser.Navigation as Nav
 import CustomElement.CodeEditor as Editor
 import Data
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
@@ -44,6 +45,7 @@ import TocZ exposing (TocMsg(..), viewZ)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
 import Tree.Zipper as Zipper exposing (Zipper)
+import Url exposing(Url)
 import User exposing (AuthorizedUser, User)
 import Utility
 
@@ -89,14 +91,23 @@ import Utility
 
 main : Program Flags Model Msg
 main =
-    Browser.element
-        { view = view
+    Browser.application
+        { init = init
+        , view = view
         , update = update
-        , init = init
         , subscriptions = subscriptions
+        , onUrlRequest = LinkClicked
+        , onUrlChange = UrlChanged
         }
 
-
+--application :
+--  { init : flags -> Url -> Key -> ( model, Cmd msg )
+--  , view : model -> Document msg
+--  , update : msg -> model -> ( model, Cmd msg )
+--  , subscriptions : model -> Sub msg
+--  , onUrlRequest : UrlRequest -> msg
+--  , onUrlChange : Url -> msg
+--  }
 
 -- MODEL --
 
@@ -105,8 +116,11 @@ type alias RenderedText msg =
     { title : Html msg, toc : Html msg, document : Html msg }
 
 
-type alias Model =
+type alias Model  =
     { seed : Int
+    -- NAV
+      , key : Nav.Key
+      , url : Url.Url
 
     -- UI
     , docType : Document.DocType
@@ -168,6 +182,9 @@ type alias Model =
 
 -- TYPES FOR MODEL
 
+type UrlRequest
+  = Internal Url.Url
+  | External String
 
 type DocumentListType
     = SearchResults
@@ -323,8 +340,8 @@ vInset =
 -- INIT --
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
     let
         ( newUuid, newSeed ) =
             step Uuid.generator (initialSeed flags.seed flags.randInts)
@@ -332,6 +349,9 @@ init flags =
         model : Model
         model =
             { seed = 0
+            , key = key
+            , url = url
+
 
             -- UI
             , docType = Markdown MDExtendedMath
@@ -419,7 +439,8 @@ type Msg
     | GenerateSeed
     | NewSeed Int
     -- Navigation
-    | UrlChanged String
+    | LinkClicked Browser.UrlRequest
+    | UrlChanged Url
       -- UI
     | SetToolPanelState Visibility
     | SetAppMode AppMode
@@ -494,7 +515,6 @@ subscriptions model =
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         , Outside.getInfo Outside LogErr
-        , Outside.onUrlChange UrlChanged
         ]
 
 
@@ -858,16 +878,26 @@ update msg model =
 
         -- NAVIGATION --
 
-        UrlChanged str ->
-            let
-               _ = Debug.log "URL IS" str
-            in
-            case UrlAppParser.toRoute str of
-                DocumentIdRef id ->
-                    (model, Cmd.none)
 
-                _ ->
-                    ( model, Cmd.none )
+        LinkClicked urlRequest ->
+           let
+               _ = Debug.log "urlRequest" urlRequest
+           in
+              case urlRequest of
+                Browser.Internal url ->
+                  ( model, Nav.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                  ( model, Nav.load href )
+
+        UrlChanged url ->
+           let
+               _ = Debug.log "URL" url
+           in
+              ( { model | url = url }
+              , Cmd.none
+              )
+
         -- REQ --
         Req requestMsg ->
             case requestMsg of
@@ -1169,7 +1199,7 @@ processUrl urlString =
 
                 ]
 
-        DocumentIdRef docId ->
+        DocumentRef docId ->
             Cmd.batch
                 [
 --                  Outside.sendInfoOutside (AskToReconnectUser Encode.null)
@@ -2610,25 +2640,36 @@ handleDeletedDocument model =
 -- VIEW FUNCTIONS
 ---
 
+documentMsgFromHtmlMsg : String -> Html msg -> Browser.Document msg
+documentMsgFromHtmlMsg title msg  =
+    { title = title
+    , body = [msg] }
 
 type alias RenderedDocumentRecord msg =
     { document : Html msg, title : Html msg, toc : Html msg }
 
 
-view : Model -> Html Msg
+
+
+view : Model -> Browser.Document Msg
 view model =
     case model.appMode of
         Reading ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (readerView viewInfoReading model)
+               |> documentMsgFromHtmlMsg "Reading"
+
 
         Editing StandardEditing ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (editorView viewInfoEditing model)
+               |> documentMsgFromHtmlMsg "Editing"
 
         Editing SubdocumentEditing ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (subdocumentEditorView viewInfoEditingSubdocuemnt model)
+               |> documentMsgFromHtmlMsg "Edit Subdocuments"
 
         UserMode _ ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (userView viewInfoUserPage model)
+               |> documentMsgFromHtmlMsg "User Mode"
 
 
 

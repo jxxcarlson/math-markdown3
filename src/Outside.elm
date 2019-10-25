@@ -2,7 +2,6 @@ port module Outside exposing
     ( InfoForElm(..)
     , InfoForOutside(..)
     , getInfo
-    , onUrlChange
     , pushUrl
     , sendInfo
     )
@@ -17,9 +16,6 @@ import User exposing (OutsideUser, User)
 
 
 port pushUrl : String -> Cmd msg
-
-
-port onUrlChange : (String -> msg) -> Sub msg
 
 
 port infoForOutside : GenericOutsideData -> Cmd msg

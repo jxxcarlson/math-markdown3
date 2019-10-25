@@ -11,7 +11,7 @@ import Url.Parser as Parser exposing ((</>), Parser, custom, int, map, oneOf, pa
 
 type Route
     = NotFound
-    | DocumentIdRef String
+    | DocumentRef String
     | HomeRef String
     | InternalRef String
 
@@ -26,7 +26,7 @@ route : Parser (Route -> a) a
 route =
     oneOf
         [ map HomeRef (s "home" </> string)
-        , map DocumentIdRef (s "doc/" </> string)
+        , map DocumentRef (s "doc/" </> string)
         , map InternalRef internalRef
         ]
 
@@ -35,7 +35,7 @@ internalRef : Parser (String -> a) a
 internalRef =
     custom "INNER" <|
         \segment ->
-            if String.startsWith "#_" segment then
+            if String.startsWith "#" segment then
                 Just segment
 
             else
