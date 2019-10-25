@@ -14,6 +14,7 @@ import Json.Decode as Decode exposing (Decoder)
   - FirstName - column name
   - Id - column name
   - LastName - column name
+  - RecentDocs - column name
   - TimeStamp - column name
   - Username - column name
 
@@ -24,13 +25,14 @@ type User_update_column
     | FirstName
     | Id
     | LastName
+    | RecentDocs
     | TimeStamp
     | Username
 
 
 list : List User_update_column
 list =
-    [ Admin, Email, FirstName, Id, LastName, TimeStamp, Username ]
+    [ Admin, Email, FirstName, Id, LastName, RecentDocs, TimeStamp, Username ]
 
 
 decoder : Decoder User_update_column
@@ -53,6 +55,9 @@ decoder =
 
                     "lastName" ->
                         Decode.succeed LastName
+
+                    "recentDocs" ->
+                        Decode.succeed RecentDocs
 
                     "timeStamp" ->
                         Decode.succeed TimeStamp
@@ -84,6 +89,9 @@ toString enum =
 
         LastName ->
             "lastName"
+
+        RecentDocs ->
+            "recentDocs"
 
         TimeStamp ->
             "timeStamp"
@@ -120,6 +128,9 @@ fromString enumString =
 
         "lastName" ->
             Just LastName
+
+        "recentDocs" ->
+            Just RecentDocs
 
         "timeStamp" ->
             Just TimeStamp

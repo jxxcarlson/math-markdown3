@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.User exposing (DocumentsAggregateOptionalArguments, DocumentsOptionalArguments, admin, documents, documents_aggregate, email, firstName, id, lastName, timeStamp, username)
+module Api.Object.User exposing (DocumentsAggregateOptionalArguments, DocumentsOptionalArguments, RecentDocsOptionalArguments, admin, documents, documents_aggregate, email, firstName, id, lastName, recentDocs, timeStamp, username)
 
 import Api.Enum.Document_select_column
 import Api.InputObject
@@ -105,6 +105,28 @@ id =
 lastName : SelectionSet String Api.Object.User
 lastName =
     Object.selectionForField "String" "lastName" [] Decode.string
+
+
+type alias RecentDocsOptionalArguments =
+    { path : OptionalArgument String }
+
+
+{-|
+
+  - path - JSON select path
+
+-}
+recentDocs : (RecentDocsOptionalArguments -> RecentDocsOptionalArguments) -> SelectionSet CustomScalarCodecs.Jsonb Api.Object.User
+recentDocs fillInOptionals =
+    let
+        filledInOptionals =
+            fillInOptionals { path = Absent }
+
+        optionalArgs =
+            [ Argument.optional "path" filledInOptionals.path Encode.string ]
+                |> List.filterMap identity
+    in
+    Object.selectionForField "CustomScalarCodecs.Jsonb" "recentDocs" optionalArgs (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
 
 
 timeStamp : SelectionSet CustomScalarCodecs.Timestamptz Api.Object.User

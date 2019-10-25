@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.InputObject exposing (Boolean_comparison_exp, Boolean_comparison_expOptionalFields, Document_aggregate_order_by, Document_aggregate_order_byOptionalFields, Document_append_input, Document_append_inputOptionalFields, Document_arr_rel_insert_input(..), Document_arr_rel_insert_inputOptionalFields, Document_arr_rel_insert_inputRaw, Document_arr_rel_insert_inputRequiredFields, Document_bool_exp(..), Document_bool_expOptionalFields, Document_bool_expRaw, Document_delete_at_path_input, Document_delete_at_path_inputOptionalFields, Document_delete_elem_input, Document_delete_elem_inputOptionalFields, Document_delete_key_input, Document_delete_key_inputOptionalFields, Document_insert_input(..), Document_insert_inputOptionalFields, Document_insert_inputRaw, Document_max_order_by, Document_max_order_byOptionalFields, Document_min_order_by, Document_min_order_byOptionalFields, Document_obj_rel_insert_input(..), Document_obj_rel_insert_inputOptionalFields, Document_obj_rel_insert_inputRaw, Document_obj_rel_insert_inputRequiredFields, Document_on_conflict, Document_on_conflictRequiredFields, Document_order_by(..), Document_order_byOptionalFields, Document_order_byRaw, Document_prepend_input, Document_prepend_inputOptionalFields, Document_set_input, Document_set_inputOptionalFields, Jsonb_comparison_exp, Jsonb_comparison_expOptionalFields, String_comparison_exp, String_comparison_expOptionalFields, Timestamptz_comparison_exp, Timestamptz_comparison_expOptionalFields, User_aggregate_order_by, User_aggregate_order_byOptionalFields, User_arr_rel_insert_input(..), User_arr_rel_insert_inputOptionalFields, User_arr_rel_insert_inputRaw, User_arr_rel_insert_inputRequiredFields, User_bool_exp(..), User_bool_expOptionalFields, User_bool_expRaw, User_insert_input(..), User_insert_inputOptionalFields, User_insert_inputRaw, User_max_order_by, User_max_order_byOptionalFields, User_min_order_by, User_min_order_byOptionalFields, User_obj_rel_insert_input(..), User_obj_rel_insert_inputOptionalFields, User_obj_rel_insert_inputRaw, User_obj_rel_insert_inputRequiredFields, User_on_conflict, User_on_conflictRequiredFields, User_order_by, User_order_byOptionalFields, User_set_input, User_set_inputOptionalFields, Uuid_comparison_exp, Uuid_comparison_expOptionalFields, buildBoolean_comparison_exp, buildDocument_aggregate_order_by, buildDocument_append_input, buildDocument_arr_rel_insert_input, buildDocument_bool_exp, buildDocument_delete_at_path_input, buildDocument_delete_elem_input, buildDocument_delete_key_input, buildDocument_insert_input, buildDocument_max_order_by, buildDocument_min_order_by, buildDocument_obj_rel_insert_input, buildDocument_on_conflict, buildDocument_order_by, buildDocument_prepend_input, buildDocument_set_input, buildJsonb_comparison_exp, buildString_comparison_exp, buildTimestamptz_comparison_exp, buildUser_aggregate_order_by, buildUser_arr_rel_insert_input, buildUser_bool_exp, buildUser_insert_input, buildUser_max_order_by, buildUser_min_order_by, buildUser_obj_rel_insert_input, buildUser_on_conflict, buildUser_order_by, buildUser_set_input, buildUuid_comparison_exp, encodeBoolean_comparison_exp, encodeDocument_aggregate_order_by, encodeDocument_append_input, encodeDocument_arr_rel_insert_input, encodeDocument_bool_exp, encodeDocument_delete_at_path_input, encodeDocument_delete_elem_input, encodeDocument_delete_key_input, encodeDocument_insert_input, encodeDocument_max_order_by, encodeDocument_min_order_by, encodeDocument_obj_rel_insert_input, encodeDocument_on_conflict, encodeDocument_order_by, encodeDocument_prepend_input, encodeDocument_set_input, encodeJsonb_comparison_exp, encodeString_comparison_exp, encodeTimestamptz_comparison_exp, encodeUser_aggregate_order_by, encodeUser_arr_rel_insert_input, encodeUser_bool_exp, encodeUser_insert_input, encodeUser_max_order_by, encodeUser_min_order_by, encodeUser_obj_rel_insert_input, encodeUser_on_conflict, encodeUser_order_by, encodeUser_set_input, encodeUuid_comparison_exp)
+module Api.InputObject exposing (Boolean_comparison_exp, Boolean_comparison_expOptionalFields, Document_aggregate_order_by, Document_aggregate_order_byOptionalFields, Document_append_input, Document_append_inputOptionalFields, Document_arr_rel_insert_input(..), Document_arr_rel_insert_inputOptionalFields, Document_arr_rel_insert_inputRaw, Document_arr_rel_insert_inputRequiredFields, Document_bool_exp(..), Document_bool_expOptionalFields, Document_bool_expRaw, Document_delete_at_path_input, Document_delete_at_path_inputOptionalFields, Document_delete_elem_input, Document_delete_elem_inputOptionalFields, Document_delete_key_input, Document_delete_key_inputOptionalFields, Document_insert_input(..), Document_insert_inputOptionalFields, Document_insert_inputRaw, Document_max_order_by, Document_max_order_byOptionalFields, Document_min_order_by, Document_min_order_byOptionalFields, Document_obj_rel_insert_input(..), Document_obj_rel_insert_inputOptionalFields, Document_obj_rel_insert_inputRaw, Document_obj_rel_insert_inputRequiredFields, Document_on_conflict, Document_on_conflictRequiredFields, Document_order_by(..), Document_order_byOptionalFields, Document_order_byRaw, Document_prepend_input, Document_prepend_inputOptionalFields, Document_set_input, Document_set_inputOptionalFields, Jsonb_comparison_exp, Jsonb_comparison_expOptionalFields, String_comparison_exp, String_comparison_expOptionalFields, Timestamptz_comparison_exp, Timestamptz_comparison_expOptionalFields, User_aggregate_order_by, User_aggregate_order_byOptionalFields, User_append_input, User_append_inputOptionalFields, User_arr_rel_insert_input(..), User_arr_rel_insert_inputOptionalFields, User_arr_rel_insert_inputRaw, User_arr_rel_insert_inputRequiredFields, User_bool_exp(..), User_bool_expOptionalFields, User_bool_expRaw, User_delete_at_path_input, User_delete_at_path_inputOptionalFields, User_delete_elem_input, User_delete_elem_inputOptionalFields, User_delete_key_input, User_delete_key_inputOptionalFields, User_insert_input(..), User_insert_inputOptionalFields, User_insert_inputRaw, User_max_order_by, User_max_order_byOptionalFields, User_min_order_by, User_min_order_byOptionalFields, User_obj_rel_insert_input(..), User_obj_rel_insert_inputOptionalFields, User_obj_rel_insert_inputRaw, User_obj_rel_insert_inputRequiredFields, User_on_conflict, User_on_conflictRequiredFields, User_order_by, User_order_byOptionalFields, User_prepend_input, User_prepend_inputOptionalFields, User_set_input, User_set_inputOptionalFields, Uuid_comparison_exp, Uuid_comparison_expOptionalFields, buildBoolean_comparison_exp, buildDocument_aggregate_order_by, buildDocument_append_input, buildDocument_arr_rel_insert_input, buildDocument_bool_exp, buildDocument_delete_at_path_input, buildDocument_delete_elem_input, buildDocument_delete_key_input, buildDocument_insert_input, buildDocument_max_order_by, buildDocument_min_order_by, buildDocument_obj_rel_insert_input, buildDocument_on_conflict, buildDocument_order_by, buildDocument_prepend_input, buildDocument_set_input, buildJsonb_comparison_exp, buildString_comparison_exp, buildTimestamptz_comparison_exp, buildUser_aggregate_order_by, buildUser_append_input, buildUser_arr_rel_insert_input, buildUser_bool_exp, buildUser_delete_at_path_input, buildUser_delete_elem_input, buildUser_delete_key_input, buildUser_insert_input, buildUser_max_order_by, buildUser_min_order_by, buildUser_obj_rel_insert_input, buildUser_on_conflict, buildUser_order_by, buildUser_prepend_input, buildUser_set_input, buildUuid_comparison_exp, encodeBoolean_comparison_exp, encodeDocument_aggregate_order_by, encodeDocument_append_input, encodeDocument_arr_rel_insert_input, encodeDocument_bool_exp, encodeDocument_delete_at_path_input, encodeDocument_delete_elem_input, encodeDocument_delete_key_input, encodeDocument_insert_input, encodeDocument_max_order_by, encodeDocument_min_order_by, encodeDocument_obj_rel_insert_input, encodeDocument_on_conflict, encodeDocument_order_by, encodeDocument_prepend_input, encodeDocument_set_input, encodeJsonb_comparison_exp, encodeString_comparison_exp, encodeTimestamptz_comparison_exp, encodeUser_aggregate_order_by, encodeUser_append_input, encodeUser_arr_rel_insert_input, encodeUser_bool_exp, encodeUser_delete_at_path_input, encodeUser_delete_elem_input, encodeUser_delete_key_input, encodeUser_insert_input, encodeUser_max_order_by, encodeUser_min_order_by, encodeUser_obj_rel_insert_input, encodeUser_on_conflict, encodeUser_order_by, encodeUser_prepend_input, encodeUser_set_input, encodeUuid_comparison_exp)
 
 import Api.Enum.Document_constraint
 import Api.Enum.Document_update_column
@@ -880,6 +880,34 @@ encodeUser_aggregate_order_by input =
         [ ( "count", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.count ), ( "max", encodeUser_max_order_by |> Encode.optional input.max ), ( "min", encodeUser_min_order_by |> Encode.optional input.min ) ]
 
 
+buildUser_append_input : (User_append_inputOptionalFields -> User_append_inputOptionalFields) -> User_append_input
+buildUser_append_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { recentDocs = Absent }
+    in
+    { recentDocs = optionals.recentDocs }
+
+
+type alias User_append_inputOptionalFields =
+    { recentDocs : OptionalArgument CustomScalarCodecs.Jsonb }
+
+
+{-| Type for the User\_append\_input input object.
+-}
+type alias User_append_input =
+    { recentDocs : OptionalArgument CustomScalarCodecs.Jsonb }
+
+
+{-| Encode a User\_append\_input into a value that can be used as an argument.
+-}
+encodeUser_append_input : User_append_input -> Value
+encodeUser_append_input input =
+    Encode.maybeObject
+        [ ( "recentDocs", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.recentDocs ) ]
+
+
 buildUser_arr_rel_insert_input : User_arr_rel_insert_inputRequiredFields -> (User_arr_rel_insert_inputOptionalFields -> User_arr_rel_insert_inputOptionalFields) -> User_arr_rel_insert_input
 buildUser_arr_rel_insert_input required fillOptionals =
     let
@@ -928,9 +956,9 @@ buildUser_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, recentDocs = Absent, timeStamp = Absent, username = Absent }
     in
-    User_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
+    User_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, recentDocs = optionals.recentDocs, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_bool_expOptionalFields =
@@ -943,6 +971,7 @@ type alias User_bool_expOptionalFields =
     , firstName : OptionalArgument String_comparison_exp
     , id : OptionalArgument Uuid_comparison_exp
     , lastName : OptionalArgument String_comparison_exp
+    , recentDocs : OptionalArgument Jsonb_comparison_exp
     , timeStamp : OptionalArgument Timestamptz_comparison_exp
     , username : OptionalArgument String_comparison_exp
     }
@@ -963,6 +992,7 @@ type alias User_bool_expRaw =
     , firstName : OptionalArgument String_comparison_exp
     , id : OptionalArgument Uuid_comparison_exp
     , lastName : OptionalArgument String_comparison_exp
+    , recentDocs : OptionalArgument Jsonb_comparison_exp
     , timeStamp : OptionalArgument Timestamptz_comparison_exp
     , username : OptionalArgument String_comparison_exp
     }
@@ -979,7 +1009,91 @@ type User_bool_exp
 encodeUser_bool_exp : User_bool_exp -> Value
 encodeUser_bool_exp (User_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUser_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "admin", encodeBoolean_comparison_exp |> Encode.optional input.admin ), ( "documents", encodeDocument_bool_exp |> Encode.optional input.documents ), ( "email", encodeString_comparison_exp |> Encode.optional input.email ), ( "firstName", encodeString_comparison_exp |> Encode.optional input.firstName ), ( "id", encodeUuid_comparison_exp |> Encode.optional input.id ), ( "lastName", encodeString_comparison_exp |> Encode.optional input.lastName ), ( "timeStamp", encodeTimestamptz_comparison_exp |> Encode.optional input.timeStamp ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
+        [ ( "_and", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeUser_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeUser_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "admin", encodeBoolean_comparison_exp |> Encode.optional input.admin ), ( "documents", encodeDocument_bool_exp |> Encode.optional input.documents ), ( "email", encodeString_comparison_exp |> Encode.optional input.email ), ( "firstName", encodeString_comparison_exp |> Encode.optional input.firstName ), ( "id", encodeUuid_comparison_exp |> Encode.optional input.id ), ( "lastName", encodeString_comparison_exp |> Encode.optional input.lastName ), ( "recentDocs", encodeJsonb_comparison_exp |> Encode.optional input.recentDocs ), ( "timeStamp", encodeTimestamptz_comparison_exp |> Encode.optional input.timeStamp ), ( "username", encodeString_comparison_exp |> Encode.optional input.username ) ]
+
+
+buildUser_delete_at_path_input : (User_delete_at_path_inputOptionalFields -> User_delete_at_path_inputOptionalFields) -> User_delete_at_path_input
+buildUser_delete_at_path_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { recentDocs = Absent }
+    in
+    { recentDocs = optionals.recentDocs }
+
+
+type alias User_delete_at_path_inputOptionalFields =
+    { recentDocs : OptionalArgument (List (Maybe String)) }
+
+
+{-| Type for the User\_delete\_at\_path\_input input object.
+-}
+type alias User_delete_at_path_input =
+    { recentDocs : OptionalArgument (List (Maybe String)) }
+
+
+{-| Encode a User\_delete\_at\_path\_input into a value that can be used as an argument.
+-}
+encodeUser_delete_at_path_input : User_delete_at_path_input -> Value
+encodeUser_delete_at_path_input input =
+    Encode.maybeObject
+        [ ( "recentDocs", (Encode.string |> Encode.maybe |> Encode.list) |> Encode.optional input.recentDocs ) ]
+
+
+buildUser_delete_elem_input : (User_delete_elem_inputOptionalFields -> User_delete_elem_inputOptionalFields) -> User_delete_elem_input
+buildUser_delete_elem_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { recentDocs = Absent }
+    in
+    { recentDocs = optionals.recentDocs }
+
+
+type alias User_delete_elem_inputOptionalFields =
+    { recentDocs : OptionalArgument Int }
+
+
+{-| Type for the User\_delete\_elem\_input input object.
+-}
+type alias User_delete_elem_input =
+    { recentDocs : OptionalArgument Int }
+
+
+{-| Encode a User\_delete\_elem\_input into a value that can be used as an argument.
+-}
+encodeUser_delete_elem_input : User_delete_elem_input -> Value
+encodeUser_delete_elem_input input =
+    Encode.maybeObject
+        [ ( "recentDocs", Encode.int |> Encode.optional input.recentDocs ) ]
+
+
+buildUser_delete_key_input : (User_delete_key_inputOptionalFields -> User_delete_key_inputOptionalFields) -> User_delete_key_input
+buildUser_delete_key_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { recentDocs = Absent }
+    in
+    { recentDocs = optionals.recentDocs }
+
+
+type alias User_delete_key_inputOptionalFields =
+    { recentDocs : OptionalArgument String }
+
+
+{-| Type for the User\_delete\_key\_input input object.
+-}
+type alias User_delete_key_input =
+    { recentDocs : OptionalArgument String }
+
+
+{-| Encode a User\_delete\_key\_input into a value that can be used as an argument.
+-}
+encodeUser_delete_key_input : User_delete_key_input -> Value
+encodeUser_delete_key_input input =
+    Encode.maybeObject
+        [ ( "recentDocs", Encode.string |> Encode.optional input.recentDocs ) ]
 
 
 buildUser_insert_input : (User_insert_inputOptionalFields -> User_insert_inputOptionalFields) -> User_insert_input
@@ -987,9 +1101,9 @@ buildUser_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
+                { admin = Absent, documents = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, recentDocs = Absent, timeStamp = Absent, username = Absent }
     in
-    User_insert_input { admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
+    User_insert_input { admin = optionals.admin, documents = optionals.documents, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, recentDocs = optionals.recentDocs, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_insert_inputOptionalFields =
@@ -999,6 +1113,7 @@ type alias User_insert_inputOptionalFields =
     , firstName : OptionalArgument String
     , id : OptionalArgument CustomScalarCodecs.Uuid
     , lastName : OptionalArgument String
+    , recentDocs : OptionalArgument CustomScalarCodecs.Jsonb
     , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
@@ -1016,6 +1131,7 @@ type alias User_insert_inputRaw =
     , firstName : OptionalArgument String
     , id : OptionalArgument CustomScalarCodecs.Uuid
     , lastName : OptionalArgument String
+    , recentDocs : OptionalArgument CustomScalarCodecs.Jsonb
     , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
@@ -1032,7 +1148,7 @@ type User_insert_input
 encodeUser_insert_input : User_insert_input -> Value
 encodeUser_insert_input (User_insert_input input) =
     Encode.maybeObject
-        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "documents", encodeDocument_arr_rel_insert_input |> Encode.optional input.documents ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "documents", encodeDocument_arr_rel_insert_input |> Encode.optional input.documents ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "recentDocs", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.recentDocs ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
 
 
 buildUser_max_order_by : (User_max_order_byOptionalFields -> User_max_order_byOptionalFields) -> User_max_order_by
@@ -1186,9 +1302,9 @@ buildUser_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { admin = Absent, documents_aggregate = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
+                { admin = Absent, documents_aggregate = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, recentDocs = Absent, timeStamp = Absent, username = Absent }
     in
-    { admin = optionals.admin, documents_aggregate = optionals.documents_aggregate, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
+    { admin = optionals.admin, documents_aggregate = optionals.documents_aggregate, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, recentDocs = optionals.recentDocs, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_order_byOptionalFields =
@@ -1198,6 +1314,7 @@ type alias User_order_byOptionalFields =
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , lastName : OptionalArgument Api.Enum.Order_by.Order_by
+    , recentDocs : OptionalArgument Api.Enum.Order_by.Order_by
     , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , username : OptionalArgument Api.Enum.Order_by.Order_by
     }
@@ -1212,6 +1329,7 @@ type alias User_order_by =
     , firstName : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
     , lastName : OptionalArgument Api.Enum.Order_by.Order_by
+    , recentDocs : OptionalArgument Api.Enum.Order_by.Order_by
     , timeStamp : OptionalArgument Api.Enum.Order_by.Order_by
     , username : OptionalArgument Api.Enum.Order_by.Order_by
     }
@@ -1222,7 +1340,35 @@ type alias User_order_by =
 encodeUser_order_by : User_order_by -> Value
 encodeUser_order_by input =
     Encode.maybeObject
-        [ ( "admin", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.admin ), ( "documents_aggregate", encodeDocument_aggregate_order_by |> Encode.optional input.documents_aggregate ), ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.admin ), ( "documents_aggregate", encodeDocument_aggregate_order_by |> Encode.optional input.documents_aggregate ), ( "email", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.email ), ( "firstName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.firstName ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "lastName", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.lastName ), ( "recentDocs", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.recentDocs ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "username", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.username ) ]
+
+
+buildUser_prepend_input : (User_prepend_inputOptionalFields -> User_prepend_inputOptionalFields) -> User_prepend_input
+buildUser_prepend_input fillOptionals =
+    let
+        optionals =
+            fillOptionals
+                { recentDocs = Absent }
+    in
+    { recentDocs = optionals.recentDocs }
+
+
+type alias User_prepend_inputOptionalFields =
+    { recentDocs : OptionalArgument CustomScalarCodecs.Jsonb }
+
+
+{-| Type for the User\_prepend\_input input object.
+-}
+type alias User_prepend_input =
+    { recentDocs : OptionalArgument CustomScalarCodecs.Jsonb }
+
+
+{-| Encode a User\_prepend\_input into a value that can be used as an argument.
+-}
+encodeUser_prepend_input : User_prepend_input -> Value
+encodeUser_prepend_input input =
+    Encode.maybeObject
+        [ ( "recentDocs", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.recentDocs ) ]
 
 
 buildUser_set_input : (User_set_inputOptionalFields -> User_set_inputOptionalFields) -> User_set_input
@@ -1230,9 +1376,9 @@ buildUser_set_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { admin = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, timeStamp = Absent, username = Absent }
+                { admin = Absent, email = Absent, firstName = Absent, id = Absent, lastName = Absent, recentDocs = Absent, timeStamp = Absent, username = Absent }
     in
-    { admin = optionals.admin, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, timeStamp = optionals.timeStamp, username = optionals.username }
+    { admin = optionals.admin, email = optionals.email, firstName = optionals.firstName, id = optionals.id, lastName = optionals.lastName, recentDocs = optionals.recentDocs, timeStamp = optionals.timeStamp, username = optionals.username }
 
 
 type alias User_set_inputOptionalFields =
@@ -1241,6 +1387,7 @@ type alias User_set_inputOptionalFields =
     , firstName : OptionalArgument String
     , id : OptionalArgument CustomScalarCodecs.Uuid
     , lastName : OptionalArgument String
+    , recentDocs : OptionalArgument CustomScalarCodecs.Jsonb
     , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
@@ -1254,6 +1401,7 @@ type alias User_set_input =
     , firstName : OptionalArgument String
     , id : OptionalArgument CustomScalarCodecs.Uuid
     , lastName : OptionalArgument String
+    , recentDocs : OptionalArgument CustomScalarCodecs.Jsonb
     , timeStamp : OptionalArgument CustomScalarCodecs.Timestamptz
     , username : OptionalArgument String
     }
@@ -1264,7 +1412,7 @@ type alias User_set_input =
 encodeUser_set_input : User_set_input -> Value
 encodeUser_set_input input =
     Encode.maybeObject
-        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
+        [ ( "admin", Encode.bool |> Encode.optional input.admin ), ( "email", Encode.string |> Encode.optional input.email ), ( "firstName", Encode.string |> Encode.optional input.firstName ), ( "id", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) |> Encode.optional input.id ), ( "lastName", Encode.string |> Encode.optional input.lastName ), ( "recentDocs", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.recentDocs ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "username", Encode.string |> Encode.optional input.username ) ]
 
 
 buildUuid_comparison_exp : (Uuid_comparison_expOptionalFields -> Uuid_comparison_expOptionalFields) -> Uuid_comparison_exp

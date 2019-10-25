@@ -2,24 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Mutation exposing
-    ( DeleteDocumentRequiredArguments
-    , DeleteUserRequiredArguments
-    , InsertDocumentOptionalArguments
-    , InsertDocumentRequiredArguments
-    , InsertUserOptionalArguments
-    , InsertUserRequiredArguments
-    , UpdateDocumentOptionalArguments
-    , UpdateDocumentRequiredArguments
-    , UpdateUserOptionalArguments
-    , UpdateUserRequiredArguments
-    , delete_document
-    , delete_user
-    , insert_document
-    , insert_user
-    , update_document
-    , update_user
-    )
+module Api.Mutation exposing (DeleteDocumentRequiredArguments, DeleteUserRequiredArguments, InsertDocumentOptionalArguments, InsertDocumentRequiredArguments, InsertUserOptionalArguments, InsertUserRequiredArguments, UpdateDocumentOptionalArguments, UpdateDocumentRequiredArguments, UpdateUserOptionalArguments, UpdateUserRequiredArguments, delete_document, delete_user, insert_document, insert_user, update_document, update_user)
 
 import Api.InputObject
 import Api.Interface
@@ -157,7 +140,13 @@ update_document fillInOptionals requiredArgs object_ =
 
 
 type alias UpdateUserOptionalArguments =
-    { set_ : OptionalArgument Api.InputObject.User_set_input }
+    { append_ : OptionalArgument Api.InputObject.User_append_input
+    , delete_at_path_ : OptionalArgument Api.InputObject.User_delete_at_path_input
+    , delete_elem_ : OptionalArgument Api.InputObject.User_delete_elem_input
+    , delete_key_ : OptionalArgument Api.InputObject.User_delete_key_input
+    , prepend_ : OptionalArgument Api.InputObject.User_prepend_input
+    , set_ : OptionalArgument Api.InputObject.User_set_input
+    }
 
 
 type alias UpdateUserRequiredArguments =
@@ -166,6 +155,11 @@ type alias UpdateUserRequiredArguments =
 
 {-| update data of the table: "user"
 
+  - append\_ - append existing jsonb value of filtered columns with new jsonb value
+  - delete\_at\_path\_ - delete the field or element with specified path (for JSON arrays, negative integers count from the end)
+  - delete\_elem\_ - delete the array element with specified index (negative integers count from the end). throws an error if top level container is not an array
+  - delete\_key\_ - delete key/value pair or string element. key/value pairs are matched based on their key value
+  - prepend\_ - prepend existing jsonb value of filtered columns with new jsonb value
   - set\_ - sets the columns of the filtered rows to the given values
   - where\_ - filter the rows which have to be updated
 
@@ -174,10 +168,10 @@ update_user : (UpdateUserOptionalArguments -> UpdateUserOptionalArguments) -> Up
 update_user fillInOptionals requiredArgs object_ =
     let
         filledInOptionals =
-            fillInOptionals { set_ = Absent }
+            fillInOptionals { append_ = Absent, delete_at_path_ = Absent, delete_elem_ = Absent, delete_key_ = Absent, prepend_ = Absent, set_ = Absent }
 
         optionalArgs =
-            [ Argument.optional "_set" filledInOptionals.set_ Api.InputObject.encodeUser_set_input ]
+            [ Argument.optional "_append" filledInOptionals.append_ Api.InputObject.encodeUser_append_input, Argument.optional "_delete_at_path" filledInOptionals.delete_at_path_ Api.InputObject.encodeUser_delete_at_path_input, Argument.optional "_delete_elem" filledInOptionals.delete_elem_ Api.InputObject.encodeUser_delete_elem_input, Argument.optional "_delete_key" filledInOptionals.delete_key_ Api.InputObject.encodeUser_delete_key_input, Argument.optional "_prepend" filledInOptionals.prepend_ Api.InputObject.encodeUser_prepend_input, Argument.optional "_set" filledInOptionals.set_ Api.InputObject.encodeUser_set_input ]
                 |> List.filterMap identity
     in
     Object.selectionForCompositeField "update_user" (optionalArgs ++ [ Argument.required "where" requiredArgs.where_ Api.InputObject.encodeUser_bool_exp ]) object_ (identity >> Decode.nullable)
