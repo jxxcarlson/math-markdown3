@@ -71,6 +71,8 @@ type MarkdownFlavor
 type DocumentError
     = RepeatedListElements
     | ListsOfDifferentLengths
+    | ListsOfDifferentLengthsTM1
+    | ListsOfDifferentLengthsTM2
     | UnequalSets
     | UuidListsDoNotMatch
     | DocumentListIsEmpty
@@ -85,6 +87,12 @@ stringOfError docError =
         ListsOfDifferentLengths ->
             "Lists of different lengths"
 
+        ListsOfDifferentLengthsTM1 ->
+            "Lists of different lengths (tm1)"
+
+        ListsOfDifferentLengthsTM2 ->
+            "Lists of different lengths (tm2)"
+
         UnequalSets ->
             "Undqual sets"
 
@@ -92,7 +100,7 @@ stringOfError docError =
             "Uuid lists don't  match'"
 
         DocumentListIsEmpty ->
-            "Document list is emptys"
+            "Document list is emptys="
 
 
 {-| Used to determine whether a toc entry

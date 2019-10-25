@@ -17,21 +17,21 @@ suite : Test
 suite =
     describe "Toc operations"
         [ doTest "1. insert new document at position 1 in Master" newMaster1 expectedNewMaster1
-
-        --        , doTest "2. insert new document at position 2 in Master" newMaster2 expectedNewMaster2
-        --        , doTest "3. insert new document at position 3 in Master" newMaster3 expectedNewMaster3
-        --        , doTest "4. insert new document at position 1 in ChildDocumentList" newChildDocumentList1 expectedNewChildDocumentList1
-        --        , doTest "5. insert new document at position 2 in ChildDocumentList" newChildDocumentList2 expectedNewChildDocumentList2
-        --        , doTest "6. insert new document at position 3 in ChildDocumentList" newChildDocumentList3 expectedNewChildDocumentList3
-        --        , doTest "7. Compare computed and expected outlines " computedOutline (Just expectedOutline)
-        --        , doTest "8. Delete document " masterAfterDelete expectedMasterAfterDelete
-        --        , doTest "9. Document.reOrder " transformedList expectedTransformedList
-        --        , doTest "10. Document.reorderChildren " reorderMaster (Ok expectedReorderMaster)
-        --        , doTest "11 Update from outline - check master " newMasterXX expectedNewMasterXX
-        --        , doTest "12. Update from outline - check document list " newDocumentListXX expectedDocumentListXX
-        --        , doTest "13. Update from outline - change level, check master " newMaster2X master3
-        --
-        --        , doTest "14. Update from bad outline - missing title" newMasterFromBadOutline (Ok master3)
+        , doTest "2. insert new document at position 2 in Master" newMaster2 expectedNewMaster2
+        , doTest "3. insert new document at position 3 in Master" newMaster3 expectedNewMaster3
+        , doTest "4. insert new document at position 1 in ChildDocumentList" newChildDocumentList1 expectedNewChildDocumentList1
+        , doTest "5. insert new document at position 2 in ChildDocumentList" newChildDocumentList2 expectedNewChildDocumentList2
+        , doTest "6. insert new document at position 3 in ChildDocumentList" newChildDocumentList3 expectedNewChildDocumentList3
+        , doTest "7. Compare computed and expected outlines " computedOutline (Just expectedOutline)
+        , doTest "8. Delete document " masterAfterDelete expectedMasterAfterDelete
+        , doTest "9. Document.reOrder " transformedList expectedTransformedList
+        , doTest "10. Document.reorderChildren " reorderMaster (Ok expectedReorderMaster)
+        , doTest "11 Update from outline - check master " newMasterXX expectedNewMasterXX
+        , doTest "12. Update from outline - check document list " newDocumentListXX expectedDocumentListXX
+        , doTest "Update from outline - change level, check master " newMasterFromOutline2 (Ok master3)
+        , doTest "Update from bad outline - missing title" newMasterFromBadOutline (Err ListsOfDifferentLengthsTM1)
+        , doTest "Update from bad outline - extra title" newMasterFromOutlineWithExtraTitle (Err ListsOfDifferentLengthsTM1)
+        , doTest "Update from bad outline - extraneous title" newMasterFromOutlineWithExtraneousTitle (Err UnequalSets)
         , doTest "Identity test for reordering by titles"
             (docReorderBy [ "A", "B", "C" ] |> Result.map childTitlesFromDoc)
             (Ok [ "A", "B", "C" ])
@@ -319,7 +319,7 @@ transformedList =
 ordereing specified in the titleList
 -}
 expectedTransformedList =
-    [ ( "A", 1 ), ( "C", 3 ), ( "B", 2 ) ]
+    Ok [ ( "A", 1 ), ( "C", 3 ), ( "B", 2 ) ]
 
 
 
@@ -412,11 +412,9 @@ C
 """
 
 
-newMaster2X =
+newMasterFromOutline2 =
     TocManager.updateMasterAndDocumentListFromOutline newOutline2 [ master2, da, db, dc ]
-        |> Result.toMaybe
-        |> Maybe.map Tuple.first
-        |> Maybe.withDefault da
+        |> Result.map Tuple.first
 
 
 badOutline =
@@ -427,8 +425,37 @@ B
 """
 
 
+outlineWithExtraneousTitle =
+    String.trim
+        """
+A
+X
+C
+"""
+
+
+outlineWithExtraTitle =
+    String.trim
+        """
+A
+B
+C
+U 
+"""
+
+
 newMasterFromBadOutline =
     TocManager.updateMasterAndDocumentListFromOutline badOutline [ master2, da, db, dc ]
+        |> Result.map Tuple.first
+
+
+newMasterFromOutlineWithExtraneousTitle =
+    TocManager.updateMasterAndDocumentListFromOutline outlineWithExtraneousTitle [ master2, da, db, dc ]
+        |> Result.map Tuple.first
+
+
+newMasterFromOutlineWithExtraTitle =
+    TocManager.updateMasterAndDocumentListFromOutline outlineWithExtraTitle [ master2, da, db, dc ]
         |> Result.map Tuple.first
 
 

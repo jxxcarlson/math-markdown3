@@ -195,28 +195,37 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                     titleListUnfiltered
                         |> List.map String.trim
                         |> List.filter (\str -> str /= "")
-
-                levels =
-                    List.map Document.level titleListUnfiltered
-
-                newChildInfo =
-                    -- childInfo with updated levels
-                    List.map2 (\( id, _ ) l -> ( id, l )) masterDocument.childInfo levels
-
-                newMasterDocument_ =
-                    -- masterDocument_ with updated levels
-                    { masterDocument | childInfo = newChildInfo }
             in
-            case Document.reorderChildrenInMaster newMasterDocument_ (List.map .title childDocuments) titleList of
-                Ok newMasterDocument ->
-                    let
-                        newDocumentList =
-                            newMasterDocument :: (childDocuments |> Document.sortChildren newMasterDocument)
-                    in
-                    Ok ( newMasterDocument, newDocumentList )
+            case ( List.length titleList == List.length childDocuments, List.length childDocuments == List.length masterDocument.childInfo ) of
+                ( False, _ ) ->
+                    Err ListsOfDifferentLengthsTM1
 
-                Err error ->
-                    Err error
+                ( _, False ) ->
+                    Err ListsOfDifferentLengthsTM2
+
+                ( True, True ) ->
+                    let
+                        levels =
+                            List.map Document.level titleListUnfiltered
+
+                        newChildInfo =
+                            -- childInfo with updated levels
+                            List.map2 (\( id, _ ) l -> ( id, l )) masterDocument.childInfo levels
+
+                        newMasterDocument_ =
+                            -- masterDocument_ with updated levels
+                            { masterDocument | childInfo = newChildInfo }
+                    in
+                    case Document.reorderChildrenInMaster newMasterDocument_ (List.map .title childDocuments) titleList of
+                        Ok newMasterDocument ->
+                            let
+                                newDocumentList =
+                                    newMasterDocument :: (childDocuments |> Document.sortChildren newMasterDocument)
+                            in
+                            Ok ( newMasterDocument, newDocumentList )
+
+                        Err error ->
+                            Err error
 
 
 {-| Find index of subDocument in Master
