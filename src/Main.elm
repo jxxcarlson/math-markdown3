@@ -9,6 +9,7 @@ import Data
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Element exposing (..)
 import Element.Background as Background
+import UrlAppParser exposing(Route(..))
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
@@ -240,6 +241,7 @@ type alias Flags =
     , height : Int
     , seed : Int
     , randInts : List Int
+    , location : String
     }
 
 
@@ -394,6 +396,7 @@ init flags =
         , resetViewportOfEditor
         , Outside.sendInfo (Outside.AskToReconnectUser E.null)
         , Outside.sendInfo (Outside.AskForDequeData E.null)
+        , processUrl flags.location
 
         ]
     )
@@ -415,6 +418,8 @@ type Msg
       -- Random
     | GenerateSeed
     | NewSeed Int
+    -- Navigation
+    | UrlChanged String
       -- UI
     | SetToolPanelState Visibility
     | SetAppMode AppMode
@@ -489,6 +494,7 @@ subscriptions model =
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         , Outside.getInfo Outside LogErr
+        , Outside.onUrlChange UrlChanged
         ]
 
 
@@ -849,6 +855,19 @@ update msg model =
                 Toggle ->
                     ( { model | toggleToc = not model.toggleToc }, Cmd.batch [resetViewportOfRenderedText, resetViewportOfRenderedText])  -- Cmd.none |> Cmd.map TOC )
 
+
+        -- NAVIGATION --
+
+        UrlChanged str ->
+            let
+               _ = Debug.log "URL IS" str
+            in
+            case UrlAppParser.toRoute str of
+                DocumentIdRef id ->
+                    (model, Cmd.none)
+
+                _ ->
+                    ( model, Cmd.none )
         -- REQ --
         Req requestMsg ->
             case requestMsg of
@@ -1126,6 +1145,51 @@ update msg model =
                                     )
 
 
+
+-- NAVIGATION HELPERS --
+
+pushDocument : Document -> Cmd Msg
+pushDocument document =
+    Outside.pushUrl <| "/" ++ Uuid.toString  document.id
+
+
+processUrl : String -> Cmd Msg
+processUrl urlString =
+    let
+        _ = Debug.log "URL" urlString
+    in
+    case UrlAppParser.toRoute urlString of
+        NotFound ->
+            Cmd.batch
+                [
+--                  Outside.sendInfoOutside (AskToReconnectDocument Encode.null)
+--                , Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
+--                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+--                , Outside.sendInfoOutside (AskToReconnectUser Encode.null)
+
+                ]
+
+        DocumentIdRef docId ->
+            Cmd.batch
+                [
+--                  Outside.sendInfoOutside (AskToReconnectUser Encode.null)
+--                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+--
+--                --, Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
+--                , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
+--                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ String.fromInt docId)
+                ]
+
+        HomeRef username ->
+            Cmd.batch
+                [
+--                 Outside.sendInfoOutside (AskToReconnectUser Encode.null)
+--                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+--                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username))
+                ]
+
+        InternalRef str ->
+            Cmd.none
 
 -- KEYBOARD HELPERS -
 

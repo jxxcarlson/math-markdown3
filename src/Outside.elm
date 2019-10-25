@@ -2,6 +2,8 @@ port module Outside exposing
     ( InfoForElm(..)
     , InfoForOutside(..)
     , getInfo
+    , onUrlChange
+    , pushUrl
     , sendInfo
     )
 
@@ -12,6 +14,12 @@ import Json.Decode as D
 import Json.Encode as E
 import Prng.Uuid as Uuid exposing (Uuid)
 import User exposing (OutsideUser, User)
+
+
+port pushUrl : String -> Cmd msg
+
+
+port onUrlChange : (String -> msg) -> Sub msg
 
 
 port infoForOutside : GenericOutsideData -> Cmd msg
