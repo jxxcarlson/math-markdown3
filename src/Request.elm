@@ -20,6 +20,7 @@ module Request exposing
     , signUpUser
     , stringFromHttpError
     , updateDocument
+    , updateUser
     )
 
 import Api.Enum.Order_by exposing (Order_by(..))
@@ -56,10 +57,13 @@ import Api.Mutation
         , InsertUserRequiredArguments
         , UpdateDocumentOptionalArguments
         , UpdateDocumentRequiredArguments
+        , UpdateUserOptionalArguments
+        , UpdateUserRequiredArguments
         , delete_document
         , insert_document
         , insert_user
         , update_document
+        , update_user
         )
 import Api.Object
 import Api.Object.Document exposing (authorIdentifier)
@@ -89,6 +93,7 @@ import User exposing (AuthorizedUser, User)
 
 type RequestMsg
     = GotUserDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+    | GotDocumentsForDeque (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotDequeDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotCandidateChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
@@ -678,6 +683,66 @@ insertUser authToken newUser =
     makeMutation (getUserInsertObject newUser) authToken InsertUserResponse
 
 
+updateUser : String -> User -> Cmd RequestMsg
+updateUser authToken user =
+    makeUpdateDocumentMutation (getUserUpdateObject user) authToken
+
+
+getUserUpdateObject : User -> SelectionSet (Maybe MutationResponse) RootMutation
+getUserUpdateObject user =
+    update_user
+        (setUserUpdateOptionalArgs user)
+        (setUserUpdateWhere user.id)
+        mutationResponseUserSelection
+
+
+setUserUpdateOptionalArgs : User -> UpdateUserOptionalArguments -> UpdateUserOptionalArguments
+setUserUpdateOptionalArgs user optionalArgs =
+    { optionalArgs
+        | set_ = Present (setUserSetArg user)
+    }
+
+
+{-| Change this after running 'sh api.sh'
+-}
+setUserSetArg : User -> User_set_input
+setUserSetArg user =
+    buildUser_set_input
+        (\args ->
+            { args
+                | id = Present user.id
+                , username = Present user.username
+                , email = Present user.email
+                , firstName = Present user.firstName
+                , lastName = Present user.lastName
+                , admin = Present user.admin
+                , recentDocs = Present (user.recentDocs |> List.map Uuid.toString |> (\list -> Jsonb list))
+            }
+        )
+
+
+setUserUpdateWhere : Uuid -> UpdateUserRequiredArguments
+setUserUpdateWhere uuid =
+    UpdateUserRequiredArguments
+        (buildUser_bool_exp
+            (\args ->
+                { args
+                    | id = Present (setUserValueForId uuid)
+                }
+            )
+        )
+
+
+setUserValueForId : Uuid -> Uuid_comparison_exp
+setUserValueForId uuid =
+    buildUuid_comparison_exp
+        (\args ->
+            { args
+                | eq_ = Present uuid
+            }
+        )
+
+
 
 -- XXX
 
@@ -710,6 +775,10 @@ userListSelection =
         |> with Api.Object.User.firstName
         |> with Api.Object.User.lastName
         |> with Api.Object.User.admin
+        |> with
+            (Api.Object.User.recentDocs identity
+                |> SelectionSet.map (\(Jsonb x) -> List.map Uuid.fromString x |> Maybe.Extra.values)
+            )
 
 
 userListOptionalArgument : OptionalArgument User_bool_exp -> UserOptionalArguments -> UserOptionalArguments
@@ -737,6 +806,7 @@ mutationResponseUserSelection =
 -}
 userSelection : SelectionSet User Api.Object.User
 userSelection =
+    -- XXX
     SelectionSet.succeed User
         |> with Api.Object.User.id
         |> with Api.Object.User.username
@@ -744,12 +814,17 @@ userSelection =
         |> with Api.Object.User.firstName
         |> with Api.Object.User.lastName
         |> with Api.Object.User.admin
+        |> with
+            (Api.Object.User.recentDocs identity
+                |> SelectionSet.map (\(Jsonb x) -> List.map Uuid.fromString x |> Maybe.Extra.values)
+            )
 
 
 {-| Change this after running 'sh api.sh'
 -}
 insertUserObject : User -> User_insert_input
 insertUserObject newUser =
+    --- XXX
     buildUser_insert_input
         (\args ->
             { args
@@ -759,6 +834,7 @@ insertUserObject newUser =
                 , firstName = Present newUser.firstName
                 , lastName = Present newUser.lastName
                 , admin = Present newUser.admin
+                , recentDocs = Present (newUser.recentDocs |> List.map Uuid.toString |> (\list -> Jsonb list))
             }
         )
 
@@ -776,6 +852,7 @@ setUsertSetArg user =
                 , firstName = Present user.firstName
                 , lastName = Present user.lastName
                 , admin = Present user.admin
+                , recentDocs = Present (user.recentDocs |> List.map Uuid.toString |> (\list -> Jsonb list))
             }
         )
 

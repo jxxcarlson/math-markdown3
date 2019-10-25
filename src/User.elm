@@ -2,6 +2,7 @@ module User exposing (AuthorizedUser, OutsideUser, User, barebonesUser, dummy, f
 
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as E
+import Maybe.Extra
 import Prng.Uuid as Uuid exposing (Uuid(..))
 import Utility exposing (getId)
 
@@ -13,6 +14,7 @@ type alias User =
     , firstName : String
     , lastName : String
     , admin : Bool
+    , recentDocs : List Uuid
     }
 
 
@@ -32,6 +34,7 @@ barebonesUser uuid username email =
     , firstName = "not_yet"
     , lastName = "not_yet"
     , admin = False
+    , recentDocs = []
     }
 
 
@@ -43,6 +46,7 @@ dummy username =
     , firstName = "James"
     , lastName = "Carlson"
     , admin = False
+    , recentDocs = []
     }
 
 
@@ -65,6 +69,7 @@ type alias OutsideUser =
     , lastName : String
     , admin : Bool
     , token : String
+    , recentDocs : List String
     }
 
 
@@ -77,12 +82,13 @@ outsideUserWithToken token u =
     , lastName = u.lastName
     , admin = u.admin
     , token = token
+    , recentDocs = u.recentDocs |> List.map Uuid.toString
     }
 
 
 outsideUserDecoder : Decoder OutsideUser
 outsideUserDecoder =
-    D.map7 OutsideUser
+    D.map8 OutsideUser
         (D.field "id" uuidDecoder)
         (D.field "username" D.string)
         (D.field "email" D.string)
@@ -90,6 +96,7 @@ outsideUserDecoder =
         (D.field "lastName" D.string)
         (D.field "admin" D.bool)
         (D.field "token" D.string)
+        (D.field "recentDocs" (D.list D.string))
 
 
 fromOutside : OutsideUser -> User
@@ -100,6 +107,7 @@ fromOutside u =
     , firstName = u.firstName
     , lastName = u.lastName
     , admin = u.admin
+    , recentDocs = u.recentDocs |> List.map Uuid.fromString |> Maybe.Extra.values
     }
 
 
@@ -113,4 +121,5 @@ outsideUserEncoder u =
         , ( "lastName", E.string u.lastName )
         , ( "admin", E.bool u.admin )
         , ( "token", E.string u.token )
+        , ( "recentDocs", E.list E.string u.recentDocs )
         ]

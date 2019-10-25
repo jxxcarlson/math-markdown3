@@ -685,6 +685,7 @@ update msg model =
             , Request.publicDocuments hasuraToken |> Cmd.map Req
             )
 
+
         -- EDITOR --
         ProcessLine str ->
             let
@@ -925,7 +926,26 @@ update msg model =
                             ( { model | message = ( ErrorMessage, "Get child docs:: request failed" ) }, Cmd.none )
 
                         Success documentList ->
-                            ({model | deque = BoundedDeque.fromList config.dequeLength documentList}, Cmd.none)
+                           let
+                               _ = "SETTING UO DEQUE"
+                               newDeque = BoundedDeque.fromList config.dequeLength documentList
+                               currentUser = if BoundedDeque.isEmpty  newDeque then
+                                                 model.currentUser
+                                              else
+                                                 updateMaybeUserWithDeque newDeque model.currentUser
+                               cmd = case BoundedDeque.isEmpty  newDeque of
+                                   False -> Cmd.none
+                                   True ->
+                                     let
+                                        docIds  = case model.currentUser of
+                                                      Nothing -> []
+                                                      Just user -> user.recentDocs
+                                        _ = "SETTING UO CMD"
+                                     in
+                                       Request.documentsInIdList hasuraToken docIds GotDocumentsForDeque |> Cmd.map Req
+
+                           in
+                            ({model | deque = newDeque, currentUser = currentUser}, cmd)
 
                 GotCandidateChildDocuments remoteData ->
                     case remoteData of
@@ -1037,6 +1057,28 @@ update msg model =
                               }
                             , Cmd.none
                             )
+                GotDocumentsForDeque remoteData ->
+                     case remoteData of
+                         NotAsked ->
+                             ( { model | message = ( ErrorMessage, "Get deque: not asked" ) }, Cmd.none )
+
+                         Loading ->
+                             ( { model | message = ( ErrorMessage, "Get deque: loading" ) }, Cmd.none )
+
+                         Failure _ ->
+                             ( { model | message = ( ErrorMessage, "Get deque: failed request" ) }, Cmd.none )
+
+                         Success documentList ->
+                           let
+                               newDeque = BoundedDeque.fromList config.dequeLength documentList
+                           in
+                             ( { model
+                                 | message = ( UserMessage, "Got deque: successful" )
+                                 , currentUser = updateMaybeUserWithDeque newDeque model.currentUser
+                                 , deque = newDeque
+                               }
+                             , Cmd.none
+                             )
 
                 GotUserAtSignin remoteData ->
                     case remoteData of
@@ -1061,9 +1103,11 @@ update msg model =
 
                                 Just user ->
                                    let
-                                       cmd  = case model.token of
+                                       tokenCmd  = case model.token of
                                           Nothing -> Cmd.none
                                           Just token -> Outside.sendInfo (Outside.UserData <| User.outsideUserEncoder (User.outsideUserWithToken token user))
+
+                                       dequeCommand = Request.documentsInIdList hasuraToken user.recentDocs GotDocumentsForDeque |> Cmd.map Req
                                    in
                                     ( { model
                                         | message = ( UserMessage, "User signup successful (2)" )
@@ -1076,7 +1120,7 @@ update msg model =
                                     ,
                                     Cmd.batch [
                                       getUserDocumentsAtSignIn user
-                                      , cmd
+                                      , Cmd.batch[tokenCmd, dequeCommand]
                                       ]
                                       -- XXX
                                     )
@@ -1680,6 +1724,12 @@ processCandidateChildDocumentRequest model documentList =
 processDocument : Model -> Document -> (Cmd Msg) -> ( Model, Cmd Msg )
 processDocument model document extraCmd =
     let
+        newDeque = Document.pushFrontUnique document model.deque
+
+        updateDequeCmd = case model.currentUser of
+            Nothing -> Cmd.none
+            Just user -> Request.updateUser hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req
+
         ( ( newAst, newRenderedText ), cmd, documentListType ) =
             let
                 lastAst =
@@ -1713,13 +1763,15 @@ processDocument model document extraCmd =
                     else
                         ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, DocumentChildren )
             in
-            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, extraCmd ], documentListType_ )
+            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, extraCmd, updateDequeCmd ], documentListType_ )
+
     in
     ( { model
         | currentDocument = Just document
         , documentListType = documentListType
         , counter = model.counter + 2
-        , deque = Document.pushFrontUnique document model.deque
+        , deque = newDeque
+        , currentUser = updateMaybeUserWithDeque newDeque model.currentUser
         , lastAst = newAst
         , renderedText = newRenderedText
         , tagString = document.tags |> String.join ", "
@@ -1727,6 +1779,15 @@ processDocument model document extraCmd =
       }
     , Cmd.batch [cmd, resetViewportOfRenderedText, resetViewportOfEditor]
     )
+
+
+updateMaybeUserWithDeque : BoundedDeque Document -> Maybe User -> Maybe User
+updateMaybeUserWithDeque deque maybeUser =
+    Maybe.map (\user -> { user | recentDocs = BoundedDeque.toList deque |> List.map .id} ) maybeUser
+
+updateUserWithDeque : BoundedDeque Document -> User -> User
+updateUserWithDeque deque user =
+    { user | recentDocs = BoundedDeque.toList deque |> List.map .id}
 
 
 setCurrentSubdocument : Model -> Document -> TocItem -> ( Model, Cmd Msg )
