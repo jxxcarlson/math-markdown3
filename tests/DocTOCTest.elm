@@ -440,7 +440,7 @@ outlineWithExtraTitle =
 A
 B
 C
-U 
+U
 """
 
 

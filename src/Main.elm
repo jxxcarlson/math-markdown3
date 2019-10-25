@@ -3745,9 +3745,15 @@ footer model =
         , dirtyDocumentDisplay model
         , wordCount model
         , row [ spacing 4 ] [ totalWordCountButton, totalWordCountDisplay model ]
-        , el [ alignRight, paddingXY 10 0 ] (Element.text <| (model.message |> Tuple.second))
+        , displayMessage model.message
         , currentTime model
         ]
+
+displayMessage : Message -> Element Msg
+displayMessage (messageType, str) =
+    case messageType of
+        ErrorMessage -> el [Font.color Style.white, Background.color (Style.brightRed),  alignRight, Font.size 12, Font.bold,  paddingXY 10 4, centerY] (Element.text str)
+        _ -> el [alignRight, paddingXY 10 0] (Element.text str)
 
 
 getTextSelectionButton =

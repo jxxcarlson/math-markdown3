@@ -3,6 +3,7 @@ module Style exposing
     , basicButtonsStyle
     , black
     , blue
+    , brightRed
     , brighterBlue
     , buttonFontSize
     , buttonGrey
@@ -188,6 +189,11 @@ buttonGrey =
 red : Color
 red =
     Element.rgb 0.4 0.1 0.1
+
+
+brightRed : Color
+brightRed =
+    Element.rgb 1.0 0.0 0.0
 
 
 white : Color
