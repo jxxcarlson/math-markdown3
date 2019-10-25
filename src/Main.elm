@@ -697,7 +697,7 @@ update msg model =
                         Just id_ ->
                             id_ |> ParseWithId.stringOfId)
             in
-            ( { model | message = ( ErrorMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id ) }
+            ( { model | message = ( UserMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id ) }
             , setViewportForElement id
             )
 
