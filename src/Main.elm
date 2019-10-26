@@ -7,6 +7,7 @@ import Browser.Events
 import Browser.Navigation as Nav
 import CustomElement.CodeEditor as Editor
 import Data
+import Browser.Dom as Dom
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Element exposing (..)
 import Element.Background as Background
@@ -510,8 +511,9 @@ type Msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    -- XYXY
     Sub.batch
-        [ Time.every 1000 Tick
+        [ Time.every 100000 Tick
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         , Outside.getInfo Outside LogErr
@@ -879,6 +881,7 @@ update msg model =
         -- NAVIGATION --
 
 
+
         LinkClicked urlRequest ->
            let
                _ = Debug.log "urlRequest" urlRequest
@@ -892,11 +895,12 @@ update msg model =
 
         UrlChanged url ->
            let
-               _ = Debug.log "URL" url
+               id = Debug.log "id" (String.replace "%20" " "( Maybe.withDefault "foo"  url.fragment))
            in
               ( { model | url = url }
-              , Cmd.none
+              ,  jumpToID id -- ("#" ++ id)
               )
+
 
         -- REQ --
         Req requestMsg ->
@@ -1178,6 +1182,16 @@ update msg model =
 
 -- NAVIGATION HELPERS --
 
+jumpToID: String -> Cmd Msg
+jumpToID id =
+  -- XYXY
+  let
+      _ = Debug.log "Jumping to" id
+  in
+  Dom.getViewportOf id
+    |> Task.andThen (\info -> Dom.setViewportOf id 200   info.scene.height)
+    |> Task.attempt (\_ -> NoOp)
+
 pushDocument : Document -> Cmd Msg
 pushDocument document =
     Outside.pushUrl <| "/" ++ Uuid.toString  document.id
@@ -1186,7 +1200,9 @@ pushDocument document =
 processUrl : String -> Cmd Msg
 processUrl urlString =
     let
-        _ = Debug.log "URL" urlString
+        _ = Debug.log "URL (XX)" urlString
+        _ = Debug.log "HERE IS" "processUrl"
+
     in
     case UrlAppParser.toRoute urlString of
         NotFound ->
@@ -1722,6 +1738,7 @@ getFirstPart str =
 processDocumentRequest : Model -> Maybe Document -> List Document -> ( Model, Cmd Msg )
 processDocumentRequest model maybeDocument documentList =
     let
+        _ = Debug.log "processDocumentRequest"
         currentDoc =
             case maybeDocument of
                 Nothing ->
@@ -1743,26 +1760,27 @@ processDocumentRequest model maybeDocument documentList =
                         lastAst =
                             parse doc.docType model.counter content
 
-                        nMath =
-                            Markdown.ElmWithId.numberOfMathElements lastAst
+--                        nMath =
+--                            Markdown.ElmWithId.numberOfMathElements lastAst
 
                         ( renderedText, cmd_ ) =
-                            if nMath > 10 then
-                                let
-                                    firstAst =
-                                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
-
-                                    renderedText_ =
-                                        render doc.docType firstAst
-
-                                    cmd__ =
-                                        renderAstFor lastAst
-                                in
-                                ( renderedText_
-                                , cmd__
-                                )
-
-                            else
+--                            -- XYXY
+--                            if nMath > 1000 then
+--                                let
+--                                    firstAst =
+--                                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+--
+--                                    renderedText_ =
+--                                        render doc.docType firstAst
+--
+--                                    cmd__ =
+--                                        renderAstFor lastAst
+--                                in
+--                                ( renderedText_
+--                                , cmd__
+--                                )
+--
+--                            else
                                 ( render doc.docType lastAst, Cmd.none )
                     in
                     ( lastAst, renderedText, cmd_ )
