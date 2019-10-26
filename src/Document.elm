@@ -353,7 +353,7 @@ makeSlug document =
             Uuid.toString document.id |> String.right 6
 
         shortHash =
-            String.left 3 endOfHash ++ "-" ++ String.right 3 endOfHash
+            String.left 4 endOfHash
     in
     document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ shortHash
 
@@ -365,7 +365,7 @@ makeInitialSlug title authorIdentifier identifier =
             Uuid.toString identifier |> String.right 6
 
         shortHash =
-            String.left 3 endOfHash ++ "-" ++ String.right 3 endOfHash
+            String.left 4 endOfHash
     in
     authorIdentifier ++ "." ++ Utility.compress title ++ "." ++ shortHash
 

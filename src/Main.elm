@@ -514,7 +514,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     -- XYXY
     Sub.batch
-        [ Time.every 100000 Tick
+        [ Time.every 1000 Tick
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         , Outside.getInfo Outside LogErr

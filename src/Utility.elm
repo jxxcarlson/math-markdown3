@@ -271,10 +271,10 @@ compress str =
         |> List.map String.toLower
         |> filterNoise
         |> List.map silencePunctuation
-        |> List.indexedMap shorten
-        |> fixup
-        |> List.Extra.groupsOf 2
-        |> List.indexedMap join
+        -- |> List.indexedMap shorten
+        -- |> fixup
+        --        |> List.Extra.groupsOf 2
+        --        |> List.indexedMap join
         |> List.filter (\item -> item /= "")
         |> String.join "-"
 
