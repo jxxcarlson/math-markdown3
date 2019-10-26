@@ -442,6 +442,7 @@ type Msg
     -- Navigation
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url
+    | ScrollAttempted (Result Dom.Error ())
       -- UI
     | SetToolPanelState Visibility
     | SetAppMode AppMode
@@ -880,12 +881,15 @@ update msg model =
 
         -- NAVIGATION --
 
+        -- XYXY
+
+        ScrollAttempted _ ->
+              ( model
+              , Cmd.none
+              )
 
 
         LinkClicked urlRequest ->
-           let
-               _ = Debug.log "urlRequest" urlRequest
-           in
               case urlRequest of
                 Browser.Internal url ->
                   ( model, Nav.pushUrl model.key (Url.toString url) )
@@ -895,10 +899,10 @@ update msg model =
 
         UrlChanged url ->
            let
-               id = Debug.log "id" (String.replace "%20" " "( Maybe.withDefault "foo"  url.fragment))
+               id = String.replace "%20" " "( Maybe.withDefault "foo"  url.fragment)
            in
               ( { model | url = url }
-              ,  jumpToID id -- ("#" ++ id)
+              ,  scrollIfNeeded id --   jumpToID id -- ("#" ++ id)
               )
 
 
@@ -1182,15 +1186,13 @@ update msg model =
 
 -- NAVIGATION HELPERS --
 
-jumpToID: String -> Cmd Msg
-jumpToID id =
-  -- XYXY
-  let
-      _ = Debug.log "Jumping to" id
-  in
-  Dom.getViewportOf id
-    |> Task.andThen (\info -> Dom.setViewportOf id 200   info.scene.height)
-    |> Task.attempt (\_ -> NoOp)
+scrollIfNeeded : String -> Cmd Msg
+scrollIfNeeded tag =
+      Task.attempt ScrollAttempted (
+        Dom.getElement tag
+          |> Task.andThen (\info -> Dom.setViewportOf "__rt_scroll__" 0  (info.element.y - info.element.height - 40) ))
+
+          -- |> Task.andThen (\info -> Dom.setViewportOf "__rt_scroll__" 0 ((Debug.log "V" info.viewport.y) + (Debug.log "Y" info.element.y))))
 
 pushDocument : Document -> Cmd Msg
 pushDocument document =
@@ -1198,44 +1200,39 @@ pushDocument document =
 
 
 processUrl : String -> Cmd Msg
-processUrl urlString =
-    let
-        _ = Debug.log "URL (XX)" urlString
-        _ = Debug.log "HERE IS" "processUrl"
-
-    in
-    case UrlAppParser.toRoute urlString of
-        NotFound ->
-            Cmd.batch
-                [
---                  Outside.sendInfoOutside (AskToReconnectDocument Encode.null)
---                , Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
---                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
---                , Outside.sendInfoOutside (AskToReconnectUser Encode.null)
-
-                ]
-
-        DocumentRef docId ->
-            Cmd.batch
-                [
---                  Outside.sendInfoOutside (AskToReconnectUser Encode.null)
---                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+processUrl urlString = Cmd.none
+--    case UrlAppParser.toRoute urlString of
+--        NotFound ->
+--            Cmd.batch
+--                [
+----                  Outside.sendInfoOutside (AskToReconnectDocument Encode.null)
+----                , Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
+----                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+----                , Outside.sendInfoOutside (AskToReconnectUser Encode.null)
 --
---                --, Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
---                , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
---                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ String.fromInt docId)
-                ]
-
-        HomeRef username ->
-            Cmd.batch
-                [
---                 Outside.sendInfoOutside (AskToReconnectUser Encode.null)
---                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
---                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username))
-                ]
-
-        InternalRef str ->
-            Cmd.none
+--                ]
+--
+--        DocumentRef docId ->
+--            Cmd.batch
+--                [
+----                  Outside.sendInfoOutside (AskToReconnectUser Encode.null)
+----                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+----
+----                --, Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
+----                , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
+----                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ String.fromInt docId)
+--                ]
+--
+--        HomeRef username ->
+--            Cmd.batch
+--                [
+----                 Outside.sendInfoOutside (AskToReconnectUser Encode.null)
+----                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
+----                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username))
+--                ]
+--
+--        InternalRef str ->
+--            Cmd.none
 
 -- KEYBOARD HELPERS -
 
@@ -1738,7 +1735,6 @@ getFirstPart str =
 processDocumentRequest : Model -> Maybe Document -> List Document -> ( Model, Cmd Msg )
 processDocumentRequest model maybeDocument documentList =
     let
-        _ = Debug.log "processDocumentRequest"
         currentDoc =
             case maybeDocument of
                 Nothing ->
@@ -2766,11 +2762,16 @@ rhsViewInfoPage viewInfo model =
             Markdown.Elm.toHtmlWithExternaTOC ExtendedMath Data.rhsUserText
     in
     row []
-        [ column [ width (px w1), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.9), Font.color (Style.makeGrey 0.1) ]
-            [ rt.title |> Element.html, rt.document |> Element.html ]
+        [ column [] [
+            column [] [ rt.title |> Element.html]
+          , column [ width (px w1), height (px h), padding 36, scrollbarY, Background.color (Style.makeGrey 0.9), Font.color (Style.makeGrey 0.1) ]
+               [ rt.document |> Element.html ]
+           ]
         , column [ width (px w2), height (px h), padding 12, scrollbarY, Background.color (Style.makeGrey 0.8), Font.color (Style.makeGrey 0.1) ]
             [ rt.toc |> Element.html ]
         ]
+
+
 
 
 userPageFooter : Model -> Element Msg
@@ -3203,6 +3204,7 @@ readerView viewInfo model =
 
 renderedSource : ViewInfo -> Model -> String -> RenderedText Msg -> Element Msg
 renderedSource viewInfo model footerText_ rt =
+    -- XYXY
     let
         w_ =
             affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
@@ -3218,12 +3220,13 @@ renderedSource viewInfo model footerText_ rt =
 
         hToc =
             translate -viewInfo.vInset model.windowHeight
+
     in
     row [ spacing 10 ]
-        [ column [ width (px w_), height (px h_), clipX, Font.size 12 ]
+        [ column [ setElementId "__rt_scroll__", width (px w_), height (px h_), clipX, Font.size 12 ]
             [ column [ width (px w2_), paddingXY 10 20 ]
                 [ rt.title |> Element.html
-                , column [setElementId masterId, scrollbarY, height (px h_)] [ rt.document |> Element.html ]
+             , column [setElementId masterId,  height (px h_)] [ rt.document |> Element.html ]
                 ]
             ]
         , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]

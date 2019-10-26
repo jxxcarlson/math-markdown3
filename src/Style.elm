@@ -15,7 +15,9 @@ module Style exposing
     , green
     , grey
     , inputStyle
+    , lightBlue
     , lightGrey
+    , lightYellow
     , mainColumn
     , makeGrey
     , mediumBlue
@@ -165,6 +167,14 @@ darkRed =
 
 darkBlue =
     Element.rgb 0.0 0.0 0.6
+
+
+lightYellow =
+    Element.rgb 0.9 0.9 0.0
+
+
+lightBlue =
+    Element.rgb 0.8 1.0 0.8
 
 
 
