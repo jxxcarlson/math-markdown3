@@ -18,6 +18,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
+import UrlAppParser
 import BoundedDeque exposing(BoundedDeque)
 import Element.Lazy
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -26,6 +27,7 @@ import Html.Attributes as HA
 import Json.Decode as D
 import Json.Encode as E
 import Keyboard exposing (Key(..))
+import Maybe.Extra
 import List.Extra
 import Outside
 import Markdown.Elm
@@ -414,7 +416,7 @@ init flags url key =
     ( model
     , Cmd.batch
         [ Task.perform AdjustTimeZone Time.here
-        , Request.publicDocuments hasuraToken |> Cmd.map Req
+        -- , Request.publicDocuments hasuraToken |> Cmd.map Req
         , resetViewportOfRenderedText
         , resetViewportOfEditor
         , Outside.sendInfo (Outside.AskToReconnectUser E.null)
@@ -1227,39 +1229,19 @@ pushDocument document =
 
 
 processUrl : String -> Cmd Msg
-processUrl urlString = Cmd.none
---    case UrlAppParser.toRoute urlString of
---        NotFound ->
---            Cmd.batch
---                [
-----                  Outside.sendInfoOutside (AskToReconnectDocument Encode.null)
-----                , Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
-----                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
-----                , Outside.sendInfoOutside (AskToReconnectUser Encode.null)
---
---                ]
---
---        DocumentRef docId ->
---            Cmd.batch
---                [
-----                  Outside.sendInfoOutside (AskToReconnectUser Encode.null)
-----                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
-----
-----                --, Outside.sendInfoOutside (AskToReconnectDocumentList Encode.null)
-----                , Cmd.map DocMsg (Document.getDocumentById docId Nothing)
-----                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing <| "id=" ++ String.fromInt docId)
---                ]
---
---        HomeRef username ->
---            Cmd.batch
---                [
-----                 Outside.sendInfoOutside (AskToReconnectUser Encode.null)
-----                , Outside.sendInfoOutside (AskToReconnectRecentDocumentQueue Encode.null)
-----                , Cmd.map DocListMsg (DocumentList.findDocuments Nothing ("key=home&authorname=" ++ username))
---                ]
---
---        InternalRef str ->
---            Cmd.none
+processUrl urlString =
+  let
+     url = Url.fromString urlString
+     maybeFrag = Maybe.map .fragment url |> Maybe.Extra.join
+  in
+    case maybeFrag of
+        Nothing -> Cmd.none
+        Just frag ->
+            case AppNavigation.classify frag of
+              (TocRef, f) ->  Cmd.none
+              (DocRef, f)  -> getDocumentBySlug hasuraToken f
+              (IdRef, f)  -> getDocumentById hasuraToken f
+
 
 -- KEYBOARD HELPERS -
 
@@ -1867,6 +1849,7 @@ loadDocument model document =
         , tagString = getTagString (Just document)
         , counter = model.counter + 2
         , lastAst = lastAst
+        , appMode = Reading
         , documentListType = SearchResults
         , renderedText = renderedText
         , docType = Document.getDocType (Just document)

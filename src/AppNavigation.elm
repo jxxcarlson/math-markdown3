@@ -1,4 +1,7 @@
-module AppNavigation exposing (NavigationType(..), classify)
+module AppNavigation exposing (NavigationType(..), classify, idSegment)
+
+import Url
+import Url.Parser exposing (..)
 
 
 type NavigationType
@@ -17,3 +20,8 @@ classify str =
 
     else
         ( TocRef, str )
+
+
+idSegment : Parser (String -> a) a
+idSegment =
+    s "#id" </> string
