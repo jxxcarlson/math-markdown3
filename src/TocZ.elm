@@ -87,7 +87,7 @@ viewAfter t z =
 prefix l =
     case ( l.isRoot, l.hasChildren ) of
         ( True, _ ) ->
-            "   "
+            "    "
 
         ( False, Just True ) ->
             "+ "

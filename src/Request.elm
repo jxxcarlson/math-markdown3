@@ -14,6 +14,8 @@ module Request exposing
     , orderByMostRecentFirst
     , orderByTitleAsc
     , publicDocuments
+    , publicDocumentsBySlug
+    , publicDocumentsInIdList
     , publicDocumentsWithTag
     , publicDocumentsWithTitle
     , signInUser
@@ -98,6 +100,7 @@ type RequestMsg
     | GotDequeDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotCandidateChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotPublicDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+    | LoadDocument (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotUserAtSignin (RemoteData (Graphql.Http.Error (List User)) (List User))
     | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
     | InsertUserResponse (GraphQLResponse (Maybe MutationResponse))
@@ -134,6 +137,13 @@ documentsWithAuthorAndTagSorted authToken author tag sortData requestHandler =
         (RemoteData.fromResult >> requestHandler)
 
 
+publicDocumentsBySlug : String -> String -> RequestHandler -> Cmd RequestMsg
+publicDocumentsBySlug authToken slug requestHandler =
+    makeGraphQLQuery authToken
+        (fetchDocumentsQuery (Present <| hasSlugAndIsPublic slug))
+        (RemoteData.fromResult >> requestHandler)
+
+
 documentsWithAuthorAndTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
 documentsWithAuthorAndTitleSorted authToken authorIdentifier titleKey sortData requestHandler =
     makeGraphQLQuery authToken
@@ -149,6 +159,13 @@ documentsInIdList : String -> List Uuid -> RequestHandler -> Cmd RequestMsg
 documentsInIdList authToken uuiIdList requestHandler =
     makeGraphQLQuery authToken
         (fetchDocumentsQuery (Present <| inUuidList uuiIdList))
+        (RemoteData.fromResult >> requestHandler)
+
+
+publicDocumentsInIdList : String -> List Uuid -> RequestHandler -> Cmd RequestMsg
+publicDocumentsInIdList authToken uuiIdList requestHandler =
+    makeGraphQLQuery authToken
+        (fetchDocumentsQuery (Present <| publicAndInUuidList uuiIdList))
         (RemoteData.fromResult >> requestHandler)
 
 
@@ -332,6 +349,19 @@ hasAuthorAndTag author tag =
     buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| hasAuthor_ author, Just <| hasTag tag ] })
 
 
+hasSlug : String -> Document_bool_exp
+hasSlug slug =
+    buildDocument_bool_exp (\args -> { args | slug = Present <| equalToString slug })
+
+
+hasSlugAndIsPublic : String -> Document_bool_exp
+hasSlugAndIsPublic slug =
+    buildDocument_bool_exp
+        (\args ->
+            { args | and_ = Present <| [ Just <| isPublic_, Just <| hasSlug slug ] }
+        )
+
+
 isPublicAndTitle : String -> Document_bool_exp
 isPublicAndTitle titleKey =
     buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| isPublic_, Just <| hasTitle_ titleKey ] })
@@ -345,6 +375,14 @@ equalToString str =
 inUuidList : List Uuid -> Document_bool_exp
 inUuidList uuiIdList =
     buildDocument_bool_exp (\args -> { args | id = Present <| inUuidList_ uuiIdList })
+
+
+publicAndInUuidList : List Uuid -> Document_bool_exp
+publicAndInUuidList uuiIdList =
+    buildDocument_bool_exp
+        (\args ->
+            { args | and_ = Present <| [ Just <| isPublic_, Just <| inUuidList uuiIdList ] }
+        )
 
 
 inUuidList_ : List Uuid -> Uuid_comparison_exp

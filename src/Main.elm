@@ -2,11 +2,13 @@ module Main exposing (main, parseSearchTerm)
 
 import Api.InputObject exposing (Document_order_by(..))
 import Browser
+import AppNavigation exposing(NavigationType(..))
 import Browser.Dom as Dom
 import Browser.Events
 import Browser.Navigation as Nav
 import CustomElement.CodeEditor as Editor
 import Data
+import Utility
 import Browser.Dom as Dom
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Element exposing (..)
@@ -512,7 +514,6 @@ type Msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    -- XYXY
     Sub.batch
         [ Time.every 1000 Tick
         , Browser.Events.onResize WindowSize
@@ -881,7 +882,7 @@ update msg model =
 
         -- NAVIGATION --
 
-        -- XYXY
+        -- XYXY1
 
         ScrollAttempted _ ->
               ( model
@@ -900,9 +901,10 @@ update msg model =
         UrlChanged url ->
            let
                id = String.replace "%20" " "( Maybe.withDefault "foo"  url.fragment)
+
            in
               ( { model | url = url }
-              ,  scrollIfNeeded id --   jumpToID id -- ("#" ++ id)
+              ,  handleLink id --   jumpToID id
               )
 
 
@@ -1114,6 +1116,24 @@ update msg model =
                               }
                             , Cmd.none
                             )
+
+                LoadDocument remoteData ->
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "LoadDocument: not asked" ) }, Cmd.none )
+
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "LoadDocument: loading" ) }, Cmd.none )
+
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "LoadDocument: failed request" ) }, Cmd.none )
+
+                        Success documentList ->
+                           case List.head documentList of
+                               Nothing -> ( { model| message = (UserMessage, "Couldn't load linked document")}, Cmd.none)
+                               Just document ->
+                                   loadDocument model document
+
                 GotDocumentsForDeque remoteData ->
                      case remoteData of
                          NotAsked ->
@@ -1185,6 +1205,14 @@ update msg model =
 
 
 -- NAVIGATION HELPERS --
+-- XYXY
+
+handleLink : String -> Cmd Msg
+handleLink link =
+    case  AppNavigation.classify link of
+        (TocRef, id_) -> scrollIfNeeded id_
+        (DocRef, slug)  -> getDocumentBySlug hasuraToken slug
+        (IdRef, slug)  -> getDocumentById hasuraToken slug
 
 scrollIfNeeded : String -> Cmd Msg
 scrollIfNeeded tag =
@@ -1192,7 +1220,6 @@ scrollIfNeeded tag =
         Dom.getElement tag
           |> Task.andThen (\info -> Dom.setViewportOf "__rt_scroll__" 0  (info.element.y - info.element.height - 40) ))
 
-          -- |> Task.andThen (\info -> Dom.setViewportOf "__rt_scroll__" 0 ((Debug.log "V" info.viewport.y) + (Debug.log "Y" info.element.y))))
 
 pushDocument : Document -> Cmd Msg
 pushDocument document =
@@ -1699,6 +1726,16 @@ searchForPublicDocuments model =
 
 -- DOCUMENT HELPERS --
 
+getDocumentById : String -> String -> Cmd Msg
+getDocumentById token idString =
+    let
+        uuid = Uuid.fromString idString |> Maybe.withDefault Utility.id0
+    in
+    Request.publicDocumentsInIdList token [uuid] LoadDocument |> Cmd.map Req
+
+getDocumentBySlug: String -> String -> Cmd Msg
+getDocumentBySlug token slug =
+   Request.publicDocumentsBySlug token slug LoadDocument |> Cmd.map Req
 
 emptyAst : Tree ParseWithId.MDBlockWithId
 emptyAst =
@@ -1756,27 +1793,26 @@ processDocumentRequest model maybeDocument documentList =
                         lastAst =
                             parse doc.docType model.counter content
 
---                        nMath =
---                            Markdown.ElmWithId.numberOfMathElements lastAst
+                        nMath =
+                            Markdown.ElmWithId.numberOfMathElements lastAst
 
                         ( renderedText, cmd_ ) =
---                            -- XYXY
---                            if nMath > 1000 then
---                                let
---                                    firstAst =
---                                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
---
---                                    renderedText_ =
---                                        render doc.docType firstAst
---
---                                    cmd__ =
---                                        renderAstFor lastAst
---                                in
---                                ( renderedText_
---                                , cmd__
---                                )
---
---                            else
+                            if nMath > 10 then
+                                let
+                                    firstAst =
+                                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+
+                                    renderedText_ =
+                                        render doc.docType firstAst
+
+                                    cmd__ =
+                                        renderAstFor lastAst
+                                in
+                                ( renderedText_
+                                , cmd__
+                                )
+
+                            else
                                 ( render doc.docType lastAst, Cmd.none )
                     in
                     ( lastAst, renderedText, cmd_ )
@@ -1794,6 +1830,50 @@ processDocumentRequest model maybeDocument documentList =
     , cmd
     )
 
+loadDocument : Model -> Document -> ( Model, Cmd Msg )
+loadDocument model document =
+    let
+        content =
+            document.content
+
+        lastAst =
+            parse document.docType model.counter content
+
+        nMath =
+            Markdown.ElmWithId.numberOfMathElements lastAst
+
+        ( renderedText, cmd_ ) =
+            if nMath > 1000 then
+                let
+                    firstAst =
+                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+
+                    renderedText_ =
+                        render document.docType firstAst
+
+                    cmd__ =
+                        renderAstFor lastAst
+                in
+                ( renderedText_
+                , cmd__
+                )
+
+            else
+                ( render document.docType lastAst, Cmd.none )
+    in
+    ( { model
+        | documentList = document :: (List.filter (\doc -> doc.id /= document.id) model.documentList)
+        , currentDocument = Just document
+        , tagString = getTagString (Just document)
+        , counter = model.counter + 2
+        , lastAst = lastAst
+        , documentListType = SearchResults
+        , renderedText = renderedText
+        , docType = Document.getDocType (Just document)
+        , message = ( UserMessage, "Success loading document" )
+      }
+    , cmd_ --XXX
+    )
 
 processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
 processChildDocumentRequest model documentList =
@@ -2273,7 +2353,7 @@ newSubdocumentAtHead model user masterDocument =
     let
         -- Prepare the new document
         newDocumentText =
-            "# New subdocument:\n\n### " ++ masterDocument.title ++ "\n\nWrite something here ..."
+            "# Title...\n\n___\n\n[Main](#id/" ++ (Uuid.toString masterDocument.id) ++ ")\n\n___\n\nText ..."
 
         newDocument =
             Document.create model.currentUuid user.username "New Subdocument" newDocumentText
@@ -2334,7 +2414,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
     let
         -- Prepare the new document
         newDocumentText =
-            "# New subdocument:\n\n### " ++ masterDocument.title ++ "\n\nWrite something here ..."
+            "# Title...\n\n___\n\n[Main](#id/" ++ (Uuid.toString masterDocument.id) ++ ")\n\n___\n\nText ..."
 
         newDocument =
             Document.create model.currentUuid user.username "New Subdocument" newDocumentText
@@ -3204,7 +3284,6 @@ readerView viewInfo model =
 
 renderedSource : ViewInfo -> Model -> String -> RenderedText Msg -> Element Msg
 renderedSource viewInfo model footerText_ rt =
-    -- XYXY
     let
         w_ =
             affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
@@ -3590,7 +3669,9 @@ renderTocForSearchResults model =
 
 renderTocForDeque: Model -> List (Element Msg)
 renderTocForDeque model =
-    List.map (tocEntry model.currentDocument) (BoundedDeque.toList model.deque)
+    -- XXX
+    List.map (tocEntry model.currentDocument)
+      (BoundedDeque.toList model.deque |> List.sortBy (\doc -> doc.title))
 
 renderTocForMaster : Model -> List (Element Msg)
 renderTocForMaster model =
@@ -3615,8 +3696,14 @@ tocEntry currentDocument_ document =
         ( color, fontWeight ) =
             tocEntryStyle currentDocument_ document
     in
-    Input.button [] { onPress = Just (SetCurrentDocument document), label = el [ Font.color color, fontWeight ] (Element.text document.title) }
+    Input.button [] { onPress = Just (SetCurrentDocument document),
+      label = el [ Font.color color, fontWeight ] (Element.text <| tocEntryPrefix document ++ document.title) }
 
+tocEntryPrefix : Document -> String
+tocEntryPrefix doc =
+    case List.length doc.childInfo > 0 of
+        True -> "+ "
+        False -> ""
 
 tocEntryStyle : Maybe Document -> Document -> ( Color, Element.Attribute msg )
 tocEntryStyle currentDocument_ document =
