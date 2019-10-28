@@ -32,11 +32,17 @@ customElements.define('code-editor', class extends HTMLElement {
 
 
   set searchTargetValue(value) {
-     console.log("TARGET", value)
-//       if (this._targetValue === value) return;
-//       this._targetValue = value;
-//       if (!this._editor) return;
-//       this._editor.setValue(value);
+     // incoming text value is from
+     // user selection in the rendered text
+     // window.
+     var target = value.slice(0,20)
+     console.log("TARGET", target)
+     // ^^^ OK up to here
+     // TODO:
+     // Next, want to get line number of target,
+     // then scroll to that line.
+     var searchResult = searchStringForward(this.doc, target, 0)
+     console.log("searchResult", searchResult)
      }
 
   connectedCallback() {
