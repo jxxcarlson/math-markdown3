@@ -14,10 +14,9 @@
     "parcel-bundler": "^1.12.3"
   },
   "scripts": {
-    "make": "elm make src/Main.elm --output=Main.js",
+    "make": "elm make src/Main.elm --output=main.js",
     "publish": "git push",
     "build": "yarn run parcel build public/index.html",
-    "api": "elm-graphql https://elm-graphql.herokuapp.com/api --base StarWars",
     "test": "elm-test"
   },
   "dependencies": {
