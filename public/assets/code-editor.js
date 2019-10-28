@@ -42,7 +42,7 @@ customElements.define('code-editor', class extends HTMLElement {
      // Next, want to get line number of target,
      // then scroll to that line.
     //  var searchResult = searchStringForward(this.doc, target, 0)
-     console.log("searchResult", searchResult)
+     // ∫console.log("searchResult", searchResult)
      }
 
   connectedCallback() {
