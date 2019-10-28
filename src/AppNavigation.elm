@@ -8,6 +8,7 @@ type NavigationType
     = TocRef
     | DocRef
     | IdRef
+    | SubdocIdRef
 
 
 classify : String -> ( NavigationType, String )
@@ -17,6 +18,9 @@ classify str =
 
     else if String.left 3 str == "id/" then
         ( IdRef, String.dropLeft 3 str )
+
+    else if String.left 10 str == "subdoc-id/" then
+        ( SubdocIdRef, String.dropLeft 10 str )
 
     else
         ( TocRef, str )

@@ -1136,6 +1136,25 @@ update msg model =
                                Just document ->
                                    loadDocument model document
 
+                         LoadSubdocument remoteData ->
+                            case remoteData of
+                                NotAsked ->
+                                    ( { model | message = ( ErrorMessage, "LoadDocument: not asked" ) }, Cmd.none )
+
+                                Loading ->
+                                    ( { model | message = ( ErrorMessage, "LoadDocument: loading" ) }, Cmd.none )
+
+                                Failure _ ->
+                                    ( { model | message = ( ErrorMessage, "LoadDocument: failed request" ) }, Cmd.none )
+
+                                Success documentList ->
+                                   case List.head documentList of
+                                       Nothing -> ( { model| message = (UserMessage, "Couldn't load linked document")}, Cmd.none)
+                                       Just document ->
+                                           loadSubdocument model document
+
+
+
                 GotDocumentsForDeque remoteData ->
                      case remoteData of
                          NotAsked ->
@@ -1214,7 +1233,8 @@ handleLink link =
     case  AppNavigation.classify link of
         (TocRef, id_) -> scrollIfNeeded id_
         (DocRef, slug)  -> getDocumentBySlug hasuraToken slug
-        (IdRef, slug)  -> getDocumentById hasuraToken slug
+        (IdRef, idRef)  -> getDocumentById hasuraToken idRef
+        (SubdocIdRef, idRef)  -> getSubdocumentById hasuraToken idRef
 
 scrollIfNeeded : String -> Cmd Msg
 scrollIfNeeded tag =
@@ -1406,7 +1426,8 @@ sendDequeOutside  model =
 
 -- EDITOR HELPERS, VIEWPORT
 
-masterId = "_rendered_text_"
+-- masterId = "_rendered_text_"
+masterId = "__rt_scroll__"
 
 resetViewportOfRenderedText : Cmd Msg
 resetViewportOfRenderedText =
@@ -1715,6 +1736,13 @@ getDocumentById token idString =
     in
     Request.publicDocumentsInIdList token [uuid] LoadDocument |> Cmd.map Req
 
+getSubdocumentById : String -> String -> Cmd Msg
+getSubdocumentById token idString =
+    let
+        uuid = Uuid.fromString idString |> Maybe.withDefault Utility.id0
+    in
+    Request.publicDocumentsInIdList token [uuid] LoadSubDocument |> Cmd.map Req
+
 getDocumentBySlug: String -> String -> Cmd Msg
 getDocumentBySlug token slug =
    Request.publicDocumentsBySlug token slug LoadDocument |> Cmd.map Req
@@ -1814,6 +1842,52 @@ processDocumentRequest model maybeDocument documentList =
 
 loadDocument : Model -> Document -> ( Model, Cmd Msg )
 loadDocument model document =
+    let
+        content =
+            document.content
+
+        lastAst =
+            parse document.docType model.counter content
+
+        nMath =
+            Markdown.ElmWithId.numberOfMathElements lastAst
+
+        ( renderedText, cmd_ ) =
+            if nMath > 1000 then
+                let
+                    firstAst =
+                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+
+                    renderedText_ =
+                        render document.docType firstAst
+
+                    cmd__ =
+                        renderAstFor lastAst
+                in
+                ( renderedText_
+                , cmd__
+                )
+
+            else
+                ( render document.docType lastAst, Cmd.none )
+    in
+    ( { model
+        | documentList = document :: (List.filter (\doc -> doc.id /= document.id) model.documentList)
+        , currentDocument = Just document
+        , tagString = getTagString (Just document)
+        , counter = model.counter + 2
+        , lastAst = lastAst
+        , appMode = Reading
+        , documentListType = SearchResults
+        , renderedText = renderedText
+        , docType = Document.getDocType (Just document)
+        , message = ( UserMessage, "Success loading document" )
+      }
+    , cmd_ --XXX
+    )
+
+loadSubdocument : Model -> Document -> ( Model, Cmd Msg )
+loadSubdocument model document =
     let
         content =
             document.content
