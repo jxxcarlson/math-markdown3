@@ -853,30 +853,7 @@ update msg model =
         TOC tocMsg ->
             case tocMsg of
                 Focus id ->
-                    case model.tocData of
-                        Nothing ->
-                            ( model, Cmd.none |> Cmd.map TOC )
-
-                        Just zipper ->
-                            let
-                                currentDocument =
-                                    List.filter (\item -> item.id == id) model.tableOfContents |> List.head
-
-                                ( newModel, cmd ) =
-                                    case currentDocument of
-                                        Nothing ->
-                                            ( model, Cmd.none )
-
-                                        Just document ->
-                                            renderUpdate model document
-                            in
-                            ( { newModel
-                                | currentDocument = currentDocument
-                                , tocData = Just (TocZ.focus id zipper)
-                                , tocCursor = Just id
-                              }
-                            , cmd
-                            )
+                    focusOnId model id
 
                 Toggle ->
                     ( { model | toggleToc = not model.toggleToc }, Cmd.batch [resetViewportOfRenderedText, resetViewportOfRenderedText])  -- Cmd.none |> Cmd.map TOC )
@@ -905,9 +882,7 @@ update msg model =
                id = String.replace "%20" " "( Maybe.withDefault "foo"  url.fragment)
 
            in
-              ( { model | url = url }
-              ,  handleLink id --   jumpToID id
-              )
+              handleLink model id
 
 
         -- REQ --
@@ -1136,23 +1111,6 @@ update msg model =
                                Just document ->
                                    loadDocument model document
 
-                         LoadSubdocument remoteData ->
-                            case remoteData of
-                                NotAsked ->
-                                    ( { model | message = ( ErrorMessage, "LoadDocument: not asked" ) }, Cmd.none )
-
-                                Loading ->
-                                    ( { model | message = ( ErrorMessage, "LoadDocument: loading" ) }, Cmd.none )
-
-                                Failure _ ->
-                                    ( { model | message = ( ErrorMessage, "LoadDocument: failed request" ) }, Cmd.none )
-
-                                Success documentList ->
-                                   case List.head documentList of
-                                       Nothing -> ( { model| message = (UserMessage, "Couldn't load linked document")}, Cmd.none)
-                                       Just document ->
-                                           loadSubdocument model document
-
 
 
                 GotDocumentsForDeque remoteData ->
@@ -1228,13 +1186,40 @@ update msg model =
 -- NAVIGATION HELPERS --
 -- XYXY
 
-handleLink : String -> Cmd Msg
-handleLink link =
+focusOnId : Model -> Uuid -> (Model, Cmd Msg)
+focusOnId model id =
+    case model.tocData of
+        Nothing ->
+            ( model, Cmd.none |> Cmd.map TOC )
+
+        Just zipper ->
+            let
+                currentDocument =
+                    List.filter (\item -> item.id == id) model.tableOfContents |> List.head
+
+                ( newModel, cmd ) =
+                    case currentDocument of
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                        Just document ->
+                            renderUpdate model document
+            in
+            ( { newModel
+                | currentDocument = currentDocument
+                , tocData = Just (TocZ.focus id zipper)
+                , tocCursor = Just id
+              }
+            , cmd
+            )
+
+handleLink : Model -> String -> (Model, Cmd Msg)
+handleLink model link =
     case  AppNavigation.classify link of
-        (TocRef, id_) -> scrollIfNeeded id_
-        (DocRef, slug)  -> getDocumentBySlug hasuraToken slug
-        (IdRef, idRef)  -> getDocumentById hasuraToken idRef
-        (SubdocIdRef, idRef)  -> getSubdocumentById hasuraToken idRef
+        (TocRef, id_) -> (model, scrollIfNeeded id_)
+        (DocRef, slug)  ->(model, getDocumentBySlug hasuraToken slug)
+        (IdRef, idRef)  -> (model, getDocumentById hasuraToken idRef)
+        (SubdocIdRef, idRef)  -> focusOnId model (idRef |> Uuid.fromString |> Maybe.withDefault Utility.id0)
 
 scrollIfNeeded : String -> Cmd Msg
 scrollIfNeeded tag =
@@ -1261,6 +1246,8 @@ processUrl urlString =
               (TocRef, f) ->  Cmd.none
               (DocRef, f)  -> getDocumentBySlug hasuraToken f
               (IdRef, f)  -> getDocumentById hasuraToken f
+              ( SubdocIdRef, _ )  -> Cmd.none
+
 
 
 -- KEYBOARD HELPERS -
@@ -1736,12 +1723,6 @@ getDocumentById token idString =
     in
     Request.publicDocumentsInIdList token [uuid] LoadDocument |> Cmd.map Req
 
-getSubdocumentById : String -> String -> Cmd Msg
-getSubdocumentById token idString =
-    let
-        uuid = Uuid.fromString idString |> Maybe.withDefault Utility.id0
-    in
-    Request.publicDocumentsInIdList token [uuid] LoadSubDocument |> Cmd.map Req
 
 getDocumentBySlug: String -> String -> Cmd Msg
 getDocumentBySlug token slug =
@@ -1929,7 +1910,7 @@ loadSubdocument model document =
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
       }
-    , cmd_ --XXX
+    , cmd_
     )
 
 processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
@@ -1964,6 +1945,7 @@ processCandidateChildDocumentRequest model documentList =
       }
     , Cmd.none
     )
+
 
 
 processDocument : Model -> Document -> (Cmd Msg) -> ( Model, Cmd Msg )
