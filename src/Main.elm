@@ -1515,7 +1515,7 @@ signIn model =
 
 getUserDocumentsAtSignIn : User -> Cmd Msg
 getUserDocumentsAtSignIn user =
-    Request.documentsWithAuthorAndTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+    Request.authorDocumentsWithTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
 -- SEARCH HELPERS
 
@@ -1680,7 +1680,7 @@ getAllDocuments model =
                             Cmd.none
 
                         Just user ->
-                            Request.documentsWithAuthorAndTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+                            Request.authorDocumentsWithTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
                 PublicSearch ->
                     Request.publicDocumentsWithTitle hasuraToken "" |> Cmd.map Req
@@ -1714,7 +1714,7 @@ searchForUsersDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
+                    Request.authorDocumentsWithTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
                     Request.documentsWithAuthorAndTagSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
@@ -1734,7 +1734,7 @@ searchForChildDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
+                    Request.authorDocumentsWithTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
                     Request.documentsWithAuthorAndTagSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
@@ -3594,7 +3594,7 @@ toolPanel viewInfo model =
             translate -viewInfo.vInset model.windowHeight
     in
     column
-        [ width (px (scale (1.2*viewInfo.docListWidth) model.windowWidth))
+        [ width (px (scale (1.35*viewInfo.docListWidth) model.windowWidth))
         , height (px h_)
         , Background.color (Style.makeGrey 0.5)
         , paddingXY 20 20
@@ -3610,9 +3610,8 @@ toolPanel viewInfo model =
         ]
 
 userPermissions model =
-    column [spacing 10]
-      [
-          el [Font.color Style.white] (Element.text "User permissions")
+    column [spacing 10, padding 10, Background.color Style.charcoal]
+      [  el [Font.color Style.white] (Element.text "User permissions")
         , addUserRow model
         , viewPermissions model
       ]
@@ -3634,7 +3633,7 @@ addUserRow model =
     [addUserPermissionButton, usernameToAddField model, selectPermissionButton model]
 
 addUserPermissionButton =
-    Input.button(headingButtonStyle 40) {
+    Input.button ((headingButtonStyle 40) ++ [Border.color Style.white, Border.width 1]) {
        onPress = Just AddUserPermission
        , label = el [] (Element.text "Add")
     }
@@ -3655,7 +3654,7 @@ selectPermissionButton model =
             WritePermission -> "W"
 
     in
-    Input.button(headingButtonStyle 30) {
+    Input.button ((headingButtonStyle 30) ++  [Border.color Style.white, Border.width 1]){
        onPress = Just CyclePermission
        , label = el [Font.color Style.white] (Element.text labelText)
     }
