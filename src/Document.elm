@@ -31,6 +31,7 @@ module Document exposing
     , stringOfError
     , totalWordCount
     , updateMetaData
+    , userPermissionToString
     , uuidListDecoder
     , uuidListFromStrings
     )
@@ -67,6 +68,24 @@ type Permission
 
 type UserPermission
     = UserPermission String Permission
+
+
+userPermissionToString : UserPermission -> String
+userPermissionToString (UserPermission username permission) =
+    "(" ++ username ++ "," ++ permissionToString permission ++ ")"
+
+
+permissionToString : Permission -> String
+permissionToString p =
+    case p of
+        ReadPermission ->
+            "ReadPermission"
+
+        WritePermission ->
+            "WritePermission"
+
+        NoPermission ->
+            "NoPermission"
 
 
 type DocType

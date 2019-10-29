@@ -49,13 +49,13 @@ validUsername str_ =
 permissionOfString : String -> Permission
 permissionOfString str_ =
     case str_ of
-        "read" ->
+        "ReadPermission" ->
             ReadPermission
 
-        "write" ->
+        "WritePermission" ->
             WritePermission
 
-        "none" ->
+        "NoPermission" ->
             NoPermission
 
         _ ->

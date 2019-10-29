@@ -75,7 +75,7 @@ import Api.Object.User_mutation_response as UserMutation
 import Api.Query as Query exposing (DocumentOptionalArguments, UserOptionalArguments)
 import Codec
 import CustomScalarCodecs exposing (Jsonb(..))
-import Document exposing (DocType(..), Document, MarkdownFlavor(..))
+import Document exposing (DocType(..), Document, MarkdownFlavor(..), UserPermission(..))
 import Graphql.Http
 import Graphql.Operation exposing (RootMutation, RootQuery)
 import Graphql.OptionalArgument as OptionalArgument exposing (OptionalArgument(..))
@@ -458,6 +458,7 @@ insertDocumentObjects newDocument =
                 , tags = Present (newDocument.tags |> (\list -> Jsonb list)) -- Present (newDocument.tags |> String.join ", ")
                 , docType = Present (newDocument.docType |> Document.stringFromDocType)
                 , childInfo = Present (newDocument.childInfo |> List.map uuidIntPairToString |> (\list -> Jsonb list))
+                , permissions = Present (newDocument.permissions |> List.map Document.userPermissionToString |> (\list -> Jsonb list))
             }
         )
 
@@ -552,6 +553,7 @@ setDocumentSetArg document =
                 , tags = Present (document.tags |> (\list -> Jsonb list))
                 , docType = Present (document.docType |> Document.stringFromDocType)
                 , childInfo = Present (document.childInfo |> List.map uuidIntPairToString |> (\list -> Jsonb list))
+                , permissions = Present (document.permissions |> List.map Document.userPermissionToString |> (\list -> Jsonb list))
             }
         )
 
