@@ -10,7 +10,7 @@ import CustomElement.CodeEditor as Editor
 import Data
 import Utility
 import Browser.Dom as Dom
-import Document exposing (DocType(..), Document, MarkdownFlavor(..))
+import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Element exposing (..)
 import Element.Background as Background
 import UrlAppParser exposing(Route(..))
@@ -181,6 +181,8 @@ type alias Model  =
     , searchMode : SearchMode
     , sortMode : SortMode
     , documentOutline : String
+    , usernameToAddToPermmission : String
+    , permissionToAdd : Permission
     }
 
 
@@ -411,6 +413,8 @@ init flags url key =
             , searchMode = PublicSearch
             , sortMode = MostRecentFirst
             , documentOutline = ""
+            , usernameToAddToPermmission = ""
+            , permissionToAdd = NoPermission
             }
     in
     ( model
@@ -508,6 +512,10 @@ type Msg
     | Clear
     | Req RequestMsg
     | TOC TocMsg
+    -- Doc Permissions
+    | AddUserNameForPermissions String
+    | CyclePermission
+    | AddUserPermission
 
 
 
@@ -805,6 +813,27 @@ update msg model =
 
         SetUpOutline ->
             ( setupOutline model, Cmd.none )
+
+        AddUserNameForPermissions str ->
+            ( { model | usernameToAddToPermmission = str}, Cmd.none)
+
+
+        CyclePermission  ->
+           let
+             nextPermission = case model.permissionToAdd of
+                 NoPermission -> ReadPermission
+                 ReadPermission -> WritePermission
+                 WritePermission -> NoPermission
+           in
+            ( { model | permissionToAdd = nextPermission}, Cmd.none)
+
+
+
+        AddUserPermission ->
+            let
+                _ = "ADD clicked"
+            in
+            addUserPermission model
 
         UpdateChildren ->
             case List.head model.tableOfContents of
@@ -1178,7 +1207,6 @@ update msg model =
                                       getUserDocumentsAtSignIn user
                                       , Cmd.batch[tokenCmd, dequeCommand]
                                       ]
-                                      -- XXX
                                     )
 
 
@@ -1450,6 +1478,27 @@ setViewPortForSelectedLine element viewport =
 
 
 -- USER HELPERS
+
+addUserPermission : Model -> (Model, Cmd Msg)
+addUserPermission model =
+    case (model.currentUser, model.currentDocument) of
+        (Nothing, _) -> (model, Cmd.none)
+        (_, Nothing) -> (model, Cmd.none)
+        (Just user, Just document) ->
+            let
+
+               updatedPermissions = Document.addPermission model.usernameToAddToPermmission model.permissionToAdd  document.permissions
+
+               updatedDocument = {document | permissions = updatedPermissions }
+
+               newDocumentList = Document.replaceInList updatedDocument model.documentList
+
+            in
+              ( {model | currentDocument = Just updatedDocument
+                 , documentList = newDocumentList
+                }
+               , Request.updateDocument hasuraToken updatedDocument |> Cmd.map Req)
+
 
 
 signIn : Model -> ( Model, Cmd Msg )
@@ -1864,7 +1913,7 @@ loadDocument model document =
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
       }
-    , cmd_ --XXX
+    , cmd_
     )
 
 loadSubdocument : Model -> Document -> ( Model, Cmd Msg )
@@ -3289,7 +3338,10 @@ editorView viewInfo model =
     in
     column []
         [ editingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model, toolsOrDocs viewInfo model, editor viewInfo model, Element.Lazy.lazy (renderedSource viewInfo model footerText) rt ]
+        , row [] [ tabStrip viewInfo model
+          , toolsOrDocs viewInfo model
+          , editor viewInfo model
+          , Element.Lazy.lazy (renderedSource viewInfo model footerText) rt ]
         , footer model
         ]
 
@@ -3542,19 +3594,72 @@ toolPanel viewInfo model =
             translate -viewInfo.vInset model.windowHeight
     in
     column
-        [ width (px (scale viewInfo.docListWidth model.windowWidth))
+        [ width (px (scale (1.2*viewInfo.docListWidth) model.windowWidth))
         , height (px h_)
         , Background.color (Style.makeGrey 0.5)
         , paddingXY 20 20
         , alignTop
         ]
-        [ column [ Font.size 13, spacing 15 ]
+        [ column [ Font.size 13, spacing 25 ]
             [ el [ Font.size 16, Font.bold, Font.color Style.white ] (Element.text "Document tools")
             , togglePublic model
             , inputTags model
-            , flavors model
+            , docTypePanel model
+            , userPermissions model
             ]
         ]
+
+userPermissions model =
+    column [spacing 10]
+      [
+          el [Font.color Style.white] (Element.text "User permissions")
+        , addUserRow model
+        , viewPermissions model
+      ]
+
+
+viewPermissions model =
+    case model.currentDocument of
+        Nothing -> Element.none
+        Just doc ->
+          let
+              permissionList = Document.listPermissions doc
+          in
+            column [Font.color Style.white]
+              (List.map (\p -> row [] [Element.text p]) permissionList)
+
+
+addUserRow model =
+    row [spacing 8]
+    [addUserPermissionButton, usernameToAddField model, selectPermissionButton model]
+
+addUserPermissionButton =
+    Input.button(headingButtonStyle 40) {
+       onPress = Just AddUserPermission
+       , label = el [] (Element.text "Add")
+    }
+usernameToAddField model =
+    -- XXX
+    Input.text (Style.inputStyle 100)
+      { onChange = AddUserNameForPermissions
+     , text = model.usernameToAddToPermmission
+     , placeholder = Nothing
+     , label = Input.labelLeft [ Font.size 14, width (px 0) ] (Element.text "")
+     }
+
+selectPermissionButton model =
+    let
+        labelText = case model.permissionToAdd of
+            NoPermission -> "N"
+            ReadPermission -> "R"
+            WritePermission -> "W"
+
+    in
+    Input.button(headingButtonStyle 30) {
+       onPress = Just CyclePermission
+       , label = el [Font.color Style.white] (Element.text labelText)
+    }
+
 
 
 toolButtonStyleInHeader : List (Element.Attribute msg)
@@ -3708,7 +3813,6 @@ renderTocForSearchResults model =
 
 renderTocForDeque: Model -> List (Element Msg)
 renderTocForDeque model =
-    -- XXX
     List.map (tocEntry model.currentDocument)
       (BoundedDeque.toList model.deque |> List.sortBy (\doc -> doc.title))
 
@@ -4219,7 +4323,7 @@ status model =
         (Element.text <| "w: " ++ String.fromInt model.windowWidth ++ ", h: " ++ String.fromInt model.windowHeight)
 
 
-flavors model =
+docTypePanel model =
     let
         w =
             120

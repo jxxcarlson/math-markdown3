@@ -5,6 +5,7 @@ module Document exposing
     , MarkdownFlavor(..)
     , Permission(..)
     , UserPermission(..)
+    , addPermission
     , create
     , deleteChild
     , docTypeFromString
@@ -20,6 +21,7 @@ module Document exposing
     , idListOfDeque
     , insertDocumentInList
     , level
+    , listPermissions
     , makeTocStatus
     , pushFrontUnique
     , reOrder
@@ -70,9 +72,47 @@ type UserPermission
     = UserPermission String Permission
 
 
+listPermissions : Document -> List String
+listPermissions doc =
+    doc.permissions
+        |> List.map (\p -> userPermissionToString2 p)
+
+
+stringOfUserPermission : UserPermission -> String
+stringOfUserPermission up =
+    userNameOfUserPermission up ++ ": " ++ userPermissionToString up
+
+
+userNameOfUserPermission : UserPermission -> String
+userNameOfUserPermission (UserPermission username _) =
+    username
+
+
+permissionOfUserPermission : UserPermission -> Permission
+permissionOfUserPermission (UserPermission _ permission) =
+    permission
+
+
+addPermission : String -> Permission -> List UserPermission -> List UserPermission
+addPermission username permission userPermissionList =
+    let
+        cleanPermissionList =
+            List.filter (\p -> userNameOfUserPermission p /= username) userPermissionList
+
+        newPermission =
+            UserPermission username permission
+    in
+    newPermission :: cleanPermissionList
+
+
 userPermissionToString : UserPermission -> String
 userPermissionToString (UserPermission username permission) =
     "(" ++ username ++ "," ++ permissionToString permission ++ ")"
+
+
+userPermissionToString2 : UserPermission -> String
+userPermissionToString2 (UserPermission username permission) =
+    username ++ ": " ++ permissionToString permission
 
 
 permissionToString : Permission -> String

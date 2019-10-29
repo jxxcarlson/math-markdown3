@@ -1,4 +1,4 @@
-module Codec exposing (getPair, getPermission)
+module Codec exposing (getPair, getPermission, permission)
 
 import Document exposing (Permission(..), UserPermission(..))
 import Maybe.Extra
@@ -40,7 +40,7 @@ validUsername : String -> String
 validUsername str_ =
     case String.length str_ < 2 of
         True ->
-            "__noe_ueer__"
+            "__no_user__"
 
         False ->
             str_
@@ -103,7 +103,7 @@ str : Parser String
 str =
     getChompedString <|
         succeed identity
-            |. parseWhile (\c -> c /= ',')
+            |. parseWhile (\c -> c /= ',' && c /= ')')
 
 
 parseWhile : (Char -> Bool) -> Parser String

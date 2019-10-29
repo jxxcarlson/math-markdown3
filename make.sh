@@ -6,4 +6,4 @@
 #fi
 
 
-elm make  --optimize src/Main.elm --output=public/main.js
+elm make  --debug src/Main.elm --output=public/main.js
