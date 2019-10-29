@@ -3,10 +3,10 @@ module Request exposing
     , GraphQLResponse(..)
     , RequestHandler
     , RequestMsg(..)
+    , authorDocumentsWithTitleSorted
     , deleteDocument
     , documentsInIdList
     , documentsWithAuthorAndTagSorted
-    , documentsWithAuthorAndTitleSorted
     , documentsWithAuthorSorted
     , getUserByUsername
     , insertDocument
@@ -34,6 +34,8 @@ import Api.InputObject
         , Document_insert_input
         , Document_order_by(..)
         , Document_set_input
+        , Jsonb_comparison_exp
+        , Jsonb_comparison_expOptionalFields
         , String_comparison_exp
         , User_bool_exp(..)
         , User_insert_input
@@ -144,15 +146,42 @@ publicDocumentsBySlug authToken slug requestHandler =
         (RemoteData.fromResult >> requestHandler)
 
 
-documentsWithAuthorAndTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
-documentsWithAuthorAndTitleSorted authToken authorIdentifier titleKey sortData requestHandler =
+authorDocumentsWithTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+authorDocumentsWithTitleSorted authToken authorIdentifier titleKey sortData requestHandler =
     makeGraphQLQuery authToken
         (fetchSortedDocumentsQuery (Present <| hasAuthorAndTitle authorIdentifier ("%" ++ titleKey ++ "%")) sortData)
         (RemoteData.fromResult >> requestHandler)
 
 
 
--- CMD: Top level, exported --
+-- XXX: Shared
+
+
+sharedDocumentsWithTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+sharedDocumentsWithTitleSorted authToken userName titleKey sortData requestHandler =
+    makeGraphQLQuery authToken
+        (fetchSortedDocumentsQuery (Present <| sharedWitUserAndTitle userName ("%" ++ titleKey ++ "%")) sortData)
+        (RemoteData.fromResult >> requestHandler)
+
+
+sharedWitUserAndTitle : String -> String -> Document_bool_exp
+sharedWitUserAndTitle username titleKey =
+    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| sharedWithAuthor_ username, Just <| hasTitle_ titleKey ] })
+
+
+sharedWithAuthor_ : String -> Document_bool_exp
+sharedWithAuthor_ username =
+    buildDocument_bool_exp (\args -> { args | permissions = Present <| hasPermissionWithUsername_ username })
+
+
+
+--
+
+
+hasPermissionWithUsername_ : String -> Jsonb_comparison_expOptionalFields -> Jsonb_comparison_expOptionalFields
+hasPermissionWithUsername_ str =
+    -- buildJsonb_comparison_exp (\args -> { args | in_ = OptionalArgument.Present str })
+    Debug.todo "X"
 
 
 documentsInIdList : String -> List Uuid -> RequestHandler -> Cmd RequestMsg
@@ -326,6 +355,11 @@ isPublic_ =
 
 hasAuthor_ : String -> Document_bool_exp
 hasAuthor_ author =
+    buildDocument_bool_exp (\args -> { args | authorIdentifier = Present <| equalToString author })
+
+
+readableByUser_ : String -> Document_bool_exp
+readableByUser_ author =
     buildDocument_bool_exp (\args -> { args | authorIdentifier = Present <| equalToString author })
 
 
@@ -788,10 +822,6 @@ setUserValueForId uuid =
         )
 
 
-
--- XXX
-
-
 getUserByUsername : String -> String -> Cmd RequestMsg
 getUserByUsername authToken userName =
     makeGraphQLQuery authToken
@@ -851,7 +881,6 @@ mutationResponseUserSelection =
 -}
 userSelection : SelectionSet User Api.Object.User
 userSelection =
-    -- XXX
     SelectionSet.succeed User
         |> with Api.Object.User.id
         |> with Api.Object.User.username
@@ -869,7 +898,6 @@ userSelection =
 -}
 insertUserObject : User -> User_insert_input
 insertUserObject newUser =
-    --- XXX
     buildUser_insert_input
         (\args ->
             { args
