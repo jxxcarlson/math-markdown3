@@ -91,7 +91,6 @@ permissionToString p =
 type DocType
     = Markdown MarkdownFlavor
     | MiniLaTeX
-    | Collection
 
 
 type MarkdownFlavor
@@ -178,9 +177,6 @@ docTypeFromString str =
         "MiniLaTeX" ->
             MiniLaTeX
 
-        "Collection" ->
-            Collection
-
         "MDStandard" ->
             Markdown MDStandard
 
@@ -199,9 +195,6 @@ stringFromDocType docType =
     case docType of
         MiniLaTeX ->
             "MiniLaTeX"
-
-        Collection ->
-            "Collection"
 
         Markdown flavor ->
             case flavor of

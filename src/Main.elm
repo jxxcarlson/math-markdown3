@@ -4227,8 +4227,6 @@ flavors model =
     column [ spacing 0 ]
         [ el [ Font.color Style.white, Font.bold, paddingXY 0 8 ] (Element.text "Document Type")
         , miniLaTeXButton model w
-        , collectionButton model w
-        , standardMarkdownButton model w
         , extendedMarkdownButton model w
         , extendedMathMarkdownButton model w
         ]
@@ -4247,15 +4245,6 @@ miniLaTeXButton model width =
         { onPress = Just (SetDocType MiniLaTeX), label = el [ paddingXY 8 0 ] (Element.text "MiniLaTeX") }
 
 
-collectionButton model width =
-    let
-        bit =
-            model.docType == Collection
-    in
-    Input.button (Style.buttonSelected width bit)
-        { onPress = Just (SetDocType Collection), label = el [ paddingXY 8 0 ] (Element.text "Collection") }
-
-
 standardMarkdownButton model width =
     let
         bit =
@@ -4271,7 +4260,7 @@ extendedMarkdownButton model width =
             model.docType == Markdown MDExtended
     in
     Input.button (Style.buttonSelected width bit)
-        { onPress = Just (SetDocType (Markdown MDExtended)), label = el [ paddingXY 8 0 ] (Element.text "Markdown extended") }
+        { onPress = Just (SetDocType (Markdown MDExtended)), label = el [ paddingXY 8 0 ] (Element.text "Markdown") }
 
 
 extendedMathMarkdownButton model width =
@@ -4280,7 +4269,7 @@ extendedMathMarkdownButton model width =
             model.docType == Markdown MDExtendedMath
     in
     Input.button (Style.buttonSelected width bit)
-        { onPress = Just (SetDocType (Markdown MDExtendedMath)), label = el [ paddingXY 8 0 ] (Element.text "Markdown math") }
+        { onPress = Just (SetDocType (Markdown MDExtendedMath)), label = el [ paddingXY 8 0 ] (Element.text "Markdown + math") }
 
 
 
