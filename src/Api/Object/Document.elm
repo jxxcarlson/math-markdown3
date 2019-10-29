@@ -2,7 +2,7 @@
 -- https://github.com/dillonkearns/elm-graphql
 
 
-module Api.Object.Document exposing (ChildInfoOptionalArguments, TagsOptionalArguments, authorIdentifier, childInfo, content, docType, id, public, slug, tags, timeStamp, title, user)
+module Api.Object.Document exposing (ChildInfoOptionalArguments, PermissionsOptionalArguments, TagsOptionalArguments, authorIdentifier, childInfo, content, docType, id, permissions, public, slug, tags, timeStamp, title, user)
 
 import Api.InputObject
 import Api.Interface
@@ -59,6 +59,28 @@ docType =
 id : SelectionSet CustomScalarCodecs.Uuid Api.Object.Document
 id =
     Object.selectionForField "CustomScalarCodecs.Uuid" "id" [] (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecUuid |> .decoder)
+
+
+type alias PermissionsOptionalArguments =
+    { path : OptionalArgument String }
+
+
+{-|
+
+  - path - JSON select path
+
+-}
+permissions : (PermissionsOptionalArguments -> PermissionsOptionalArguments) -> SelectionSet CustomScalarCodecs.Jsonb Api.Object.Document
+permissions fillInOptionals =
+    let
+        filledInOptionals =
+            fillInOptionals { path = Absent }
+
+        optionalArgs =
+            [ Argument.optional "path" filledInOptionals.path Encode.string ]
+                |> List.filterMap identity
+    in
+    Object.selectionForField "CustomScalarCodecs.Jsonb" "permissions" optionalArgs (CustomScalarCodecs.codecs |> Api.Scalar.unwrapCodecs |> .codecJsonb |> .decoder)
 
 
 public : SelectionSet Bool Api.Object.Document

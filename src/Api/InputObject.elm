@@ -107,13 +107,14 @@ buildDocument_append_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { childInfo = Absent, tags = Absent }
+                { childInfo = Absent, permissions = Absent, tags = Absent }
     in
-    { childInfo = optionals.childInfo, tags = optionals.tags }
+    { childInfo = optionals.childInfo, permissions = optionals.permissions, tags = optionals.tags }
 
 
 type alias Document_append_inputOptionalFields =
     { childInfo : OptionalArgument CustomScalarCodecs.Jsonb
+    , permissions : OptionalArgument CustomScalarCodecs.Jsonb
     , tags : OptionalArgument CustomScalarCodecs.Jsonb
     }
 
@@ -122,6 +123,7 @@ type alias Document_append_inputOptionalFields =
 -}
 type alias Document_append_input =
     { childInfo : OptionalArgument CustomScalarCodecs.Jsonb
+    , permissions : OptionalArgument CustomScalarCodecs.Jsonb
     , tags : OptionalArgument CustomScalarCodecs.Jsonb
     }
 
@@ -131,7 +133,7 @@ type alias Document_append_input =
 encodeDocument_append_input : Document_append_input -> Value
 encodeDocument_append_input input =
     Encode.maybeObject
-        [ ( "childInfo", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.childInfo ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ) ]
+        [ ( "childInfo", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.childInfo ), ( "permissions", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.permissions ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ) ]
 
 
 buildDocument_arr_rel_insert_input : Document_arr_rel_insert_inputRequiredFields -> (Document_arr_rel_insert_inputOptionalFields -> Document_arr_rel_insert_inputOptionalFields) -> Document_arr_rel_insert_input
@@ -182,9 +184,9 @@ buildDocument_bool_exp fillOptionals =
     let
         optionals =
             fillOptionals
-                { and_ = Absent, not_ = Absent, or_ = Absent, authorIdentifier = Absent, childInfo = Absent, content = Absent, docType = Absent, id = Absent, public = Absent, slug = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
+                { and_ = Absent, not_ = Absent, or_ = Absent, authorIdentifier = Absent, childInfo = Absent, content = Absent, docType = Absent, id = Absent, permissions = Absent, public = Absent, slug = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
     in
-    Document_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, authorIdentifier = optionals.authorIdentifier, childInfo = optionals.childInfo, content = optionals.content, docType = optionals.docType, id = optionals.id, public = optionals.public, slug = optionals.slug, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
+    Document_bool_exp { and_ = optionals.and_, not_ = optionals.not_, or_ = optionals.or_, authorIdentifier = optionals.authorIdentifier, childInfo = optionals.childInfo, content = optionals.content, docType = optionals.docType, id = optionals.id, permissions = optionals.permissions, public = optionals.public, slug = optionals.slug, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
 
 
 type alias Document_bool_expOptionalFields =
@@ -196,6 +198,7 @@ type alias Document_bool_expOptionalFields =
     , content : OptionalArgument String_comparison_exp
     , docType : OptionalArgument String_comparison_exp
     , id : OptionalArgument Uuid_comparison_exp
+    , permissions : OptionalArgument Jsonb_comparison_exp
     , public : OptionalArgument Boolean_comparison_exp
     , slug : OptionalArgument String_comparison_exp
     , tags : OptionalArgument Jsonb_comparison_exp
@@ -219,6 +222,7 @@ type alias Document_bool_expRaw =
     , content : OptionalArgument String_comparison_exp
     , docType : OptionalArgument String_comparison_exp
     , id : OptionalArgument Uuid_comparison_exp
+    , permissions : OptionalArgument Jsonb_comparison_exp
     , public : OptionalArgument Boolean_comparison_exp
     , slug : OptionalArgument String_comparison_exp
     , tags : OptionalArgument Jsonb_comparison_exp
@@ -239,7 +243,7 @@ type Document_bool_exp
 encodeDocument_bool_exp : Document_bool_exp -> Value
 encodeDocument_bool_exp (Document_bool_exp input) =
     Encode.maybeObject
-        [ ( "_and", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeDocument_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "authorIdentifier", encodeString_comparison_exp |> Encode.optional input.authorIdentifier ), ( "childInfo", encodeJsonb_comparison_exp |> Encode.optional input.childInfo ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "docType", encodeString_comparison_exp |> Encode.optional input.docType ), ( "id", encodeUuid_comparison_exp |> Encode.optional input.id ), ( "public", encodeBoolean_comparison_exp |> Encode.optional input.public ), ( "slug", encodeString_comparison_exp |> Encode.optional input.slug ), ( "tags", encodeJsonb_comparison_exp |> Encode.optional input.tags ), ( "timeStamp", encodeTimestamptz_comparison_exp |> Encode.optional input.timeStamp ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ), ( "user", encodeUser_bool_exp |> Encode.optional input.user ) ]
+        [ ( "_and", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.and_ ), ( "_not", encodeDocument_bool_exp |> Encode.optional input.not_ ), ( "_or", (encodeDocument_bool_exp |> Encode.maybe |> Encode.list) |> Encode.optional input.or_ ), ( "authorIdentifier", encodeString_comparison_exp |> Encode.optional input.authorIdentifier ), ( "childInfo", encodeJsonb_comparison_exp |> Encode.optional input.childInfo ), ( "content", encodeString_comparison_exp |> Encode.optional input.content ), ( "docType", encodeString_comparison_exp |> Encode.optional input.docType ), ( "id", encodeUuid_comparison_exp |> Encode.optional input.id ), ( "permissions", encodeJsonb_comparison_exp |> Encode.optional input.permissions ), ( "public", encodeBoolean_comparison_exp |> Encode.optional input.public ), ( "slug", encodeString_comparison_exp |> Encode.optional input.slug ), ( "tags", encodeJsonb_comparison_exp |> Encode.optional input.tags ), ( "timeStamp", encodeTimestamptz_comparison_exp |> Encode.optional input.timeStamp ), ( "title", encodeString_comparison_exp |> Encode.optional input.title ), ( "user", encodeUser_bool_exp |> Encode.optional input.user ) ]
 
 
 buildDocument_delete_at_path_input : (Document_delete_at_path_inputOptionalFields -> Document_delete_at_path_inputOptionalFields) -> Document_delete_at_path_input
@@ -247,13 +251,14 @@ buildDocument_delete_at_path_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { childInfo = Absent, tags = Absent }
+                { childInfo = Absent, permissions = Absent, tags = Absent }
     in
-    { childInfo = optionals.childInfo, tags = optionals.tags }
+    { childInfo = optionals.childInfo, permissions = optionals.permissions, tags = optionals.tags }
 
 
 type alias Document_delete_at_path_inputOptionalFields =
     { childInfo : OptionalArgument (List (Maybe String))
+    , permissions : OptionalArgument (List (Maybe String))
     , tags : OptionalArgument (List (Maybe String))
     }
 
@@ -262,6 +267,7 @@ type alias Document_delete_at_path_inputOptionalFields =
 -}
 type alias Document_delete_at_path_input =
     { childInfo : OptionalArgument (List (Maybe String))
+    , permissions : OptionalArgument (List (Maybe String))
     , tags : OptionalArgument (List (Maybe String))
     }
 
@@ -271,7 +277,7 @@ type alias Document_delete_at_path_input =
 encodeDocument_delete_at_path_input : Document_delete_at_path_input -> Value
 encodeDocument_delete_at_path_input input =
     Encode.maybeObject
-        [ ( "childInfo", (Encode.string |> Encode.maybe |> Encode.list) |> Encode.optional input.childInfo ), ( "tags", (Encode.string |> Encode.maybe |> Encode.list) |> Encode.optional input.tags ) ]
+        [ ( "childInfo", (Encode.string |> Encode.maybe |> Encode.list) |> Encode.optional input.childInfo ), ( "permissions", (Encode.string |> Encode.maybe |> Encode.list) |> Encode.optional input.permissions ), ( "tags", (Encode.string |> Encode.maybe |> Encode.list) |> Encode.optional input.tags ) ]
 
 
 buildDocument_delete_elem_input : (Document_delete_elem_inputOptionalFields -> Document_delete_elem_inputOptionalFields) -> Document_delete_elem_input
@@ -279,13 +285,14 @@ buildDocument_delete_elem_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { childInfo = Absent, tags = Absent }
+                { childInfo = Absent, permissions = Absent, tags = Absent }
     in
-    { childInfo = optionals.childInfo, tags = optionals.tags }
+    { childInfo = optionals.childInfo, permissions = optionals.permissions, tags = optionals.tags }
 
 
 type alias Document_delete_elem_inputOptionalFields =
     { childInfo : OptionalArgument Int
+    , permissions : OptionalArgument Int
     , tags : OptionalArgument Int
     }
 
@@ -294,6 +301,7 @@ type alias Document_delete_elem_inputOptionalFields =
 -}
 type alias Document_delete_elem_input =
     { childInfo : OptionalArgument Int
+    , permissions : OptionalArgument Int
     , tags : OptionalArgument Int
     }
 
@@ -303,7 +311,7 @@ type alias Document_delete_elem_input =
 encodeDocument_delete_elem_input : Document_delete_elem_input -> Value
 encodeDocument_delete_elem_input input =
     Encode.maybeObject
-        [ ( "childInfo", Encode.int |> Encode.optional input.childInfo ), ( "tags", Encode.int |> Encode.optional input.tags ) ]
+        [ ( "childInfo", Encode.int |> Encode.optional input.childInfo ), ( "permissions", Encode.int |> Encode.optional input.permissions ), ( "tags", Encode.int |> Encode.optional input.tags ) ]
 
 
 buildDocument_delete_key_input : (Document_delete_key_inputOptionalFields -> Document_delete_key_inputOptionalFields) -> Document_delete_key_input
@@ -311,13 +319,14 @@ buildDocument_delete_key_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { childInfo = Absent, tags = Absent }
+                { childInfo = Absent, permissions = Absent, tags = Absent }
     in
-    { childInfo = optionals.childInfo, tags = optionals.tags }
+    { childInfo = optionals.childInfo, permissions = optionals.permissions, tags = optionals.tags }
 
 
 type alias Document_delete_key_inputOptionalFields =
     { childInfo : OptionalArgument String
+    , permissions : OptionalArgument String
     , tags : OptionalArgument String
     }
 
@@ -326,6 +335,7 @@ type alias Document_delete_key_inputOptionalFields =
 -}
 type alias Document_delete_key_input =
     { childInfo : OptionalArgument String
+    , permissions : OptionalArgument String
     , tags : OptionalArgument String
     }
 
@@ -335,7 +345,7 @@ type alias Document_delete_key_input =
 encodeDocument_delete_key_input : Document_delete_key_input -> Value
 encodeDocument_delete_key_input input =
     Encode.maybeObject
-        [ ( "childInfo", Encode.string |> Encode.optional input.childInfo ), ( "tags", Encode.string |> Encode.optional input.tags ) ]
+        [ ( "childInfo", Encode.string |> Encode.optional input.childInfo ), ( "permissions", Encode.string |> Encode.optional input.permissions ), ( "tags", Encode.string |> Encode.optional input.tags ) ]
 
 
 buildDocument_insert_input : (Document_insert_inputOptionalFields -> Document_insert_inputOptionalFields) -> Document_insert_input
@@ -343,9 +353,9 @@ buildDocument_insert_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, childInfo = Absent, content = Absent, docType = Absent, id = Absent, public = Absent, slug = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
+                { authorIdentifier = Absent, childInfo = Absent, content = Absent, docType = Absent, id = Absent, permissions = Absent, public = Absent, slug = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
     in
-    Document_insert_input { authorIdentifier = optionals.authorIdentifier, childInfo = optionals.childInfo, content = optionals.content, docType = optionals.docType, id = optionals.id, public = optionals.public, slug = optionals.slug, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
+    Document_insert_input { authorIdentifier = optionals.authorIdentifier, childInfo = optionals.childInfo, content = optionals.content, docType = optionals.docType, id = optionals.id, permissions = optionals.permissions, public = optionals.public, slug = optionals.slug, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
 
 
 type alias Document_insert_inputOptionalFields =
@@ -354,6 +364,7 @@ type alias Document_insert_inputOptionalFields =
     , content : OptionalArgument String
     , docType : OptionalArgument String
     , id : OptionalArgument CustomScalarCodecs.Uuid
+    , permissions : OptionalArgument CustomScalarCodecs.Jsonb
     , public : OptionalArgument Bool
     , slug : OptionalArgument String
     , tags : OptionalArgument CustomScalarCodecs.Jsonb
@@ -374,6 +385,7 @@ type alias Document_insert_inputRaw =
     , content : OptionalArgument String
     , docType : OptionalArgument String
     , id : OptionalArgument CustomScalarCodecs.Uuid
+    , permissions : OptionalArgument CustomScalarCodecs.Jsonb
     , public : OptionalArgument Bool
     , slug : OptionalArgument String
     , tags : OptionalArgument CustomScalarCodecs.Jsonb
@@ -394,7 +406,7 @@ type Document_insert_input
 encodeDocument_insert_input : Document_insert_input -> Value
 encodeDocument_insert_input (Document_insert_input input) =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "childInfo", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.childInfo ), ( "content", Encode.string |> Encode.optional input.content ), ( "docType", Encode.string |> Encode.optional input.docType ), ( "id", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) |> Encode.optional input.id ), ( "public", Encode.bool |> Encode.optional input.public ), ( "slug", Encode.string |> Encode.optional input.slug ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ), ( "user", encodeUser_obj_rel_insert_input |> Encode.optional input.user ) ]
+        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "childInfo", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.childInfo ), ( "content", Encode.string |> Encode.optional input.content ), ( "docType", Encode.string |> Encode.optional input.docType ), ( "id", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) |> Encode.optional input.id ), ( "permissions", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.permissions ), ( "public", Encode.bool |> Encode.optional input.public ), ( "slug", Encode.string |> Encode.optional input.slug ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ), ( "user", encodeUser_obj_rel_insert_input |> Encode.optional input.user ) ]
 
 
 buildDocument_max_order_by : (Document_max_order_byOptionalFields -> Document_max_order_byOptionalFields) -> Document_max_order_by
@@ -552,9 +564,9 @@ buildDocument_order_by fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, childInfo = Absent, content = Absent, docType = Absent, id = Absent, public = Absent, slug = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
+                { authorIdentifier = Absent, childInfo = Absent, content = Absent, docType = Absent, id = Absent, permissions = Absent, public = Absent, slug = Absent, tags = Absent, timeStamp = Absent, title = Absent, user = Absent }
     in
-    Document_order_by { authorIdentifier = optionals.authorIdentifier, childInfo = optionals.childInfo, content = optionals.content, docType = optionals.docType, id = optionals.id, public = optionals.public, slug = optionals.slug, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
+    Document_order_by { authorIdentifier = optionals.authorIdentifier, childInfo = optionals.childInfo, content = optionals.content, docType = optionals.docType, id = optionals.id, permissions = optionals.permissions, public = optionals.public, slug = optionals.slug, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title, user = optionals.user }
 
 
 type alias Document_order_byOptionalFields =
@@ -563,6 +575,7 @@ type alias Document_order_byOptionalFields =
     , content : OptionalArgument Api.Enum.Order_by.Order_by
     , docType : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
+    , permissions : OptionalArgument Api.Enum.Order_by.Order_by
     , public : OptionalArgument Api.Enum.Order_by.Order_by
     , slug : OptionalArgument Api.Enum.Order_by.Order_by
     , tags : OptionalArgument Api.Enum.Order_by.Order_by
@@ -583,6 +596,7 @@ type alias Document_order_byRaw =
     , content : OptionalArgument Api.Enum.Order_by.Order_by
     , docType : OptionalArgument Api.Enum.Order_by.Order_by
     , id : OptionalArgument Api.Enum.Order_by.Order_by
+    , permissions : OptionalArgument Api.Enum.Order_by.Order_by
     , public : OptionalArgument Api.Enum.Order_by.Order_by
     , slug : OptionalArgument Api.Enum.Order_by.Order_by
     , tags : OptionalArgument Api.Enum.Order_by.Order_by
@@ -603,7 +617,7 @@ type Document_order_by
 encodeDocument_order_by : Document_order_by -> Value
 encodeDocument_order_by (Document_order_by input) =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "childInfo", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.childInfo ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "docType", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.docType ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "public", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.public ), ( "slug", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.slug ), ( "tags", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.tags ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ), ( "user", encodeUser_order_by |> Encode.optional input.user ) ]
+        [ ( "authorIdentifier", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.authorIdentifier ), ( "childInfo", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.childInfo ), ( "content", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.content ), ( "docType", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.docType ), ( "id", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.id ), ( "permissions", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.permissions ), ( "public", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.public ), ( "slug", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.slug ), ( "tags", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.tags ), ( "timeStamp", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.timeStamp ), ( "title", Encode.enum Api.Enum.Order_by.toString |> Encode.optional input.title ), ( "user", encodeUser_order_by |> Encode.optional input.user ) ]
 
 
 buildDocument_prepend_input : (Document_prepend_inputOptionalFields -> Document_prepend_inputOptionalFields) -> Document_prepend_input
@@ -611,13 +625,14 @@ buildDocument_prepend_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { childInfo = Absent, tags = Absent }
+                { childInfo = Absent, permissions = Absent, tags = Absent }
     in
-    { childInfo = optionals.childInfo, tags = optionals.tags }
+    { childInfo = optionals.childInfo, permissions = optionals.permissions, tags = optionals.tags }
 
 
 type alias Document_prepend_inputOptionalFields =
     { childInfo : OptionalArgument CustomScalarCodecs.Jsonb
+    , permissions : OptionalArgument CustomScalarCodecs.Jsonb
     , tags : OptionalArgument CustomScalarCodecs.Jsonb
     }
 
@@ -626,6 +641,7 @@ type alias Document_prepend_inputOptionalFields =
 -}
 type alias Document_prepend_input =
     { childInfo : OptionalArgument CustomScalarCodecs.Jsonb
+    , permissions : OptionalArgument CustomScalarCodecs.Jsonb
     , tags : OptionalArgument CustomScalarCodecs.Jsonb
     }
 
@@ -635,7 +651,7 @@ type alias Document_prepend_input =
 encodeDocument_prepend_input : Document_prepend_input -> Value
 encodeDocument_prepend_input input =
     Encode.maybeObject
-        [ ( "childInfo", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.childInfo ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ) ]
+        [ ( "childInfo", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.childInfo ), ( "permissions", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.permissions ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ) ]
 
 
 buildDocument_set_input : (Document_set_inputOptionalFields -> Document_set_inputOptionalFields) -> Document_set_input
@@ -643,9 +659,9 @@ buildDocument_set_input fillOptionals =
     let
         optionals =
             fillOptionals
-                { authorIdentifier = Absent, childInfo = Absent, content = Absent, docType = Absent, id = Absent, public = Absent, slug = Absent, tags = Absent, timeStamp = Absent, title = Absent }
+                { authorIdentifier = Absent, childInfo = Absent, content = Absent, docType = Absent, id = Absent, permissions = Absent, public = Absent, slug = Absent, tags = Absent, timeStamp = Absent, title = Absent }
     in
-    { authorIdentifier = optionals.authorIdentifier, childInfo = optionals.childInfo, content = optionals.content, docType = optionals.docType, id = optionals.id, public = optionals.public, slug = optionals.slug, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title }
+    { authorIdentifier = optionals.authorIdentifier, childInfo = optionals.childInfo, content = optionals.content, docType = optionals.docType, id = optionals.id, permissions = optionals.permissions, public = optionals.public, slug = optionals.slug, tags = optionals.tags, timeStamp = optionals.timeStamp, title = optionals.title }
 
 
 type alias Document_set_inputOptionalFields =
@@ -654,6 +670,7 @@ type alias Document_set_inputOptionalFields =
     , content : OptionalArgument String
     , docType : OptionalArgument String
     , id : OptionalArgument CustomScalarCodecs.Uuid
+    , permissions : OptionalArgument CustomScalarCodecs.Jsonb
     , public : OptionalArgument Bool
     , slug : OptionalArgument String
     , tags : OptionalArgument CustomScalarCodecs.Jsonb
@@ -670,6 +687,7 @@ type alias Document_set_input =
     , content : OptionalArgument String
     , docType : OptionalArgument String
     , id : OptionalArgument CustomScalarCodecs.Uuid
+    , permissions : OptionalArgument CustomScalarCodecs.Jsonb
     , public : OptionalArgument Bool
     , slug : OptionalArgument String
     , tags : OptionalArgument CustomScalarCodecs.Jsonb
@@ -683,7 +701,7 @@ type alias Document_set_input =
 encodeDocument_set_input : Document_set_input -> Value
 encodeDocument_set_input input =
     Encode.maybeObject
-        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "childInfo", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.childInfo ), ( "content", Encode.string |> Encode.optional input.content ), ( "docType", Encode.string |> Encode.optional input.docType ), ( "id", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) |> Encode.optional input.id ), ( "public", Encode.bool |> Encode.optional input.public ), ( "slug", Encode.string |> Encode.optional input.slug ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ) ]
+        [ ( "authorIdentifier", Encode.string |> Encode.optional input.authorIdentifier ), ( "childInfo", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.childInfo ), ( "content", Encode.string |> Encode.optional input.content ), ( "docType", Encode.string |> Encode.optional input.docType ), ( "id", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecUuid) |> Encode.optional input.id ), ( "permissions", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.permissions ), ( "public", Encode.bool |> Encode.optional input.public ), ( "slug", Encode.string |> Encode.optional input.slug ), ( "tags", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecJsonb) |> Encode.optional input.tags ), ( "timeStamp", (CustomScalarCodecs.codecs |> Api.Scalar.unwrapEncoder .codecTimestamptz) |> Encode.optional input.timeStamp ), ( "title", Encode.string |> Encode.optional input.title ) ]
 
 
 buildJsonb_comparison_exp : (Jsonb_comparison_expOptionalFields -> Jsonb_comparison_expOptionalFields) -> Jsonb_comparison_exp

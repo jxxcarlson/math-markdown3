@@ -432,6 +432,11 @@ documentListSelection =
                 |> SelectionSet.map
                     (\(Jsonb x) -> List.map Codec.getPair x |> Maybe.Extra.values)
             )
+        |> with
+            (Api.Object.Document.permissions identity
+                |> SelectionSet.map
+                    (\(Jsonb x) -> List.map Codec.getPermission x |> Maybe.Extra.values)
+            )
 
 
 

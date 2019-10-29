@@ -3,6 +3,8 @@ module Document exposing
     , Document
     , DocumentError(..)
     , MarkdownFlavor(..)
+    , Permission(..)
+    , UserPermission(..)
     , create
     , deleteChild
     , docTypeFromString
@@ -53,7 +55,18 @@ type alias Document =
     , slug : String
     , docType : DocType
     , childInfo : List ( Uuid, Int )
+    , permissions : List UserPermission
     }
+
+
+type Permission
+    = ReadPermission
+    | WritePermission
+    | NoPermission
+
+
+type UserPermission
+    = UserPermission String Permission
 
 
 type DocType
@@ -395,6 +408,7 @@ create documentUuid authorIdentifier title content =
     , slug = slug
     , docType = Markdown MDExtendedMath
     , childInfo = []
+    , permissions = []
     }
 
 

@@ -1,5 +1,6 @@
-module Codec exposing (getPair)
+module Codec exposing (getPair, getPermission)
 
+import Document exposing (Permission(..), UserPermission(..))
 import Maybe.Extra
 import Parser exposing (..)
 import Prng.Uuid as Uuid exposing (Uuid)
@@ -13,6 +14,52 @@ type alias MaybePair =
 
 type alias Pair =
     ( Uuid, Int )
+
+
+getPermission : String -> Maybe UserPermission
+getPermission str_ =
+    run permission str_
+        |> Result.toMaybe
+
+
+permission : Parser UserPermission
+permission =
+    succeed UserPermission
+        |. symbol "("
+        |. spaces
+        |= (str |> map validUsername)
+        |. spaces
+        |. symbol ","
+        |. spaces
+        |= (str |> map permissionOfString)
+        |. spaces
+        |. symbol ")"
+
+
+validUsername : String -> String
+validUsername str_ =
+    case String.length str_ < 2 of
+        True ->
+            "__noe_ueer__"
+
+        False ->
+            str_
+
+
+permissionOfString : String -> Permission
+permissionOfString str_ =
+    case str_ of
+        "read" ->
+            ReadPermission
+
+        "write" ->
+            WritePermission
+
+        "none" ->
+            NoPermission
+
+        _ ->
+            NoPermission
 
 
 getPair : String -> Maybe Pair

@@ -1,4 +1,14 @@
-module User exposing (AuthorizedUser, OutsideUser, User, barebonesUser, dummy, fromOutside, outsideUserDecoder, outsideUserEncoder, outsideUserWithToken)
+module User exposing
+    ( AuthorizedUser
+    , OutsideUser
+    , User
+    , barebonesUser
+    , dummy
+    , fromOutside
+    , outsideUserDecoder
+    , outsideUserEncoder
+    , outsideUserWithToken
+    )
 
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as E

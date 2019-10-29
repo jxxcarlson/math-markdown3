@@ -15,6 +15,7 @@ loadingPage =
     , slug = "loading"
     , docType = Markdown MDExtendedMath
     , childInfo = []
+    , permissions = []
     }
 
 

@@ -14,6 +14,7 @@ import Json.Decode as Decode exposing (Decoder)
   - Content - column name
   - DocType - column name
   - Id - column name
+  - Permissions - column name
   - Public - column name
   - Slug - column name
   - Tags - column name
@@ -27,6 +28,7 @@ type Document_select_column
     | Content
     | DocType
     | Id
+    | Permissions
     | Public
     | Slug
     | Tags
@@ -36,7 +38,7 @@ type Document_select_column
 
 list : List Document_select_column
 list =
-    [ AuthorIdentifier, ChildInfo, Content, DocType, Id, Public, Slug, Tags, TimeStamp, Title ]
+    [ AuthorIdentifier, ChildInfo, Content, DocType, Id, Permissions, Public, Slug, Tags, TimeStamp, Title ]
 
 
 decoder : Decoder Document_select_column
@@ -59,6 +61,9 @@ decoder =
 
                     "id" ->
                         Decode.succeed Id
+
+                    "permissions" ->
+                        Decode.succeed Permissions
 
                     "public" ->
                         Decode.succeed Public
@@ -99,6 +104,9 @@ toString enum =
 
         Id ->
             "id"
+
+        Permissions ->
+            "permissions"
 
         Public ->
             "public"
@@ -144,6 +152,9 @@ fromString enumString =
 
         "id" ->
             Just Id
+
+        "permissions" ->
+            Just Permissions
 
         "public" ->
             Just Public
