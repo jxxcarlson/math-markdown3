@@ -14,6 +14,7 @@ module Style exposing
     , darkRed
     , green
     , grey
+    , hr
     , inputStyle
     , lightBlue
     , lightGrey
@@ -36,6 +37,7 @@ import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Html
 import Html.Attributes
 
 
@@ -244,3 +246,8 @@ charcoal =
 black : Color
 black =
     grey 0.1
+
+
+hr : Color -> Element msg
+hr color_ =
+    el [ Font.color color_ ] (Element.html <| Html.hr [] [])
