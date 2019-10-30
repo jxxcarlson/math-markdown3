@@ -9,6 +9,7 @@ module Document exposing
     , create
     , deleteChild
     , docTypeFromString
+    , dummy
     , editable
     , elementsAreUnique
     , encodeStringList
@@ -36,7 +37,6 @@ module Document exposing
     , stringOfError
     , totalWordCount
     , updateMetaData
-    , userCanWrite
     , userPermissionToString
     , uuidListDecoder
     , uuidListFromStrings
@@ -67,6 +67,21 @@ type alias Document =
     }
 
 
+dummy : Document
+dummy =
+    { id = Utility.getId 1
+    , title = "dummy"
+    , authorIdentifier = "bozo"
+    , content = "Nothing here"
+    , public = True
+    , tags = []
+    , slug = "dummy.dummy"
+    , docType = MiniLaTeX
+    , childInfo = []
+    , permissions = []
+    }
+
+
 type Permission
     = ReadPermission
     | WritePermission
@@ -85,8 +100,17 @@ getPermission username permissions =
         |> Maybe.withDefault (UserPermission "_nobody_" NoPermission)
 
 
-userCanWrite : String -> List UserPermission -> Bool
-userCanWrite username permissions =
+editable : String -> Document -> Bool
+editable username doc =
+    if username == doc.authorIdentifier then
+        True
+
+    else
+        userCanWrite_ username doc.permissions
+
+
+userCanWrite_ : String -> List UserPermission -> Bool
+userCanWrite_ username permissions =
     let
         (UserPermission targetName targetPermission) =
             getPermission username permissions
@@ -97,18 +121,6 @@ userCanWrite username permissions =
 
         ( _, _ ) ->
             False
-
-
-editable : String -> Document -> Bool
-editable currentUsername doc =
-    if currentUsername == doc.authorIdentifier then
-        True
-
-    else if userCanWrite currentUsername doc.permissions then
-        True
-
-    else
-        False
 
 
 readPermissionForUserAsJsonString : String -> String

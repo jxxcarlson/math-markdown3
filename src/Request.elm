@@ -262,7 +262,7 @@ insertDocument authToken newDocument =
 
 updateDocument : String -> String -> Document -> Cmd RequestMsg
 updateDocument authToken username document =
-    case Document.userCanWrite username document.permissions of
+    case Debug.log "UPDOC" (Document.editable username document) of
         True ->
             makeUpdateDocumentMutation (getDocumentUpdateObject document) authToken
 
@@ -272,7 +272,7 @@ updateDocument authToken username document =
 
 deleteDocument : String -> String -> Document -> Cmd RequestMsg
 deleteDocument authToken username document =
-    case Document.userCanWrite username document.permissions of
+    case Document.editable username document of
         True ->
             makeDeleteDocumentMutation (getDocumentDeleteObject document) authToken
 
