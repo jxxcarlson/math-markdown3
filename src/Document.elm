@@ -26,7 +26,6 @@ module Document exposing
     , permissionToString
     , pushFrontUnique
     , reOrder
-    , readPermissionForUser
     , readPermissionForUserAsJsonString
     , reorderChildrenInMaster
     , replaceInList
@@ -39,7 +38,6 @@ module Document exposing
     , userPermissionToString
     , uuidListDecoder
     , uuidListFromStrings
-    , writePermissionForUser
     , writePermissionForUserAsJsonString
     )
 
@@ -79,22 +77,12 @@ type UserPermission
 
 readPermissionForUserAsJsonString : String -> String
 readPermissionForUserAsJsonString username =
-    "{ " ++ username ++ " : ReadPermission }"
+    "{" ++ username ++ ":ReadPermission}"
 
 
 writePermissionForUserAsJsonString : String -> String
 writePermissionForUserAsJsonString username =
-    "{ " ++ username ++ " : WritePermission }"
-
-
-readPermissionForUser : String -> UserPermission
-readPermissionForUser username =
-    UserPermission username ReadPermission
-
-
-writePermissionForUser : String -> UserPermission
-writePermissionForUser username =
-    UserPermission username WritePermission
+    "{" ++ username ++ ":WritePermission}"
 
 
 listPermissions : Document -> List String

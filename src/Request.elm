@@ -184,7 +184,7 @@ sharedWithUserForReading : String -> Document_bool_exp
 sharedWithUserForReading username =
     buildDocument_bool_exp
         (\args ->
-            { args | permissions = Present <| containsPermission <| Jsonb [ Document.writePermissionForUserAsJsonString username ] }
+            { args | permissions = Present <| containsPermission <| Jsonb [ Document.readPermissionForUserAsJsonString username ] }
         )
 
 

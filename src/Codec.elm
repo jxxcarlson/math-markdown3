@@ -1,8 +1,5 @@
 module Codec exposing
-    ( encodeReaderPermissionForUser
-    , encodeUserPermission
-    , encodeWriterPermissionForUser
-    , getPair
+    ( getPair
     , getUserPermission
     , userPermission
     )
@@ -22,25 +19,6 @@ type alias MaybePair =
 
 type alias Pair =
     ( Uuid, Int )
-
-
-encodeReaderPermissionForUser : String -> Encode.Value
-encodeReaderPermissionForUser username =
-    username
-        |> Document.readPermissionForUser
-        |> encodeUserPermission
-
-
-encodeWriterPermissionForUser : String -> Encode.Value
-encodeWriterPermissionForUser username =
-    username
-        |> Document.writePermissionForUser
-        |> encodeUserPermission
-
-
-encodeUserPermission : UserPermission -> Encode.Value
-encodeUserPermission (UserPermission username permission) =
-    Encode.object [ ( username, Encode.string <| Document.permissionToString permission ) ]
 
 
 getUserPermission : String -> Maybe UserPermission

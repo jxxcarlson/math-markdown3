@@ -202,6 +202,7 @@ type DocumentListType
 type SearchMode
     = UserSearch
     | PublicSearch
+    | SharedDocSearch
 
 
 type SortMode
@@ -874,7 +875,7 @@ update msg model =
             doSearch model
 
         ToggleSearchMode ->
-            toggleSearchMode model
+            cycleSearchMode model
 
         ClearSearchTerms ->
             clearSearchTerms model
@@ -1553,19 +1554,15 @@ parseSearchTerm str =
             ( NoSearchTerm, "" )
 
 
-toggleSearchMode : Model -> ( Model, Cmd Msg )
-toggleSearchMode model =
-    case model.searchMode of
-        UserSearch ->
-            ( { model | searchMode = PublicSearch }, Cmd.none )
-
-        PublicSearch ->
-            case model.currentUser of
-                Nothing ->
-                    ( model, Cmd.none )
-
-                Just _ ->
-                    ( { model | searchMode = UserSearch }, Cmd.none )
+cycleSearchMode : Model -> ( Model, Cmd Msg )
+cycleSearchMode model =
+  let
+    nextSearchMode = case model.searchMode of
+        UserSearch -> PublicSearch
+        PublicSearch -> SharedDocSearch
+        SharedDocSearch -> UserSearch
+  in
+        ( { model | searchMode = nextSearchMode }, Cmd.none )
 
 
 clearSearchTerms model =
@@ -1591,6 +1588,9 @@ searchButton model =
 
                 PublicSearch ->
                     "Public docs"
+
+                SharedDocSearch ->
+                    "Shared docs"
     in
     Input.button []
         { onPress = Just ToggleSearchMode
@@ -1682,6 +1682,14 @@ getAllDocuments model =
                         Just user ->
                             Request.authorDocumentsWithTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
+                SharedDocSearch ->
+                                    case model.currentUser of
+                                        Nothing ->
+                                            Cmd.none
+
+                                        Just user ->
+                                            Request.sharedDocumentsByTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+
                 PublicSearch ->
                     Request.publicDocumentsWithTitle hasuraToken "" |> Cmd.map Req
     in
@@ -1700,6 +1708,9 @@ doSearch model =
     case model.searchMode of
         UserSearch ->
             searchForUsersDocuments model
+
+        SharedDocSearch ->
+             searchForSharedDocuments model
 
         PublicSearch ->
             searchForPublicDocuments model
@@ -1723,6 +1734,27 @@ searchForUsersDocuments model =
                     Cmd.none
     in
     ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+
+
+searchForSharedDocuments : Model -> (Model, Cmd Msg)
+searchForSharedDocuments model =
+ let
+        authorIdentifier =
+            model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
+
+        cmd =
+            case parseSearchTerm model.searchTerms of
+                ( TitleSearch, searchTerm ) ->
+                    Request.sharedDocumentsByTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
+
+                ( KeywordSearch, searchTerm ) ->
+                    Request.sharedDocumentsByTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
+
+                ( NoSearchTerm, _ ) ->
+                    Cmd.none
+    in
+    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+
 
 
 searchForChildDocuments : Model -> ( Model, Cmd Msg )
