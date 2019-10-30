@@ -806,7 +806,7 @@ update msg model =
             updateDocumentText model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
-            processDocument model document (sendDequeOutside  model)
+            setCurrentDocument model document (sendDequeOutside  model)
 
 
         SetCurrentSubDocument document tocItem ->
@@ -2026,10 +2026,10 @@ processCandidateChildDocumentRequest model documentList =
     , Cmd.none
     )
 
+-- prepareAstAndRenderedText model document
 
-
-processDocument : Model -> Document -> (Cmd Msg) -> ( Model, Cmd Msg )
-processDocument model document extraCmd =
+setCurrentDocument : Model -> Document -> (Cmd Msg) -> ( Model, Cmd Msg )
+setCurrentDocument model document extraCmd =
     let
         newDeque = Document.pushFrontUnique document model.deque
 
@@ -2086,6 +2086,9 @@ processDocument model document extraCmd =
       }
     , Cmd.batch [cmd, resetViewportOfRenderedText, resetViewportOfEditor]
     )
+
+
+
 
 
 updateMaybeUserWithDeque : BoundedDeque Document -> Maybe User -> Maybe User
