@@ -262,7 +262,7 @@ insertDocument authToken newDocument =
 
 updateDocument : String -> String -> Document -> Cmd RequestMsg
 updateDocument authToken username document =
-    case Debug.log "UPDOC" (Document.editable username document) of
+    case Document.editable username document of
         True ->
             makeUpdateDocumentMutation (getDocumentUpdateObject document) authToken
 
