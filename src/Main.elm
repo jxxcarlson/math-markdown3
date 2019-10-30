@@ -847,13 +847,16 @@ update msg model =
                             ( {model | message = (ErrorMessage, Document.stringOfError   error)}, Cmd.none )
 
                         Ok ( newMasterDocument, newDocumentList ) ->
+                            let
+                              user = model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
+                            in
                             ( { model
                                 | currentDocument = Just newMasterDocument
                                 , tableOfContents = newDocumentList
                                 , tocData = TocManager.setupWithFocus masterDocument.id (Just newMasterDocument) (List.drop 1 newDocumentList)
                                 , tocCursor = Just masterDocument.id
                               }
-                            , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+                            , Request.updateDocument hasuraToken user.username newMasterDocument |> Cmd.map Req
                             )
 
         SetDocumentPublic bit ->
@@ -1413,7 +1416,7 @@ handleTime model newTime =
 
                     ( Just user, Just document ) ->
                         if user.username == document.authorIdentifier then
-                            Request.updateDocument hasuraToken document |> Cmd.map Req
+                            Request.updateDocument hasuraToken user.username document |> Cmd.map Req
 
                         else
                             Cmd.none
@@ -1495,10 +1498,10 @@ addUserPermission model =
                newDocumentList = Document.replaceInList updatedDocument model.documentList
 
             in
-              ( {model | currentDocument = Just updatedDocument
-                 , documentList = newDocumentList
-                }
-               , Request.updateDocument hasuraToken updatedDocument |> Cmd.map Req)
+                  ( {model | currentDocument = Just updatedDocument
+                     , documentList = newDocumentList
+                    }
+                   , Request.updateDocument hasuraToken user.username updatedDocument |> Cmd.map Req)
 
 
 
@@ -2214,8 +2217,11 @@ deleteDocument model =
                     )
 
                 Armed ->
+                   let
+                     user = model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
+                   in
                     ( { model | message = ( UserMessage, "Deleting document ..." ), documentDeleteState = SafetyOn }
-                    , Request.deleteDocument hasuraToken document |> Cmd.map Req
+                    , Request.deleteDocument hasuraToken user.username document |> Cmd.map Req
                     )
 
 
@@ -2319,6 +2325,8 @@ deleteSubdocument_ model masterDocument documentToDelete =
 
                 Just outline ->
                     outline
+
+        user = model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
     in
     ( { model
         | currentDocument = Just currentDocument
@@ -2328,7 +2336,7 @@ deleteSubdocument_ model masterDocument documentToDelete =
         , tocData = TocManager.setupWithFocus masterDocument.id (Just masterDocument) (List.drop 1 tableOfContents)
         , tocCursor = Just currentDocument.id
       }
-    , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+    , Request.updateDocument hasuraToken user.username newMasterDocument |> Cmd.map Req
     )
 
 
@@ -2344,7 +2352,7 @@ addSubdocument_ model user masterDocument newUuid =
     in
     ( { model | currentDocument = Just newMasterDocument, appMode = Reading }
     , Cmd.batch
-        [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+        [ Request.updateDocument hasuraToken user.username newMasterDocument |> Cmd.map Req
         , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first) GotChildDocuments |> Cmd.map Req
         ]
     )
@@ -2368,12 +2376,15 @@ addDocumentToMaster_ model document master =
         newMasterDocument =
             { master | childInfo = newChildInfo }
     in
-    ( { model | currentDocument = Just newMasterDocument }
-    , Cmd.batch
-        [ Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
-        , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first)  GotChildDocuments |> Cmd.map Req
-        ]
-    )
+    let
+        user = model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
+    in
+        ( { model | currentDocument = Just newMasterDocument }
+        , Cmd.batch
+            [ Request.updateDocument hasuraToken user.username newMasterDocument |> Cmd.map Req
+            , Request.documentsInIdList hasuraToken (newChildInfo |> List.map Tuple.first)  GotChildDocuments |> Cmd.map Req
+            ]
+        )
 
 
 newSubdocument : Model -> ( Model, Cmd Msg )
@@ -2453,7 +2464,7 @@ firstSubdocument_ model user document =
       }
     , Cmd.batch
         [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
-        , Request.updateDocument hasuraToken masterDocument |> Cmd.map Req
+        , Request.updateDocument hasuraToken user.username masterDocument |> Cmd.map Req
         ]
     )
 
@@ -2524,7 +2535,7 @@ newSubdocumentAtHead model user masterDocument =
       }
     , Cmd.batch
         [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
-        , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+        , Request.updateDocument hasuraToken user.username newMasterDocument |> Cmd.map Req
         ]
     )
 
@@ -2585,7 +2596,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
       }
     , Cmd.batch
         [ Request.insertDocument hasuraToken newDocument |> Cmd.map Req
-        , Request.updateDocument hasuraToken newMasterDocument |> Cmd.map Req
+        , Request.updateDocument hasuraToken user.username newMasterDocument |> Cmd.map Req
         ]
     )
 
@@ -2650,7 +2661,7 @@ saveDocument model =
                         Document.updateMetaData document_
                 in
                 ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
-                , Request.updateDocument hasuraToken document |> Cmd.map Req
+                , Request.updateDocument hasuraToken user.username document |> Cmd.map Req
                 )
 
 
@@ -2676,7 +2687,7 @@ setDocumentPublic model bit =
                     | currentDocument = Just newDocument
                     , documentList = Document.replaceInList newDocument model.documentList
                   }
-                , Request.updateDocument hasuraToken newDocument |> Cmd.map Req
+                , Request.updateDocument hasuraToken user.username newDocument |> Cmd.map Req
                 )
 
 

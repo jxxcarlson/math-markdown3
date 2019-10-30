@@ -48,11 +48,11 @@ barebonesUser uuid username email =
     }
 
 
+dummy : String -> User
 dummy username =
     { id = getId 6
     , username = username
     , email = username ++ "@gmail.com"
-    , public = True
     , firstName = "James"
     , lastName = "Carlson"
     , admin = False

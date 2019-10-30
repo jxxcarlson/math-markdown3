@@ -260,14 +260,24 @@ insertDocument authToken newDocument =
     makeMutation (getDocumentInsertObject newDocument) authToken InsertDocumentResponse
 
 
-updateDocument : String -> Document -> Cmd RequestMsg
-updateDocument authToken document =
-    makeUpdateDocumentMutation (getDocumentUpdateObject document) authToken
+updateDocument : String -> String -> Document -> Cmd RequestMsg
+updateDocument authToken username document =
+    case Document.userCanWrite username document.permissions of
+        True ->
+            makeUpdateDocumentMutation (getDocumentUpdateObject document) authToken
+
+        False ->
+            Cmd.none
 
 
-deleteDocument : String -> Document -> Cmd RequestMsg
-deleteDocument authToken document =
-    makeDeleteDocumentMutation (getDocumentDeleteObject document) authToken
+deleteDocument : String -> String -> Document -> Cmd RequestMsg
+deleteDocument authToken username document =
+    case Document.userCanWrite username document.permissions of
+        True ->
+            makeDeleteDocumentMutation (getDocumentDeleteObject document) authToken
+
+        False ->
+            Cmd.none
 
 
 

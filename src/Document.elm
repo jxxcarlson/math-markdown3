@@ -36,6 +36,7 @@ module Document exposing
     , stringOfError
     , totalWordCount
     , updateMetaData
+    , userCanWrite
     , userPermissionToString
     , uuidListDecoder
     , uuidListFromStrings
