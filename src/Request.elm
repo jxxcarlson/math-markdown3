@@ -18,6 +18,7 @@ module Request exposing
     , publicDocumentsInIdList
     , publicDocumentsWithTag
     , publicDocumentsWithTitle
+    , sharedDocumentsByTitleSorted
     , signInUser
     , signUpUser
     , stringFromHttpError
@@ -154,35 +155,51 @@ authorDocumentsWithTitleSorted authToken authorIdentifier titleKey sortData requ
 
 
 
--- XXX: Shared
---
---sharedDocumentsWithTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
---sharedDocumentsWithTitleSorted authToken userName titleKey sortData requestHandler =
---    makeGraphQLQuery authToken
---        (fetchSortedDocumentsQuery (Present <| sharedWitUserAndTitle userName ("%" ++ titleKey ++ "%")) sortData)
---        (RemoteData.fromResult >> requestHandler)
---
---
---sharedWitUserAndTitle : String -> String -> Document_bool_exp
---sharedWitUserAndTitle username titleKey =
---    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| sharedWithAuthor_ username, Just <| hasTitle_ titleKey ] })
---
---
---sharedWithAuthor_ : String -> Document_bool_exp
---sharedWithAuthor_ username =
---    buildDocument_bool_exp (\args -> { args | permissions = Present <| inPermissions_ username })
---
---inPermissions_ : List UserPermission -> ??
---inPermissions_ permissionList =
---    buildJsonb_comparison_exp
---      (\args -> { args | ??))
---
-----
---
---hasPermissionWithUsername_ : String -> Jsonb_comparison_expOptionalFields -> Jsonb_comparison_expOptionalFields
---hasPermissionWithUsername_ str =
---    -- buildJsonb_comparison_exp (\args -> { args | in_ = OptionalArgument.Present str })
---    Debug.todo "X"
+-- GET SHARED DOCUMENTS --
+
+
+sharedDocumentsByTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+sharedDocumentsByTitleSorted authToken userName titleKey sortData requestHandler =
+    makeGraphQLQuery authToken
+        (fetchSortedDocumentsQuery (Present <| sharedByTitle userName ("%" ++ titleKey ++ "%")) sortData)
+        (RemoteData.fromResult >> requestHandler)
+
+
+sharedByTitle : String -> String -> Document_bool_exp
+sharedByTitle username titleKey =
+    buildDocument_bool_exp (\args -> { args | or_ = Present <| [ Just <| sharedForReadingByUserWithTitle username titleKey, Just <| sharedForWritingByUserWithTitle username titleKey ] })
+
+
+sharedForReadingByUserWithTitle : String -> String -> Document_bool_exp
+sharedForReadingByUserWithTitle username titleKey =
+    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| sharedWithUserForReading username, Just <| hasTitle_ titleKey ] })
+
+
+sharedForWritingByUserWithTitle : String -> String -> Document_bool_exp
+sharedForWritingByUserWithTitle username titleKey =
+    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| sharedWithUserForWriting username, Just <| hasTitle_ titleKey ] })
+
+
+sharedWithUserForReading : String -> Document_bool_exp
+sharedWithUserForReading username =
+    buildDocument_bool_exp
+        (\args ->
+            { args | permissions = Present <| containsPermission <| Jsonb [ Document.writePermissionForUserAsJsonString username ] }
+        )
+
+
+sharedWithUserForWriting : String -> Document_bool_exp
+sharedWithUserForWriting username =
+    buildDocument_bool_exp
+        (\args ->
+            { args | permissions = Present <| containsPermission <| Jsonb [ Document.writePermissionForUserAsJsonString username ] }
+        )
+
+
+containsPermission : Jsonb -> Jsonb_comparison_exp
+containsPermission permissionList =
+    buildJsonb_comparison_exp
+        (\args -> { args | contains_ = OptionalArgument.Present permissionList })
 
 
 documentsInIdList : String -> List Uuid -> RequestHandler -> Cmd RequestMsg

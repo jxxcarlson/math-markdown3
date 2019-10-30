@@ -23,8 +23,11 @@ module Document exposing
     , level
     , listPermissions
     , makeTocStatus
+    , permissionToString
     , pushFrontUnique
     , reOrder
+    , readPermissionForUser
+    , readPermissionForUserAsJsonString
     , reorderChildrenInMaster
     , replaceInList
     , setContent
@@ -36,6 +39,8 @@ module Document exposing
     , userPermissionToString
     , uuidListDecoder
     , uuidListFromStrings
+    , writePermissionForUser
+    , writePermissionForUserAsJsonString
     )
 
 import BoundedDeque exposing (BoundedDeque)
@@ -70,6 +75,26 @@ type Permission
 
 type UserPermission
     = UserPermission String Permission
+
+
+readPermissionForUserAsJsonString : String -> String
+readPermissionForUserAsJsonString username =
+    "{ " ++ username ++ " : ReadPermission }"
+
+
+writePermissionForUserAsJsonString : String -> String
+writePermissionForUserAsJsonString username =
+    "{ " ++ username ++ " : WritePermission }"
+
+
+readPermissionForUser : String -> UserPermission
+readPermissionForUser username =
+    UserPermission username ReadPermission
+
+
+writePermissionForUser : String -> UserPermission
+writePermissionForUser username =
+    UserPermission username WritePermission
 
 
 listPermissions : Document -> List String
