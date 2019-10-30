@@ -1,5 +1,6 @@
 module TocManager exposing
-    ( computeOutline
+    ( cleanChildInfo
+    , computeOutline
     , index
     , insertInChildDocumentList
     , insertInMaster
@@ -16,6 +17,23 @@ import Toc exposing (TocItem)
 import TocZ
 import Tree.Zipper as Zipper exposing (Zipper)
 import Utility
+
+
+{-| Compare the childDocuments list with the childInfo
+list. Delete items in the latte that are not represented
+in the former.
+-}
+cleanChildInfo : List Document -> Document -> Document
+cleanChildInfo childDocuments master =
+    let
+        childDocumentIds =
+            List.map .id childDocuments
+
+        updatedChildInfo =
+            master.childInfo
+                |> List.filter (\item -> List.member (Tuple.first item) childDocumentIds)
+    in
+    { master | childInfo = updatedChildInfo }
 
 
 
