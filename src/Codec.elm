@@ -1,4 +1,4 @@
-module Codec exposing (getPair, getPermission, permission)
+module Codec exposing (getPair, getUserPermission, userPermission)
 
 import Document exposing (Permission(..), UserPermission(..))
 import Maybe.Extra
@@ -16,24 +16,24 @@ type alias Pair =
     ( Uuid, Int )
 
 
-getPermission : String -> Maybe UserPermission
-getPermission str_ =
-    run permission str_
+getUserPermission : String -> Maybe UserPermission
+getUserPermission str_ =
+    run userPermission str_
         |> Result.toMaybe
 
 
-permission : Parser UserPermission
-permission =
+userPermission : Parser UserPermission
+userPermission =
     succeed UserPermission
-        |. symbol "("
+        |. symbol "{"
         |. spaces
-        |= (str |> map validUsername)
+        |= (strForJson |> map validUsername)
         |. spaces
-        |. symbol ","
+        |. symbol ":"
         |. spaces
-        |= (str |> map permissionOfString)
+        |= (strForJson |> map permissionOfString)
         |. spaces
-        |. symbol ")"
+        |. symbol "}"
 
 
 validUsername : String -> String
@@ -74,7 +74,7 @@ pair =
     (succeed MaybePair
         |. symbol "("
         |. spaces
-        |= (str |> map Uuid.fromString)
+        |= (strForPair |> map Uuid.fromString)
         |. spaces
         |. symbol ","
         |. spaces
@@ -99,11 +99,18 @@ fixup mPair =
             Nothing
 
 
-str : Parser String
-str =
+strForJson : Parser String
+strForJson =
     getChompedString <|
         succeed identity
-            |. parseWhile (\c -> c /= ',' && c /= ')')
+            |. parseWhile (\c -> c /= ':' && c /= '}')
+
+
+strForPair : Parser String
+strForPair =
+    getChompedString <|
+        succeed identity
+            |. parseWhile (\c -> c /= ',')
 
 
 parseWhile : (Char -> Bool) -> Parser String

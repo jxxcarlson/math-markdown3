@@ -107,7 +107,7 @@ addPermission username permission userPermissionList =
 
 userPermissionToString : UserPermission -> String
 userPermissionToString (UserPermission username permission) =
-    "(" ++ username ++ "," ++ permissionToString permission ++ ")"
+    "{" ++ username ++ ":" ++ permissionToString permission ++ "}"
 
 
 userPermissionToString2 : UserPermission -> String

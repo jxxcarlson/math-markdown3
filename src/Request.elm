@@ -155,33 +155,34 @@ authorDocumentsWithTitleSorted authToken authorIdentifier titleKey sortData requ
 
 
 -- XXX: Shared
-
-
-sharedDocumentsWithTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
-sharedDocumentsWithTitleSorted authToken userName titleKey sortData requestHandler =
-    makeGraphQLQuery authToken
-        (fetchSortedDocumentsQuery (Present <| sharedWitUserAndTitle userName ("%" ++ titleKey ++ "%")) sortData)
-        (RemoteData.fromResult >> requestHandler)
-
-
-sharedWitUserAndTitle : String -> String -> Document_bool_exp
-sharedWitUserAndTitle username titleKey =
-    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| sharedWithAuthor_ username, Just <| hasTitle_ titleKey ] })
-
-
-sharedWithAuthor_ : String -> Document_bool_exp
-sharedWithAuthor_ username =
-    buildDocument_bool_exp (\args -> { args | permissions = Present <| hasPermissionWithUsername_ username })
-
-
-
 --
-
-
-hasPermissionWithUsername_ : String -> Jsonb_comparison_expOptionalFields -> Jsonb_comparison_expOptionalFields
-hasPermissionWithUsername_ str =
-    -- buildJsonb_comparison_exp (\args -> { args | in_ = OptionalArgument.Present str })
-    Debug.todo "X"
+--sharedDocumentsWithTitleSorted : String -> String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+--sharedDocumentsWithTitleSorted authToken userName titleKey sortData requestHandler =
+--    makeGraphQLQuery authToken
+--        (fetchSortedDocumentsQuery (Present <| sharedWitUserAndTitle userName ("%" ++ titleKey ++ "%")) sortData)
+--        (RemoteData.fromResult >> requestHandler)
+--
+--
+--sharedWitUserAndTitle : String -> String -> Document_bool_exp
+--sharedWitUserAndTitle username titleKey =
+--    buildDocument_bool_exp (\args -> { args | and_ = Present <| [ Just <| sharedWithAuthor_ username, Just <| hasTitle_ titleKey ] })
+--
+--
+--sharedWithAuthor_ : String -> Document_bool_exp
+--sharedWithAuthor_ username =
+--    buildDocument_bool_exp (\args -> { args | permissions = Present <| inPermissions_ username })
+--
+--inPermissions_ : List UserPermission -> ??
+--inPermissions_ permissionList =
+--    buildJsonb_comparison_exp
+--      (\args -> { args | ??))
+--
+----
+--
+--hasPermissionWithUsername_ : String -> Jsonb_comparison_expOptionalFields -> Jsonb_comparison_expOptionalFields
+--hasPermissionWithUsername_ str =
+--    -- buildJsonb_comparison_exp (\args -> { args | in_ = OptionalArgument.Present str })
+--    Debug.todo "X"
 
 
 documentsInIdList : String -> List Uuid -> RequestHandler -> Cmd RequestMsg
@@ -469,7 +470,7 @@ documentListSelection =
         |> with
             (Api.Object.Document.permissions identity
                 |> SelectionSet.map
-                    (\(Jsonb x) -> List.map Codec.getPermission x |> Maybe.Extra.values)
+                    (\(Jsonb x) -> List.map Codec.getUserPermission x |> Maybe.Extra.values)
             )
 
 
