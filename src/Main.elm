@@ -1415,11 +1415,7 @@ handleTime model newTime =
                         Cmd.none
 
                     ( Just user, Just document ) ->
-                        if user.username == document.authorIdentifier then
                             Request.updateDocument hasuraToken user.username document |> Cmd.map Req
-
-                        else
-                            Cmd.none
 
             else
                 Cmd.none
@@ -2652,17 +2648,13 @@ saveDocument model =
             ( model, Cmd.none )
 
         ( Just user, Just document_ ) ->
-            if user.username /= document_.authorIdentifier then
-                ( model, Cmd.none )
-
-            else
-                let
-                    document =
-                        Document.updateMetaData document_
-                in
-                ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
-                , Request.updateDocument hasuraToken user.username document |> Cmd.map Req
-                )
+            let
+                document =
+                    Document.updateMetaData document_
+            in
+            ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
+            , Request.updateDocument hasuraToken user.username document |> Cmd.map Req
+            )
 
 
 setDocumentPublic : Model -> Bool -> ( Model, Cmd Msg )
