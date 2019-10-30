@@ -9,6 +9,7 @@ module Document exposing
     , create
     , deleteChild
     , docTypeFromString
+    , editable
     , elementsAreUnique
     , encodeStringList
     , equalUuidSets
@@ -73,6 +74,40 @@ type Permission
 
 type UserPermission
     = UserPermission String Permission
+
+
+getPermission : String -> List UserPermission -> UserPermission
+getPermission username permissions =
+    permissions
+        |> List.filter (\p -> userNameOfUserPermission p == username)
+        |> List.head
+        |> Maybe.withDefault (UserPermission "_nobody_" NoPermission)
+
+
+userCanWrite : String -> List UserPermission -> Bool
+userCanWrite username permissions =
+    let
+        (UserPermission targetName targetPermission) =
+            getPermission username permissions
+    in
+    case ( targetName == username, targetPermission == WritePermission ) of
+        ( True, True ) ->
+            True
+
+        ( _, _ ) ->
+            False
+
+
+editable : String -> Document -> Bool
+editable currentUsername doc =
+    if currentUsername == doc.authorIdentifier then
+        True
+
+    else if userCanWrite currentUsername doc.permissions then
+        True
+
+    else
+        False
 
 
 readPermissionForUserAsJsonString : String -> String
