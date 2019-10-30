@@ -2026,56 +2026,73 @@ processCandidateChildDocumentRequest model documentList =
     , Cmd.none
     )
 
--- prepareAstAndRenderedText model document
+type alias HtmlRecord = { title : Html Msg, toc : Html Msg, document : Html Msg }
+
+prepareAstAndRenderedText : Model -> Document -> (Tree ParseWithId.MDBlockWithId, HtmlRecord, Cmd Msg)
+prepareAstAndRenderedText model document =
+    let
+        lastAst : Tree ParseWithId.MDBlockWithId
+        lastAst =
+            Markdown.ElmWithId.parse model.counter ExtendedMath document.content
+
+        nMath =
+            Markdown.ElmWithId.numberOfMathElements lastAst
+
+        renderedText : { title : Html msg, toc : Html msg, document : Html msg }
+        renderedText =
+            if nMath > 10 then
+                let
+                    firstAst =
+                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
+                in
+                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
+
+            else
+                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+
+        renderCmd =
+            if nMath > 10 then
+                renderAstFor lastAst
+
+            else
+                Cmd.none
+     in
+          ( lastAst, renderedText, renderCmd )
+
+prepareIfMasterDoc : Model -> Document -> (Cmd Msg, DocumentListType)
+prepareIfMasterDoc model document =
+    if document.childInfo == [] then
+        ( Cmd.none, model.documentListType )
+    else
+      let
+          cmd = Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req
+      in
+        ( cmd, DocumentChildren )
+
+updateDeque : Model -> Document -> (BoundedDeque Document, Cmd Msg)
+updateDeque model document =
+    let
+        newDeque = Document.pushFrontUnique document model.deque
+    in
+    case model.currentUser of
+          Nothing -> (model.deque, Cmd.none)
+          Just user -> (newDeque, Request.updateUser hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req)
+
 
 setCurrentDocument : Model -> Document -> (Cmd Msg) -> ( Model, Cmd Msg )
 setCurrentDocument model document extraCmd =
     let
-        newDeque = Document.pushFrontUnique document model.deque
 
-        updateDequeCmd = case model.currentUser of
-            Nothing -> Cmd.none
-            Just user -> Request.updateUser hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req
+        (newDeque, updateDequeCmd) = updateDeque model document
 
-        ( ( newAst, newRenderedText ), cmd, documentListType ) =
-            let
-                lastAst =
-                    Markdown.ElmWithId.parse model.counter ExtendedMath document.content
+        (newAst, newRenderedText, renderCmd) = prepareAstAndRenderedText model document
 
-                nMath =
-                    Markdown.ElmWithId.numberOfMathElements lastAst
-
-                renderedText =
-                    if nMath > 10 then
-                        let
-                            firstAst =
-                                Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
-                        in
-                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
-
-                    else
-                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
-
-                cmd1 =
-                    if nMath > 10 then
-                        renderAstFor lastAst
-
-                    else
-                        Cmd.none
-
-                ( cmd2, documentListType_ ) =
-                    if document.childInfo == [] then
-                        ( Cmd.none, model.documentListType )
-
-                    else
-                        ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, DocumentChildren )
-            in
-            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, extraCmd, updateDequeCmd ], documentListType_ )
+        ( masterDocCmd, documentListType_ ) = prepareIfMasterDoc model document
 
     in
     ( { model
         | currentDocument = Just document
-        , documentListType = documentListType
+        , documentListType = documentListType_
         , counter = model.counter + 2
         , deque = newDeque
         , currentUser = updateMaybeUserWithDeque newDeque model.currentUser
@@ -2084,7 +2101,7 @@ setCurrentDocument model document extraCmd =
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
-    , Cmd.batch [cmd, resetViewportOfRenderedText, resetViewportOfEditor]
+    , Cmd.batch [extraCmd, renderCmd, updateDequeCmd, masterDocCmd, resetViewportOfRenderedText, resetViewportOfEditor]
     )
 
 
