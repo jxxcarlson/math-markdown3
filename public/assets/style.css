@@ -163,4 +163,7 @@ pre { font-size: 10pt; }
 
 .mm-thematic-break {
   border: 0.5px solid #bbb;
+  width : 150px;
+  text-align: left;
+  margin-left: 0;
   }
