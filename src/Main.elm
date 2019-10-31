@@ -562,8 +562,10 @@ update msg model =
                                   , documentListType = SearchResults
                                   , focusedElement = NoFocus
                                   , visibilityOfTools = Invisible
+                                  , searchMode = UserSearch
                                 , token =  Just outsideUser.token}
                             , getUserDocumentsAtSignIn user)
+                            -- XXX
 
                 Outside.GotSelection selection ->
                     ({model | selectedText = selection, message = (UserMessage, String.left 16 selection)}, Cmd.none)
@@ -1438,6 +1440,18 @@ sendDequeOutside  model =
     in
       Outside.sendInfo (Outside.DequeData data) |> Cmd.map Req
 
+sendDequeOutside_ : BoundedDeque Document -> Cmd Msg
+sendDequeOutside_  deque =
+    let
+       data : E.Value
+       data =
+           deque
+             |> Document.idListOfDeque
+             |> Document.encodeStringList "deque"
+    in
+      Outside.sendInfo (Outside.DequeData data) |> Cmd.map Req
+
+
 
 -- EDITOR HELPERS, VIEWPORT
 
@@ -2001,14 +2015,17 @@ processChildDocumentRequest model documentList =
 
         Just masterDocument ->
             let
-                newMaster_ = TocManager.cleanChildInfo documentList masterDocument
+--                newMaster_ = TocManager.cleanChildInfo documentList masterDocument
+--
+--
+--                (newMaster, cmd) = if List.length masterDocument.childInfo /= List.length newMaster_.childInfo then
+--                                      (newMaster_, Request.systemUpdateDocument hasuraToken newMaster_ |> Cmd.map Req)
+--                                   else
+--                                      (masterDocument, Cmd.none)
 
 
-                (newMaster, cmd) = if List.length masterDocument.childInfo /= List.length newMaster_.childInfo then
-                                      (newMaster_, Request.systemUpdateDocument hasuraToken newMaster_ |> Cmd.map Req)
-                                   else
-                                      (masterDocument, Cmd.none)
-
+                newMaster = masterDocument
+                cmd = Cmd.none
 
                 sortedChildDocuments =
                     Document.sortChildren newMaster documentList
@@ -2246,9 +2263,16 @@ deleteDocument model =
                 Armed ->
                    let
                      user = model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
+                     newDeque = BoundedDeque.filter (\doc -> doc.id /= document.id) model.deque
                    in
-                    ( { model | message = ( UserMessage, "Deleting document ..." ), documentDeleteState = SafetyOn }
-                    , Request.deleteDocument hasuraToken user.username document |> Cmd.map Req
+                    ( { model | message = ( UserMessage, "Deleting document ..." )
+                       , documentDeleteState = SafetyOn
+                       , deque = newDeque}
+                    , Cmd.batch [
+                         Request.deleteDocument hasuraToken user.username document |> Cmd.map Req
+                         , sendDequeOutside_  newDeque
+                       ]
+
                     )
 
 
@@ -2432,6 +2456,22 @@ firstSubdocument model =
 
         ( _, _ ) ->
             ( model, Cmd.none )
+
+newSubdocumentButton model =
+    let
+        numberOfChildren =
+            Maybe.map (.childInfo >> List.length) model.currentDocument
+                |> Maybe.withDefault 0
+    in
+    showIf (model.appMode == Editing SubdocumentEditing)
+        (Input.button
+            []
+            { onPress = Just NewSubdocument
+            , label =
+                el []
+                    (el (headingButtonStyle 140) (Element.text "New subdocument"))
+            }
+        )
 
 
 {-| Add a first subdocument to the given document
@@ -3585,26 +3625,10 @@ subDocumentEditingModeButton model =
             { onPress = Just (SetAppMode (Editing SubdocumentEditing))
             , label =
                 el (headerButtonStyle color)
-                    (el headerLabelStyle (Element.text "Edit/C"))
+                    (el headerLabelStyle (Element.text "Edit/S"))
             }
         )
 
-
-newSubdocumentButton model =
-    let
-        numberOfChildren =
-            Maybe.map (.childInfo >> List.length) model.currentDocument
-                |> Maybe.withDefault 0
-    in
-    showIf (model.appMode == Editing SubdocumentEditing)
-        (Input.button
-            []
-            { onPress = Just NewSubdocument
-            , label =
-                el []
-                    (el (headingButtonStyle 140) (Element.text "New subdocument"))
-            }
-        )
 
 
 deleteSubdocumentButton : Model -> Element Msg
@@ -3704,7 +3728,6 @@ addUserPermissionButton =
        , label = el [] (Element.text "Add")
     }
 usernameToAddField model =
-    -- XXX
     Input.text (Style.inputStyle 100)
       { onChange = AddUserNameForPermissions
      , text = model.usernameToAddToPermmission
@@ -3782,7 +3805,7 @@ firstSubDocumentButton model =
         Just _ ->
             Input.button []
                 { onPress = Just FirstSubdocument
-                , label = el toolButtonStyleInHeader (Element.text "New/S")
+                , label = el toolButtonStyleInHeader (Element.text "First/S")
                 }
 
 
