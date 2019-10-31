@@ -15,6 +15,7 @@ import Element exposing (..)
 import Element.Background as Background
 import UrlAppParser exposing(Route(..))
 import Element.Border as Border
+import Config
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
@@ -559,7 +560,7 @@ update msg model =
                     in
                       ({model | currentUser = Just user
                                  ,appMode = Reading
-                                  , documentListType = SearchResults
+                                  , documentListType = DequeView
                                   , focusedElement = NoFocus
                                   , visibilityOfTools = Invisible
                                   , searchMode = UserSearch
@@ -1011,7 +1012,6 @@ update msg model =
                                         docIds  = case model.currentUser of
                                                       Nothing -> []
                                                       Just user -> user.recentDocs
-                                        _ = "SETTING UO CMD"
                                      in
                                        Request.documentsInIdList hasuraToken docIds GotDocumentsForDeque |> Cmd.map Req
 
@@ -1204,7 +1204,7 @@ update msg model =
                                         | message = ( UserMessage, "User signup successful (2)" )
                                         , currentUser = Just user
                                         , appMode = Reading
-                                        , documentListType = SearchResults
+                                        , documentListType = DequeView
                                         , focusedElement = NoFocus
                                         , visibilityOfTools = Invisible
                                       }
@@ -2295,6 +2295,7 @@ makeNewDocument model =
 
                 ( newUuid, newSeed ) =
                     step Uuid.generator model.currentSeed
+                newDeque = Document.pushFrontUnique newDocument model.deque
             in
             ( { model
                 | currentDocument = Just newDocument
@@ -2306,8 +2307,9 @@ makeNewDocument model =
                 , currentSeed = newSeed
                 , lastAst = lastAst
                 , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+                , deque = newDeque
               }
-            , Request.insertDocument hasuraToken newDocument |> Cmd.map Req
+            , Cmd.batch [Request.insertDocument hasuraToken newDocument |> Cmd.map Req, sendDequeOutside_  newDeque]
             )
 
 
@@ -4249,10 +4251,22 @@ footer model =
         , getTextSelectionButton
         , dirtyDocumentDisplay model
         , wordCount model
+        , shareUrlDisplay model
         , row [ spacing 4 ] [ totalWordCountButton, totalWordCountDisplay model ]
         , displayMessage model.message
         , currentTime model
         ]
+
+shareUrlDisplay : Model -> Element Msg
+shareUrlDisplay model =
+    case model.currentDocument of
+        Nothing -> Element.none
+        Just doc ->
+            case doc.public of
+                True ->
+                   el [] (Element.text <| Config.data.endpoint ++ "/#id/" ++ Uuid.toString doc.id)
+                False ->
+                    el [] (Element.text "Document is private")
 
 displayMessage : Message -> Element Msg
 displayMessage (messageType, str) =
