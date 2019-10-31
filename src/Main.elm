@@ -4259,7 +4259,7 @@ footer model =
         , shareUrlDisplay model
         , row [ spacing 4 ] [ totalWordCountButton, totalWordCountDisplay model ]
         , displayMessage model.message
-        , currentTime model
+        -- , currentTime model
         ]
 
 shareUrlButton model =
