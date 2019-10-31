@@ -497,6 +497,7 @@ type Msg
     | AddThisDocumentToMaster Document
     | GotChildDocIdString String
     | DoTotalWordCount
+    | DoShareUrl
       -- Doc Search
     | ClearSearchTerms
     | GotSearchTerms String
@@ -873,6 +874,9 @@ update msg model =
 
         DoTotalWordCount ->
             ( { model | totalWordCount = Document.totalWordCount model.tableOfContents, flashCount = config.maxFlashCount }, Cmd.none )
+
+        DoShareUrl ->
+             ( { model |  flashCount = config.maxFlashCount }, Cmd.none )
 
         GotSearchTerms str ->
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
@@ -4251,22 +4255,31 @@ footer model =
         , getTextSelectionButton
         , dirtyDocumentDisplay model
         , wordCount model
+        , shareUrlButton model
         , shareUrlDisplay model
         , row [ spacing 4 ] [ totalWordCountButton, totalWordCountDisplay model ]
         , displayMessage model.message
         , currentTime model
         ]
 
+shareUrlButton model =
+    Input.button []
+        { onPress = Just DoShareUrl
+        , label = el [] (Element.text "Share: ")
+        }
+
+
 shareUrlDisplay : Model -> Element Msg
 shareUrlDisplay model =
-    case model.currentDocument of
-        Nothing -> Element.none
-        Just doc ->
+    case (model.currentDocument, model.flashCount > 0) of
+        (Nothing, _) -> Element.none
+        (_, False) -> Element.none
+        (Just doc, True) ->
             case doc.public of
                 True ->
                    el [] (Element.text <| Config.data.endpoint ++ "/#id/" ++ Uuid.toString doc.id)
                 False ->
-                    el [] (Element.text "Document is private")
+                    el [] (Element.text "Document is private, can't share")
 
 displayMessage : Message -> Element Msg
 displayMessage (messageType, str) =
