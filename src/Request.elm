@@ -22,6 +22,7 @@ module Request exposing
     , signInUser
     , signUpUser
     , stringFromHttpError
+    , systemUpdateDocument
     , updateDocument
     , updateUser
     )
@@ -268,6 +269,11 @@ updateDocument authToken username document =
 
         False ->
             Cmd.none
+
+
+systemUpdateDocument : String -> Document -> Cmd RequestMsg
+systemUpdateDocument authToken document =
+    makeUpdateDocumentMutation (getDocumentUpdateObject document) authToken
 
 
 deleteDocument : String -> String -> Document -> Cmd RequestMsg

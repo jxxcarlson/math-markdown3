@@ -2001,11 +2001,23 @@ processChildDocumentRequest model documentList =
 
         Just masterDocument ->
             let
+                newMaster_ = TocManager.cleanChildInfo documentList masterDocument
+
+                _ = Debug.log "Lengths" (List.length masterDocument.childInfo, List.length newMaster_.childInfo)
+
+                (newMaster, cmd) = if List.length masterDocument.childInfo /= List.length newMaster_.childInfo then
+                                      (newMaster_, Request.systemUpdateDocument hasuraToken newMaster_ |> Cmd.map Req)
+                                   else
+                                      (masterDocument, Cmd.none)
+
+
                 sortedChildDocuments =
-                    Document.sortChildren masterDocument documentList
+                    Document.sortChildren newMaster documentList
+
+
 
                 newDocumentList =
-                    masterDocument :: sortedChildDocuments
+                    newMaster :: sortedChildDocuments
             in
             ( { model
                 | tableOfContents = newDocumentList
@@ -2013,7 +2025,7 @@ processChildDocumentRequest model documentList =
                 , tocCursor = Just masterDocument.id
                 , message = ( UserMessage, "Child documents: " ++ String.fromInt (List.length documentList) )
               }
-            , Cmd.none
+            , cmd
             )
 
 
