@@ -2003,7 +2003,6 @@ processChildDocumentRequest model documentList =
             let
                 newMaster_ = TocManager.cleanChildInfo documentList masterDocument
 
-                _ = Debug.log "Lengths" (List.length masterDocument.childInfo, List.length newMaster_.childInfo)
 
                 (newMaster, cmd) = if List.length masterDocument.childInfo /= List.length newMaster_.childInfo then
                                       (newMaster_, Request.systemUpdateDocument hasuraToken newMaster_ |> Cmd.map Req)
