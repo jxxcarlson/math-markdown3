@@ -609,7 +609,6 @@ update msg model =
 
         ToggleDequeview ->
            let
-               -- XXX
               newDocumentListDisplay = case model.documentListDisplay of
                 (slt, DequeViewOn) -> (slt, DequeViewOff)
                 (slt, DequeViewOff) -> (slt, DequeViewOn)
@@ -2133,9 +2132,25 @@ updateDeque model document =
 
 setCurrentDocument : Model -> Document -> (Cmd Msg) -> ( Model, Cmd Msg )
 setCurrentDocument model document extraCmd =
+    -- XXX
     let
+         -- When changing current document, be sure to save the current document if needed,
+         -- and update the deque with the current version
+        (saveDocumentCommand, newDeque_)  =  case (model.currentUser, model.currentDocument, model.currentDocumentDirty) of
+            (Just user, Just docToSave, True) ->
+               (Request.updateDocument hasuraToken user.username docToSave |> Cmd.map Req
+                , Document.pushFrontUnique docToSave model.deque)
 
-        (newDeque, updateDequeCmd) = updateDeque model document
+            (_, _, _) -> (Cmd.none, model.deque)
+
+
+        newDeque = Document.pushFrontUnique document newDeque_
+
+        updateDequeCmd = case model.currentUser of
+          Nothing -> Cmd.none
+          Just user ->
+            Request.updateUser hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req
+
 
         (newAst, newRenderedText, renderCmd) = prepareAstAndRenderedText model document
 
@@ -2153,20 +2168,9 @@ setCurrentDocument model document extraCmd =
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
-    , Cmd.batch [extraCmd, renderCmd, updateDequeCmd, masterDocCmd, resetViewportOfRenderedText, resetViewportOfEditor]
+    , Cmd.batch [extraCmd, saveDocumentCommand, renderCmd, updateDequeCmd, masterDocCmd, resetViewportOfRenderedText, resetViewportOfEditor]
     )
 
-
-
-
-
-updateMaybeUserWithDeque : BoundedDeque Document -> Maybe User -> Maybe User
-updateMaybeUserWithDeque deque maybeUser =
-    Maybe.map (\user -> { user | recentDocs = BoundedDeque.toList deque |> List.map .id} ) maybeUser
-
-updateUserWithDeque : BoundedDeque Document -> User -> User
-updateUserWithDeque deque user =
-    { user | recentDocs = BoundedDeque.toList deque |> List.map .id}
 
 
 setCurrentSubdocument : Model -> Document -> TocItem -> ( Model, Cmd Msg )
@@ -2180,52 +2184,87 @@ setCurrentSubdocument model document tocItem =
            one.  One solution is to expose all positive levels, not
            must level 1.
         -}
-        ( ( newAst, newRenderedText ), cmd, documentListDisplay ) =
-            let
-                lastAst =
-                    Markdown.ElmWithId.parse model.counter ExtendedMath document.content
 
-                nMath =
-                    Markdown.ElmWithId.numberOfMathElements lastAst
+        (newAst, newRenderedText, renderCmd) = prepareAstAndRenderedText model document
 
-                renderedText =
-                    if nMath > 10 then
-                        let
-                            firstAst =
-                                Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
-                        in
-                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
+        ( masterDocCmd, documentListDisplay_ ) = prepareIfMasterDoc model document
 
-                    else
-                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+        saveDocumentCommand  =  case (model.currentUser, model.currentDocument, model.currentDocumentDirty) of
+             (Just user, Just docToSave, True) ->
+                Request.updateDocument hasuraToken user.username docToSave |> Cmd.map Req
+             (_, _, _) -> Cmd.none
 
-                cmd1 =
-                    if nMath > 10 then
-                        renderAstFor lastAst
+        ( loadChildrenCmd , documentListDisplay__ ) =
+            if document.childInfo == [] then
+                ( Cmd.none, model.documentListDisplay )
 
-                    else
-                        Cmd.none
+            else
+                ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, (DocumentChildren,  DequeViewOff) )
 
-                ( cmd2, documentListDisplay_ ) =
-                    if document.childInfo == [] then
-                        ( Cmd.none, model.documentListDisplay )
-
-                    else
-                        ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, (DocumentChildren,  DequeViewOff) )
-            in
-            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, resetViewportOfRenderedText, resetViewportOfEditor ], documentListDisplay_ )
+--        ( ( newAst, newRenderedText ), cmd, documentListDisplay ) =
+--            let
+--
+--
+--                saveDocumentCommand  =  case (model.currentUser, model.currentDocument, model.currentDocumentDirty) of
+--                     (Just user, Just docToSave, True) ->
+--                        Request.updateDocument hasuraToken user.username docToSave |> Cmd.map Req
+--                     (_, _, _) -> Cmd.none
+--
+--                lastAst =
+--                    Markdown.ElmWithId.parse model.counter ExtendedMath document.content
+--
+--                nMath =
+--                    Markdown.ElmWithId.numberOfMathElements lastAst
+--
+--                renderedText =
+--                    if nMath > 10 then
+--                        let
+--                            firstAst =
+--                                Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
+--                        in
+--                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
+--
+--                    else
+--                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+--
+--                cmd1 =
+--                    if nMath > 10 then
+--                        renderAstFor lastAst
+--
+--                    else
+--                        Cmd.none
+--
+--                ( cmd2, documentListDisplay_ ) =
+--                    if document.childInfo == [] then
+--                        ( Cmd.none, model.documentListDisplay )
+--
+--                    else
+--                        ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, (DocumentChildren,  DequeViewOff) )
+--            in
+--            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, saveDocumentCommand, resetViewportOfRenderedText, resetViewportOfEditor ], documentListDisplay_ )
     in
     ( { model
         | currentDocument = Just document
-        , documentListDisplay = documentListDisplay
+        , documentListDisplay = documentListDisplay_
         , counter = model.counter + 2
         , lastAst = newAst
         , renderedText = newRenderedText
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
-    , cmd
+    , Cmd.batch [ renderCmd,  loadChildrenCmd, saveDocumentCommand, resetViewportOfRenderedText, resetViewportOfEditor ]
     )
+
+
+
+
+updateMaybeUserWithDeque : BoundedDeque Document -> Maybe User -> Maybe User
+updateMaybeUserWithDeque deque maybeUser =
+    Maybe.map (\user -> { user | recentDocs = BoundedDeque.toList deque |> List.map .id} ) maybeUser
+
+updateUserWithDeque : BoundedDeque Document -> User -> User
+updateUserWithDeque deque user =
+    { user | recentDocs = BoundedDeque.toList deque |> List.map .id}
 
 
 renderUpdate : Model -> Document -> ( Model, Cmd Msg )
@@ -4035,7 +4074,6 @@ heading model =
             140
     in
     case model.currentUser of
-        -- XXX
         Nothing ->
             case model.documentListDisplay of
                 (SearchResults, DequeViewOff) ->
