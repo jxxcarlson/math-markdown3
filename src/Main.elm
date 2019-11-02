@@ -2038,17 +2038,17 @@ processChildDocumentRequest model documentList =
 
         Just masterDocument ->
             let
---                newMaster_ = TocManager.cleanChildInfo documentList masterDocument
---
---
---                (newMaster, cmd) = if List.length masterDocument.childInfo /= List.length newMaster_.childInfo then
---                                      (newMaster_, Request.systemUpdateDocument hasuraToken newMaster_ |> Cmd.map Req)
---                                   else
---                                      (masterDocument, Cmd.none)
+                newMaster_ = TocManager.cleanChildInfo documentList masterDocument
 
 
-                newMaster = masterDocument
-                cmd = Cmd.none
+                (newMaster, cmd) = if List.length masterDocument.childInfo /= List.length newMaster_.childInfo then
+                                      (newMaster_, Request.systemUpdateDocument hasuraToken newMaster_ |> Cmd.map Req)
+                                   else
+                                      (masterDocument, Cmd.none)
+
+
+--                newMaster = masterDocument
+--                cmd = Cmd.none
 
                 sortedChildDocuments =
                     Document.sortChildren newMaster documentList

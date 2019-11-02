@@ -20,7 +20,7 @@ import Utility
 
 
 {-| Compare the childDocuments list with the childInfo
-list. Delete items in the latte that are not represented
+list. Delete items in the latter that are not represented
 in the former.
 -}
 cleanChildInfo : List Document -> Document -> Document
@@ -219,7 +219,7 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                     Err ListsOfDifferentLengthsTM1
 
                 ( _, False ) ->
-                    Err ListsOfDifferentLengthsTM2
+                    Err <| ListsOfDifferentLengthsTM2 ("child docs: " ++ String.fromInt (List.length childDocuments) ++ ", master doc, children: " ++ String.fromInt (List.length masterDocument.childInfo))
 
                 ( True, True ) ->
                     let
