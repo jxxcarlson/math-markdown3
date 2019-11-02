@@ -567,7 +567,6 @@ update msg model =
                                   , searchMode = UserSearch
                                 , token =  Just outsideUser.token}
                             , getUserDocumentsAtSignIn user)
-                            -- XXX
 
                 Outside.GotSelection selection ->
                     ({model | selectedText = selection, message = (UserMessage, String.left 16 selection)}, Cmd.none)
@@ -2475,7 +2474,7 @@ newSubdocumentButton model =
             { onPress = Just NewSubdocument
             , label =
                 el []
-                    (el (headingButtonStyle 140) (Element.text "New subdocument"))
+                    (el (headingButtonStyle 140 Style.charcoal) (Element.text "New subdocument"))
             }
         )
 
@@ -3650,7 +3649,7 @@ deleteSubdocumentButton model =
             { onPress = Just DeleteSubdocument
             , label =
                 el []
-                    (el (headingButtonStyle 140) (Element.text "Delete subdocument"))
+                    (el (headingButtonStyle 140 Style.charcoal) (Element.text "Delete subdocument"))
             }
         )
 
@@ -3729,7 +3728,7 @@ addUserRow model =
     [addUserPermissionButton, usernameToAddField model, selectPermissionButton model]
 
 addUserPermissionButton =
-    Input.button ((headingButtonStyle 40) ++ [Border.color Style.white, Border.width 1]) {
+    Input.button ((headingButtonStyle 40 Style.charcoal) ++ [Border.color Style.white, Border.width 1]) {
        onPress = Just AddUserPermission
        , label = el [] (Element.text "Add")
     }
@@ -3749,7 +3748,7 @@ selectPermissionButton model =
             WritePermission -> "W"
 
     in
-    Input.button ((headingButtonStyle 30) ++  [Border.color Style.white, Border.width 1]){
+    Input.button ((headingButtonStyle 30 Style.charcoal) ++  [Border.color Style.white, Border.width 1]){
        onPress = Just CyclePermission
        , label = el [Font.color Style.white] (Element.text labelText)
     }
@@ -3781,13 +3780,13 @@ togglePublic model =
                 True ->
                     Input.button []
                         { onPress = Just (SetDocumentPublic False)
-                        , label = el (headingButtonStyle 140) (Element.text "Public")
+                        , label = el (headingButtonStyle 140 Style.charcoal) (Element.text "Public")
                         }
 
                 False ->
                     Input.button []
                         { onPress = Just (SetDocumentPublic True)
-                        , label = el (headingButtonStyle 140) (Element.text "Private")
+                        , label = el (headingButtonStyle 140 Style.charcoal) (Element.text "Private")
                         }
 
 
@@ -3983,8 +3982,11 @@ tocEntryStyle currentDocument_ document =
     ( color, fontWeight )
 
 
-headingButtonStyle w =
-    [ height (px 30), width (px w), padding 8, Background.color Style.charcoal, Font.color Style.white, Font.size 12 ]
+
+
+headingButtonStyle : Int -> Color -> List (Element.Attribute msg)
+headingButtonStyle w color =
+    [ height (px 30), width (px w), padding 8, Background.color color, Font.color Style.white, Font.size 12 ]
 
 
 heading : Model -> Element Msg
@@ -4009,78 +4011,109 @@ heading model =
             140
     in
     case model.currentUser of
+        -- XXX
         Nothing ->
             case model.documentListType of
                 SearchResults ->
                     Input.button []
                         { onPress = Just (SetDocumentListType DocumentChildren)
                         , label =
-                            el (headingButtonStyle w)
-                                (Element.text ("Public Documents (" ++ n ++ ")"))
+                            el (headingButtonStyle w Style.charcoal)
+                                (Element.text ("Public Documents! (" ++ n ++ ")"))
                         }
 
                 DocumentChildren ->
                     Input.button []
                         { onPress = Just (SetDocumentListType SearchResults)
                         , label =
-                            el (headingButtonStyle w)
-                                (Element.text ("Contents (" ++ n ++ ")"))
+                            el (headingButtonStyle w Style.charcoal)
+                                (Element.text ("Contents! (" ++ n ++ ")"))
                         }
 
                 DequeView ->
                     Input.button []
                         { onPress = Just (SetDocumentListType DequeView)
                         , label =
-                            el (headingButtonStyle w)
-                                (Element.text ("Recent (" ++ n ++ ")"))
+                            el (headingButtonStyle w Style.charcoal)
+                                (Element.text ("Recent! (" ++ n ++ ")"))
                       }
 
         Just _ ->
             case model.documentListType of
                 SearchResults ->
-                    row [ spacing 10 ] [ setDocumentListTypeButton w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model, setDequeViewButton ]
+                    row [ spacing 10 ] [ setDocumentListTypeButton model w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model, setDequeViewButton model]
 
                 DocumentChildren ->
-                    row [ spacing 10 ] [setDocumentChildrenButton w n, setDequeViewButtonX w n]
+                    row [ spacing 10 ] [setDocumentChildrenButton model w n, setDequeViewButtonX model w n]
 
                 DequeView ->
-                    row [ spacing 10 ] [ setDocumentListTypeButton w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model, setDequeViewButton ]
+                    row [ spacing 10 ] [ setDocumentListTypeButton model w n, setDequeViewButton model]
 
 
-setDequeViewButtonX w n =
+setDequeViewButtonX model w n =
+    let
+        color = if model.documentListType == DequeView then
+                    Style.darkBlue
+                else
+                     Style.charcoal
+    in
     Input.button []
         { onPress = Just (SetDocumentListType DequeView)
         , label =
-            el (headingButtonStyle w)
+            el (headingButtonStyle w color)
                 (Element.text ("Recent (" ++ n ++ ")"))
         }
 
-setDocumentChildrenButton w n =
+setDocumentChildrenButton model w n =
+    let
+        color = if model.documentListType == DocumentChildren then
+                    Style.darkBlue
+                else
+                     Style.charcoal
+    in
     Input.button []
         { onPress = Just (SetDocumentListType SearchResults)
         , label =
-            el (headingButtonStyle w)
+            el (headingButtonStyle w color)
                 (Element.text ("Contents (" ++ n ++ ")"))
                 }
 
 
 
-setDocumentListTypeButton w n =
+
+setDocumentListTypeButton model w n =
+    let
+        (color, msg) = if model.documentListType == SearchResults then
+                   ( Style.darkBlue, SetDocumentListType DocumentChildren)
+                else
+                    ( Style.charcoal, SetDocumentListType SearchResults)
+
+    in
     Input.button []
-        { onPress = Just (SetDocumentListType DocumentChildren)
+        { onPress = Just msg
         , label =
-            el (headingButtonStyle w)
+            el (headingButtonStyle w color)
                 (Element.text ("Documents (" ++ n ++ ")"))
         }
 
-setDequeViewButton  =
+setDequeViewButton model =
+    let
+        color = if model.documentListType == DequeView then
+                    Style.darkBlue
+                else
+                     Style.charcoal
+    in
     Input.button []
         { onPress = Just (SetDocumentListType DequeView)
         , label =
-            el (headingButtonStyle 60)
+            el (headingButtonStyle 60 color)
                 (Element.text "Recent")
         }
-
+-- XX
+--type DocumentListType
+--    = SearchResults
+--    | DequeView
+--    | DocumentChildren
 
 -- HEADERS
 

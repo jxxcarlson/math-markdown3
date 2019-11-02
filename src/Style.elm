@@ -168,7 +168,7 @@ darkRed =
 
 
 darkBlue =
-    Element.rgb 0.0 0.0 0.6
+    Element.rgb 0.0 0.0 0.4
 
 
 lightYellow =
