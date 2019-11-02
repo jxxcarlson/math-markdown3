@@ -134,7 +134,7 @@ type alias Model  =
     , windowHeight : Int
     , visibilityOfTools : Visibility
     , appMode : AppMode
-    , documentListType : DocumentListType
+    , documentListDisplay : DocumentListDisplay
     , message : Message
     , pressedKeys : List Key
     , focusedElement : FocusedElement
@@ -194,11 +194,14 @@ type UrlRequest
   = Internal Url.Url
   | External String
 
+
+type alias DocumentListDisplay = (DocumentListType, DequeViewState)
+
 type DocumentListType
     = SearchResults
-    | DequeView
     | DocumentChildren
 
+type DequeViewState = DequeViewOn | DequeViewOff
 
 type SearchMode
     = UserSearch
@@ -368,7 +371,7 @@ init flags url key =
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
             , appMode = UserMode SignInState
-            , documentListType = SearchResults
+            , documentListDisplay = (SearchResults, DequeViewOff)
             , message = ( UserMessage, "Starting ..." )
             , pressedKeys = []
             , focusedElement = NoFocus
@@ -483,6 +486,8 @@ type Msg
     | GetHelpDocs
     | SetSortMode SortMode
     | SetDocumentListType DocumentListType
+    | SetDequeview DequeViewState
+    | ToggleDequeview
     | SetDocType DocType
     | SetCurrentDocument Document
     | SetCurrentSubDocument Document TocItem
@@ -561,7 +566,7 @@ update msg model =
                     in
                       ({model | currentUser = Just user
                                  ,appMode = Reading
-                                  , documentListType = DequeView
+                                  , documentListDisplay = (SearchResults, DequeViewOn)
                                   , focusedElement = NoFocus
                                   , visibilityOfTools = Invisible
                                   , searchMode = UserSearch
@@ -586,16 +591,31 @@ update msg model =
             )
 
         SetDocumentListType documentListType ->
+            let
+                dv = Tuple.second model.documentListDisplay
+            in
             case documentListType of
-                SearchResults ->
-                    ( { model | documentListType = SearchResults }, Cmd.none )
+                SearchResults  ->
+                    ( { model | documentListDisplay = (SearchResults, DequeViewOff) }, Cmd.none )
 
                 DocumentChildren ->
-                    ( { model | documentListType = DocumentChildren }, Cmd.none )
+                    ( { model | documentListDisplay = (DocumentChildren, DequeViewOff) }, Cmd.none )
 
-                DequeView ->
-                    ( { model | documentListType = DequeView }, Cmd.none )
+        SetDequeview dv ->
+                    let
+                        slt = Tuple.first model.documentListDisplay
+                    in
+                    ( { model | documentListDisplay = (slt, dv) }, Cmd.none )
 
+        ToggleDequeview ->
+           let
+               -- XXX
+              newDocumentListDisplay = case model.documentListDisplay of
+                (slt, DequeViewOn) -> (slt, DequeViewOff)
+                (slt, DequeViewOff) -> (slt, DequeViewOn)
+
+           in
+             ({model | documentListDisplay = newDocumentListDisplay}, Cmd.none)
 
         SetSortMode sortMode ->
             let
@@ -1207,7 +1227,7 @@ update msg model =
                                         | message = ( UserMessage, "User signup successful (2)" )
                                         , currentUser = Just user
                                         , appMode = Reading
-                                        , documentListType = DequeView
+                                        , documentListDisplay = (SearchResults, DequeViewOn)
                                         , focusedElement = NoFocus
                                         , visibilityOfTools = Invisible
                                       }
@@ -1709,12 +1729,12 @@ getAllDocuments model =
                 PublicSearch ->
                     Request.publicDocumentsWithTitle hasuraToken "" |> Cmd.map Req
     in
-    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+    ( { model | documentListDisplay = (SearchResults, DequeViewOff), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 getHelpDocs : Model -> ( Model, Cmd Msg )
 getHelpDocs model =
-    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
+    ( { model | documentListDisplay = (SearchResults, DequeViewOff), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
     , Request.publicDocumentsWithTag hasuraToken "usermanual" |> Cmd.map Req
     )
 
@@ -1749,7 +1769,7 @@ searchForUsersDocuments model =
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
     in
-    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+    ( { model | documentListDisplay = (SearchResults,  DequeViewOff), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 searchForSharedDocuments : Model -> (Model, Cmd Msg)
@@ -1769,7 +1789,8 @@ searchForSharedDocuments model =
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
     in
-    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+    ( { model | documentListDisplay = (SearchResults, DequeViewOff)
+    , focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 
@@ -1807,7 +1828,7 @@ searchForPublicDocuments model =
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
     in
-    ( { model | documentListType = SearchResults, focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
+    ( { model | documentListDisplay = (SearchResults, DequeViewOff), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 
@@ -1956,7 +1977,7 @@ loadDocument model document =
         , counter = model.counter + 2
         , lastAst = lastAst
         , appMode = Reading
-        , documentListType = SearchResults
+        , documentListDisplay = (SearchResults, DequeViewOff)
         , renderedText = renderedText
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
@@ -2002,7 +2023,7 @@ loadSubdocument model document =
         , counter = model.counter + 2
         , lastAst = lastAst
         , appMode = Reading
-        , documentListType = SearchResults
+        , documentListDisplay = (SearchResults, DequeViewOff)
         , renderedText = renderedText
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
@@ -2090,15 +2111,15 @@ prepareAstAndRenderedText model document =
      in
           ( lastAst, renderedText, renderCmd )
 
-prepareIfMasterDoc : Model -> Document -> (Cmd Msg, DocumentListType)
+-- prepareIfMasterDoc : Model -> Document -> (Cmd Msg, DocumentListType)
 prepareIfMasterDoc model document =
     if document.childInfo == [] then
-        ( Cmd.none, model.documentListType )
+        ( Cmd.none, model.documentListDisplay )
     else
       let
           cmd = Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req
       in
-        ( cmd, DocumentChildren )
+        ( cmd, (DocumentChildren, DequeViewOff ))
 
 updateDeque : Model -> Document -> (BoundedDeque Document, Cmd Msg)
 updateDeque model document =
@@ -2118,12 +2139,12 @@ setCurrentDocument model document extraCmd =
 
         (newAst, newRenderedText, renderCmd) = prepareAstAndRenderedText model document
 
-        ( masterDocCmd, documentListType_ ) = prepareIfMasterDoc model document
+        ( masterDocCmd, documentListDisplay_ ) = prepareIfMasterDoc model document
 
     in
     ( { model
         | currentDocument = Just document
-        , documentListType = documentListType_
+        , documentListDisplay = documentListDisplay_
         , counter = model.counter + 2
         , deque = newDeque
         , currentUser = updateMaybeUserWithDeque newDeque model.currentUser
@@ -2159,7 +2180,7 @@ setCurrentSubdocument model document tocItem =
            one.  One solution is to expose all positive levels, not
            must level 1.
         -}
-        ( ( newAst, newRenderedText ), cmd, documentListType ) =
+        ( ( newAst, newRenderedText ), cmd, documentListDisplay ) =
             let
                 lastAst =
                     Markdown.ElmWithId.parse model.counter ExtendedMath document.content
@@ -2185,18 +2206,18 @@ setCurrentSubdocument model document tocItem =
                     else
                         Cmd.none
 
-                ( cmd2, documentListType_ ) =
+                ( cmd2, documentListDisplay_ ) =
                     if document.childInfo == [] then
-                        ( Cmd.none, model.documentListType )
+                        ( Cmd.none, model.documentListDisplay )
 
                     else
-                        ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, DocumentChildren )
+                        ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, (DocumentChildren,  DequeViewOff) )
             in
-            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, resetViewportOfRenderedText, resetViewportOfEditor ], documentListType_ )
+            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, resetViewportOfRenderedText, resetViewportOfEditor ], documentListDisplay_ )
     in
     ( { model
         | currentDocument = Just document
-        , documentListType = documentListType
+        , documentListDisplay = documentListDisplay
         , counter = model.counter + 2
         , lastAst = newAst
         , renderedText = newRenderedText
@@ -2523,7 +2544,7 @@ firstSubdocument_ model user document =
         , documentList = newDocumentList
         , tocData = TocManager.setupWithFocus newDocument.id (Just masterDocument) newChildDocumentList
         , tocCursor = Just newDocument.id
-        , documentListType = DocumentChildren
+        , documentListDisplay = ( DocumentChildren, DequeViewOff)
         , documentOutline = newDocumentOutline
         , visibilityOfTools = Invisible
         , appMode = Editing StandardEditing
@@ -2594,7 +2615,7 @@ newSubdocumentAtHead model user masterDocument =
         , documentList = newDocumentList
         , tocData = TocManager.setupWithFocus newDocument.id (Just newMasterDocument) newChildDocumentList
         , tocCursor = Just newDocument.id
-        , documentListType = DocumentChildren
+        , documentListDisplay = (DocumentChildren, DequeViewOff)
         , documentOutline = newDocumentOutline
         , visibilityOfTools = Invisible
         , appMode = Editing StandardEditing
@@ -2655,7 +2676,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
         , documentList = newDocumentList
         , tocData = TocManager.setupWithFocus newDocument.id (Just newMasterDocument) newChildDocumentList
         , tocCursor = Just newDocument.id
-        , documentListType = DocumentChildren
+        , documentListDisplay = (DocumentChildren, DequeViewOff)
         , documentOutline = newDocumentOutline
         , visibilityOfTools = Invisible
         , appMode = Editing StandardEditing
@@ -3625,11 +3646,12 @@ subDocumentEditingModeButton model =
             else
                 Style.buttonGrey
     in
-    showIf (model.currentUser /= Nothing && List.length model.tableOfContents > 0 && model.documentListType == DocumentChildren)
+    showIf (model.currentUser /= Nothing && List.length model.tableOfContents > 0 &&
+       List.member model.documentListDisplay [(DocumentChildren, DequeViewOff), (DocumentChildren, DequeViewOff)])
         (Input.button []
             { onPress = Just (SetAppMode (Editing SubdocumentEditing))
             , label =
-                el (headerButtonStyle color)
+                 el (headerButtonStyle color)
                     (el headerLabelStyle (Element.text "Edit/S"))
             }
         )
@@ -3868,15 +3890,17 @@ docListViewer viewInfo model =
             translate -viewInfo.vInset model.windowHeight
 
         renderedList =
-            case model.documentListType of
-                SearchResults ->
+            case model.documentListDisplay of
+                (SearchResults, DequeViewOff) ->
                     renderTocForSearchResults model
 
-                DequeView ->
+                (DocumentChildren, DequeViewOff) ->
+                    (expandCollapseTocButton |> Element.map TOC) :: renderTocForMaster model
+
+                (_, DequeViewOn) ->
                     renderTocForDeque model
 
-                DocumentChildren ->
-                    (expandCollapseTocButton |> Element.map TOC) :: renderTocForMaster model
+
     in
     column
         [ width (px (scale viewInfo.docListWidth model.windowWidth))
@@ -3993,14 +4017,14 @@ heading : Model -> Element Msg
 heading model =
     let
         n_ =
-            case model.documentListType of
-                SearchResults ->
+            case model.documentListDisplay of
+                (SearchResults, DequeViewOff) ->
                     List.length model.documentList
 
-                DocumentChildren ->
+                (DocumentChildren, DequeViewOff) ->
                     List.length model.tableOfContents
 
-                DequeView ->
+                (_, DequeViewOn) ->
                    BoundedDeque.length model.deque
 
         n =
@@ -4013,8 +4037,8 @@ heading model =
     case model.currentUser of
         -- XXX
         Nothing ->
-            case model.documentListType of
-                SearchResults ->
+            case model.documentListDisplay of
+                (SearchResults, DequeViewOff) ->
                     Input.button []
                         { onPress = Just (SetDocumentListType DocumentChildren)
                         , label =
@@ -4022,7 +4046,7 @@ heading model =
                                 (Element.text ("Public Documents! (" ++ n ++ ")"))
                         }
 
-                DocumentChildren ->
+                (DocumentChildren, DequeViewOff) ->
                     Input.button []
                         { onPress = Just (SetDocumentListType SearchResults)
                         , label =
@@ -4030,51 +4054,48 @@ heading model =
                                 (Element.text ("Contents! (" ++ n ++ ")"))
                         }
 
-                DequeView ->
+                (_, DequeViewOn) ->
                     Input.button []
-                        { onPress = Just (SetDocumentListType DequeView)
+                        { onPress = Just ToggleDequeview
                         , label =
                             el (headingButtonStyle w Style.charcoal)
                                 (Element.text ("Recent! (" ++ n ++ ")"))
                       }
 
         Just _ ->
-            case model.documentListType of
-                SearchResults ->
+            case model.documentListDisplay of
+                (SearchResults, DequeViewOff) ->
                     row [ spacing 10 ] [ setDocumentListTypeButton model w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model, setDequeViewButton model]
 
-                DocumentChildren ->
+                (SearchResults, DequeViewOn) ->
+                    row [ spacing 10 ] [ setDocumentListTypeButton model w n,  setDequeViewButton model]
+
+                (DocumentChildren, _) ->
                     row [ spacing 10 ] [setDocumentChildrenButton model w n, setDequeViewButtonX model w n]
 
-                DequeView ->
-                    row [ spacing 10 ] [ setDocumentListTypeButton model w n, setDequeViewButton model]
+
 
 
 setDequeViewButtonX model w n =
     let
-        color = if model.documentListType == DequeView then
+        color = case model.documentListDisplay of
+            (_, DequeViewOn) ->
                     Style.darkBlue
-                else
+            (_, DequeViewOff) ->
                      Style.charcoal
     in
     Input.button []
-        { onPress = Just (SetDocumentListType DequeView)
+        { onPress = Just (SetDequeview DequeViewOn)
         , label =
             el (headingButtonStyle w color)
                 (Element.text ("Recent (" ++ n ++ ")"))
         }
 
 setDocumentChildrenButton model w n =
-    let
-        color = if model.documentListType == DocumentChildren then
-                    Style.darkBlue
-                else
-                     Style.charcoal
-    in
     Input.button []
         { onPress = Just (SetDocumentListType SearchResults)
         , label =
-            el (headingButtonStyle w color)
+            el (headingButtonStyle w Style.charcoal)
                 (Element.text ("Contents (" ++ n ++ ")"))
                 }
 
@@ -4082,29 +4103,22 @@ setDocumentChildrenButton model w n =
 
 
 setDocumentListTypeButton model w n =
-    let
-        (color, msg) = if model.documentListType == SearchResults then
-                   ( Style.darkBlue, SetDocumentListType DocumentChildren)
-                else
-                    ( Style.charcoal, SetDocumentListType SearchResults)
-
-    in
     Input.button []
-        { onPress = Just msg
+        { onPress = Just (SetDocumentListType DocumentChildren)
         , label =
-            el (headingButtonStyle w color)
+            el (headingButtonStyle w Style.charcoal)
                 (Element.text ("Documents (" ++ n ++ ")"))
         }
 
 setDequeViewButton model =
     let
-        color = if model.documentListType == DequeView then
+        color = if (Tuple.second model.documentListDisplay) == DequeViewOn then
                     Style.darkBlue
                 else
                      Style.charcoal
     in
     Input.button []
-        { onPress = Just (SetDocumentListType DequeView)
+        { onPress = Just ToggleDequeview
         , label =
             el (headingButtonStyle 60 color)
                 (Element.text "Recent")
