@@ -4059,7 +4059,7 @@ heading model =
                         { onPress = Just ToggleDequeview
                         , label =
                             el (headingButtonStyle w Style.charcoal)
-                                (Element.text ("Recent! (" ++ n ++ ")"))
+                                (Element.text "Recent")
                       }
 
         Just _ ->
@@ -4070,11 +4070,11 @@ heading model =
                 (SearchResults, DequeViewOn) ->
                     row [ spacing 10 ] [ setDocumentListTypeButton model w n,  setDequeViewButton model]
 
-                (DocumentChildren, _) ->
+                (DocumentChildren, DequeViewOff) ->
                     row [ spacing 10 ] [setDocumentChildrenButton model w n, setDequeViewButtonX model w n]
 
-
-
+                (DocumentChildren, DequeViewOn) ->
+                    row [ spacing 10 ] [setDocumentListTypeButton model w n, setDequeViewButtonX model w n]
 
 setDequeViewButtonX model w n =
     let
@@ -4085,10 +4085,10 @@ setDequeViewButtonX model w n =
                      Style.charcoal
     in
     Input.button []
-        { onPress = Just (SetDequeview DequeViewOn)
+        { onPress = Just ToggleDequeview
         , label =
             el (headingButtonStyle w color)
-                (Element.text ("Recent (" ++ n ++ ")"))
+                (Element.text ("Recent"))
         }
 
 setDocumentChildrenButton model w n =
@@ -4103,8 +4103,13 @@ setDocumentChildrenButton model w n =
 
 
 setDocumentListTypeButton model w n =
+    let
+      msg = case Maybe.map .childInfo model.currentDocument  == Just [] of
+          True -> NoOp
+          False ->   SetDocumentListType DocumentChildren
+    in
     Input.button []
-        { onPress = Just (SetDocumentListType DocumentChildren)
+        { onPress = Just msg
         , label =
             el (headingButtonStyle w Style.charcoal)
                 (Element.text ("Documents (" ++ n ++ ")"))
