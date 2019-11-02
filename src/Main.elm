@@ -2201,47 +2201,6 @@ setCurrentSubdocument model document tocItem =
             else
                 ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, (DocumentChildren,  DequeViewOff) )
 
---        ( ( newAst, newRenderedText ), cmd, documentListDisplay ) =
---            let
---
---
---                saveDocumentCommand  =  case (model.currentUser, model.currentDocument, model.currentDocumentDirty) of
---                     (Just user, Just docToSave, True) ->
---                        Request.updateDocument hasuraToken user.username docToSave |> Cmd.map Req
---                     (_, _, _) -> Cmd.none
---
---                lastAst =
---                    Markdown.ElmWithId.parse model.counter ExtendedMath document.content
---
---                nMath =
---                    Markdown.ElmWithId.numberOfMathElements lastAst
---
---                renderedText =
---                    if nMath > 10 then
---                        let
---                            firstAst =
---                                Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
---                        in
---                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
---
---                    else
---                        Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
---
---                cmd1 =
---                    if nMath > 10 then
---                        renderAstFor lastAst
---
---                    else
---                        Cmd.none
---
---                ( cmd2, documentListDisplay_ ) =
---                    if document.childInfo == [] then
---                        ( Cmd.none, model.documentListDisplay )
---
---                    else
---                        ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, (DocumentChildren,  DequeViewOff) )
---            in
---            ( ( lastAst, renderedText ), Cmd.batch [ cmd1, cmd2, saveDocumentCommand, resetViewportOfRenderedText, resetViewportOfEditor ], documentListDisplay_ )
     in
     ( { model
         | currentDocument = Just document
