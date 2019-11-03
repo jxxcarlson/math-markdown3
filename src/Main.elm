@@ -2694,6 +2694,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
 
 updateDocumentText : Model -> String -> ( Model, Cmd Msg )
 updateDocumentText model str =
+    -- XXX
     case model.currentDocument of
         Nothing ->
             ( model, Cmd.none )
@@ -2705,6 +2706,8 @@ updateDocumentText model str =
 
                 updatedDoc2 =
                     Document.updateMetaData updatedDoc1
+
+                newDeque = Document.pushFrontUnique updatedDoc2 model.deque
 
                 newAst_ =
                     parse updatedDoc2.docType model.counter str
@@ -2720,6 +2723,7 @@ updateDocumentText model str =
                   currentDocument = Just updatedDoc2
                 , documentList = Document.replaceInList updatedDoc2 model.documentList
                 , tableOfContents = tableOfContents
+                , deque = newDeque
                 , currentDocumentDirty = True
                 , tocData = TocManager.setupWithFocus updatedDoc2.id (List.head tableOfContents) (List.drop 1 tableOfContents)
                 , tocCursor = Just updatedDoc2.id
