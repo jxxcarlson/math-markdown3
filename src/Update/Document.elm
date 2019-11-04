@@ -1,4 +1,11 @@
-module Update.Document exposing (getFirstPart, processDocumentRequest, setCurrent, setCurrentSubdocument, updateMaybeUserWithDeque)
+module Update.Document exposing
+    ( getFirstPart
+    , processDocumentRequest
+    , setCurrent
+    , setCurrentSubdocument
+    , text
+    , updateMaybeUserWithDeque
+    )
 
 import BoundedDeque exposing (BoundedDeque)
 import Cmd.Document
@@ -19,13 +26,60 @@ import Model
 import ParseWithId
 import Request exposing (RequestMsg(..))
 import Toc exposing (TocItem)
+import TocManager
 import Tree exposing (Tree)
+import Tree.Diff as Diff
 import Update.Render
 import User exposing (User)
 
 
 type alias HtmlRecord =
     { title : Html Msg, toc : Html Msg, document : Html Msg }
+
+
+text : Model -> String -> ( Model, Cmd Msg )
+text model str =
+    case model.currentDocument of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just doc ->
+            let
+                updatedDoc1 =
+                    Document.setContent str doc
+
+                updatedDoc2 =
+                    Document.updateMetaData updatedDoc1
+
+                newDeque =
+                    Document.pushFrontUnique updatedDoc2 model.deque
+
+                newAst_ =
+                    Update.Render.parse updatedDoc2.docType model.counter str
+
+                newAst =
+                    Diff.mergeWith ParseWithId.equal model.lastAst newAst_
+
+                tableOfContents =
+                    Document.replaceInList updatedDoc2 model.tableOfContents
+            in
+            ( { model
+                | -- document
+                  currentDocument = Just updatedDoc2
+                , documentList = Document.replaceInList updatedDoc2 model.documentList
+                , tableOfContents = tableOfContents
+                , deque = newDeque
+                , currentDocumentDirty = True
+                , tocData = TocManager.setupWithFocus updatedDoc2.id (List.head tableOfContents) (List.drop 1 tableOfContents)
+                , tocCursor = Just updatedDoc2.id
+
+                -- rendering
+                , lastAst = newAst
+                , renderedText = Update.Render.render updatedDoc2.docType newAst
+                , counter = model.counter + 1
+              }
+            , Cmd.none
+            )
 
 
 setCurrent : Model -> Document -> Cmd Msg -> ( Model, Cmd Msg )

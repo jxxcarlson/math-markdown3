@@ -64,7 +64,6 @@ import Time exposing (Posix)
 import TocManager
 import TocZ exposing (TocMsg(..), viewZ)
 import Tree exposing (Tree)
-import Tree.Diff as Diff
 import Update.Document
 import Url exposing(Url)
 import User exposing (AuthorizedUser, User)
@@ -618,7 +617,7 @@ update msg model =
             ( { model | documentOutline = str }, Cmd.none )
 
         UpdateDocumentText str ->
-            updateDocumentText model (Preprocessor.apply str)
+            Update.Document.text model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
              Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside  model)
@@ -2004,50 +2003,6 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
         ]
     )
 
-
-updateDocumentText : Model -> String -> ( Model, Cmd Msg )
-updateDocumentText model str =
-    -- XXX
-    case model.currentDocument of
-        Nothing ->
-            ( model, Cmd.none )
-
-        Just doc ->
-            let
-                updatedDoc1 =
-                    Document.setContent str doc
-
-                updatedDoc2 =
-                    Document.updateMetaData updatedDoc1
-
-                newDeque = Document.pushFrontUnique updatedDoc2 model.deque
-
-                newAst_ =
-                    Update.Render.parse updatedDoc2.docType model.counter str
-
-                newAst =
-                    Diff.mergeWith ParseWithId.equal model.lastAst newAst_
-
-                tableOfContents =
-                    Document.replaceInList updatedDoc2 model.tableOfContents
-            in
-            ( { model
-                | -- document
-                  currentDocument = Just updatedDoc2
-                , documentList = Document.replaceInList updatedDoc2 model.documentList
-                , tableOfContents = tableOfContents
-                , deque = newDeque
-                , currentDocumentDirty = True
-                , tocData = TocManager.setupWithFocus updatedDoc2.id (List.head tableOfContents) (List.drop 1 tableOfContents)
-                , tocCursor = Just updatedDoc2.id
-
-                -- rendering
-                , lastAst = newAst
-                , renderedText = Update.Render.render updatedDoc2.docType newAst
-                , counter = model.counter + 1
-              }
-            , Cmd.none
-            )
 
 
 saveDocument : Model -> ( Model, Cmd Msg )
