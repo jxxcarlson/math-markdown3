@@ -1392,13 +1392,6 @@ emptyRenderedText =
     render (Markdown MDExtendedMath) emptyAst
 
 
-
-
---renderSecond : Model -> Cmd Msg
---renderSecond model =
---    renderAstFor model model.sourceText
-
-
 getFirstPart : String -> String
 getFirstPart str =
     String.left 2000 str
