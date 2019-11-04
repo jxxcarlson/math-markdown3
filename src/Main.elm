@@ -45,6 +45,7 @@ import Json.Encode as E
 import Keyboard exposing (Key(..))
 import Maybe.Extra
 import List.Extra
+import DocumentManager
 import Outside
 import Markdown.Elm
 import Markdown.ElmWithId
@@ -1067,7 +1068,7 @@ handleLink model link =
     case  AppNavigation.classify link of
         (TocRef, id_) -> (model, scrollIfNeeded id_)
         (DocRef, slug)  ->(model, getDocumentBySlug hasuraToken slug)
-        (IdRef, idRef)  -> (model, getDocumentById hasuraToken idRef)
+        (IdRef, idRef)  -> (model, DocumentManager.getById hasuraToken idRef)
         (SubdocIdRef, idRef)  -> focusOnId model (idRef |> Uuid.fromString |> Maybe.withDefault Utility.id0)
 
 scrollIfNeeded : String -> Cmd Msg
@@ -1094,7 +1095,7 @@ processUrl urlString =
             case AppNavigation.classify frag of
               (TocRef, f) ->  Cmd.none
               (DocRef, f)  -> getDocumentBySlug hasuraToken f
-              (IdRef, f)  -> getDocumentById hasuraToken f
+              (IdRef, f)  -> DocumentManager.getById hasuraToken f
               ( SubdocIdRef, _ )  -> Cmd.none
 
 
@@ -1468,12 +1469,6 @@ focusSearchBox =
 
 -- DOCUMENT HELPERS --
 
-getDocumentById : String -> String -> Cmd Msg
-getDocumentById token idString =
-    let
-        uuid = Uuid.fromString idString |> Maybe.withDefault Utility.id0
-    in
-    Request.publicDocumentsInIdList token [uuid] LoadDocument |> Cmd.map Req
 
 
 getDocumentBySlug: String -> String -> Cmd Msg
