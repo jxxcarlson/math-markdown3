@@ -1052,7 +1052,7 @@ focusOnId model id =
                             ( model, Cmd.none )
 
                         Just document ->
-                            renderUpdate model document
+                            Update.Document.render model document
             in
             ( { newModel
                 | currentDocument = currentDocument
@@ -1444,48 +1444,6 @@ loadDocument model document =
 
 
 
-
-renderUpdate : Model -> Document -> ( Model, Cmd Msg )
-renderUpdate model document =
-    let
-        lastAst =
-            Markdown.ElmWithId.parse model.counter ExtendedMath document.content
-
-        nMath =
-            Markdown.ElmWithId.numberOfMathElements lastAst
-
-        renderedText =
-            if nMath > 10 then
-                let
-                    firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart document.content)
-                in
-                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
-
-            else
-                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
-
-        cmd1 =
-            if nMath > 10 then
-                Cmd.Document.renderAstFor lastAst
-
-            else
-                Cmd.none
-
-        cmd2 =
-            if document.childInfo == [] then
-                Cmd.none
-
-            else
-                Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req
-    in
-    ( { model
-        | lastAst = lastAst
-        , renderedText = renderedText
-        , counter = model.counter + 2
-      }
-    , Cmd.batch [ cmd1, cmd2 ]
-    )
 
 
 deleteDocument : Model -> ( Model, Cmd Msg )
