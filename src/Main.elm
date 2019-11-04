@@ -54,6 +54,7 @@ import Preprocessor
 import Prng.Uuid as Uuid exposing (Uuid)
 import Process
 import Random
+import Search
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
@@ -602,7 +603,7 @@ update msg model =
             ( { model | renderedText = rt }, Cmd.none )
 
         AllDocuments ->
-            getAllDocuments model
+            Search.getAllDocuments model
 
         GetPublicDocuments ->
             searchForPublicDocuments model
@@ -1126,7 +1127,7 @@ handleKey : Model -> Key -> ( Model, Cmd Msg )
 handleKey model key =
     case key of
         Character "a" ->
-            getAllDocuments model
+            Search.getAllDocuments model
 
         Character "e" ->
             setModeToEditing model StandardEditing
@@ -1495,32 +1496,6 @@ focusSearchBox : Cmd Msg
 focusSearchBox =
     Task.attempt SetFocusOnSearchBox (Dom.focus "search-box")
 
-
-getAllDocuments : Model -> ( Model, Cmd Msg )
-getAllDocuments model =
-    let
-        cmd =
-            case model.searchMode of
-                UserSearch ->
-                    case model.currentUser of
-                        Nothing ->
-                            Cmd.none
-
-                        Just user ->
-                            Request.authorDocumentsWithTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
-
-                SharedDocSearch ->
-                                    case model.currentUser of
-                                        Nothing ->
-                                            Cmd.none
-
-                                        Just user ->
-                                            Request.sharedDocumentsByTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
-
-                PublicSearch ->
-                    Request.publicDocumentsWithTitle hasuraToken "" |> Cmd.map Req
-    in
-    ( { model | documentListDisplay = (SearchResults, DequeViewOff), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 getHelpDocs : Model -> ( Model, Cmd Msg )
