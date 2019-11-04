@@ -4,11 +4,9 @@ module Update.Master exposing
     , processChildDocumentRequest
     )
 
-import BoundedDeque exposing (BoundedDeque)
 import Cmd.Document
 import Config
 import Document exposing (Document)
-import Html exposing (Html)
 import Markdown.ElmWithId
 import Markdown.Option exposing (..)
 import Model
@@ -21,15 +19,10 @@ import Model
         , Model
         , Msg(..)
         )
-import ParseWithId
 import Request exposing (RequestMsg(..))
-import Toc exposing (TocItem)
 import TocManager
-import Tree exposing (Tree)
-import Tree.Diff as Diff
 import Update.Document
 import Update.Render
-import User exposing (User)
 
 
 processChildDocumentRequest : Model -> List Document -> ( Model, Cmd Msg )
