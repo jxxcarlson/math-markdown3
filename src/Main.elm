@@ -32,6 +32,7 @@ import Browser.Dom as Dom
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Element exposing (..)
 import Element.Background as Background
+import Update.Render
 import Element.Border as Border
 import Config
 import Element.Font as Font
@@ -292,8 +293,8 @@ init flags url key =
             , currentDocument = Nothing
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
-            , lastAst = emptyAst
-            , renderedText = emptyRenderedText
+            , lastAst = Update.Render.emptyAst
+            , renderedText = Update.Render.emptyRenderedText
             , tagString = ""
             , searchTerms = ""
             , sortTerm = orderByMostRecentFirst
@@ -784,7 +785,7 @@ update msg model =
                             ( { model | message = ( ErrorMessage, "Get author docs:: request failed" ) }, Cmd.none )
 
                         Success documentList ->
-                            processDocumentRequest model Nothing documentList
+                            Update.Document.processDocumentRequest model Nothing documentList
 
                 GotChildDocuments remoteData ->
                     case remoteData of
@@ -868,7 +869,7 @@ update msg model =
                                             Just document
 
                                 ( newModel, cmd ) =
-                                    processDocumentRequest model currentDoc documentList
+                                    Update.Document.processDocumentRequest model currentDoc documentList
                             in
                             ( { newModel | currentDocument = currentDoc }, cmd )
 
@@ -1381,78 +1382,6 @@ focusSearchBox =
 
 
 
-emptyAst : Tree ParseWithId.MDBlockWithId
-emptyAst =
-    Markdown.ElmWithId.parse -1 ExtendedMath ""
-
-
-emptyRenderedText : RenderedText Msg
-emptyRenderedText =
-    render (Markdown MDExtendedMath) emptyAst
-
-
-
-
-processDocumentRequest : Model -> Maybe Document -> List Document -> ( Model, Cmd Msg )
-processDocumentRequest model maybeDocument documentList =
-    let
-        currentDoc =
-            case maybeDocument of
-                Nothing ->
-                    List.head documentList
-
-                Just doc_ ->
-                    Just doc_
-
-        ( newAst, newRenderedText, cmd ) =
-            case currentDoc of
-                Nothing ->
-                    ( emptyAst, emptyRenderedText, Cmd.none )
-
-                Just doc ->
-                    let
-                        content =
-                            doc.content
-
-                        lastAst =
-                            parse doc.docType model.counter content
-
-                        nMath =
-                            Markdown.ElmWithId.numberOfMathElements lastAst
-
-                        ( renderedText, cmd_ ) =
-                            if nMath > 10 then
-                                let
-                                    firstAst =
-                                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart content)
-
-                                    renderedText_ =
-                                        render doc.docType firstAst
-
-                                    cmd__ =
-                                        Cmd.Document.renderAstFor lastAst
-                                in
-                                ( renderedText_
-                                , cmd__
-                                )
-
-                            else
-                                ( render doc.docType lastAst, Cmd.none )
-                    in
-                    ( lastAst, renderedText, cmd_ )
-    in
-    ( { model
-        | documentList = documentList
-        , currentDocument = currentDoc
-        , tagString = getTagString currentDoc
-        , counter = model.counter + 2
-        , lastAst = newAst
-        , renderedText = newRenderedText
-        , docType = Document.getDocType currentDoc
-        , message = ( UserMessage, "Success getting document list" )
-      }
-    , cmd
-    )
 
 loadDocument : Model -> Document -> ( Model, Cmd Msg )
 loadDocument model document =
@@ -1461,7 +1390,7 @@ loadDocument model document =
             document.content
 
         lastAst =
-            parse document.docType model.counter content
+            Update.Render.parse document.docType model.counter content
 
         nMath =
             Markdown.ElmWithId.numberOfMathElements lastAst
@@ -1473,7 +1402,7 @@ loadDocument model document =
                         Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart content)
 
                     renderedText_ =
-                        render document.docType firstAst
+                        Update.Render.render document.docType firstAst
 
                     cmd__ =
                         Cmd.Document.renderAstFor lastAst
@@ -1483,7 +1412,7 @@ loadDocument model document =
                 )
 
             else
-                ( render document.docType lastAst, Cmd.none )
+                ( Update.Render.render document.docType lastAst, Cmd.none )
     in
     ( { model
         | documentList = document :: (List.filter (\doc -> doc.id /= document.id) model.documentList)
@@ -1507,7 +1436,7 @@ loadSubdocument model document =
             document.content
 
         lastAst =
-            parse document.docType model.counter content
+            Update.Render.parse document.docType model.counter content
 
         nMath =
             Markdown.ElmWithId.numberOfMathElements lastAst
@@ -1519,7 +1448,7 @@ loadSubdocument model document =
                         Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart content)
 
                     renderedText_ =
-                        render document.docType firstAst
+                        Update.Render.render document.docType firstAst
 
                     cmd__ =
                         Cmd.Document.renderAstFor lastAst
@@ -1529,7 +1458,7 @@ loadSubdocument model document =
                 )
 
             else
-                ( render document.docType lastAst, Cmd.none )
+                ( Update.Render.render document.docType lastAst, Cmd.none )
     in
     ( { model
         | documentList = document :: (List.filter (\doc -> doc.id /= document.id) model.documentList)
@@ -2094,7 +2023,7 @@ updateDocumentText model str =
                 newDeque = Document.pushFrontUnique updatedDoc2 model.deque
 
                 newAst_ =
-                    parse updatedDoc2.docType model.counter str
+                    Update.Render.parse updatedDoc2.docType model.counter str
 
                 newAst =
                     Diff.mergeWith ParseWithId.equal model.lastAst newAst_
@@ -2114,7 +2043,7 @@ updateDocumentText model str =
 
                 -- rendering
                 , lastAst = newAst
-                , renderedText = render updatedDoc2.docType newAst
+                , renderedText = Update.Render.render updatedDoc2.docType newAst
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -2196,32 +2125,6 @@ processTagString model str =
 -- PARSE AND RENDER
 
 
-parse : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId
-parse docType counter str =
-    case docType of
-        Markdown flavor ->
-            Markdown.ElmWithId.parse counter (markdownOptionOfFlavor flavor) str
-
-        _ ->
-            emptyAst
-
-
-render : DocType -> Tree ParseWithId.MDBlockWithId -> RenderedText Msg
-render docType ast =
-    Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast
-
-
-markdownOptionOfFlavor : MarkdownFlavor -> Markdown.Option.Option
-markdownOptionOfFlavor flavor =
-    case flavor of
-        MDStandard ->
-            Standard
-
-        MDExtended ->
-            Extended
-
-        MDExtendedMath ->
-            ExtendedMath
 
 
 
@@ -2321,13 +2224,13 @@ handleDeletedDocument model =
                     Maybe.map .content (List.head newDocumentList) |> Maybe.withDefault "This is test"
 
                 lastAst =
-                    parse docType model.counter newDocumentText
+                    Update.Render.parse docType model.counter newDocumentText
             in
             ( { model
                 | documentList = newDocumentList
                 , currentDocument = List.head newDocumentList
                 , lastAst = lastAst
-                , renderedText = render docType lastAst
+                , renderedText = Update.Render.render docType lastAst
                 , message = ( UserMessage, "Document " ++ deletedDocument.title ++ " deleted" )
                 , visibilityOfTools = Invisible
               }

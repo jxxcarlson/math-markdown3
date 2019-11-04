@@ -1,4 +1,4 @@
-module Update.Document exposing (getFirstPart, setCurrent, setCurrentSubdocument, updateMaybeUserWithDeque)
+module Update.Document exposing (getFirstPart, processDocumentRequest, setCurrent, setCurrentSubdocument, updateMaybeUserWithDeque)
 
 import BoundedDeque exposing (BoundedDeque)
 import Cmd.Document
@@ -7,11 +7,20 @@ import Document exposing (Document)
 import Html exposing (Html)
 import Markdown.ElmWithId
 import Markdown.Option exposing (..)
-import Model exposing (DequeViewState(..), DocumentListType(..), Message, MessageType(..), Model, Msg(..))
+import Model
+    exposing
+        ( DequeViewState(..)
+        , DocumentListType(..)
+        , Message
+        , MessageType(..)
+        , Model
+        , Msg(..)
+        )
 import ParseWithId
 import Request exposing (RequestMsg(..))
 import Toc exposing (TocItem)
 import Tree exposing (Tree)
+import Update.Render
 import User exposing (User)
 
 
@@ -173,3 +182,45 @@ updateMaybeUserWithDeque deque maybeUser =
 getFirstPart : String -> String
 getFirstPart str =
     String.left 2000 str
+
+
+
+-- COMPLETE DOCUMENT REQUEST
+
+
+processDocumentRequest : Model -> Maybe Document -> List Document -> ( Model, Cmd Msg )
+processDocumentRequest model maybeDocument documentList =
+    let
+        currentDoc =
+            case maybeDocument of
+                Nothing ->
+                    List.head documentList
+
+                Just doc_ ->
+                    Just doc_
+
+        ( newAst, newRenderedText, cmd ) =
+            Update.Render.prepare model currentDoc
+    in
+    ( { model
+        | documentList = documentList
+        , currentDocument = currentDoc
+        , tagString = getTagString currentDoc
+        , counter = model.counter + 2
+        , lastAst = newAst
+        , renderedText = newRenderedText
+        , docType = Document.getDocType currentDoc
+        , message = ( UserMessage, "Success getting document list" )
+      }
+    , cmd
+    )
+
+
+getTagString : Maybe Document -> String
+getTagString maybeDocument =
+    case maybeDocument of
+        Nothing ->
+            ""
+
+        Just document ->
+            document.tags |> String.join ", "
