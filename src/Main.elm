@@ -26,6 +26,7 @@ import Browser.Events
 import Browser.Navigation as Nav
 import CustomElement.CodeEditor as Editor
 import Data
+import Cmd.Document
 import Utility
 import Browser.Dom as Dom
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
@@ -45,7 +46,7 @@ import Json.Encode as E
 import Keyboard exposing (Key(..))
 import Maybe.Extra
 import List.Extra
-import DocumentManager
+import Document
 import Outside
 import Markdown.Elm
 import Markdown.ElmWithId
@@ -1067,8 +1068,8 @@ handleLink : Model -> String -> (Model, Cmd Msg)
 handleLink model link =
     case  AppNavigation.classify link of
         (TocRef, id_) -> (model, scrollIfNeeded id_)
-        (DocRef, slug)  ->(model, getDocumentBySlug hasuraToken slug)
-        (IdRef, idRef)  -> (model, DocumentManager.getById hasuraToken idRef)
+        (DocRef, slug)  ->(model, Cmd.Document.getBySlug hasuraToken slug)
+        (IdRef, idRef)  -> (model, Cmd.Document.getById hasuraToken idRef)
         (SubdocIdRef, idRef)  -> focusOnId model (idRef |> Uuid.fromString |> Maybe.withDefault Utility.id0)
 
 scrollIfNeeded : String -> Cmd Msg
@@ -1094,8 +1095,8 @@ processUrl urlString =
         Just frag ->
             case AppNavigation.classify frag of
               (TocRef, f) ->  Cmd.none
-              (DocRef, f)  -> getDocumentBySlug hasuraToken f
-              (IdRef, f)  -> DocumentManager.getById hasuraToken f
+              (DocRef, f)  -> Cmd.Document.getBySlug hasuraToken f
+              (IdRef, f)  -> Cmd.Document.getById hasuraToken f
               ( SubdocIdRef, _ )  -> Cmd.none
 
 
@@ -1471,9 +1472,7 @@ focusSearchBox =
 
 
 
-getDocumentBySlug: String -> String -> Cmd Msg
-getDocumentBySlug token slug =
-   Request.publicDocumentsBySlug token slug LoadDocument |> Cmd.map Req
+
 
 emptyAst : Tree ParseWithId.MDBlockWithId
 emptyAst =

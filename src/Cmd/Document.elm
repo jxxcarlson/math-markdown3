@@ -1,4 +1,4 @@
-module DocumentManager exposing (getById)
+module Cmd.Document exposing (getById, getBySlug)
 
 import Model exposing (Model, Msg(..))
 import Prng.Uuid as Uuid exposing (Uuid)
@@ -13,3 +13,8 @@ getById token idString =
             Uuid.fromString idString |> Maybe.withDefault Utility.id0
     in
     Request.publicDocumentsInIdList token [ uuid ] LoadDocument |> Cmd.map Req
+
+
+getBySlug : String -> String -> Cmd Msg
+getBySlug token slug =
+    Request.publicDocumentsBySlug token slug LoadDocument |> Cmd.map Req
