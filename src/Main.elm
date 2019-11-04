@@ -1,4 +1,4 @@
-module Main exposing (main, parseSearchTerm)
+module Main exposing (main)
 
 import Model exposing
                  ( AppMode(..)
@@ -422,7 +422,7 @@ update msg model =
                 cmd =
                     case model.currentUser of
                         Just user ->
-                            Tuple.second <| doSearch model
+                            Tuple.second <| Search.do model
 
                         Nothing ->
                             Cmd.none
@@ -597,7 +597,7 @@ update msg model =
             deleteDocument model
 
         GetUserDocuments ->
-            searchForUsersDocuments model
+            Search.forUsersDocuments model
 
         GotSecondPart rt ->
             ( { model | renderedText = rt }, Cmd.none )
@@ -606,10 +606,10 @@ update msg model =
             Search.getAllDocuments model
 
         GetPublicDocuments ->
-            searchForPublicDocuments model
+            Search.forPublicDocuments model
 
         GetHelpDocs ->
-            getHelpDocs model
+            Search.getHelpDocs model
 
         AddThisDocumentToMaster document ->
             addDocumentToMaster model document
@@ -693,7 +693,7 @@ update msg model =
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
 
         DoSearch ->
-            doSearch model
+            Search.do model
 
         ToggleSearchMode ->
             cycleSearchMode model
@@ -1114,10 +1114,10 @@ keyboardGateway model ( pressedKeys, maybeKeyChange ) =
         in
         case model.appMode == Editing SubdocumentEditing of
             True ->
-                searchForChildDocuments model
+                Search.forChildDocuments model
 
             False ->
-                doSearch newModel
+                Search.do newModel
 
     else
         ( { model | pressedKeys = pressedKeys }, Cmd.none )
@@ -1135,7 +1135,7 @@ handleKey model key =
         --        Character "f" ->
         --            ( model, focusSearchBox )
         Character "h" ->
-            getHelpDocs model
+            Search.getHelpDocs model
 
         Character "f" ->
             clearSearchTerms model
@@ -1349,38 +1349,6 @@ getUserDocumentsAtSignIn user =
 -- SEARCH HELPERS
 
 
-stringValueOfSearchType : String -> SearchType
-stringValueOfSearchType str =
-    case str of
-        "k" ->
-            KeywordSearch
-
-        _ ->
-            TitleSearch
-
-
-parseSearchTerm : String -> ( SearchType, String )
-parseSearchTerm str =
-    let
-        parts =
-            String.split "/" str
-
-        first =
-            List.head parts
-
-        second =
-            List.head (List.drop 1 parts)
-    in
-    case ( first, second ) of
-        ( Just searchTerm, Just typeString ) ->
-            ( stringValueOfSearchType typeString, searchTerm )
-
-        ( Just searchTerm, Nothing ) ->
-            ( TitleSearch, searchTerm )
-
-        ( _, _ ) ->
-            ( NoSearchTerm, "" )
-
 
 cycleSearchMode : Model -> ( Model, Cmd Msg )
 cycleSearchMode model =
@@ -1495,106 +1463,6 @@ clearSearchTermsButton =
 focusSearchBox : Cmd Msg
 focusSearchBox =
     Task.attempt SetFocusOnSearchBox (Dom.focus "search-box")
-
-
-
-getHelpDocs : Model -> ( Model, Cmd Msg )
-getHelpDocs model =
-    ( { model | documentListDisplay = (SearchResults, DequeViewOff), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
-    , Request.publicDocumentsWithTag hasuraToken "usermanual" |> Cmd.map Req
-    )
-
-
-doSearch : Model -> ( Model, Cmd Msg )
-doSearch model =
-    case model.searchMode of
-        UserSearch ->
-            searchForUsersDocuments model
-
-        SharedDocSearch ->
-             searchForSharedDocuments model
-
-        PublicSearch ->
-            searchForPublicDocuments model
-
-
-searchForUsersDocuments : Model -> ( Model, Cmd Msg )
-searchForUsersDocuments model =
-    let
-        authorIdentifier =
-            model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
-
-        cmd =
-            case parseSearchTerm model.searchTerms of
-                ( TitleSearch, searchTerm ) ->
-                    Request.authorDocumentsWithTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
-
-                ( KeywordSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTagSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
-
-                ( NoSearchTerm, _ ) ->
-                    Cmd.none
-    in
-    ( { model | documentListDisplay = (SearchResults,  DequeViewOff), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
-
-
-searchForSharedDocuments : Model -> (Model, Cmd Msg)
-searchForSharedDocuments model =
- let
-        authorIdentifier =
-            model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
-
-        cmd =
-            case parseSearchTerm model.searchTerms of
-                ( TitleSearch, searchTerm ) ->
-                    Request.sharedDocumentsByTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
-
-                ( KeywordSearch, searchTerm ) ->
-                    Request.sharedDocumentsByTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
-
-                ( NoSearchTerm, _ ) ->
-                    Cmd.none
-    in
-    ( { model | documentListDisplay = (SearchResults, DequeViewOff)
-    , focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
-
-
-
-searchForChildDocuments : Model -> ( Model, Cmd Msg )
-searchForChildDocuments model =
-    let
-        authorIdentifier =
-            model.currentUser |> Maybe.map .username |> Maybe.withDefault "__nobodyHere__"
-
-        cmd =
-            case parseSearchTerm model.searchTerms of
-                ( TitleSearch, searchTerm ) ->
-                    Request.authorDocumentsWithTitleSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
-
-                ( KeywordSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTagSorted hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
-
-                ( NoSearchTerm, _ ) ->
-                    Cmd.none
-    in
-    ( model, cmd )
-
-
-searchForPublicDocuments : Model -> ( Model, Cmd Msg )
-searchForPublicDocuments model =
-    let
-        cmd =
-            case parseSearchTerm model.searchTerms of
-                ( TitleSearch, searchTerm ) ->
-                    Request.publicDocumentsWithTitle hasuraToken searchTerm |> Cmd.map Req
-
-                ( KeywordSearch, searchTerm ) ->
-                    Request.publicDocumentsWithTag hasuraToken searchTerm |> Cmd.map Req
-
-                ( NoSearchTerm, _ ) ->
-                    Cmd.none
-    in
-    ( { model | documentListDisplay = (SearchResults, DequeViewOff), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
 
 
