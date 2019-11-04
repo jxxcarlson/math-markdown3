@@ -52,7 +52,6 @@ import Markdown.Option exposing (Option(..))
 import ParseWithId
 import Preprocessor
 import Prng.Uuid as Uuid exposing (Uuid)
-import Process
 import Random
 import Search
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
@@ -621,7 +620,7 @@ update msg model =
             updateDocumentText model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
-             Update.Document.setCurrentDocument model document (Cmd.Document.sendDequeOutside  model)
+             Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside  model)
 
 
         SetCurrentSubDocument document tocItem ->

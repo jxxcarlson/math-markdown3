@@ -1,4 +1,4 @@
-module Update.Document exposing (getFirstPart, setCurrentDocument, setCurrentSubdocument, updateMaybeUserWithDeque)
+module Update.Document exposing (getFirstPart, setCurrent, setCurrentSubdocument, updateMaybeUserWithDeque)
 
 import BoundedDeque exposing (BoundedDeque)
 import Cmd.Document
@@ -19,8 +19,8 @@ type alias HtmlRecord =
     { title : Html Msg, toc : Html Msg, document : Html Msg }
 
 
-setCurrentDocument : Model -> Document -> Cmd Msg -> ( Model, Cmd Msg )
-setCurrentDocument model document extraCmd =
+setCurrent : Model -> Document -> Cmd Msg -> ( Model, Cmd Msg )
+setCurrent model document extraCmd =
     -- XXX
     let
         -- When changing current document, be sure to save the current document if needed,
