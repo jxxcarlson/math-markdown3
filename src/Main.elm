@@ -1,6 +1,24 @@
 module Main exposing (main, parseSearchTerm)
 
-import Api.InputObject exposing (Document_order_by(..))
+import Model exposing
+                 ( AppMode(..)
+                 , DequeViewState(..)
+                 , DocumentDeleteState(..)
+                 , DocumentListDisplay
+                 , DocumentListType(..)
+                 , EditMode(..)
+                 , FocusedElement(..)
+                 , Message
+                 , MessageType(..)
+                 , RenderedText
+                 , Model
+                 , Msg(..)
+                 , SearchMode(..)
+                 , SearchType(..)
+                 , SortMode(..)
+                 , UserState(..)
+                 , Visibility(..)
+                 )
 import Browser
 import AppNavigation exposing(NavigationType(..))
 import Browser.Dom as Dom
@@ -19,13 +37,10 @@ import Config
 import Element.Font as Font
 import Element.Input as Input
 import Element.Keyed
-import UrlAppParser
 import BoundedDeque exposing(BoundedDeque)
 import Element.Lazy
-import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Html exposing (..)
 import Html.Attributes as HA
-import Json.Decode as D
 import Json.Encode as E
 import Keyboard exposing (Key(..))
 import Maybe.Extra
@@ -50,7 +65,6 @@ import TocManager
 import TocZ exposing (TocMsg(..), viewZ)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
-import Tree.Zipper as Zipper exposing (Zipper)
 import Url exposing(Url)
 import User exposing (AuthorizedUser, User)
 import Utility
@@ -118,73 +132,7 @@ main =
 -- MODEL --
 
 
-type alias RenderedText msg =
-    { title : Html msg, toc : Html msg, document : Html msg }
 
-
-type alias Model  =
-    { seed : Int
-    -- NAV
-      , key : Nav.Key
-      , url : Url.Url
-
-    -- UI
-    , docType : Document.DocType
-    , windowWidth : Int
-    , windowHeight : Int
-    , visibilityOfTools : Visibility
-    , appMode : AppMode
-    , documentListDisplay : DocumentListDisplay
-    , message : Message
-    , pressedKeys : List Key
-    , focusedElement : FocusedElement
-    , flashCount : Int
-
-    -- SYSTEM
-    , currentSeed : Seed
-    , currentUuid : Uuid.Uuid
-    , zone : Time.Zone
-    , time : Time.Posix
-
-    -- USER
-    , currentUser : Maybe User
-    , token : Maybe String
-    , username : String
-    , email : String
-    , password : String
-    , passwordConfirmation : String
-    , newPassword1 : String
-    , newPassword2 : String
-
-    -- EDITOR
-    , selectedText : String
-
-    -- DOCUMENT
-    , counter : Int
-    , documentDeleteState : DocumentDeleteState
-    , documentList : List Document
-    , tableOfContents : List Document
-    , deque : BoundedDeque Document
-    , totalWordCount : Int
-    , tocData : Maybe (Zipper TocItem)
-    , tocCursor : Maybe Uuid
-    , toggleToc : Bool
-    , candidateChildDocumentList : List Document
-    , childDocIdString : String
-    , currentDocument : Maybe Document
-    , currentDocumentDirty : Bool
-    , secondsWhileDirty : Int
-    , lastAst : Tree ParseWithId.MDBlockWithId
-    , renderedText : RenderedText Msg
-    , tagString : String
-    , searchTerms : String
-    , sortTerm : OptionalArgument (List Document_order_by)
-    , searchMode : SearchMode
-    , sortMode : SortMode
-    , documentOutline : String
-    , usernameToAddToPermmission : String
-    , permissionToAdd : Permission
-    }
 
 
 
@@ -195,74 +143,8 @@ type UrlRequest
   | External String
 
 
-type alias DocumentListDisplay = (DocumentListType, DequeViewState)
-
-type DocumentListType
-    = SearchResults
-    | DocumentChildren
-
-type DequeViewState = DequeViewOn | DequeViewOff
-
-type SearchMode
-    = UserSearch
-    | PublicSearch
-    | SharedDocSearch
 
 
-type SortMode
-    = MostRecentFirst
-    | Alphabetical
-
-
-type alias Message =
-    ( MessageType, String )
-
-
-type MessageType
-    = SignInMessage
-    | UserMessage
-    | AuthMessage
-    | ErrorMessage
-    | DebugMessage
-
-
-type FocusedElement
-    = FocusOnSearchBox
-    | NoFocus
-
-
-type AppMode
-    = Reading
-    | Editing EditMode
-    | UserMode UserState
-
-
-type EditMode
-    = StandardEditing
-    | SubdocumentEditing
-
-
-type UserState
-    = SignInState
-    | SignUpState
-    | ChangePasswordState
-    | SignedInState
-
-
-type DocumentDeleteState
-    = SafetyOn
-    | Armed
-
-
-type Visibility
-    = Visible
-    | Invisible
-
-
-type SearchType
-    = TitleSearch
-    | KeywordSearch
-    | NoSearchTerm
 
 
 type alias Flags =
@@ -437,95 +319,6 @@ init flags url key =
 
 
 
--- MSG --
-
-
-type Msg
-    = NoOp
-      -- System
-    | NewUuid
-    | Tick Time.Posix
-    | AdjustTimeZone Time.Zone
-    -- Ports
-    | Outside Outside.InfoForElm
-    | LogErr String
-      -- Random
-    | GenerateSeed
-    | NewSeed Int
-    -- Navigation
-    | LinkClicked Browser.UrlRequest
-    | UrlChanged Url
-    | ScrollAttempted (Result Dom.Error ())
-      -- UI
-    | SetToolPanelState Visibility
-    | SetAppMode AppMode
-    | WindowSize Int Int
-    | KeyMsg Keyboard.Msg
-    | SetFocusOnSearchBox (Result Dom.Error ())
-      -- User
-    | GotUserName String
-    | GotPassword String
-    | GotPasswordConfirmation String
-    | GotNewPassword1 String
-    | GotNewPassword2 String
-    | ChangePassword
-    | GotEmail String
-    | SignIn
-    | SignUp
-    | SignOut
-      -- Editor
-    | ProcessLine String
-    | SetViewPortForElement (Result Dom.Error ( Dom.Element, Dom.Viewport ))
-    | GetTextSelection
-      -- Document
-    | CreateDocument
-    | SaveDocument
-    | GetUserDocuments
-    | AllDocuments
-    | GetPublicDocuments
-    | GetHelpDocs
-    | SetSortMode SortMode
-    | SetDocumentListType DocumentListType
-    | SetDequeview DequeViewState
-    | ToggleDequeview
-    | SetDocType DocType
-    | SetCurrentDocument Document
-    | SetCurrentSubDocument Document TocItem
-      -- Subdocuments
-    | NewSubdocument
-    | FirstSubdocument
-    | AddSubdocument
-    | DeleteSubdocument
-    | SetUpOutline
-    | UpdateChildren
-    | GotOutline String
-    | AddThisDocumentToMaster Document
-    | GotChildDocIdString String
-    | DoTotalWordCount
-    | DoShareUrl
-      -- Doc Search
-    | ClearSearchTerms
-    | GotSearchTerms String
-    | DoSearch
-    | ToggleSearchMode
-      -- Doc Delete
-    | ArmForDelete
-    | DeleteDocument
-    | CancelDeleteDocument
-      -- Doc Update
-    | UpdateDocumentText String
-    | SetDocumentPublic Bool
-    | GotSecondPart (RenderedText Msg)
-    | GotTagString String
-    | Clear
-    | Req RequestMsg
-    | TOC TocMsg
-    -- Doc Permissions
-    | AddUserNameForPermissions String
-    | CyclePermission
-    | AddUserPermission
-
-
 
 -- SUBSCRIPTION
 
@@ -583,8 +376,7 @@ update msg model =
             ({model | message = (ErrorMessage, err)}, Cmd.none)
 
 
-        Clear ->
-            ( { model
+        Model.Clear ->    ( { model
                 | counter = model.counter + 1
               }
             , Cmd.none
