@@ -32,7 +32,6 @@ import Browser.Dom as Dom
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Element exposing (..)
 import Element.Background as Background
-import UrlAppParser exposing(Route(..))
 import Element.Border as Border
 import Config
 import Element.Font as Font
@@ -44,7 +43,6 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Json.Encode as E
 import Keyboard exposing (Key(..))
-import Maybe.Extra
 import List.Extra
 import Document
 import Outside
@@ -311,11 +309,11 @@ init flags url key =
     , Cmd.batch
         [ Task.perform AdjustTimeZone Time.here
         -- , Request.publicDocuments hasuraToken |> Cmd.map Req
-        , resetViewportOfRenderedText
-        , resetViewportOfEditor
+        , Cmd.Document.resetViewportOfRenderedText
+        , Cmd.Document.resetViewportOfEditor
         , Outside.sendInfo (Outside.AskToReconnectUser E.null)
         , Outside.sendInfo (Outside.AskForDequeData E.null)
-        , processUrl flags.location
+        , Cmd.Document.processUrl flags.location
 
         ]
     )
@@ -556,13 +554,13 @@ update msg model =
                             id_ |> ParseWithId.stringOfId)
             in
             ( { model | message = ( UserMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id ) }
-            , setViewportForElement id
+            , Cmd.Document.setViewportForElement id
             )
 
         SetViewPortForElement result ->
             case result of
                 Ok ( element, viewport )  ->
-                    ( model, setViewPortForSelectedLine element viewport )
+                    ( model, Cmd.Document.setViewPortForSelectedLine element viewport )
 
                 Err _ ->
                    ({ model | message =  (ErrorMessage, (Tuple.second model.message) ++ ", doc VP ERROR") }, Cmd.none )
@@ -623,7 +621,7 @@ update msg model =
             updateDocumentText model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
-            setCurrentDocument model document (sendDequeOutside  model)
+            setCurrentDocument model document (Cmd.Document.sendDequeOutside  model)
 
 
         SetCurrentSubDocument document tocItem ->
@@ -709,7 +707,7 @@ update msg model =
                     focusOnId model id
 
                 Toggle ->
-                    ( { model | toggleToc = not model.toggleToc }, Cmd.batch [resetViewportOfRenderedText, resetViewportOfRenderedText])  -- Cmd.none |> Cmd.map TOC )
+                    ( { model | toggleToc = not model.toggleToc }, Cmd.batch [Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfRenderedText])  -- Cmd.none |> Cmd.map TOC )
 
 
         -- NAVIGATION --
@@ -1067,38 +1065,10 @@ focusOnId model id =
 handleLink : Model -> String -> (Model, Cmd Msg)
 handleLink model link =
     case  AppNavigation.classify link of
-        (TocRef, id_) -> (model, scrollIfNeeded id_)
+        (TocRef, id_) -> (model, Cmd.Document.scrollIfNeeded id_)
         (DocRef, slug)  ->(model, Cmd.Document.getBySlug hasuraToken slug)
         (IdRef, idRef)  -> (model, Cmd.Document.getById hasuraToken idRef)
         (SubdocIdRef, idRef)  -> focusOnId model (idRef |> Uuid.fromString |> Maybe.withDefault Utility.id0)
-
-scrollIfNeeded : String -> Cmd Msg
-scrollIfNeeded tag =
-      Task.attempt ScrollAttempted (
-        Dom.getElement tag
-          |> Task.andThen (\info -> Dom.setViewportOf "__rt_scroll__" 0  (info.element.y - info.element.height - 40) ))
-
-
-pushDocument : Document -> Cmd Msg
-pushDocument document =
-    Outside.pushUrl <| "/" ++ Uuid.toString  document.id
-
-
-processUrl : String -> Cmd Msg
-processUrl urlString =
-  let
-     url = Url.fromString urlString
-     maybeFrag = Maybe.map .fragment url |> Maybe.Extra.join
-  in
-    case maybeFrag of
-        Nothing -> Cmd.none
-        Just frag ->
-            case AppNavigation.classify frag of
-              (TocRef, f) ->  Cmd.none
-              (DocRef, f)  -> Cmd.Document.getBySlug hasuraToken f
-              (IdRef, f)  -> Cmd.Document.getById hasuraToken f
-              ( SubdocIdRef, _ )  -> Cmd.none
-
 
 
 -- KEYBOARD HELPERS -
@@ -1244,67 +1214,8 @@ handleTime model newTime =
     )
 
 
--- OUTSIDE HELPERS --
-
-sendDequeOutside : Model -> Cmd Msg
-sendDequeOutside  model =
-    let
-       data : E.Value
-       data =
-           model.deque
-             |> Document.idListOfDeque
-             |> Document.encodeStringList "deque"
-    in
-      Outside.sendInfo (Outside.DequeData data) |> Cmd.map Req
-
-sendDequeOutside_ : BoundedDeque Document -> Cmd Msg
-sendDequeOutside_  deque =
-    let
-       data : E.Value
-       data =
-           deque
-             |> Document.idListOfDeque
-             |> Document.encodeStringList "deque"
-    in
-      Outside.sendInfo (Outside.DequeData data) |> Cmd.map Req
 
 
-
--- EDITOR HELPERS, VIEWPORT
-
--- masterId = "_rendered_text_"
-masterId = "__rt_scroll__"
-
-resetViewportOfRenderedText : Cmd Msg
-resetViewportOfRenderedText =
-  Task.attempt (\_ -> NoOp) (Dom.setViewportOf masterId -100 0)
-
-resetViewportOfEditor : Cmd Msg
-resetViewportOfEditor =
-  Task.attempt (\_ -> NoOp) (Dom.setViewportOf "_editor_" 0 0)
-
-
-
-setViewportForElement : String -> Cmd Msg
-setViewportForElement id =
-    Dom.getViewportOf  masterId
-        |> Task.andThen (\vp -> getElementWithViewPort vp id)
-        |> Task.attempt SetViewPortForElement
-
-
-getElementWithViewPort : Dom.Viewport -> String -> Task Dom.Error ( Dom.Element, Dom.Viewport )
-getElementWithViewPort vp id =
-    Dom.getElement id
-        |> Task.map (\el -> ( el, vp ))
-
-
-setViewPortForSelectedLine : Dom.Element -> Dom.Viewport -> Cmd Msg
-setViewPortForSelectedLine element viewport =
-    let
-        y =
-            viewport.viewport.y + element.element.y - element.element.height - 150
-    in
-    Task.attempt (\_ -> NoOp) (Dom.setViewportOf masterId 0 y)
 
 
 
@@ -1797,7 +1708,7 @@ setCurrentDocument model document extraCmd =
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
-    , Cmd.batch [extraCmd, saveDocumentCommand, renderCmd, updateDequeCmd, masterDocCmd, resetViewportOfRenderedText, resetViewportOfEditor]
+    , Cmd.batch [extraCmd, saveDocumentCommand, renderCmd, updateDequeCmd, masterDocCmd, Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfEditor]
     )
 
 
@@ -1840,7 +1751,7 @@ setCurrentSubdocument model document tocItem =
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
-    , Cmd.batch [ renderCmd,  loadChildrenCmd, saveDocumentCommand, resetViewportOfRenderedText, resetViewportOfEditor ]
+    , Cmd.batch [ renderCmd,  loadChildrenCmd, saveDocumentCommand, Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfEditor ]
     )
 
 
@@ -1921,7 +1832,7 @@ deleteDocument model =
                        , deque = newDeque}
                     , Cmd.batch [
                          Request.deleteDocument hasuraToken user.username document |> Cmd.map Req
-                         , sendDequeOutside_  newDeque
+                         , Cmd.Document.sendDequeOutside_  newDeque
                        ]
 
                     )
@@ -1960,7 +1871,7 @@ makeNewDocument model =
                 , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
                 , deque = newDeque
               }
-            , Cmd.batch [Request.insertDocument hasuraToken newDocument |> Cmd.map Req, sendDequeOutside_  newDeque]
+            , Cmd.batch [Request.insertDocument hasuraToken newDocument |> Cmd.map Req, Cmd.Document.sendDequeOutside_  newDeque]
             )
 
 
@@ -3159,7 +3070,7 @@ renderedSource viewInfo model footerText_ rt =
         [ column [ setElementId "__rt_scroll__", width (px w_), height (px h_), clipX, Font.size 12 ]
             [ column [ width (px w2_), paddingXY 10 20 ]
                 [ rt.title |> Element.html
-             , column [setElementId masterId,  height (px h_)] [ rt.document |> Element.html ]
+             , column [setElementId Cmd.Document.masterId,  height (px h_)] [ rt.document |> Element.html ]
                 ]
             ]
         , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
