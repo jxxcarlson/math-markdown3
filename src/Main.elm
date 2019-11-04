@@ -61,11 +61,11 @@ import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), ord
 import Style
 import Task exposing (Task)
 import Time exposing (Posix)
-import Toc exposing (TocItem)
 import TocManager
 import TocZ exposing (TocMsg(..), viewZ)
 import Tree exposing (Tree)
 import Tree.Diff as Diff
+import Update.Document
 import Url exposing(Url)
 import User exposing (AuthorizedUser, User)
 import Utility
@@ -621,11 +621,11 @@ update msg model =
             updateDocumentText model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
-            setCurrentDocument model document (Cmd.Document.sendDequeOutside  model)
+             Update.Document.setCurrentDocument model document (Cmd.Document.sendDequeOutside  model)
 
 
         SetCurrentSubDocument document tocItem ->
-            setCurrentSubdocument model document tocItem
+            Update.Document.setCurrentSubdocument model document tocItem
 
         SetUpOutline ->
             ( setupOutline model, Cmd.none )
@@ -819,7 +819,7 @@ update msg model =
                                currentUser = if BoundedDeque.isEmpty  newDeque then
                                                  model.currentUser
                                               else
-                                                 updateMaybeUserWithDeque newDeque model.currentUser
+                                                 Update.Document.updateMaybeUserWithDeque newDeque model.currentUser
                                cmd = case BoundedDeque.isEmpty  newDeque of
                                    False -> Cmd.none
                                    True ->
@@ -980,7 +980,7 @@ update msg model =
                            in
                              ( { model
                                  | message = ( UserMessage, "Got deque: successful" )
-                                 , currentUser = updateMaybeUserWithDeque newDeque model.currentUser
+                                 , currentUser = Update.Document.updateMaybeUserWithDeque newDeque model.currentUser
                                  , deque = newDeque
                                }
                              , Cmd.none
@@ -1392,9 +1392,6 @@ emptyRenderedText =
     render (Markdown MDExtendedMath) emptyAst
 
 
-getFirstPart : String -> String
-getFirstPart str =
-    String.left 2000 str
 
 
 processDocumentRequest : Model -> Maybe Document -> List Document -> ( Model, Cmd Msg )
@@ -1428,7 +1425,7 @@ processDocumentRequest model maybeDocument documentList =
                             if nMath > 10 then
                                 let
                                     firstAst =
-                                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+                                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart content)
 
                                     renderedText_ =
                                         render doc.docType firstAst
@@ -1474,7 +1471,7 @@ loadDocument model document =
             if nMath > 1000 then
                 let
                     firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart content)
 
                     renderedText_ =
                         render document.docType firstAst
@@ -1520,7 +1517,7 @@ loadSubdocument model document =
             if nMath > 1000 then
                 let
                     firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart content)
+                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart content)
 
                     renderedText_ =
                         render document.docType firstAst
@@ -1597,153 +1594,21 @@ processCandidateChildDocumentRequest model documentList =
     , Cmd.none
     )
 
-type alias HtmlRecord = { title : Html Msg, toc : Html Msg, document : Html Msg }
-
-prepareAstAndRenderedText : Model -> Document -> (Tree ParseWithId.MDBlockWithId, HtmlRecord, Cmd Msg)
-prepareAstAndRenderedText model document =
-    let
-        lastAst : Tree ParseWithId.MDBlockWithId
-        lastAst =
-            Markdown.ElmWithId.parse model.counter ExtendedMath document.content
-
-        nMath =
-            Markdown.ElmWithId.numberOfMathElements lastAst
-
-        renderedText : { title : Html msg, toc : Html msg, document : Html msg }
-        renderedText =
-            if nMath > 10 then
-                let
-                    firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
-                in
-                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
-
-            else
-                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
-
-        renderCmd =
-            if nMath > 10 then
-                Cmd.Document.renderAstFor lastAst
-
-            else
-                Cmd.none
-     in
-          ( lastAst, renderedText, renderCmd )
-
--- prepareIfMasterDoc : Model -> Document -> (Cmd Msg, DocumentListType)
-prepareIfMasterDoc model document =
-    if document.childInfo == [] then
-        ( Cmd.none, model.documentListDisplay )
-    else
-      let
-          cmd = Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req
-      in
-        ( cmd, (DocumentChildren, DequeViewOff ))
-
-updateDeque : Model -> Document -> (BoundedDeque Document, Cmd Msg)
-updateDeque model document =
-    let
-        newDeque = Document.pushFrontUnique document model.deque
-    in
-    case model.currentUser of
-          Nothing -> (model.deque, Cmd.none)
-          Just user -> (newDeque, Request.updateUser hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req)
 
 
-setCurrentDocument : Model -> Document -> (Cmd Msg) -> ( Model, Cmd Msg )
-setCurrentDocument model document extraCmd =
-    -- XXX
-    let
-         -- When changing current document, be sure to save the current document if needed,
-         -- and update the deque with the current version
-        (saveDocumentCommand, newDeque_)  =  case (model.currentUser, model.currentDocument, model.currentDocumentDirty) of
-            (Just user, Just docToSave, True) ->
-               (Request.updateDocument hasuraToken user.username docToSave |> Cmd.map Req
-                , Document.pushFrontUnique docToSave model.deque)
-
-            (_, _, _) -> (Cmd.none, model.deque)
-
-
-        newDeque = Document.pushFrontUnique document newDeque_
-
-        updateDequeCmd = case model.currentUser of
-          Nothing -> Cmd.none
-          Just user ->
-            Request.updateUser hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req
-
-
-        (newAst, newRenderedText, renderCmd) = prepareAstAndRenderedText model document
-
-        ( masterDocCmd, documentListDisplay_ ) = prepareIfMasterDoc model document
-
-    in
-    ( { model
-        | currentDocument = Just document
-        , documentListDisplay = documentListDisplay_
-        , counter = model.counter + 2
-        , deque = newDeque
-        , currentUser = updateMaybeUserWithDeque newDeque model.currentUser
-        , lastAst = newAst
-        , renderedText = newRenderedText
-        , tagString = document.tags |> String.join ", "
-        , message = ( UserMessage, "Success getting document list" )
-      }
-    , Cmd.batch [extraCmd, saveDocumentCommand, renderCmd, updateDequeCmd, masterDocCmd, Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfEditor]
-    )
-
-
-
-setCurrentSubdocument : Model -> Document -> TocItem -> ( Model, Cmd Msg )
-setCurrentSubdocument model document tocItem =
-    let
-        {- Set the currently open node.
-           At the moment this works only for the top level.
-           That is, we change it only if it has level zero.
-           At the moment this is necessary because otherwise if one
-           clicks on an interior item, it would close the enclosing
-           one.  One solution is to expose all positive levels, not
-           must level 1.
-        -}
-
-        (newAst, newRenderedText, renderCmd) = prepareAstAndRenderedText model document
-
-        ( masterDocCmd, documentListDisplay_ ) = prepareIfMasterDoc model document
-
-        saveDocumentCommand  =  case (model.currentUser, model.currentDocument, model.currentDocumentDirty) of
-             (Just user, Just docToSave, True) ->
-                Request.updateDocument hasuraToken user.username docToSave |> Cmd.map Req
-             (_, _, _) -> Cmd.none
-
-        ( loadChildrenCmd , documentListDisplay__ ) =
-            if document.childInfo == [] then
-                ( Cmd.none, model.documentListDisplay )
-
-            else
-                ( Request.documentsInIdList hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req, (DocumentChildren,  DequeViewOff) )
-
-    in
-    ( { model
-        | currentDocument = Just document
-        , documentListDisplay = documentListDisplay_
-        , counter = model.counter + 2
-        , lastAst = newAst
-        , renderedText = newRenderedText
-        , tagString = document.tags |> String.join ", "
-        , message = ( UserMessage, "Success getting document list" )
-      }
-    , Cmd.batch [ renderCmd,  loadChildrenCmd, saveDocumentCommand, Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfEditor ]
-    )
+--updateDeque : Model -> Document -> (BoundedDeque Document, Cmd Msg)
+--updateDeque model document =
+--    let
+--        newDeque = Document.pushFrontUnique document model.deque
+--    in
+--    case model.currentUser of
+--          Nothing -> (model.deque, Cmd.none)
+--          Just user -> (newDeque, Request.updateUser hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req)
 
 
 
 
-updateMaybeUserWithDeque : BoundedDeque Document -> Maybe User -> Maybe User
-updateMaybeUserWithDeque deque maybeUser =
-    Maybe.map (\user -> { user | recentDocs = BoundedDeque.toList deque |> List.map .id} ) maybeUser
 
-updateUserWithDeque : BoundedDeque Document -> User -> User
-updateUserWithDeque deque user =
-    { user | recentDocs = BoundedDeque.toList deque |> List.map .id}
 
 
 renderUpdate : Model -> Document -> ( Model, Cmd Msg )
@@ -1759,7 +1624,7 @@ renderUpdate model document =
             if nMath > 10 then
                 let
                     firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
+                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart document.content)
                 in
                 Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
 
@@ -3850,7 +3715,7 @@ shareUrlDisplay model =
         (Just doc, True) ->
             case doc.public of
                 True ->
-                   el [] (Element.text <| Config.data.endpoint ++ "/#id/" ++ Uuid.toString doc.id)
+                   el [] (Element.text <| Config.endpoint                                                                                                                                                      ++ "/#id/" ++ Uuid.toString doc.id)
                 False ->
                     el [] (Element.text "Document is private, can't share")
 

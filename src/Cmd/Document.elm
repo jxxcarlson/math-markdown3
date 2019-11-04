@@ -110,10 +110,10 @@ processUrl urlString =
                     Cmd.none
 
                 ( DocRef, f ) ->
-                    getBySlug Config.data.hasuraToken f
+                    getBySlug Config.hasuraToken f
 
                 ( IdRef, f ) ->
-                    getById Config.data.hasuraToken f
+                    getById Config.hasuraToken f
 
                 ( SubdocIdRef, _ ) ->
                     Cmd.none
@@ -165,7 +165,7 @@ masterId =
 
 getUserDocumentsAtSignIn : User -> Cmd Msg
 getUserDocumentsAtSignIn user =
-    Request.authorDocumentsWithTitleSorted Config.data.hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+    Request.authorDocumentsWithTitleSorted Config.hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
 
 

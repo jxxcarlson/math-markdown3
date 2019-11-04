@@ -34,7 +34,7 @@ getAllDocuments model =
                             Cmd.none
 
                         Just user ->
-                            Request.authorDocumentsWithTitleSorted Config.data.hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+                            Request.authorDocumentsWithTitleSorted Config.hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
                 SharedDocSearch ->
                     case model.currentUser of
@@ -42,10 +42,10 @@ getAllDocuments model =
                             Cmd.none
 
                         Just user ->
-                            Request.sharedDocumentsByTitleSorted Config.data.hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+                            Request.sharedDocumentsByTitleSorted Config.hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
                 PublicSearch ->
-                    Request.publicDocumentsWithTitle Config.data.hasuraToken "" |> Cmd.map Req
+                    Request.publicDocumentsWithTitle Config.hasuraToken "" |> Cmd.map Req
     in
     ( { model | documentListDisplay = ( SearchResults, DequeViewOff ), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
@@ -53,7 +53,7 @@ getAllDocuments model =
 getHelpDocs : Model -> ( Model, Cmd Msg )
 getHelpDocs model =
     ( { model | documentListDisplay = ( SearchResults, DequeViewOff ), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
-    , Request.publicDocumentsWithTag Config.data.hasuraToken "usermanual" |> Cmd.map Req
+    , Request.publicDocumentsWithTag Config.hasuraToken "usermanual" |> Cmd.map Req
     )
 
 
@@ -79,10 +79,10 @@ forUsersDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.authorDocumentsWithTitleSorted Config.data.hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
+                    Request.authorDocumentsWithTitleSorted Config.hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTagSorted Config.data.hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
+                    Request.documentsWithAuthorAndTagSorted Config.hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
@@ -99,10 +99,10 @@ searchForSharedDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.sharedDocumentsByTitleSorted Config.data.hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
+                    Request.sharedDocumentsByTitleSorted Config.hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
-                    Request.sharedDocumentsByTitleSorted Config.data.hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
+                    Request.sharedDocumentsByTitleSorted Config.hasuraToken authorIdentifier searchTerm model.sortTerm GotUserDocuments |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
@@ -126,10 +126,10 @@ forChildDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.authorDocumentsWithTitleSorted Config.data.hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
+                    Request.authorDocumentsWithTitleSorted Config.hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
-                    Request.documentsWithAuthorAndTagSorted Config.data.hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
+                    Request.documentsWithAuthorAndTagSorted Config.hasuraToken authorIdentifier searchTerm model.sortTerm GotCandidateChildDocuments |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
@@ -143,10 +143,10 @@ forPublicDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.publicDocumentsWithTitle Config.data.hasuraToken searchTerm |> Cmd.map Req
+                    Request.publicDocumentsWithTitle Config.hasuraToken searchTerm |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
-                    Request.publicDocumentsWithTag Config.data.hasuraToken searchTerm |> Cmd.map Req
+                    Request.publicDocumentsWithTag Config.hasuraToken searchTerm |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none
