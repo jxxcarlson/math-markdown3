@@ -365,7 +365,7 @@ update msg model =
                                   , visibilityOfTools = Invisible
                                   , searchMode = UserSearch
                                 , token =  Just outsideUser.token}
-                            , getUserDocumentsAtSignIn user)
+                            , Cmd.Document.getUserDocumentsAtSignIn                                                                                                                                                                                user)
 
                 Outside.GotSelection selection ->
                     ({model | selectedText = selection, message = (UserMessage, String.left 16 selection)}, Cmd.none)
@@ -1025,7 +1025,7 @@ update msg model =
                                       }
                                     ,
                                     Cmd.batch [
-                                      getUserDocumentsAtSignIn user
+                                      Cmd.Document.getUserDocumentsAtSignIn  user
                                       , Cmd.batch[tokenCmd, dequeCommand]
                                       ]
                                     )
@@ -1255,9 +1255,6 @@ signIn model =
     , Request.signInUser model.username model.password |> Cmd.map Req
     )
 
-getUserDocumentsAtSignIn : User -> Cmd Msg
-getUserDocumentsAtSignIn user =
-    Request.authorDocumentsWithTitleSorted hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
 -- SEARCH HELPERS
 
@@ -1395,16 +1392,6 @@ emptyRenderedText =
     render (Markdown MDExtendedMath) emptyAst
 
 
-renderAstFor : Tree ParseWithId.MDBlockWithId -> Cmd Msg
-renderAstFor ast =
-    Process.sleep 10
-        |> Task.andThen
-            (\_ ->
-                Process.sleep 100
-                    |> Task.andThen (\_ -> Task.succeed (Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast))
-            )
-        |> Task.perform GotSecondPart
-
 
 
 --renderSecond : Model -> Cmd Msg
@@ -1454,7 +1441,7 @@ processDocumentRequest model maybeDocument documentList =
                                         render doc.docType firstAst
 
                                     cmd__ =
-                                        renderAstFor lastAst
+                                        Cmd.Document.renderAstFor lastAst
                                 in
                                 ( renderedText_
                                 , cmd__
@@ -1500,7 +1487,7 @@ loadDocument model document =
                         render document.docType firstAst
 
                     cmd__ =
-                        renderAstFor lastAst
+                        Cmd.Document.renderAstFor lastAst
                 in
                 ( renderedText_
                 , cmd__
@@ -1546,7 +1533,7 @@ loadSubdocument model document =
                         render document.docType firstAst
 
                     cmd__ =
-                        renderAstFor lastAst
+                        Cmd.Document.renderAstFor lastAst
                 in
                 ( renderedText_
                 , cmd__
@@ -1643,7 +1630,7 @@ prepareAstAndRenderedText model document =
 
         renderCmd =
             if nMath > 10 then
-                renderAstFor lastAst
+                Cmd.Document.renderAstFor lastAst
 
             else
                 Cmd.none
@@ -1788,7 +1775,7 @@ renderUpdate model document =
 
         cmd1 =
             if nMath > 10 then
-                renderAstFor lastAst
+                Cmd.Document.renderAstFor lastAst
 
             else
                 Cmd.none

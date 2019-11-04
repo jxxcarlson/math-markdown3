@@ -1,9 +1,11 @@
 module Cmd.Document exposing
     ( getById
     , getBySlug
+    , getUserDocumentsAtSignIn
     , masterId
     , processUrl
     , pushDocument
+    , renderAstFor
     , resetViewportOfEditor
     , resetViewportOfRenderedText
     , scrollIfNeeded
@@ -19,13 +21,18 @@ import Browser.Dom as Dom
 import Config
 import Document exposing (Document)
 import Json.Encode as E
+import Markdown.ElmWithId
 import Maybe.Extra
 import Model exposing (Model, Msg(..))
 import Outside
+import ParseWithId
 import Prng.Uuid as Uuid exposing (Uuid)
-import Request exposing (RequestMsg(..))
+import Process
+import Request exposing (RequestMsg(..), orderByMostRecentFirst)
 import Task exposing (Task)
+import Tree exposing (Tree)
 import Url exposing (Url)
+import User exposing (User)
 import Utility
 
 
@@ -150,3 +157,27 @@ setViewPortForSelectedLine element viewport =
 
 masterId =
     "__rt_scroll__"
+
+
+
+-- SIGN IN
+
+
+getUserDocumentsAtSignIn : User -> Cmd Msg
+getUserDocumentsAtSignIn user =
+    Request.authorDocumentsWithTitleSorted Config.data.hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
+
+
+
+-- RENDER
+
+
+renderAstFor : Tree ParseWithId.MDBlockWithId -> Cmd Msg
+renderAstFor ast =
+    Process.sleep 10
+        |> Task.andThen
+            (\_ ->
+                Process.sleep 100
+                    |> Task.andThen (\_ -> Task.succeed (Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast))
+            )
+        |> Task.perform GotSecondPart
