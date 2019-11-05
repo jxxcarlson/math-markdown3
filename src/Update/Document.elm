@@ -38,6 +38,17 @@ type alias HtmlRecord =
     { title : Html Msg, toc : Html Msg, document : Html Msg }
 
 
+{-| When the text of a document is updated in the editor, update the following:
+
+1.  update the document content and metadta
+2.  the document AST and rendered text
+3.  the current document, the document list, the table of contents and the deque of recent documents
+4.  the text dirty flat
+
+The document will not be saved to the backend until the current document save cycle completes
+or the user intervenes to save manually.
+
+-}
 text : Model -> String -> ( Model, Cmd Msg )
 text model str =
     case model.currentDocument of
@@ -46,37 +57,33 @@ text model str =
 
         Just doc ->
             let
-                updatedDoc1 =
-                    Document.setContent str doc
-
-                updatedDoc2 =
-                    Document.updateMetaData updatedDoc1
+                updatedDoc =
+                    doc
+                        |> Document.setContent str
+                        |> Document.updateMetaData
 
                 newDeque =
-                    Document.pushFrontUnique updatedDoc2 model.deque
-
-                newAst_ =
-                    Update.Render.parse updatedDoc2.docType model.counter str
+                    Document.pushFrontUnique updatedDoc model.deque
 
                 newAst =
-                    Diff.mergeWith ParseWithId.equal model.lastAst newAst_
+                    Update.Render.diffUpdateAst updatedDoc.docType model.counter str model.lastAst
 
                 tableOfContents =
-                    Document.replaceInList updatedDoc2 model.tableOfContents
+                    Document.replaceInList updatedDoc model.tableOfContents
             in
             ( { model
                 | -- document
-                  currentDocument = Just updatedDoc2
-                , documentList = Document.replaceInList updatedDoc2 model.documentList
+                  currentDocument = Just updatedDoc
+                , documentList = Document.replaceInList updatedDoc model.documentList
                 , tableOfContents = tableOfContents
                 , deque = newDeque
                 , currentDocumentDirty = True
-                , tocData = TocManager.setupWithFocus updatedDoc2.id (List.head tableOfContents) (List.drop 1 tableOfContents)
-                , tocCursor = Just updatedDoc2.id
+                , tocData = TocManager.setupWithFocus updatedDoc.id (List.head tableOfContents) (List.drop 1 tableOfContents)
+                , tocCursor = Just updatedDoc.id
 
                 -- rendering
                 , lastAst = newAst
-                , renderedText = Update.Render.render updatedDoc2.docType newAst
+                , renderedText = Update.Render.render updatedDoc.docType newAst
                 , counter = model.counter + 1
               }
             , Cmd.none

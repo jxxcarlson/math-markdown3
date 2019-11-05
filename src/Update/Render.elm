@@ -1,4 +1,4 @@
-module Update.Render exposing (emptyAst, emptyRenderedText, parse, prepare, render)
+module Update.Render exposing (diffUpdateAst, emptyAst, emptyRenderedText, parse, prepare, render)
 
 import Cmd.Document
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
@@ -7,6 +7,7 @@ import Markdown.Option exposing (..)
 import Model exposing (Model, Msg(..), RenderedText)
 import ParseWithId
 import Tree exposing (Tree)
+import Tree.Diff as Diff
 
 
 emptyAst : Tree ParseWithId.MDBlockWithId
@@ -17,6 +18,16 @@ emptyAst =
 emptyRenderedText : RenderedText Msg
 emptyRenderedText =
     render (Markdown MDExtendedMath) emptyAst
+
+
+diffUpdateAst : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId -> Tree ParseWithId.MDBlockWithId
+diffUpdateAst docType counter text lastAst =
+    let
+        newAst : Tree ParseWithId.MDBlockWithId
+        newAst =
+            parse docType counter text
+    in
+    Diff.mergeWith ParseWithId.equal lastAst newAst
 
 
 parse : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId
