@@ -621,7 +621,7 @@ update msg model =
             Update.Document.text model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
-             Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside  model)
+             Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside  model.deque)
 
 
         SetCurrentSubDocument document tocItem ->
@@ -1469,7 +1469,7 @@ deleteDocument model =
                        , deque = newDeque}
                     , Cmd.batch [
                          Request.deleteDocument hasuraToken user.username document |> Cmd.map Req
-                         , Cmd.Document.sendDequeOutside_  newDeque
+                         , Cmd.Document.sendDequeOutside  newDeque
                        ]
 
                     )
@@ -1508,7 +1508,7 @@ makeNewDocument model =
                 , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
                 , deque = newDeque
               }
-            , Cmd.batch [Request.insertDocument hasuraToken newDocument |> Cmd.map Req, Cmd.Document.sendDequeOutside_  newDeque]
+            , Cmd.batch [Request.insertDocument hasuraToken newDocument |> Cmd.map Req, Cmd.Document.sendDequeOutside  newDeque]
             )
 
 

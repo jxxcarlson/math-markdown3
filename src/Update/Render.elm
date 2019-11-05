@@ -20,16 +20,6 @@ emptyRenderedText =
     render (Markdown MDExtendedMath) emptyAst
 
 
-diffUpdateAst : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId -> Tree ParseWithId.MDBlockWithId
-diffUpdateAst docType counter text lastAst =
-    let
-        newAst : Tree ParseWithId.MDBlockWithId
-        newAst =
-            parse docType counter text
-    in
-    Diff.mergeWith ParseWithId.equal lastAst newAst
-
-
 parse : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId
 parse docType counter str =
     case docType of
@@ -38,6 +28,19 @@ parse docType counter str =
 
         _ ->
             emptyAst
+
+
+{-| compute a new AST from an old one and some text, preserving the ids of unchanged blocs.
+The counter is used for the version number in the block ids.
+-}
+diffUpdateAst : DocType -> Int -> String -> Tree ParseWithId.MDBlockWithId -> Tree ParseWithId.MDBlockWithId
+diffUpdateAst docType counter text lastAst =
+    let
+        newAst : Tree ParseWithId.MDBlockWithId
+        newAst =
+            parse docType counter text
+    in
+    Diff.mergeWith ParseWithId.equal lastAst newAst
 
 
 render : DocType -> Tree ParseWithId.MDBlockWithId -> RenderedText Msg

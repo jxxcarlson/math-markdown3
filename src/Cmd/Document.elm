@@ -8,9 +8,10 @@ module Cmd.Document exposing
     , renderAstFor
     , resetViewportOfEditor
     , resetViewportOfRenderedText
-    , scrollIfNeeded
+    ,  scrollIfNeeded
+       --    , sendDequeOutside
+
     , sendDequeOutside
-    , sendDequeOutside_
     , setViewPortForSelectedLine
     , setViewportForElement
     )
@@ -36,6 +37,8 @@ import User exposing (User)
 import Utility
 
 
+{-| Get a public document by its Uuid.
+-}
 getById : String -> String -> Cmd Msg
 getById token idString =
     let
@@ -45,29 +48,17 @@ getById token idString =
     Request.publicDocumentsInIdList token [ uuid ] LoadDocument |> Cmd.map Req
 
 
+{-| Get a public document by its slug.
+-}
 getBySlug : String -> String -> Cmd Msg
 getBySlug token slug =
     Request.publicDocumentsBySlug token slug LoadDocument |> Cmd.map Req
 
 
-
--- OUTSIDE HELPERS --
-
-
-sendDequeOutside : Model -> Cmd Msg
-sendDequeOutside model =
-    let
-        data : E.Value
-        data =
-            model.deque
-                |> Document.idListOfDeque
-                |> Document.encodeStringList "deque"
-    in
-    Outside.sendInfo (Outside.DequeData data) |> Cmd.map Req
-
-
-sendDequeOutside_ : BoundedDeque Document -> Cmd Msg
-sendDequeOutside_ deque =
+{-| Store the recent documents deque in local storage via ports
+-}
+sendDequeOutside : BoundedDeque Document -> Cmd Msg
+sendDequeOutside deque =
     let
         data : E.Value
         data =
