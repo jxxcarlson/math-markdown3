@@ -278,7 +278,9 @@ init flags url key =
             , passwordConfirmation = ""
             , newPassword1 = ""
             , newPassword2 = ""
+            -- EDITOR
              , selectedText = ""
+             , editorTargetLineNumber = Nothing
             -- documents
             , counter = 0
             , documentDeleteState = SafetyOn
@@ -378,7 +380,7 @@ update msg model =
                             Nothing -> "Could not find line"
                     in
                     -- XXX
-                    ({model | selectedText = selection, message = (UserMessage, message)}, Cmd.none)
+                    ({model | editorTargetLineNumber = maybeLineNumber, selectedText = selection, message = (UserMessage, message)}, Cmd.none)
 
                 Outside.UuidList uuidList ->
                     (model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req)
@@ -566,6 +568,9 @@ update msg model =
             ( { model | message = ( UserMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id ) }
             , Cmd.Document.setViewportForElement id
             )
+
+        SyncEditorToLine k ->
+            (model, Cmd.none)
 
         SetViewPortForElement result ->
             case result of

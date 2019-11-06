@@ -78,6 +78,7 @@ type alias Model =
 
     -- EDITOR
     , selectedText : String
+    , editorTargetLineNumber : Maybe Int
 
     -- DOCUMENT
     , counter : Int
@@ -226,6 +227,7 @@ type Msg
     | SignOut
       -- Editor
     | ProcessLine String
+    | SyncEditorToLine Int
     | SetViewPortForElement (Result Dom.Error ( Dom.Element, Dom.Viewport ))
     | GetTextSelection
       -- Document
