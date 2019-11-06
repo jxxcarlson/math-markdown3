@@ -69,14 +69,6 @@ sendDequeOutside deque =
     Outside.sendInfo (Outside.DequeData data) |> Cmd.map Req
 
 
-scrollIfNeeded : String -> Cmd Msg
-scrollIfNeeded tag =
-    Task.attempt ScrollAttempted
-        (Dom.getElement tag
-            |> Task.andThen (\info -> Dom.setViewportOf "__rt_scroll__" 0 (info.element.y - info.element.height - 40))
-        )
-
-
 pushDocument : Document -> Cmd Msg
 pushDocument document =
     Outside.pushUrl <| "/" ++ Uuid.toString document.id
@@ -112,6 +104,14 @@ processUrl urlString =
 
 
 -- VIEWPORT
+
+
+scrollIfNeeded : String -> Cmd Msg
+scrollIfNeeded tag =
+    Task.attempt ScrollAttempted
+        (Dom.getElement tag
+            |> Task.andThen (\info -> Dom.setViewportOf "__rt_scroll__" 0 (info.element.y - info.element.height - 40))
+        )
 
 
 resetViewportOfRenderedText : Cmd Msg

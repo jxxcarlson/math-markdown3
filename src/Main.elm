@@ -22,6 +22,7 @@ import Model exposing
 import Browser
 import AppNavigation exposing(NavigationType(..))
 import Browser.Dom as Dom
+import Editor
 import Browser.Events
 import Browser.Navigation as Nav
 import CustomElement.CodeEditor as Editor
@@ -368,7 +369,16 @@ update msg model =
                             , Cmd.Document.getUserDocumentsAtSignIn                                                                                                                                                                                user)
 
                 Outside.GotSelection selection ->
-                    ({model | selectedText = selection, message = (UserMessage, String.left 16 selection)}, Cmd.none)
+                    let
+                        maybeLineNumber = case model.currentDocument of
+                           Nothing -> Nothing
+                           Just doc -> Editor.lineNumber (String.left 16 selection) doc.content
+                        message = case maybeLineNumber of
+                            Just k -> "Line number: "  ++ String.fromInt k
+                            Nothing -> "Could not find line"
+                    in
+                    -- XXX
+                    ({model | selectedText = selection, message = (UserMessage, message)}, Cmd.none)
 
                 Outside.UuidList uuidList ->
                     (model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req)
@@ -2703,6 +2713,7 @@ editor_ model w_ h_ =
     Editor.codeEditor
         [ Editor.editorValue (Document.getContent model.currentDocument)
         , Editor.searchTargetValue model.selectedText
+        --, Editor.lineNumberValue 5
         , Editor.onEditorChanged UpdateDocumentText
         , Editor.onGutterClicked ProcessLine
         ]

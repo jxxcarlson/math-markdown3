@@ -15,7 +15,7 @@ module CustomElement.CodeEditor exposing
     ( codeEditor
     , editorValue
     , onEditorChanged
-    , onGutterClicked, searchTargetValue
+    , lineNumberValue, onGutterClicked, searchTargetValue
     )
 
 {-| The Elm interface to the `code-editor` custom element.
@@ -70,6 +70,12 @@ searchTargetValue : String -> Attribute msg
 searchTargetValue value =
     property "searchTargetValue" <|
         JE.string value
+
+
+lineNumberValue : Int -> Attribute msg
+lineNumberValue k =
+    property "lineNumberValue" <|
+        JE.int k
 
 
 {-| This is how you receive changes to the contents of the code editor.

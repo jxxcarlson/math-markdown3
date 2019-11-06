@@ -19,3 +19,6 @@ graphql-engine/
 elm-custom-element/
 elm
 test.sh
+build-timer
+index.html
+results.dat

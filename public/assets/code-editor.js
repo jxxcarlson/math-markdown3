@@ -45,6 +45,13 @@ customElements.define('code-editor', class extends HTMLElement {
      // ∫console.log("searchResult", searchResult)
      }
 
+//  set lineNumber(value) {
+//     var lineNumber = value
+//     console.log("LINE NO (CE)", lineNumber)
+//
+//     }
+
+
   connectedCallback() {
     this._editor = CodeMirror(this, {
       identUnit: 3,
