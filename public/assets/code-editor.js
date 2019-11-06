@@ -31,25 +31,12 @@ customElements.define('code-editor', class extends HTMLElement {
   }
 
 
-  set searchTargetValue(value) {
-     // incoming text value is from
-     // user selection in the rendered text
-     // window.
-     var target = value.slice(0,20)
-     console.log("TARGET", target)
-     // ^^^ OK up to here
-     // TODO:
-     // Next, want to get line number of target,
-     // then scroll to that line.
-    //  var searchResult = searchStringForward(this.doc, target, 0)
-     // ∫console.log("searchResult", searchResult)
-     }
 
-//  set lineNumber(value) {
-//     var lineNumber = value
-//     console.log("LINE NO (CE)", lineNumber)
-//
-//     }
+  set lineNumber(value) {
+     var lineNumber = value
+     console.log("LINE NO (CE)", lineNumber)
+
+     }
 
 
   connectedCallback() {

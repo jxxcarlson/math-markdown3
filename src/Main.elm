@@ -25,7 +25,7 @@ import Browser.Dom as Dom
 import Editor
 import Browser.Events
 import Browser.Navigation as Nav
-import CustomElement.CodeEditor as Editor
+import CustomElement.CodeEditor as CodeEditor
 import Data
 import Update.Master
 import Cmd.Document
@@ -2710,12 +2710,10 @@ editor_ model w_ h_ =
         hpx =
             pxFromFloat h_
     in
-    Editor.codeEditor
-        [ Editor.editorValue (Document.getContent model.currentDocument)
-        , Editor.searchTargetValue model.selectedText
-        --, Editor.lineNumberValue 5
-        , Editor.onEditorChanged UpdateDocumentText
-        , Editor.onGutterClicked ProcessLine
+    CodeEditor.codeEditor
+        [ CodeEditor.editorValue (Document.getContent model.currentDocument)
+        , CodeEditor.onEditorChanged UpdateDocumentText
+        , CodeEditor.onGutterClicked ProcessLine
         ]
         []
         |> (\x -> Html.div [ setHtmlId "_editor_",  HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
