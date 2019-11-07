@@ -226,6 +226,7 @@ type Msg
     | SignUp
     | SignOut
       -- Editor
+    | UpdateDocumentText String
     | ProcessLine String
     | SyncEditorToLine Int
     | SetViewPortForElement (Result Dom.Error ( Dom.Element, Dom.Viewport ))
@@ -266,7 +267,6 @@ type Msg
     | DeleteDocument
     | CancelDeleteDocument
       -- Doc Update
-    | UpdateDocumentText String
     | SetDocumentPublic Bool
     | GotSecondPart (RenderedText Msg)
     | GotTagString String

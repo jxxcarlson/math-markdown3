@@ -2683,48 +2683,43 @@ toolsOrDocs viewInfo model =
 -- EDITOR --
 
 
+{-| A wrapper for editor_, which does the real editing work. -}
 editor : ViewInfo -> Model -> Element Msg
 editor viewInfo model =
     let
-        w_ =
+        w =
             affine viewInfo.editorWidth viewInfo.hExtra model.windowWidth |> toFloat
 
-        h_ =
+        h =
             translate -viewInfo.vInset model.windowHeight |> toFloat
     in
     column []
         [ Element.Keyed.el []
             ( String.fromInt 0
-            , editor_ model w_ h_
+            , editor_ model w h
             )
         ]
-
-
-pxFromFloat : Float -> String
-pxFromFloat f =
-    f
-        |> round
-        |> String.fromInt
-        |> (\s -> s ++ "px")
-
-
+{-| Does teh real editing work.  -}
 editor_ : Model -> Float -> Float -> Element Msg
-editor_ model w_ h_ =
+editor_ model w h =
     let
         wpx =
-            pxFromFloat w_
+            Utility.pxFromFloat w
 
         hpx =
-            pxFromFloat h_
+            Utility.pxFromFloat h
     in
     CodeEditor.codeEditor
         [ CodeEditor.editorValue (Document.getContent model.currentDocument)
-        , CodeEditor.onEditorChanged UpdateDocumentText
-        , CodeEditor.onGutterClicked ProcessLine
+        , CodeEditor.onEditorChanged UpdateDocumentText -- Inform the editor custom element of the change in text
+        , CodeEditor.onGutterClicked ProcessLine  -- Resond to clicks by scrolling the rendered to text to the corresponding position.
         ]
         []
         |> (\x -> Html.div [ setHtmlId "_editor_",  HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
         |> Element.html
+
+
+
 
 
 userPageModeButton model =

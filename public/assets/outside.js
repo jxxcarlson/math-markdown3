@@ -54,6 +54,9 @@ app.ports.infoForOutside.subscribe(msg => {
 
 
 
+// This is needed so that selected text is sent
+// from the browser back to the Elm app using
+// GetSelection-GotSelection (see above)
 
 document.addEventListener('selectionchange', () => {
   console.log("Selection: " + document.getSelection());

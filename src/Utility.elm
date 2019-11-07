@@ -12,6 +12,7 @@ module Utility exposing
     , insertUuidInList
     , intSlug
     , normalize
+    , pxFromFloat
     , uuids
     , wordCount
     )
@@ -360,3 +361,11 @@ chunked k =
             k2 // 1000 |> String.fromInt |> String.padLeft 3 '0'
     in
     [ left, middle, right ] |> String.join "-"
+
+
+pxFromFloat : Float -> String
+pxFromFloat f =
+    f
+        |> round
+        |> String.fromInt
+        |> (\s -> s ++ "px")
