@@ -371,16 +371,18 @@ update msg model =
                             , Cmd.Document.getUserDocumentsAtSignIn                                                                                                                                                                                user)
 
                 Outside.GotSelection selection ->
+                    -- XXX
                     let
                         maybeLineNumber = case model.currentDocument of
                            Nothing -> Nothing
                            Just doc -> Editor.lineNumber (String.left 16 selection) doc.content
-                        message = case maybeLineNumber of
-                            Just k -> "Line number: "  ++ String.fromInt k
-                            Nothing -> "Could not find line"
+                        (message, cmd) = case maybeLineNumber of
+                            Just k -> ("Line number: "  ++ String.fromInt k,  Outside.sendInfo (Outside.ScrollToLine (E.int k)))
+                            Nothing -> ("Could not find line", Cmd.none)
                     in
                     -- XXX
-                    ({model | editorTargetLineNumber = maybeLineNumber, selectedText = selection, message = (UserMessage, message)}, Cmd.none)
+                    ({model | editorTargetLineNumber = maybeLineNumber, selectedText = selection, message = (UserMessage, message)}
+                      , cmd)
 
                 Outside.UuidList uuidList ->
                     (model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req)

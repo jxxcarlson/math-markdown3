@@ -40,6 +40,7 @@ type InfoForOutside
     | AskForDequeData E.Value
     | DequeData E.Value
     | GetTextSelectionFromOutside E.Value
+    | ScrollToLine E.Value
 
 
 getInfo : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -93,3 +94,6 @@ sendInfo info =
 
         GetTextSelectionFromOutside value ->
             infoForOutside { tag = "GetSelection", data = E.null }
+
+        ScrollToLine value ->
+            infoForOutside { tag = "ScrollToLine", data = value }
