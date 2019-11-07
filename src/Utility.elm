@@ -68,24 +68,6 @@ join k list =
         String.join "" list
 
 
-shorten : Int -> String -> String
-shorten k str =
-    if k < 2 then
-        str
-
-    else
-        String.left 2 str
-
-
-fixup : List String -> List String
-fixup list =
-    if modBy 2 (List.length list) == 0 then
-        list
-
-    else
-        list ++ [ "1" ]
-
-
 msp : Int -> String
 msp seconds =
     seconds
