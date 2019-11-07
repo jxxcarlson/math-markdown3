@@ -23,6 +23,7 @@ import Browser
 import AppNavigation exposing(NavigationType(..))
 import Browser.Dom as Dom
 import Editor
+import Button
 import Browser.Events
 import Browser.Navigation as Nav
 import CustomElement.CodeEditor as CodeEditor
@@ -30,6 +31,7 @@ import Data
 import Update.Master
 import Cmd.Document
 import Utility
+import Utility.View
 import Browser.Dom as Dom
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Element exposing (..)
@@ -105,7 +107,7 @@ import Utility
       HEADERS
 
 
-      VIEW UTILITIES: showIf, etc.
+      VIEW UTILITIES: Utility.View.showIf, etc.
 
 
 -}
@@ -1681,7 +1683,7 @@ newSubdocumentButton model =
             Maybe.map (.childInfo >> List.length) model.currentDocument
                 |> Maybe.withDefault 0
     in
-    showIf (model.appMode == Editing SubdocumentEditing)
+    Utility.View.showIf (model.appMode == Editing SubdocumentEditing)
         (Input.button
             []
             { onPress = Just NewSubdocument
@@ -2235,8 +2237,8 @@ userPageHeader viewInfo model =
 modeButtonStrip model lhWidth =
     row [ width (px lhWidth), height (px 45), spacing 10, paddingXY 20 0 ]
         [ editTools model
-        , readingModeButton model
-        , userPageModeButton model
+        , Button.readingMode model
+        , Button.userPageMode model
         ]
 
 
@@ -2262,14 +2264,14 @@ outerPasswordPanel model =
     column [ spacing 24 ]
         [ inputUserName model
         , inputPassword model
-        , showIf (model.appMode == UserMode SignUpState) (inputPasswordConfirmation model)
-        , showIf (model.appMode == UserMode SignUpState) (inputEmail model)
-        , showIf (model.appMode == UserMode SignUpState) (el [ Font.size 12 ] (Element.text "A real email address is only needed for password recovery in real production."))
+        , Utility.View.showIf (model.appMode == UserMode SignUpState) (inputPasswordConfirmation model)
+        , Utility.View.showIf (model.appMode == UserMode SignUpState) (inputEmail model)
+        , Utility.View.showIf (model.appMode == UserMode SignUpState) (el [ Font.size 12 ] (Element.text "A real email address is only needed for password recovery in real production."))
         , row [ spacing 12, paddingXY 0 12 ]
-            [ showIf (model.appMode == UserMode SignInState) signInButton
+            [ Utility.View.showIf (model.appMode == UserMode SignInState) signInButton
             , row [ spacing 12 ]
                 [ signUpButton model
-                , showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
+                , Utility.View.showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
                 ]
             ]
         , authMessageDisplay model
@@ -2291,10 +2293,10 @@ signedInUserView model user =
     column Style.signInColumn
         [ el [] (Element.text <| "Signed in as " ++ user.username)
         , signOutButton model
-        , showIf (model.appMode == UserMode ChangePasswordState) (passwordPanel model)
+        , Utility.View.showIf (model.appMode == UserMode ChangePasswordState) (passwordPanel model)
         , row [ spacing 12 ]
             [ changePasswordButton model
-            , showIf (model.appMode == UserMode ChangePasswordState) (cancelChangePasswordButton model)
+            , Utility.View.showIf (model.appMode == UserMode ChangePasswordState) (cancelChangePasswordButton model)
             ]
         , adminStatus model
         ]
@@ -2720,64 +2722,6 @@ editor_ model w h =
 
 
 
-
-
-userPageModeButton model =
-    let
-        color =
-            case model.appMode of
-                UserMode _ ->
-                    Style.red
-
-                _ ->
-                    Style.buttonGrey
-    in
-    Input.button []
-        { onPress = Just (SetAppMode (UserMode SignedInState))
-        , label =
-            el (headerButtonStyle color)
-                (el headerLabelStyle (Element.text "User"))
-        }
-
-
-editingModeButton model =
-    let
-        color =
-            if model.appMode == Editing StandardEditing then
-                Style.red
-
-            else
-                Style.buttonGrey
-    in
-    Input.button []
-        { onPress = Just (SetAppMode (Editing StandardEditing))
-        , label =
-            el (headerButtonStyle color)
-                (el headerLabelStyle (Element.text "Edit"))
-        }
-
-
-subDocumentEditingModeButton model =
-    let
-        color =
-            if model.appMode == Editing SubdocumentEditing then
-                Style.red
-
-            else
-                Style.buttonGrey
-    in
-    showIf (model.currentUser /= Nothing && List.length model.tableOfContents > 0 &&
-       List.member model.documentListDisplay [(DocumentChildren, DequeViewOff), (DocumentChildren, DequeViewOff)])
-        (Input.button []
-            { onPress = Just (SetAppMode (Editing SubdocumentEditing))
-            , label =
-                 el (headerButtonStyle color)
-                    (el headerLabelStyle (Element.text "Edit/S"))
-            }
-        )
-
-
-
 deleteSubdocumentButton : Model -> Element Msg
 deleteSubdocumentButton model =
     let
@@ -2785,7 +2729,7 @@ deleteSubdocumentButton model =
             Maybe.map (.childInfo >> List.length) model.currentDocument
                 |> Maybe.withDefault 0
     in
-    showIf (model.appMode == Editing SubdocumentEditing)
+    Utility.View.showIf (model.appMode == Editing SubdocumentEditing)
         (Input.button
             []
             { onPress = Just DeleteSubdocument
@@ -2796,29 +2740,7 @@ deleteSubdocumentButton model =
         )
 
 
-readingModeButton model =
-    let
-        color =
-            if model.appMode == Reading then
-                Style.red
 
-            else
-                Style.buttonGrey
-    in
-    Input.button []
-        { onPress = Just (SetAppMode Reading)
-        , label =
-            el (headerButtonStyle color)
-                (el headerLabelStyle (Element.text "Read"))
-        }
-
-
-headerButtonStyle color =
-    [ height (px 30), width (px 50), Background.color color, Font.color Style.white, Font.size 12 ]
-
-
-headerLabelStyle =
-    [ height (px 30), width (px 80), padding 8 ]
 
 
 
@@ -3350,8 +3272,8 @@ editTools : Model -> Element Msg
 editTools model =
     if List.member model.appMode [ Editing StandardEditing, Editing SubdocumentEditing ] then
         row [ spacing 6 ]
-            [ editingModeButton model
-            , subDocumentEditingModeButton model
+            [ Button.editingMode model
+            , Button.subDocumentEditingMode model
             , newDocumentButton model
             , firstSubDocumentButton model
             , saveDocumentButton model
@@ -3360,7 +3282,7 @@ editTools model =
             ]
 
     else
-        row [ spacing 6 ] [ editingModeButton model, subDocumentEditingModeButton model ]
+        row [ spacing 6 ] [ Button.editingMode model, Button.subDocumentEditingMode model ]
 
 
 
@@ -3662,33 +3584,3 @@ extendedMathMarkdownButton model width =
         { onPress = Just (SetDocType (Markdown MDExtendedMath)), label = el [ paddingXY 8 0 ] (Element.text "Markdown + math") }
 
 
-
--- VIEW UTILITIES: showIf, etc.
-
-
-showIf : Bool -> Element Msg -> Element Msg
-showIf bit element =
-    if bit then
-        element
-
-    else
-        Element.none
-
-
-hideIf : Bool -> Element Msg -> Element Msg
-hideIf bit element =
-    if not bit then
-        element
-
-    else
-        Element.none
-
-
-showOne : Bool -> String -> String -> String
-showOne bit str1 str2 =
-    case bit of
-        True ->
-            str1
-
-        False ->
-            str2
