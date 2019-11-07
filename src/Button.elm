@@ -1,10 +1,12 @@
 module Button exposing
     ( addSubdocument2
+    , addUserPermission
     , allDocuments
     , cancelChangePassword
     , cancelSignUp
     , changePassword
     , clearSearchTerms
+    , deleteSubdocument
     , editingMode
     , expandCollapseToc
     , extendedMarkdown
@@ -38,6 +40,7 @@ module Button exposing
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Element exposing (Color, Element, centerX, el, height, moveDown, padding, paddingXY, px, width)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Model
@@ -269,6 +272,10 @@ clearSearchTerms =
         }
 
 
+
+--- AAA
+
+
 shareUrl model =
     Input.button []
         { onPress = Just DoShareUrl
@@ -328,6 +335,28 @@ extendedMathMarkdown model width =
     in
     Input.button (Style.buttonSelected width bit)
         { onPress = Just (SetDocType (Markdown MDExtendedMath)), label = el [ paddingXY 8 0 ] (Element.text "Markdown + math") }
+
+
+
+--- DOCUMENT
+
+
+deleteSubdocument : Model -> Element Msg
+deleteSubdocument model =
+    let
+        numberOfChildren =
+            Maybe.map (.childInfo >> List.length) model.currentDocument
+                |> Maybe.withDefault 0
+    in
+    Utility.View.showIf (model.appMode == Editing SubdocumentEditing)
+        (Input.button
+            []
+            { onPress = Just DeleteSubdocument
+            , label =
+                el []
+                    (el (headingStyle 140 Style.charcoal) (Element.text "Delete subdocument"))
+            }
+        )
 
 
 newSubdocument model =
@@ -443,6 +472,13 @@ xButtonStyle =
 
 
 -- USER signin
+
+
+addUserPermission =
+    Input.button (headingStyle 40 Style.charcoal ++ [ Border.color Style.white, Border.width 1 ])
+        { onPress = Just AddUserPermission
+        , label = el [] (Element.text "Add")
+        }
 
 
 changePassword : Model -> Element Msg

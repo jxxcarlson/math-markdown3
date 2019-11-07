@@ -2537,25 +2537,6 @@ editor_ model w h =
 
 
 
-deleteSubdocumentButton : Model -> Element Msg
-deleteSubdocumentButton model =
-    let
-        numberOfChildren =
-            Maybe.map (.childInfo >> List.length) model.currentDocument
-                |> Maybe.withDefault 0
-    in
-    Utility.View.showIf (model.appMode == Editing SubdocumentEditing)
-        (Input.button
-            []
-            { onPress = Just DeleteSubdocument
-            , label =
-                el []
-                    (el (Button.headingStyle 140 Style.charcoal) (Element.text "Delete subdocument"))
-            }
-        )
-
-
-
 
 
 
@@ -2604,13 +2585,9 @@ viewPermissions model =
 
 addUserRow model =
     row [spacing 8]
-    [addUserPermissionButton, usernameToAddField model, selectPermissionButton model]
+    [Button.addUserPermission, usernameToAddField model, selectPermissionButton model]
 
-addUserPermissionButton =
-    Input.button ((Button.headingStyle 40 Style.charcoal) ++ [Border.color Style.white, Border.width 1]) {
-       onPress = Just AddUserPermission
-       , label = el [] (Element.text "Add")
-    }
+
 usernameToAddField model =
     Input.text (Style.inputStyle 100)
       { onChange = AddUserNameForPermissions
@@ -2770,7 +2747,7 @@ docListViewer viewInfo model =
         [ column [ Font.size 13, spacing 8 ]
             (heading model
                 :: Button.newSubdocument model
-                :: deleteSubdocumentButton model
+                :: Button.deleteSubdocument model
                 :: renderedList
             )
         ]
