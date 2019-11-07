@@ -18,6 +18,7 @@ module Button exposing
     , newSubdocument
     , readingMode
     , search
+    , selectPermission
     , setDequeView
     , setDequeViewX
     , setDocumentChildren
@@ -37,7 +38,7 @@ module Button exposing
     , userPageMode
     )
 
-import Document exposing (DocType(..), Document, MarkdownFlavor(..))
+import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Element exposing (Color, Element, centerX, el, height, moveDown, padding, paddingXY, px, width)
 import Element.Background as Background
 import Element.Border as Border
@@ -59,6 +60,25 @@ import Model
 import Style
 import TocZ exposing (TocMsg(..))
 import Utility.View
+
+
+selectPermission model =
+    let
+        labelText =
+            case model.permissionToAdd of
+                NoPermission ->
+                    "N"
+
+                ReadPermission ->
+                    "R"
+
+                WritePermission ->
+                    "W"
+    in
+    Input.button (headingStyle 30 Style.charcoal ++ [ Border.color Style.white, Border.width 1 ])
+        { onPress = Just CyclePermission
+        , label = el [ Font.color Style.white ] (Element.text labelText)
+        }
 
 
 

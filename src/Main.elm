@@ -2585,7 +2585,7 @@ viewPermissions model =
 
 addUserRow model =
     row [spacing 8]
-    [Button.addUserPermission, usernameToAddField model, selectPermissionButton model]
+    [Button.addUserPermission, usernameToAddField model, Button.selectPermission model]
 
 
 usernameToAddField model =
@@ -2596,18 +2596,6 @@ usernameToAddField model =
      , label = Input.labelLeft [ Font.size 14, width (px 0) ] (Element.text "")
      }
 
-selectPermissionButton model =
-    let
-        labelText = case model.permissionToAdd of
-            NoPermission -> "N"
-            ReadPermission -> "R"
-            WritePermission -> "W"
-
-    in
-    Input.button ((Button.headingStyle 30 Style.charcoal) ++  [Border.color Style.white, Border.width 1]){
-       onPress = Just CyclePermission
-       , label = el [Font.color Style.white] (Element.text labelText)
-    }
 
 
 
