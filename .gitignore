@@ -22,3 +22,5 @@ test.sh
 build-timer
 index.html
 results.dat
+build.log
+measure-elm-make
