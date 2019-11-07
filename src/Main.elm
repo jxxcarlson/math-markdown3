@@ -2557,7 +2557,7 @@ toolPanel viewInfo model =
         ]
         [ column [ Font.size 13, spacing 25 ]
             [ el [ Font.size 16, Font.bold, Font.color Style.white ] (Element.text "Document tools")
-            , togglePublic model
+            , Button.togglePublic model
             , inputTags model
             , docTypePanel model
             , userPermissions model
@@ -2599,9 +2599,6 @@ usernameToAddField model =
 
 
 
-toolButtonStyleInHeader : List (Element.Attribute msg)
-toolButtonStyleInHeader =
-    [ height (px 30), width (px 60), padding 8, Background.color (Style.makeGrey 0.1), Border.color Style.white, Font.color Style.white, Font.size 12 ]
 
 
 inputTags model =
@@ -2614,92 +2611,6 @@ inputTags model =
         }
 
 
-togglePublic model =
-    case model.currentDocument of
-        Nothing ->
-            Element.none
-
-        Just document ->
-            case document.public of
-                True ->
-                    Input.button []
-                        { onPress = Just (SetDocumentPublic False)
-                        , label = el (Button.headingStyle 140 Style.charcoal) (Element.text "Public")
-                        }
-
-                False ->
-                    Input.button []
-                        { onPress = Just (SetDocumentPublic True)
-                        , label = el (Button.headingStyle 140 Style.charcoal) (Element.text "Private")
-                        }
-
-
-newDocumentButton model =
-    case model.currentUser of
-        Nothing ->
-            Element.none
-
-        Just _ ->
-            Input.button []
-                { onPress = Just CreateDocument
-                , label = el toolButtonStyleInHeader (Element.text "New")
-                }
-
-
-firstSubDocumentButton model =
-    case model.currentUser of
-        Nothing ->
-            Element.none
-
-        Just _ ->
-            Input.button []
-                { onPress = Just FirstSubdocument
-                , label = el toolButtonStyleInHeader (Element.text "First/S")
-                }
-
-
-saveDocumentButton model =
-    case model.currentUser of
-        Nothing ->
-            Element.none
-
-        Just _ ->
-            Input.button []
-                { onPress = Just SaveDocument
-                , label = el toolButtonStyleInHeader (Element.text "Save")
-                }
-
-
-deleteDocumentButton model =
-    case model.currentUser of
-        Nothing ->
-            Element.none
-
-        Just _ ->
-            case model.documentDeleteState of
-                Armed ->
-                    Input.button []
-                        { onPress = Just DeleteDocument
-                        , label = el (toolButtonStyleInHeader ++ [ Background.color Style.red ]) (Element.text "Delete!")
-                        }
-
-                SafetyOn ->
-                    Input.button []
-                        { onPress = Just ArmForDelete
-                        , label = el toolButtonStyleInHeader (Element.text "Delete?")
-                        }
-
-
-cancelDeleteDocumentButtonInHeader model =
-    case model.documentDeleteState of
-        Armed ->
-            Input.button []
-                { onPress = Just CancelDeleteDocument
-                , label = el (toolButtonStyleInHeader ++ [ Background.color Style.blue ]) (Element.text "Cancel")
-                }
-
-        SafetyOn ->
-            Element.none
 
 
 
@@ -2991,11 +2902,11 @@ editTools model =
         row [ spacing 6 ]
             [ Button.editingMode model
             , Button.subDocumentEditingMode model
-            , newDocumentButton model
-            , firstSubDocumentButton model
-            , saveDocumentButton model
-            , deleteDocumentButton model
-            , cancelDeleteDocumentButtonInHeader model
+            , Button.newDocument model
+            , Button.firstSubDocument model
+            , Button.saveDocument model
+            , Button.deleteDocument model
+            , Button.cancelDeleteDocumentInHeader model
             ]
 
     else

@@ -3,20 +3,25 @@ module Button exposing
     , addUserPermission
     , allDocuments
     , cancelChangePassword
+    , cancelDeleteDocumentInHeader
     , cancelSignUp
     , changePassword
     , clearSearchTerms
+    , deleteDocument
     , deleteSubdocument
     , editingMode
     , expandCollapseToc
     , extendedMarkdown
     , extendedMathMarkdown
+    , firstSubDocument
     , getTextSelection
     , headingStyle
     , helpDocs
     , miniLaTeX
+    , newDocument
     , newSubdocument
     , readingMode
+    , saveDocument
     , search
     , selectPermission
     , setDequeView
@@ -33,6 +38,7 @@ module Button exposing
     , sortAlphabetical
     , sortByMostRecentFirst
     , subDocumentEditingMode
+    , togglePublic
     , totalWordCount
     , updateChildren
     , userPageMode
@@ -48,6 +54,7 @@ import Model
     exposing
         ( AppMode(..)
         , DequeViewState(..)
+        , DocumentDeleteState(..)
         , DocumentListType(..)
         , EditMode(..)
         , Model
@@ -60,6 +67,26 @@ import Model
 import Style
 import TocZ exposing (TocMsg(..))
 import Utility.View
+
+
+togglePublic model =
+    case model.currentDocument of
+        Nothing ->
+            Element.none
+
+        Just document ->
+            case document.public of
+                True ->
+                    Input.button []
+                        { onPress = Just (SetDocumentPublic False)
+                        , label = el (headingStyle 140 Style.charcoal) (Element.text "Public")
+                        }
+
+                False ->
+                    Input.button []
+                        { onPress = Just (SetDocumentPublic True)
+                        , label = el (headingStyle 140 Style.charcoal) (Element.text "Private")
+                        }
 
 
 selectPermission model =
@@ -361,6 +388,74 @@ extendedMathMarkdown model width =
 --- DOCUMENT
 
 
+newDocument model =
+    case model.currentUser of
+        Nothing ->
+            Element.none
+
+        Just _ ->
+            Input.button []
+                { onPress = Just CreateDocument
+                , label = el toolButtonStyleInHeader (Element.text "New")
+                }
+
+
+firstSubDocument model =
+    case model.currentUser of
+        Nothing ->
+            Element.none
+
+        Just _ ->
+            Input.button []
+                { onPress = Just FirstSubdocument
+                , label = el toolButtonStyleInHeader (Element.text "First/S")
+                }
+
+
+saveDocument model =
+    case model.currentUser of
+        Nothing ->
+            Element.none
+
+        Just _ ->
+            Input.button []
+                { onPress = Just SaveDocument
+                , label = el toolButtonStyleInHeader (Element.text "Save")
+                }
+
+
+deleteDocument model =
+    case model.currentUser of
+        Nothing ->
+            Element.none
+
+        Just _ ->
+            case model.documentDeleteState of
+                Armed ->
+                    Input.button []
+                        { onPress = Just DeleteDocument
+                        , label = el (toolButtonStyleInHeader ++ [ Background.color Style.red ]) (Element.text "Delete!")
+                        }
+
+                SafetyOn ->
+                    Input.button []
+                        { onPress = Just ArmForDelete
+                        , label = el toolButtonStyleInHeader (Element.text "Delete?")
+                        }
+
+
+cancelDeleteDocumentInHeader model =
+    case model.documentDeleteState of
+        Armed ->
+            Input.button []
+                { onPress = Just CancelDeleteDocument
+                , label = el (toolButtonStyleInHeader ++ [ Background.color Style.blue ]) (Element.text "Cancel")
+                }
+
+        SafetyOn ->
+            Element.none
+
+
 deleteSubdocument : Model -> Element Msg
 deleteSubdocument model =
     let
@@ -588,3 +683,8 @@ headerLabelStyle =
 headingStyle : Int -> Color -> List (Element.Attribute msg)
 headingStyle w color =
     [ height (px 30), width (px w), padding 8, Background.color color, Font.color Style.white, Font.size 12 ]
+
+
+toolButtonStyleInHeader : List (Element.Attribute msg)
+toolButtonStyleInHeader =
+    [ height (px 30), width (px 60), padding 8, Background.color (Style.makeGrey 0.1), Border.color Style.white, Font.color Style.white, Font.size 12 ]
