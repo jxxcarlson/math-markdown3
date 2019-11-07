@@ -2,11 +2,16 @@ module Button exposing
     ( allDocuments
     , clearSearchTerms
     , editingMode
+    , extendedMarkdown
+    , extendedMathMarkdown
     , getTextSelection
+    , headingStyle
     , helpDocs
+    , miniLaTeX
+    , newSubdocument
     , readingMode
     , search
-    , shareUrlButton
+    , shareUrl
     , showDocumentList
     , showTools
     , sortAlphabetical
@@ -16,7 +21,8 @@ module Button exposing
     , userPageMode
     )
 
-import Element exposing (Element, centerX, el, height, moveDown, padding, px, width)
+import Document exposing (DocType(..), MarkdownFlavor(..))
+import Element exposing (Color, Element, centerX, el, height, moveDown, padding, paddingXY, px, width)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
@@ -248,7 +254,7 @@ clearSearchTerms =
         }
 
 
-shareUrlButton model =
+shareUrl model =
     Input.button []
         { onPress = Just DoShareUrl
         , label = el [] (Element.text "Share: ")
@@ -270,6 +276,63 @@ totalWordCount =
 
 
 
+---- BUTTONS --
+
+
+miniLaTeX model width =
+    let
+        bit =
+            model.docType == MiniLaTeX
+    in
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType MiniLaTeX), label = el [ paddingXY 8 0 ] (Element.text "MiniLaTeX") }
+
+
+standardMarkdownButton model width =
+    let
+        bit =
+            model.docType == Markdown MDStandard
+    in
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType (Markdown MDStandard)), label = el [ paddingXY 8 0 ] (Element.text "Markdown standard") }
+
+
+extendedMarkdown model width =
+    let
+        bit =
+            model.docType == Markdown MDExtended
+    in
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType (Markdown MDExtended)), label = el [ paddingXY 8 0 ] (Element.text "Markdown") }
+
+
+extendedMathMarkdown model width =
+    let
+        bit =
+            model.docType == Markdown MDExtendedMath
+    in
+    Input.button (Style.buttonSelected width bit)
+        { onPress = Just (SetDocType (Markdown MDExtendedMath)), label = el [ paddingXY 8 0 ] (Element.text "Markdown + math") }
+
+
+newSubdocument model =
+    let
+        numberOfChildren =
+            Maybe.map (.childInfo >> List.length) model.currentDocument
+                |> Maybe.withDefault 0
+    in
+    Utility.View.showIf (model.appMode == Editing SubdocumentEditing)
+        (Input.button
+            []
+            { onPress = Just NewSubdocument
+            , label =
+                el []
+                    (el (headingStyle 140 Style.charcoal) (Element.text "New subdocument"))
+            }
+        )
+
+
+
 -- HELPERS
 
 
@@ -279,3 +342,8 @@ headerButtonStyle color =
 
 headerLabelStyle =
     [ height (px 30), width (px 80), padding 8 ]
+
+
+headingStyle : Int -> Color -> List (Element.Attribute msg)
+headingStyle w color =
+    [ height (px 30), width (px w), padding 8, Background.color color, Font.color Style.white, Font.size 12 ]

@@ -1592,21 +1592,7 @@ firstSubdocument model =
         ( _, _ ) ->
             ( model, Cmd.none )
 
-newSubdocumentButton model =
-    let
-        numberOfChildren =
-            Maybe.map (.childInfo >> List.length) model.currentDocument
-                |> Maybe.withDefault 0
-    in
-    Utility.View.showIf (model.appMode == Editing SubdocumentEditing)
-        (Input.button
-            []
-            { onPress = Just NewSubdocument
-            , label =
-                el []
-                    (el (headingButtonStyle 140 Style.charcoal) (Element.text "New subdocument"))
-            }
-        )
+
 
 
 {-| Add a first subdocument to the given document
@@ -2650,7 +2636,7 @@ deleteSubdocumentButton model =
             { onPress = Just DeleteSubdocument
             , label =
                 el []
-                    (el (headingButtonStyle 140 Style.charcoal) (Element.text "Delete subdocument"))
+                    (el (Button.headingStyle 140 Style.charcoal) (Element.text "Delete subdocument"))
             }
         )
 
@@ -2707,7 +2693,7 @@ addUserRow model =
     [addUserPermissionButton, usernameToAddField model, selectPermissionButton model]
 
 addUserPermissionButton =
-    Input.button ((headingButtonStyle 40 Style.charcoal) ++ [Border.color Style.white, Border.width 1]) {
+    Input.button ((Button.headingStyle 40 Style.charcoal) ++ [Border.color Style.white, Border.width 1]) {
        onPress = Just AddUserPermission
        , label = el [] (Element.text "Add")
     }
@@ -2727,7 +2713,7 @@ selectPermissionButton model =
             WritePermission -> "W"
 
     in
-    Input.button ((headingButtonStyle 30 Style.charcoal) ++  [Border.color Style.white, Border.width 1]){
+    Input.button ((Button.headingStyle 30 Style.charcoal) ++  [Border.color Style.white, Border.width 1]){
        onPress = Just CyclePermission
        , label = el [Font.color Style.white] (Element.text labelText)
     }
@@ -2759,13 +2745,13 @@ togglePublic model =
                 True ->
                     Input.button []
                         { onPress = Just (SetDocumentPublic False)
-                        , label = el (headingButtonStyle 140 Style.charcoal) (Element.text "Public")
+                        , label = el (Button.headingStyle 140 Style.charcoal) (Element.text "Public")
                         }
 
                 False ->
                     Input.button []
                         { onPress = Just (SetDocumentPublic True)
-                        , label = el (headingButtonStyle 140 Style.charcoal) (Element.text "Private")
+                        , label = el (Button.headingStyle 140 Style.charcoal) (Element.text "Private")
                         }
 
 
@@ -2869,7 +2855,7 @@ docListViewer viewInfo model =
         ]
         [ column [ Font.size 13, spacing 8 ]
             (heading model
-                :: newSubdocumentButton model
+                :: Button.newSubdocument model
                 :: deleteSubdocumentButton model
                 :: renderedList
             )
@@ -2965,9 +2951,6 @@ tocEntryStyle currentDocument_ document =
 
 
 
-headingButtonStyle : Int -> Color -> List (Element.Attribute msg)
-headingButtonStyle w color =
-    [ height (px 30), width (px w), padding 8, Background.color color, Font.color Style.white, Font.size 12 ]
 
 
 heading : Model -> Element Msg
@@ -2998,7 +2981,7 @@ heading model =
                     Input.button []
                         { onPress = Just (SetDocumentListType DocumentChildren)
                         , label =
-                            el (headingButtonStyle w Style.charcoal)
+                            el (Button.headingStyle w Style.charcoal)
                                 (Element.text ("Public Documents! (" ++ n ++ ")"))
                         }
 
@@ -3006,7 +2989,7 @@ heading model =
                     Input.button []
                         { onPress = Just (SetDocumentListType SearchResults)
                         , label =
-                            el (headingButtonStyle w Style.charcoal)
+                            el (Button.headingStyle w Style.charcoal)
                                 (Element.text ("Contents! (" ++ n ++ ")"))
                         }
 
@@ -3014,7 +2997,7 @@ heading model =
                     Input.button []
                         { onPress = Just ToggleDequeview
                         , label =
-                            el (headingButtonStyle w Style.charcoal)
+                            el (Button.headingStyle w Style.charcoal)
                                 (Element.text "Recent")
                       }
 
@@ -3043,7 +3026,7 @@ setDequeViewButtonX model w n =
     Input.button []
         { onPress = Just ToggleDequeview
         , label =
-            el (headingButtonStyle w color)
+            el (Button.headingStyle w color)
                 (Element.text ("Recent"))
         }
 
@@ -3051,7 +3034,7 @@ setDocumentChildrenButton model w n =
     Input.button []
         { onPress = Just (SetDocumentListType SearchResults)
         , label =
-            el (headingButtonStyle w Style.charcoal)
+            el (Button.headingStyle w Style.charcoal)
                 (Element.text ("Contents (" ++ n ++ ")"))
                 }
 
@@ -3067,7 +3050,7 @@ setDocumentListTypeButton model w n =
     Input.button []
         { onPress = Just msg
         , label =
-            el (headingButtonStyle w Style.charcoal)
+            el (Button.headingStyle w Style.charcoal)
                 (Element.text ("Documents (" ++ n ++ ")"))
         }
 
@@ -3081,7 +3064,7 @@ setDequeViewButton model =
     Input.button []
         { onPress = Just ToggleDequeview
         , label =
-            el (headingButtonStyle 60 color)
+            el (Button.headingStyle 60 color)
                 (Element.text "Recent")
         }
 -- XX
@@ -3223,7 +3206,7 @@ footer model =
         , Button.getTextSelection
         , dirtyDocumentDisplay model
         , wordCount model
-        , Button.shareUrlButton model
+        , Button.shareUrl model
         , shareUrlDisplay model
         , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]
         , displayMessage model.message
@@ -3395,49 +3378,11 @@ docTypePanel model =
     in
     column [ spacing 0 ]
         [ el [ Font.color Style.white, Font.bold, paddingXY 0 8 ] (Element.text "Document Type")
-        , miniLaTeXButton model w
-        , extendedMarkdownButton model w
-        , extendedMathMarkdownButton model w
+        , Button.miniLaTeX model w
+        , Button.extendedMarkdown model w
+        , Button.extendedMathMarkdown model w
         ]
 
 
-
----- BUTTONS --
-
-
-miniLaTeXButton model width =
-    let
-        bit =
-            model.docType == MiniLaTeX
-    in
-    Input.button (Style.buttonSelected width bit)
-        { onPress = Just (SetDocType MiniLaTeX), label = el [ paddingXY 8 0 ] (Element.text "MiniLaTeX") }
-
-
-standardMarkdownButton model width =
-    let
-        bit =
-            model.docType == Markdown MDStandard
-    in
-    Input.button (Style.buttonSelected width bit)
-        { onPress = Just (SetDocType (Markdown MDStandard)), label = el [ paddingXY 8 0 ] (Element.text "Markdown standard") }
-
-
-extendedMarkdownButton model width =
-    let
-        bit =
-            model.docType == Markdown MDExtended
-    in
-    Input.button (Style.buttonSelected width bit)
-        { onPress = Just (SetDocType (Markdown MDExtended)), label = el [ paddingXY 8 0 ] (Element.text "Markdown") }
-
-
-extendedMathMarkdownButton model width =
-    let
-        bit =
-            model.docType == Markdown MDExtendedMath
-    in
-    Input.button (Style.buttonSelected width bit)
-        { onPress = Just (SetDocType (Markdown MDExtendedMath)), label = el [ paddingXY 8 0 ] (Element.text "Markdown + math") }
 
 
