@@ -2,14 +2,17 @@ module Button exposing
     ( allDocuments
     , clearSearchTerms
     , editingMode
+    , getTextSelection
     , helpDocs
     , readingMode
     , search
+    , shareUrlButton
     , showDocumentList
     , showTools
     , sortAlphabetical
     , sortByMostRecentFirst
     , subDocumentEditingMode
+    , totalWordCount
     , userPageMode
     )
 
@@ -242,6 +245,27 @@ clearSearchTerms =
         , label =
             el [ height (px 30), width (px 25), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
                 (el [ moveDown 2 ] (Element.text "X"))
+        }
+
+
+shareUrlButton model =
+    Input.button []
+        { onPress = Just DoShareUrl
+        , label = el [] (Element.text "Share: ")
+        }
+
+
+getTextSelection =
+    Input.button []
+        { onPress = Just GetTextSelection
+        , label = el [] (Element.text "Sync L <- R")
+        }
+
+
+totalWordCount =
+    Input.button []
+        { onPress = Just DoTotalWordCount
+        , label = el [] (Element.text "Total word count: ")
         }
 
 

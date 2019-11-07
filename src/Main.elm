@@ -3220,21 +3220,16 @@ footer model =
     row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
         [ currentAuthorDisplay model
         -- , el [] (Element.text <| slugOfCurrentDocument model)
-        , getTextSelectionButton
+        , Button.getTextSelection
         , dirtyDocumentDisplay model
         , wordCount model
-        , shareUrlButton model
+        , Button.shareUrlButton model
         , shareUrlDisplay model
-        , row [ spacing 4 ] [ totalWordCountButton, totalWordCountDisplay model ]
+        , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]
         , displayMessage model.message
         -- , currentTime model
         ]
 
-shareUrlButton model =
-    Input.button []
-        { onPress = Just DoShareUrl
-        , label = el [] (Element.text "Share: ")
-        }
 
 
 shareUrlDisplay : Model -> Element Msg
@@ -3255,19 +3250,6 @@ displayMessage (messageType, str) =
         ErrorMessage -> el [Font.color Style.white, Background.color (Style.brightRed),  alignRight, Font.size 12, Font.bold,  paddingXY 10 4, centerY] (Element.text str)
         _ -> el [alignRight, paddingXY 10 0] (Element.text str)
 
-
-getTextSelectionButton =
-    Input.button [] {
-       onPress = Just GetTextSelection
-       , label = el [] (Element.text "Sync L <- R")
-    }
-
-
-totalWordCountButton =
-    Input.button []
-        { onPress = Just DoTotalWordCount
-        , label = el [] (Element.text "Total word count: ")
-        }
 
 
 totalWordCountDisplay model =
