@@ -51,7 +51,7 @@ customElements.define('code-editor', class extends HTMLElement {
     })
 
 
-    this._editor.on('gutterClick', (cm, n) => {
+   this._editor.on('gutterClick', (cm, n) => {
         this._lineValue = this._editor.getLine(n);
         console.log("n: " + n);
         console.log("line: " + this._lineValue)
