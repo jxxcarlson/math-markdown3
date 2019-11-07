@@ -2331,7 +2331,7 @@ subdocumentEditorView viewInfo model =
             , toolsOrDocs viewInfo model
             , subDocumentTools model
             , column [ spacing 12, alignTop, padding 20 ]
-                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), setupOutlineButton model, updateChildrenButton model ]
+                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), Button.setupOutline model, Button.updateChildren model ]
                 , inputOutline model
                 ]
             ]
@@ -2353,7 +2353,7 @@ subDocumentTools model =
         [ el [ Font.size 14, width (px 300) ] (Element.text message1)
         , el [ Font.size 14, width (px 300), Font.bold ] (Element.text message2)
         , column [ Font.size 13, spacing 8, width (px 350), height (px 500), Border.color Style.charcoal, Border.width 1, padding 12, scrollbarY ]
-            (List.map addSubdocumentButton2 model.candidateChildDocumentList)
+            (List.map Button.addSubdocument2 model.candidateChildDocumentList)
         ]
 
 
@@ -2377,27 +2377,12 @@ setupOutline_ model =
             model.documentOutline
 
 
-xButtonStyle =
-    Style.standardButton ++ [ Background.color Style.charcoal, Font.color Style.white ]
-
-
-setupOutlineButton model =
-    Input.button [] { onPress = Just SetUpOutline, label = el xButtonStyle (Element.text "Load") }
-
-
-updateChildrenButton model =
-    Input.button [] { onPress = Just UpdateChildren, label = el xButtonStyle (Element.text "Update") }
 
 
 getTitles : List Document -> String
 getTitles docList =
     List.map .title docList
         |> String.join "\n"
-
-
-addSubdocumentButton2 : Document -> Element Msg
-addSubdocumentButton2 document =
-    Input.button Style.activeButtonStyle { onPress = Just (AddThisDocumentToMaster document), label = el [ Font.color Style.white ] (Element.text document.title) }
 
 
 inputOutline model =

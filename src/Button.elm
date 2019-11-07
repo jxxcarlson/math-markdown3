@@ -1,5 +1,6 @@
 module Button exposing
-    ( allDocuments
+    ( addSubdocument2
+    , allDocuments
     , cancelChangePassword
     , cancelSignUp
     , changePassword
@@ -19,6 +20,7 @@ module Button exposing
     , setDequeViewX
     , setDocumentChildren
     , setDocumentListType
+    , setupOutline
     , shareUrl
     , showDocumentList
     , showTools
@@ -29,10 +31,11 @@ module Button exposing
     , sortByMostRecentFirst
     , subDocumentEditingMode
     , totalWordCount
+    , updateChildren
     , userPageMode
     )
 
-import Document exposing (DocType(..), MarkdownFlavor(..))
+import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Element exposing (Color, Element, centerX, el, height, moveDown, padding, paddingXY, px, width)
 import Element.Background as Background
 import Element.Font as Font
@@ -415,6 +418,27 @@ setDequeView model =
             el (headingStyle 60 color)
                 (Element.text "Recent")
         }
+
+
+
+-- AAA
+
+
+setupOutline model =
+    Input.button [] { onPress = Just SetUpOutline, label = el xButtonStyle (Element.text "Load") }
+
+
+updateChildren model =
+    Input.button [] { onPress = Just UpdateChildren, label = el xButtonStyle (Element.text "Update") }
+
+
+addSubdocument2 : Document -> Element Msg
+addSubdocument2 document =
+    Input.button Style.activeButtonStyle { onPress = Just (AddThisDocumentToMaster document), label = el [ Font.color Style.white ] (Element.text document.title) }
+
+
+xButtonStyle =
+    Style.standardButton ++ [ Background.color Style.charcoal, Font.color Style.white ]
 
 
 
