@@ -2838,7 +2838,7 @@ docListViewer viewInfo model =
                     renderTocForSearchResults model
 
                 (DocumentChildren, DequeViewOff) ->
-                    (expandCollapseTocButton |> Element.map TOC) :: renderTocForMaster model
+                    (Button.expandCollapseToc |> Element.map TOC) :: renderTocForMaster model
 
                 (_, DequeViewOn) ->
                     renderTocForDeque model
@@ -2886,11 +2886,7 @@ renderTocForMaster model =
             [ viewZ model.toggleToc zipper |> Element.map TOC ]
 
 
-expandCollapseTocButton =
-    Input.button (Style.activeButtonStyle ++ [ Font.size 12 ])
-        { onPress = Just Toggle
-        , label = Element.text "Expand/Collapse"
-        }
+
 
 
 tocEntry : Maybe Document -> Document -> Element Msg
@@ -3004,74 +3000,18 @@ heading model =
         Just _ ->
             case model.documentListDisplay of
                 (SearchResults, DequeViewOff) ->
-                    row [ spacing 10 ] [ setDocumentListTypeButton model w n, Button.sortByMostRecentFirst model, Button.sortAlphabetical model, setDequeViewButton model]
+                    row [ spacing 10 ] [ Button.setDocumentListType model w n, Button.sortByMostRecentFirst model, Button.sortAlphabetical model, Button.setDequeView model]
 
                 (SearchResults, DequeViewOn) ->
-                    row [ spacing 10 ] [ setDocumentListTypeButton model w n,  setDequeViewButton model]
+                    row [ spacing 10 ] [ Button.setDocumentListType model w n,  Button.setDequeView model]
 
                 (DocumentChildren, DequeViewOff) ->
-                    row [ spacing 10 ] [setDocumentChildrenButton model w n, setDequeViewButtonX model w n]
+                    row [ spacing 10 ] [Button.setDocumentChildren model w n, Button.setDequeViewX model w n]
 
                 (DocumentChildren, DequeViewOn) ->
-                    row [ spacing 10 ] [setDocumentListTypeButton model w n, setDequeViewButtonX model w n]
-
-setDequeViewButtonX model w n =
-    let
-        color = case model.documentListDisplay of
-            (_, DequeViewOn) ->
-                    Style.darkBlue
-            (_, DequeViewOff) ->
-                     Style.charcoal
-    in
-    Input.button []
-        { onPress = Just ToggleDequeview
-        , label =
-            el (Button.headingStyle w color)
-                (Element.text ("Recent"))
-        }
-
-setDocumentChildrenButton model w n =
-    Input.button []
-        { onPress = Just (SetDocumentListType SearchResults)
-        , label =
-            el (Button.headingStyle w Style.charcoal)
-                (Element.text ("Contents (" ++ n ++ ")"))
-                }
+                    row [ spacing 10 ] [Button.setDocumentListType model w n, Button.setDequeViewX model w n]
 
 
-
-
-setDocumentListTypeButton model w n =
-    let
-      msg = case Maybe.map .childInfo model.currentDocument  == Just [] of
-          True -> NoOp
-          False ->   SetDocumentListType DocumentChildren
-    in
-    Input.button []
-        { onPress = Just msg
-        , label =
-            el (Button.headingStyle w Style.charcoal)
-                (Element.text ("Documents (" ++ n ++ ")"))
-        }
-
-setDequeViewButton model =
-    let
-        color = if (Tuple.second model.documentListDisplay) == DequeViewOn then
-                    Style.darkBlue
-                else
-                     Style.charcoal
-    in
-    Input.button []
-        { onPress = Just ToggleDequeview
-        , label =
-            el (Button.headingStyle 60 color)
-                (Element.text "Recent")
-        }
--- XX
---type DocumentListType
---    = SearchResults
---    | DequeView
---    | DocumentChildren
 
 -- HEADERS
 

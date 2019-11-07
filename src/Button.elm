@@ -2,6 +2,7 @@ module Button exposing
     ( allDocuments
     , clearSearchTerms
     , editingMode
+    , expandCollapseToc
     , extendedMarkdown
     , extendedMathMarkdown
     , getTextSelection
@@ -11,6 +12,10 @@ module Button exposing
     , newSubdocument
     , readingMode
     , search
+    , setDequeView
+    , setDequeViewX
+    , setDocumentChildren
+    , setDocumentListType
     , shareUrl
     , showDocumentList
     , showTools
@@ -40,6 +45,7 @@ import Model
         , Visibility(..)
         )
 import Style
+import TocZ exposing (TocMsg(..))
 import Utility.View
 
 
@@ -332,7 +338,85 @@ newSubdocument model =
         )
 
 
+expandCollapseToc =
+    Input.button (Style.activeButtonStyle ++ [ Font.size 12 ])
+        { onPress = Just Toggle
+        , label = Element.text "Expand/Collapse"
+        }
 
+
+
+-- AAA
+
+
+setDequeViewX model w n =
+    let
+        color =
+            case model.documentListDisplay of
+                ( _, DequeViewOn ) ->
+                    Style.darkBlue
+
+                ( _, DequeViewOff ) ->
+                    Style.charcoal
+    in
+    Input.button []
+        { onPress = Just ToggleDequeview
+        , label =
+            el (headingStyle w color)
+                (Element.text "Recent")
+        }
+
+
+setDocumentChildren model w n =
+    Input.button []
+        { onPress = Just (SetDocumentListType SearchResults)
+        , label =
+            el (headingStyle w Style.charcoal)
+                (Element.text ("Contents (" ++ n ++ ")"))
+        }
+
+
+setDocumentListType model w n =
+    let
+        msg =
+            case Maybe.map .childInfo model.currentDocument == Just [] of
+                True ->
+                    NoOp
+
+                False ->
+                    SetDocumentListType DocumentChildren
+    in
+    Input.button []
+        { onPress = Just msg
+        , label =
+            el (headingStyle w Style.charcoal)
+                (Element.text ("Documents (" ++ n ++ ")"))
+        }
+
+
+setDequeView model =
+    let
+        color =
+            if Tuple.second model.documentListDisplay == DequeViewOn then
+                Style.darkBlue
+
+            else
+                Style.charcoal
+    in
+    Input.button []
+        { onPress = Just ToggleDequeview
+        , label =
+            el (headingStyle 60 color)
+                (Element.text "Recent")
+        }
+
+
+
+-- XX
+--type DocumentListType
+--    = SearchResults
+--    | DequeView
+--    | DocumentChildren
 -- HELPERS
 
 
