@@ -1,8 +1,8 @@
 module Button exposing
     ( editingMode
     , readingMode
-    , showDocumentListButton
-    , showToolsButton
+    , showDocumentList
+    , showTools
     , subDocumentEditingMode
     , userPageMode
     )
@@ -111,8 +111,8 @@ subDocumentEditingMode model =
 -- AAA
 
 
-showToolsButton : Model -> Element Msg
-showToolsButton model =
+showTools : Model -> Element Msg
+showTools model =
     let
         color =
             if model.visibilityOfTools == Visible then
@@ -135,8 +135,8 @@ showToolsButton model =
                 }
 
 
-showDocumentListButton : { a | visibilityOfTools : Visibility } -> Element Msg
-showDocumentListButton model =
+showDocumentList : { a | visibilityOfTools : Visibility } -> Element Msg
+showDocumentList model =
     let
         color =
             if model.visibilityOfTools == Invisible then

@@ -3292,7 +3292,7 @@ editTools model =
 tabStrip : ViewInfo -> Model -> Element Msg
 tabStrip viewInfo model =
     column [ width (px 30), height (px 200), Background.color (Style.grey 0.1), alignTop ]
-        [ row [ spacing 15, rotate -1.5708, moveLeft 50, moveDown 70 ] [ Button.showToolsButton model, Button.showDocumentListButton model ]
+        [ row [ spacing 15, rotate -1.5708, moveLeft 50, moveDown 70 ] [ Button.showTools model, Button.showDocumentList model ]
         ]
 
 
