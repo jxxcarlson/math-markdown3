@@ -1,5 +1,8 @@
 module Button exposing
     ( allDocuments
+    , cancelChangePassword
+    , cancelSignUp
+    , changePassword
     , clearSearchTerms
     , editingMode
     , expandCollapseToc
@@ -19,6 +22,9 @@ module Button exposing
     , shareUrl
     , showDocumentList
     , showTools
+    , signIn
+    , signOut
+    , signUp
     , sortAlphabetical
     , sortByMostRecentFirst
     , subDocumentEditingMode
@@ -412,11 +418,82 @@ setDequeView model =
 
 
 
--- XX
---type DocumentListType
---    = SearchResults
---    | DequeView
---    | DocumentChildren
+-- USER signin
+
+
+changePassword : Model -> Element Msg
+changePassword model =
+    Input.button Style.standardButton
+        { onPress =
+            case model.appMode of
+                UserMode ChangePasswordState ->
+                    Just ChangePassword
+
+                _ ->
+                    Just <| SetAppMode (UserMode ChangePasswordState)
+        , label = Element.text "Change password"
+        }
+
+
+signIn : Element Msg
+signIn =
+    Input.button Style.standardButton
+        { onPress = Just SignIn
+        , label = Element.text "Sign in"
+        }
+
+
+signUp : Model -> Element Msg
+signUp model =
+    Input.button Style.standardButton
+        { onPress =
+            case model.appMode of
+                UserMode SignUpState ->
+                    Just SignUp
+
+                _ ->
+                    Just (SetAppMode (UserMode SignUpState))
+        , label = Element.text "Sign Up!!"
+        }
+
+
+cancelSignUp : Model -> Element Msg
+cancelSignUp model =
+    Input.button Style.standardButton
+        { onPress =
+            case model.appMode of
+                UserMode SignUpState ->
+                    Just (SetAppMode (UserMode SignInState))
+
+                _ ->
+                    Just NoOp
+        , label = Element.text "Cancel"
+        }
+
+
+cancelChangePassword : Model -> Element Msg
+cancelChangePassword model =
+    Input.button Style.standardButton
+        { onPress =
+            case model.appMode of
+                UserMode ChangePasswordState ->
+                    Just (SetAppMode (UserMode SignInState))
+
+                _ ->
+                    Just NoOp
+        , label = Element.text "Cancel"
+        }
+
+
+signOut : Model -> Element Msg
+signOut model =
+    Input.button Style.standardButton
+        { onPress = Just SignOut
+        , label = Element.text "Sign out"
+        }
+
+
+
 -- HELPERS
 
 

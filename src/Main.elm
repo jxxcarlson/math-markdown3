@@ -2169,10 +2169,11 @@ outerPasswordPanel model =
         , Utility.View.showIf (model.appMode == UserMode SignUpState) (inputEmail model)
         , Utility.View.showIf (model.appMode == UserMode SignUpState) (el [ Font.size 12 ] (Element.text "A real email address is only needed for password recovery in real production."))
         , row [ spacing 12, paddingXY 0 12 ]
-            [ Utility.View.showIf (model.appMode == UserMode SignInState) signInButton
+            [ Utility.View.showIf (model.appMode == UserMode SignInState) Button.signIn
             , row [ spacing 12 ]
-                [ signUpButton model
-                , Utility.View.showIf (model.appMode == UserMode SignUpState) (cancelSignUpButton model)
+                [ Button.signUp model
+                , Utility.View.showIf (model.appMode == UserMode SignUpState) (Button.cancelSignUp model)
+
                 ]
             ]
         , authMessageDisplay model
@@ -2193,11 +2194,11 @@ signedInUserView : Model -> User -> Element Msg
 signedInUserView model user =
     column Style.signInColumn
         [ el [] (Element.text <| "Signed in as " ++ user.username)
-        , signOutButton model
+        , Button.signOut model
         , Utility.View.showIf (model.appMode == UserMode ChangePasswordState) (passwordPanel model)
         , row [ spacing 12 ]
-            [ changePasswordButton model
-            , Utility.View.showIf (model.appMode == UserMode ChangePasswordState) (cancelChangePasswordButton model)
+            [ Button.changePassword model
+            , Utility.View.showIf (model.appMode == UserMode ChangePasswordState) (Button.cancelChangePassword model)
             ]
         , adminStatus model
         ]
@@ -2251,19 +2252,6 @@ inputNewPassword2 model =
         , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 110) ] (Element.text "Password again: ")
         }
 
-
-changePasswordButton : Model -> Element Msg
-changePasswordButton model =
-    Input.button Style.standardButton
-        { onPress =
-            case model.appMode of
-                UserMode ChangePasswordState ->
-                    Just ChangePassword
-
-                _ ->
-                    Just <| SetAppMode (UserMode ChangePasswordState)
-        , label = Element.text "Change password"
-        }
 
 
 adminStatus : Model -> Element Msg
@@ -2325,66 +2313,6 @@ inputPasswordConfirmation model =
         ---, show = False
         , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Password (2)")
         }
-
-
-signInButton : Element Msg
-signInButton =
-    Input.button Style.standardButton
-        { onPress = Just SignIn
-        , label = Element.text "Sign in"
-        }
-
-
-signUpButton : Model -> Element Msg
-signUpButton model =
-    Input.button Style.standardButton
-        { onPress =
-            case model.appMode of
-                UserMode SignUpState ->
-                    Just SignUp
-
-                _ ->
-                    Just (SetAppMode (UserMode SignUpState))
-        , label = Element.text "Sign Up!!"
-        }
-
-
-cancelSignUpButton : Model -> Element Msg
-cancelSignUpButton model =
-    Input.button Style.standardButton
-        { onPress =
-            case model.appMode of
-                UserMode SignUpState ->
-                    Just (SetAppMode (UserMode SignInState))
-
-                _ ->
-                    Just NoOp
-        , label = Element.text "Cancel"
-        }
-
-
-cancelChangePasswordButton : Model -> Element Msg
-cancelChangePasswordButton model =
-    Input.button Style.standardButton
-        { onPress =
-            case model.appMode of
-                UserMode ChangePasswordState ->
-                    Just (SetAppMode (UserMode SignInState))
-
-                _ ->
-                    Just NoOp
-        , label = Element.text "Cancel"
-        }
-
-
-signOutButton : Model -> Element Msg
-signOutButton model =
-    Input.button Style.standardButton
-        { onPress = Just SignOut
-        , label = Element.text "Sign out"
-        }
-
-
 
 -- SUBDOCUMENT EDITOR
 
