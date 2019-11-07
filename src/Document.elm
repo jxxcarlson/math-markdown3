@@ -52,6 +52,7 @@ import Parser exposing ((|.), Parser, chompWhile, getChompedString, succeed, sym
 import Prng.Uuid as Uuid exposing (Uuid)
 import Utility
 import Utility.List
+import Utility.String
 
 
 type alias Document =
@@ -482,7 +483,7 @@ makeSlug document =
         shortHash =
             String.left 4 endOfHash
     in
-    document.authorIdentifier ++ "." ++ Utility.compress document.title ++ "." ++ shortHash
+    document.authorIdentifier ++ "." ++ Utility.String.compress document.title ++ "." ++ shortHash
 
 
 makeInitialSlug : String -> String -> Uuid -> String
@@ -494,7 +495,7 @@ makeInitialSlug title authorIdentifier identifier =
         shortHash =
             String.left 4 endOfHash
     in
-    authorIdentifier ++ "." ++ Utility.compress title ++ "." ++ shortHash
+    authorIdentifier ++ "." ++ Utility.String.compress title ++ "." ++ shortHash
 
 
 {-|
