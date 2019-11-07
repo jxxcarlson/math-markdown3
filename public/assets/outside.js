@@ -6,6 +6,13 @@ app.ports.infoForOutside.subscribe(msg => {
 
     switch(msg.tag) {
 
+       case "AskToReconnectUser":
+        console.log("AskToReconnectUser")
+        if (sessionStorage.currentUser != null) {
+            app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(sessionStorage.currentUser)})
+        }
+        break;
+
         case "UserData":
         console.log("UserData")
         if (msg.data != null) {
@@ -13,19 +20,6 @@ app.ports.infoForOutside.subscribe(msg => {
         }
         break;
 
-        case "DequeData":
-        console.log("DequeData")
-        if (msg.data != null) {
-          localStorage.setItem("deque", JSON.stringify(msg.data));
-        }
-        break;
-
-        case "AskToReconnectUser":
-        console.log("AskToReconnectUser")
-        if (sessionStorage.currentUser != null) {
-            app.ports.infoForElm.send({tag: "ReconnectUser", data: JSON.parse(sessionStorage.currentUser)})
-        }
-        break;
 
         case "AskForDequeData":
             console.log("AskForDequeData")
@@ -33,6 +27,12 @@ app.ports.infoForOutside.subscribe(msg => {
                 app.ports.infoForElm.send({tag: "UuidList", data: JSON.parse(localStorage.deque)})
             }
             break;
+                    case "DequeData":
+        console.log("DequeData")
+        if (msg.data != null) {
+          localStorage.setItem("deque", JSON.stringify(msg.data));
+        }
+        break;
 
        case "GetSelection":
            console.log("GetSelection (2)")
@@ -43,6 +43,10 @@ app.ports.infoForOutside.subscribe(msg => {
            console.log ("json", jsonData)
            app.ports.infoForElm.send({tag: "GotSelection", data: jsonData})
        break;
+
+      case "ScrollToLine":
+         console.log("ScrollToLine", msg.data)  //, JSON.stringify(msg.data))
+      break;
 
     }
 
