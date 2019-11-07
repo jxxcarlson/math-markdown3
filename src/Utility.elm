@@ -97,24 +97,6 @@ intSlug seconds =
     msp seconds ++ "-" ++ lsp seconds
 
 
-chunked : Int -> String
-chunked k =
-    let
-        right =
-            modBy 1000 k |> String.fromInt |> String.padLeft 3 '0'
-
-        k2 =
-            k // 1000
-
-        middle =
-            modBy 1000 k2 |> String.fromInt |> String.padLeft 3 '0'
-
-        left =
-            k2 // 1000 |> String.fromInt |> String.padLeft 3 '0'
-    in
-    [ left, middle, right ] |> String.join "-"
-
-
 pxFromFloat : Float -> String
 pxFromFloat f =
     f
