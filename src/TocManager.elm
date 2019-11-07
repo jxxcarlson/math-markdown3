@@ -16,7 +16,7 @@ import Prng.Uuid as Uuid exposing (Uuid)
 import Toc exposing (TocItem)
 import TocZ
 import Tree.Zipper as Zipper exposing (Zipper)
-import Utility
+import Utility.List
 
 
 {-| Compare the childDocuments list with the childInfo
@@ -116,7 +116,7 @@ insertInMaster newDocument targetDocument masterDocument =
             uuid1 == uuid2
 
         newChildInfo =
-            Utility.insertItemInList eq newItem targetItem masterDocument.childInfo
+            Utility.List.insertItemInList eq newItem targetItem masterDocument.childInfo
     in
     { masterDocument | childInfo = newChildInfo }
 
@@ -145,7 +145,7 @@ equal d e =
 -}
 insertInChildDocumentList : Document -> Document -> List Document -> List Document
 insertInChildDocumentList newDocument targetDocument documentList =
-    Utility.insertItemInList equal newDocument targetDocument documentList
+    Utility.List.insertItemInList equal newDocument targetDocument documentList
 
 
 {-| Compute an indented outline (a string) from a master document

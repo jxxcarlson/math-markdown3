@@ -51,6 +51,7 @@ import Maybe.Extra
 import Parser exposing ((|.), Parser, chompWhile, getChompedString, succeed, symbol)
 import Prng.Uuid as Uuid exposing (Uuid)
 import Utility
+import Utility.List
 
 
 type alias Document =
@@ -316,7 +317,7 @@ insertDocumentInList newDocument targetDocument documentList =
         equal x y =
             x.id == y.id
     in
-    Utility.insertItemInList equal newDocument targetDocument documentList
+    Utility.List.insertItemInList equal newDocument targetDocument documentList
 
 
 idAndTitleList : List Document -> List ( Uuid, String )
