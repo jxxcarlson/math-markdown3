@@ -3292,48 +3292,8 @@ editTools model =
 tabStrip : ViewInfo -> Model -> Element Msg
 tabStrip viewInfo model =
     column [ width (px 30), height (px 200), Background.color (Style.grey 0.1), alignTop ]
-        [ row [ spacing 15, rotate -1.5708, moveLeft 50, moveDown 70 ] [ showToolsButton model, showDocumentListButton model ]
+        [ row [ spacing 15, rotate -1.5708, moveLeft 50, moveDown 70 ] [ Button.showToolsButton model, Button.showDocumentListButton model ]
         ]
-
-
-showToolsButton : Model -> Element Msg
-showToolsButton model =
-    let
-        color =
-            if model.visibilityOfTools == Visible then
-                Style.red
-
-            else
-                Style.buttonGrey
-    in
-    case model.appMode of
-        Editing StandardEditing ->
-            Input.button []
-                { onPress = Just (SetToolPanelState Visible)
-                , label = el [ height (px 30), width (px 50), padding 8, Background.color color, Font.color Style.white, Font.size 12 ] (Element.text "Tools")
-                }
-
-        _ ->
-            Input.button []
-                { onPress = Just NoOp
-                , label = el [ height (px 30), width (px 50), padding 8, Background.color Style.charcoal, Font.color Style.white, Font.size 12 ] (Element.text "")
-                }
-
-
-showDocumentListButton : { a | visibilityOfTools : Visibility } -> Element Msg
-showDocumentListButton model =
-    let
-        color =
-            if model.visibilityOfTools == Invisible then
-                Style.red
-
-            else
-                Style.buttonGrey
-    in
-    Input.button []
-        { onPress = Just (SetToolPanelState Invisible)
-        , label = el [ height (px 30), padding 8, Background.color color, Font.color Style.white, Font.size 12 ] (Element.text "Documents")
-        }
 
 
 

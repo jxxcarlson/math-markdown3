@@ -1,11 +1,13 @@
 module Button exposing
     ( editingMode
     , readingMode
+    , showDocumentListButton
+    , showToolsButton
     , subDocumentEditingMode
     , userPageMode
     )
 
-import Element exposing (el, height, padding, px, width)
+import Element exposing (Element, el, height, padding, px, width)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
@@ -15,8 +17,10 @@ import Model
         , DequeViewState(..)
         , DocumentListType(..)
         , EditMode(..)
+        , Model
         , Msg(..)
         , UserState(..)
+        , Visibility(..)
         )
 import Style
 import Utility.View
@@ -101,6 +105,50 @@ subDocumentEditingMode model =
                     (el headerLabelStyle (Element.text "Edit/S"))
             }
         )
+
+
+
+-- AAA
+
+
+showToolsButton : Model -> Element Msg
+showToolsButton model =
+    let
+        color =
+            if model.visibilityOfTools == Visible then
+                Style.red
+
+            else
+                Style.buttonGrey
+    in
+    case model.appMode of
+        Editing StandardEditing ->
+            Input.button []
+                { onPress = Just (SetToolPanelState Visible)
+                , label = el [ height (px 30), width (px 50), padding 8, Background.color color, Font.color Style.white, Font.size 12 ] (Element.text "Tools")
+                }
+
+        _ ->
+            Input.button []
+                { onPress = Just NoOp
+                , label = el [ height (px 30), width (px 50), padding 8, Background.color Style.charcoal, Font.color Style.white, Font.size 12 ] (Element.text "")
+                }
+
+
+showDocumentListButton : { a | visibilityOfTools : Visibility } -> Element Msg
+showDocumentListButton model =
+    let
+        color =
+            if model.visibilityOfTools == Invisible then
+                Style.red
+
+            else
+                Style.buttonGrey
+    in
+    Input.button []
+        { onPress = Just (SetToolPanelState Invisible)
+        , label = el [ height (px 30), padding 8, Background.color color, Font.color Style.white, Font.size 12 ] (Element.text "Documents")
+        }
 
 
 
