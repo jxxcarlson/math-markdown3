@@ -1303,91 +1303,6 @@ inputSearchTerms model =
         }
 
 
-searchButton : Model -> Element Msg
-searchButton model =
-    let
-        title =
-            case model.searchMode of
-                UserSearch ->
-                    "My docs"
-
-                PublicSearch ->
-                    "Public docs"
-
-                SharedDocSearch ->
-                    "Shared docs"
-    in
-    Input.button []
-        { onPress = Just ToggleSearchMode
-        , label =
-            el [ height (px 30), width (px 75), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2, centerX ] (Element.text title))
-        }
-
-
-sortAlphabeticalButton : Model -> Element Msg
-sortAlphabeticalButton model =
-    let
-        color =
-            case model.sortMode == Alphabetical of
-                True ->
-                    Style.darkRed
-
-                False ->
-                    Style.charcoal
-    in
-    Input.button (Style.standardButton ++ [ Background.color color, Font.color Style.white ])
-        { onPress = Just (SetSortMode Alphabetical)
-        , label = el [] (Element.text "A")
-        }
-
-
-sortByMostRecentFirstButton : Model -> Element Msg
-sortByMostRecentFirstButton model =
-    let
-        color =
-            case model.sortMode == MostRecentFirst of
-                True ->
-                    Style.darkRed
-
-                False ->
-                    Style.charcoal
-    in
-    Input.button (Style.standardButton ++ [ Background.color color, Font.color Style.white ])
-        { onPress = Just (SetSortMode MostRecentFirst)
-        , label = el [] (Element.text "R")
-        }
-
-
-allDocumentsButton : Element Msg
-allDocumentsButton =
-    Input.button []
-        { onPress = Just AllDocuments
-        , label =
-            el [ height (px 30), width (px 40), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2, centerX ] (Element.text "All"))
-        }
-
-
-helpDocsButton : Element Msg
-helpDocsButton =
-    Input.button []
-        { onPress = Just GetHelpDocs
-        , label =
-            el [ height (px 30), width (px 40), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2, centerX ] (Element.text "Help"))
-        }
-
-
-clearSearchTermsButton : Element Msg
-clearSearchTermsButton =
-    Input.button []
-        { onPress = Just ClearSearchTerms
-        , label =
-            el [ height (px 30), width (px 25), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
-                (el [ moveDown 2 ] (Element.text "X"))
-        }
-
 
 focusSearchBox : Cmd Msg
 focusSearchBox =
@@ -3106,7 +3021,7 @@ heading model =
         Just _ ->
             case model.documentListDisplay of
                 (SearchResults, DequeViewOff) ->
-                    row [ spacing 10 ] [ setDocumentListTypeButton model w n, sortByMostRecentFirstButton model, sortAlphabeticalButton model, setDequeViewButton model]
+                    row [ spacing 10 ] [ setDocumentListTypeButton model w n, Button.sortByMostRecentFirst model, Button.sortAlphabetical model, setDequeViewButton model]
 
                 (SearchResults, DequeViewOn) ->
                     row [ spacing 10 ] [ setDocumentListTypeButton model w n,  setDequeViewButton model]
@@ -3255,7 +3170,7 @@ editingHeader viewInfo model rt =
 
 
 searchRow model =
-    row [ spacing 10, alignRight ] [ inputSearchTerms model, clearSearchTermsButton, searchButton model, allDocumentsButton, helpDocsButton ]
+    row [ spacing 10, alignRight ] [ inputSearchTerms model, Button.clearSearchTerms,  Button.search model,  Button.allDocuments,  Button.helpDocs ]
 
 
 titleRowForEditing titleWidth rt =

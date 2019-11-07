@@ -1,13 +1,19 @@
 module Button exposing
-    ( editingMode
+    ( allDocuments
+    , clearSearchTerms
+    , editingMode
+    , helpDocs
     , readingMode
+    , search
     , showDocumentList
     , showTools
+    , sortAlphabetical
+    , sortByMostRecentFirst
     , subDocumentEditingMode
     , userPageMode
     )
 
-import Element exposing (Element, el, height, padding, px, width)
+import Element exposing (Element, centerX, el, height, moveDown, padding, px, width)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Input as Input
@@ -19,6 +25,8 @@ import Model
         , EditMode(..)
         , Model
         , Msg(..)
+        , SearchMode(..)
+        , SortMode(..)
         , UserState(..)
         , Visibility(..)
         )
@@ -148,6 +156,92 @@ showDocumentList model =
     Input.button []
         { onPress = Just (SetToolPanelState Invisible)
         , label = el [ height (px 30), padding 8, Background.color color, Font.color Style.white, Font.size 12 ] (Element.text "Documents")
+        }
+
+
+search : Model -> Element Msg
+search model =
+    let
+        title =
+            case model.searchMode of
+                UserSearch ->
+                    "My docs"
+
+                PublicSearch ->
+                    "Public docs"
+
+                SharedDocSearch ->
+                    "Shared docs"
+    in
+    Input.button []
+        { onPress = Just ToggleSearchMode
+        , label =
+            el [ height (px 30), width (px 75), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2, centerX ] (Element.text title))
+        }
+
+
+sortAlphabetical : Model -> Element Msg
+sortAlphabetical model =
+    let
+        color =
+            case model.sortMode == Alphabetical of
+                True ->
+                    Style.darkRed
+
+                False ->
+                    Style.charcoal
+    in
+    Input.button (Style.standardButton ++ [ Background.color color, Font.color Style.white ])
+        { onPress = Just (SetSortMode Alphabetical)
+        , label = el [] (Element.text "A")
+        }
+
+
+sortByMostRecentFirst : Model -> Element Msg
+sortByMostRecentFirst model =
+    let
+        color =
+            case model.sortMode == MostRecentFirst of
+                True ->
+                    Style.darkRed
+
+                False ->
+                    Style.charcoal
+    in
+    Input.button (Style.standardButton ++ [ Background.color color, Font.color Style.white ])
+        { onPress = Just (SetSortMode MostRecentFirst)
+        , label = el [] (Element.text "R")
+        }
+
+
+allDocuments : Element Msg
+allDocuments =
+    Input.button []
+        { onPress = Just AllDocuments
+        , label =
+            el [ height (px 30), width (px 40), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2, centerX ] (Element.text "All"))
+        }
+
+
+helpDocs : Element Msg
+helpDocs =
+    Input.button []
+        { onPress = Just GetHelpDocs
+        , label =
+            el [ height (px 30), width (px 40), padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2, centerX ] (Element.text "Help"))
+        }
+
+
+clearSearchTerms : Element Msg
+clearSearchTerms =
+    Input.button []
+        { onPress = Just ClearSearchTerms
+        , label =
+            el [ height (px 30), width (px 25), centerX, padding 8, Background.color Style.blue, Font.color Style.white, Font.size 11 ]
+                (el [ moveDown 2 ] (Element.text "X"))
         }
 
 
