@@ -20,6 +20,7 @@ import Model exposing
                  , Visibility(..)
                  )
 import Browser
+import Utility.Time
 import AppNavigation exposing(NavigationType(..))
 import Browser.Dom as Dom
 import Utility.List
@@ -3201,7 +3202,7 @@ messageContent ( _, messageContent_ ) =
 
 currentTime model =
     Element.el [ alignRight, Font.color Style.white, Font.size 12 ]
-        (Element.text <| "Current time: " ++ Utility.humanTimeHM model.zone model.time)
+        (Element.text <| "Current time: " ++ Utility.Time.humanTimeHM model.zone model.time)
 
 
 wordCount model =
