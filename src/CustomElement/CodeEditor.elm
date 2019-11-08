@@ -47,8 +47,8 @@ and its CodeMirror files from `site/lib`.
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (property)
 import Html.Events exposing (on)
-import Json.Decode as JD exposing (Decoder)
-import Json.Encode as JE exposing (Value)
+import Json.Decode as D exposing (Decoder)
+import Json.Encode as E exposing (Value)
 
 
 {-| Create a code editor Html element.
@@ -63,7 +63,7 @@ codeEditor =
 editorValue : String -> Attribute msg
 editorValue value =
     property "editorValue" <|
-        JE.string value
+        E.string value
 
 
 {-| This is how you receive changes to the contents of the code editor.
@@ -71,9 +71,9 @@ editorValue value =
 onEditorChanged : (String -> msg) -> Attribute msg
 onEditorChanged tagger =
     on "editorChanged" <|
-        JD.map tagger <|
-            JD.at [ "target", "editorValue" ]
-                JD.string
+        D.map tagger <|
+            D.at [ "target", "editorValue" ]
+                D.string
 
 
 {-| This is how you receive the content of the line clicked.
@@ -81,6 +81,28 @@ onEditorChanged tagger =
 onGutterClicked : (String -> msg) -> Attribute msg
 onGutterClicked tagger =
     on "gutterClicked" <|
-        JD.map tagger <|
-            JD.at [ "target", "lineValue" ]
-                JD.string
+        D.map tagger <|
+            D.at [ "target", "lineValue" ]
+                D.string
+
+
+onLineNumberChanged : (Int -> msg) -> Attribute msg
+onLineNumberChanged tagger =
+    on "lineNumberChanged" <|
+        D.map tagger <|
+            D.at [ "target", "lineNumberValue" ]
+                D.int
+
+
+lineNumberValue : Int -> Attribute msg
+lineNumberValue k =
+    property "setLineNumber" <|
+        E.int k
+
+
+encodeLineNumberAndCount : Int -> Int -> E.Value
+encodeLineNumberAndCount k count =
+    E.object
+        [ ( "lineNumber", E.int k )
+        , ( "count", E.int count )
+        ]

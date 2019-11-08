@@ -34,7 +34,7 @@ customElements.define('code-editor', class extends HTMLElement {
 
   set lineNumber(value) {
      var lineNumber = value
-     console.log("LINE NO (CE)", lineNumber)
+     console.log("LINE_NO (CE)", value)
 
      }
 
