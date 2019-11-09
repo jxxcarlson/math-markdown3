@@ -2,6 +2,8 @@ module Update.Master exposing
     ( loadSubdocument
     , processCandidateChildDocumentRequest
     , processChildDocumentRequest
+    , setupOutline_
+    , setupOutline
     )
 
 import Cmd.Document
@@ -128,3 +130,23 @@ getTagString maybeDocument =
 
         Just document ->
             document.tags |> String.join ", "
+
+
+setupOutline : Model -> Model
+setupOutline model =
+    { model | documentOutline = setupOutline_ model }
+
+
+setupOutline_ : Model -> String
+setupOutline_ model =
+    case model.currentDocument of
+        Just currentDoc ->
+            case TocManager.computeOutline currentDoc model.tableOfContents of
+                Nothing ->
+                    model.documentOutline
+
+                Just outline ->
+                    outline
+
+        Nothing ->
+            model.documentOutline

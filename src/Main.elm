@@ -25,6 +25,8 @@ import AppNavigation exposing(NavigationType(..))
 import Browser.Dom as Dom
 import Editor
 import Button
+import Update.UI
+import KeyboardManager
 import Browser.Events
 import Browser.Navigation as Nav
 import CustomElement.CodeEditor as CodeEditor
@@ -469,13 +471,13 @@ update msg model =
         SetAppMode appMode ->
             case appMode of
                 Reading ->
-                    setModeToReading model
+                    Update.UI.setModeToReading model
 
                 Editing editMode ->
-                    setModeToEditing model editMode
+                    Update.UI.setModeToEditing model editMode
 
                 UserMode s ->
-                    setUserMode model s
+                    Update.UI.setUserMode model s
 
         -- SYSTEM --
         NewUuid ->
@@ -505,7 +507,7 @@ update msg model =
                         keyMsg
                         model.pressedKeys
             in
-            keyboardGateway model ( pressedKeys, maybeKeyChange )
+            KeyboardManager.keyboardGateway model ( pressedKeys, maybeKeyChange )
 
         SetFocusOnSearchBox result ->
             ( model, Cmd.none )
@@ -590,7 +592,7 @@ update msg model =
 
         -- DOCUMENT --
         CreateDocument ->
-            makeNewDocument model
+            Update.Document.makeNewDocument model
 
         NewSubdocument ->
             newSubdocument model
@@ -605,7 +607,7 @@ update msg model =
             deleteSubdocument model
 
         SaveDocument ->
-            saveDocument model
+            Update.Document.saveDocument model
 
         ArmForDelete ->
             ( { model | documentDeleteState = Armed, message = ( UserMessage, "Armed for delete.  Caution!" ) }, Cmd.none )
@@ -648,7 +650,7 @@ update msg model =
             Update.Document.setCurrentSubdocument model document tocItem
 
         SetUpOutline ->
-            ( setupOutline model, Cmd.none )
+            ( Update.Master.setupOutline model, Cmd.none )
 
         AddUserNameForPermissions str ->
             ( { model | usernameToAddToPermmission = str}, Cmd.none)
@@ -716,10 +718,10 @@ update msg model =
             Search.do model
 
         ToggleSearchMode ->
-            cycleSearchMode model
+            Search.cycleSearchMode model
 
         ClearSearchTerms ->
-            clearSearchTerms model
+            Search.clearSearchTerms model
 
         TOC tocMsg ->
             case tocMsg of
@@ -1091,79 +1093,7 @@ handleLink model link =
         (SubdocIdRef, idRef)  -> focusOnId model (idRef |> Uuid.fromString |> Maybe.withDefault Utility.id0)
 
 
--- KEYBOARD HELPERS -
-
-
-keyboardGateway : Model -> ( List Key, Maybe Keyboard.KeyChange ) -> ( Model, Cmd Msg )
-keyboardGateway model ( pressedKeys, maybeKeyChange ) =
-    if List.member Control model.pressedKeys then
-        handleKey { model | pressedKeys = [] } (headKey pressedKeys)
-
-    else if model.focusedElement == FocusOnSearchBox && List.member Enter model.pressedKeys then
-        let
-            newModel =
-                { model | pressedKeys = [] }
-        in
-        case model.appMode == Editing SubdocumentEditing of
-            True ->
-                Search.forChildDocuments model
-
-            False ->
-                Search.do newModel
-
-    else
-        ( { model | pressedKeys = pressedKeys }, Cmd.none )
-
-
-handleKey : Model -> Key -> ( Model, Cmd Msg )
-handleKey model key =
-    case key of
-        Character "a" ->
-            Search.getAllDocuments model
-
-        Character "e" ->
-            setModeToEditing model StandardEditing
-
-        --        Character "f" ->
-        --            ( model, focusSearchBox )
-        Character "h" ->
-            Search.getHelpDocs model
-
-        Character "f" ->
-            clearSearchTerms model
-
-        Character "n" ->
-            makeNewDocument model
-
-        Character "r" ->
-            setModeToReading model
-
-        Character "s" ->
-            saveDocument model
-
-        Character "t" ->
-            toggleKeyboardTools model
-
-        Character "u" ->
-            case model.currentUser of
-                Nothing ->
-                    setUserMode model SignInState
-
-                _ ->
-                    setUserMode model SignedInState
-
-        _ ->
-            ( model, Cmd.none )
-
-
-headKey : List Key -> Key
-headKey keyList =
-    keyList
-        |> List.filter (\item -> item /= Control && item /= Character "^")
-        |> List.head
-        |> Maybe.withDefault F20
-
-
+--
 
 -- STRINGS
 
@@ -1280,37 +1210,6 @@ signIn model =
 
 
 
-cycleSearchMode : Model -> ( Model, Cmd Msg )
-cycleSearchMode model =
-  let
-    nextSearchMode = case model.searchMode of
-        UserSearch -> PublicSearch
-        PublicSearch -> SharedDocSearch
-        SharedDocSearch -> UserSearch
-  in
-        ( { model | searchMode = nextSearchMode }, Cmd.none )
-
-
-clearSearchTerms model =
-    ( { model | searchTerms = "" }, focusSearchBox )
-
-
-inputSearchTerms model =
-    Input.text (Style.inputStyle 200 ++ [ setElementId "search-box" ])
-        { onChange = GotSearchTerms
-        , text = model.searchTerms
-        , placeholder = Nothing
-        , label = Input.labelLeft [ Font.size 14, width (px 0) ] (Element.text "")
-        }
-
-
-
-focusSearchBox : Cmd Msg
-focusSearchBox =
-    Task.attempt SetFocusOnSearchBox (Dom.focus "search-box")
-
-
-
 -- DOCUMENT HELPERS --
 
 
@@ -1408,43 +1307,6 @@ deleteDocument model =
                        ]
 
                     )
-
-
-makeNewDocument : Model -> ( Model, Cmd Msg )
-makeNewDocument model =
-    case model.currentUser of
-        Nothing ->
-            ( model, Cmd.none )
-
-        Just user ->
-            let
-                newDocumentText =
-                    "# New Document\n\nWrite something here ..."
-
-                newDocument =
-                    Document.create model.currentUuid user.username "New Document" newDocumentText
-
-                lastAst =
-                    Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
-
-                ( newUuid, newSeed ) =
-                    step Uuid.generator model.currentSeed
-                newDeque = Document.pushFrontUnique newDocument model.deque
-            in
-            ( { model
-                | currentDocument = Just newDocument
-                , documentList = newDocument :: model.documentList
-                , visibilityOfTools = Visible
-                , appMode = Editing StandardEditing
-                , tagString = ""
-                , currentUuid = newUuid
-                , currentSeed = newSeed
-                , lastAst = lastAst
-                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
-                , deque = newDeque
-              }
-            , Cmd.batch [Request.insertDocument hasuraToken newDocument |> Cmd.map Req, Cmd.Document.sendDequeOutside  newDeque]
-            )
 
 
 addSubdocument : Model -> ( Model, Cmd Msg )
@@ -1791,23 +1653,6 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
 
 
 
-saveDocument : Model -> ( Model, Cmd Msg )
-saveDocument model =
-    case ( model.currentUser, model.currentDocument ) of
-        ( _, Nothing ) ->
-            ( model, Cmd.none )
-
-        ( Nothing, _ ) ->
-            ( model, Cmd.none )
-
-        ( Just user, Just document_ ) ->
-            let
-                document =
-                    Document.updateMetaData document_
-            in
-            ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
-            , Request.updateDocument hasuraToken user.username document |> Cmd.map Req
-            )
 
 
 setDocumentPublic : Model -> Bool -> ( Model, Cmd Msg )
@@ -1894,41 +1739,6 @@ affine factor shift input =
 translate : Float -> Int -> Int
 translate amount input =
     toFloat input + amount |> round
-
-
-setModeToReading : Model -> ( Model, Cmd Msg )
-setModeToReading model =
-    ( { model | appMode = Reading, visibilityOfTools = Invisible }, Cmd.none )
-
-
-setModeToEditing : Model -> EditMode -> ( Model, Cmd Msg )
-setModeToEditing model editMode =
-    ( { model
-        | appMode = Editing editMode
-        , visibilityOfTools = Invisible
-        , documentOutline = setupOutline_ model
-      }
-    , Cmd.none
-    )
-
-
-setUserMode : Model -> UserState -> ( Model, Cmd msg )
-setUserMode model s =
-    ( { model | appMode = UserMode s }, Cmd.none )
-
-
-toggleKeyboardTools : Model -> ( Model, Cmd Msg )
-toggleKeyboardTools model =
-    if model.appMode /= Editing StandardEditing then
-        ( model, Cmd.none )
-
-    else
-        case model.visibilityOfTools of
-            Visible ->
-                ( { model | visibilityOfTools = Invisible }, Cmd.none )
-
-            Invisible ->
-                ( { model | visibilityOfTools = Visible }, Cmd.none )
 
 
 getTagString : Maybe Document -> String
@@ -2356,26 +2166,6 @@ subDocumentTools model =
         , column [ Font.size 13, spacing 8, width (px 350), height (px 500), Border.color Style.charcoal, Border.width 1, padding 12, scrollbarY ]
             (List.map Button.addSubdocument2 model.candidateChildDocumentList)
         ]
-
-
-setupOutline : Model -> Model
-setupOutline model =
-    { model | documentOutline = setupOutline_ model }
-
-
-setupOutline_ : Model -> String
-setupOutline_ model =
-    case model.currentDocument of
-        Just currentDoc ->
-            case TocManager.computeOutline currentDoc model.tableOfContents of
-                Nothing ->
-                    model.documentOutline
-
-                Just outline ->
-                    outline
-
-        Nothing ->
-            model.documentOutline
 
 
 
@@ -2883,7 +2673,7 @@ editingHeader viewInfo model rt =
 
 
 searchRow model =
-    row [ spacing 10, alignRight ] [ inputSearchTerms model, Button.clearSearchTerms,  Button.search model,  Button.allDocuments,  Button.helpDocs ]
+    row [ spacing 10, alignRight ] [ Search.inputTerms model, Button.clearSearchTerms,  Button.search model,  Button.allDocuments,  Button.helpDocs ]
 
 
 titleRowForEditing titleWidth rt =

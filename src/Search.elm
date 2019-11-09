@@ -1,13 +1,21 @@
 module Search exposing
-    ( do
+    ( clearSearchTerms
+    , cycleSearchMode
+    , do
     , forChildDocuments
     , forPublicDocuments
     , forUsersDocuments
     , getAllDocuments
     , getHelpDocs
+    , inputTerms
     )
 
+import Browser.Dom as Dom
 import Config
+import Element exposing (px, width)
+import Element.Font as Font
+import Element.Input as Input
+import Html.Attributes as HA
 import Model
     exposing
         ( AppMode(..)
@@ -21,6 +29,8 @@ import Model
         , Visibility(..)
         )
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
+import Style
+import Task
 
 
 getAllDocuments : Model -> ( Model, Cmd Msg )
@@ -185,3 +195,47 @@ stringValueOfSearchType str =
 
         _ ->
             TitleSearch
+
+
+
+-- UI
+
+
+cycleSearchMode : Model -> ( Model, Cmd Msg )
+cycleSearchMode model =
+    let
+        nextSearchMode =
+            case model.searchMode of
+                UserSearch ->
+                    PublicSearch
+
+                PublicSearch ->
+                    SharedDocSearch
+
+                SharedDocSearch ->
+                    UserSearch
+    in
+    ( { model | searchMode = nextSearchMode }, Cmd.none )
+
+
+clearSearchTerms model =
+    ( { model | searchTerms = "" }, focusSearchBox )
+
+
+inputTerms model =
+    Input.text (Style.inputStyle 200 ++ [ setElementId "search-box" ])
+        { onChange = GotSearchTerms
+        , text = model.searchTerms
+        , placeholder = Nothing
+        , label = Input.labelLeft [ Font.size 14, width (px 0) ] (Element.text "")
+        }
+
+
+focusSearchBox : Cmd Msg
+focusSearchBox =
+    Task.attempt SetFocusOnSearchBox (Dom.focus "search-box")
+
+
+setElementId : String -> Element.Attribute msg
+setElementId id =
+    Element.htmlAttribute <| HA.attribute "id" id

@@ -1,7 +1,9 @@
 module Update.Document exposing
     ( getFirstPart
+    , makeNewDocument
     , processDocumentRequest
     , render
+    , saveDocument
     , setCurrent
     , setCurrentSubdocument
     , text
@@ -17,14 +19,19 @@ import Markdown.ElmWithId
 import Markdown.Option exposing (..)
 import Model
     exposing
-        ( DequeViewState(..)
+        ( AppMode(..)
+        , DequeViewState(..)
         , DocumentListType(..)
+        , EditMode(..)
         , Message
         , MessageType(..)
         , Model
         , Msg(..)
+        , Visibility(..)
         )
 import ParseWithId
+import Prng.Uuid exposing (Uuid(..))
+import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import Request exposing (RequestMsg(..))
 import Toc exposing (TocItem)
 import TocManager
@@ -329,3 +336,61 @@ render model document =
       }
     , Cmd.batch [ cmd1, cmd2 ]
     )
+
+
+makeNewDocument : Model -> ( Model, Cmd Msg )
+makeNewDocument model =
+    case model.currentUser of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just user ->
+            let
+                newDocumentText =
+                    "# New Document\n\nWrite something here ..."
+
+                newDocument =
+                    Document.create model.currentUuid user.username "New Document" newDocumentText
+
+                lastAst =
+                    Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+
+                ( newUuid, newSeed ) =
+                    step Prng.Uuid.generator model.currentSeed
+
+                newDeque =
+                    Document.pushFrontUnique newDocument model.deque
+            in
+            ( { model
+                | currentDocument = Just newDocument
+                , documentList = newDocument :: model.documentList
+                , visibilityOfTools = Visible
+                , appMode = Editing StandardEditing
+                , tagString = ""
+                , currentUuid = newUuid
+                , currentSeed = newSeed
+                , lastAst = lastAst
+                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+                , deque = newDeque
+              }
+            , Cmd.batch [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req, Cmd.Document.sendDequeOutside newDeque ]
+            )
+
+
+saveDocument : Model -> ( Model, Cmd Msg )
+saveDocument model =
+    case ( model.currentUser, model.currentDocument ) of
+        ( _, Nothing ) ->
+            ( model, Cmd.none )
+
+        ( Nothing, _ ) ->
+            ( model, Cmd.none )
+
+        ( Just user, Just document_ ) ->
+            let
+                document =
+                    Document.updateMetaData document_
+            in
+            ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
+            , Request.updateDocument Config.hasuraToken user.username document |> Cmd.map Req
+            )
