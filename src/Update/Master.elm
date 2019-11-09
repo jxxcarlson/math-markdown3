@@ -319,7 +319,7 @@ firstSubdocument_ model user document =
     let
         -- Prepare the new document
         newDocumentText =
-            "# New subdocument:\n\n### " ++ document.title ++ "\n\nWrite something here ..."
+            "# Title...\n\n___\n\n[Main](#id/" ++ Uuid.toString document.id ++ ")\n\n___\n\nText ..."
 
         newDocument =
             Document.create model.currentUuid user.username "New Subdocument" newDocumentText
