@@ -20,6 +20,7 @@ import Model exposing
                  , Visibility(..)
                  )
 import Browser
+import Debounce
 import Utility.Time
 import AppNavigation exposing(NavigationType(..))
 import Browser.Dom as Dom
@@ -127,21 +128,15 @@ main =
         , onUrlChange = UrlChanged
         }
 
---application :
---  { init : flags -> Url -> Key -> ( model, Cmd msg )
---  , view : model -> Document msg
---  , update : msg -> model -> ( model, Cmd msg )
---  , subscriptions : model -> Sub msg
---  , onUrlRequest : UrlRequest -> msg
---  , onUrlChange : Url -> msg
---  }
-
--- MODEL --
 
 
 
 
-
+debounceConfig : Debounce.Config Msg
+debounceConfig =
+  { strategy = Debounce.later 100
+  , transform = DebounceMsg
+  }
 
 -- TYPES FOR MODEL
 
@@ -252,6 +247,8 @@ init flags url key =
             { seed = 0
             , key = key
             , url = url
+            , debounce = Debounce.init
+
 
 
             -- UI
@@ -345,12 +342,43 @@ subscriptions model =
 
 -- UPDATE FUNCTION
 
+textTask : String -> Cmd Msg
+textTask str =
+    Task.perform UpdateDocumentText (Task.succeed str)
+
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+
+        FeedDebouncer str ->
+              let
+                -- Push your values here.
+                (debounce, cmd) =
+                  Debounce.push debounceConfig str model.debounce
+              in
+                ( { model
+                    | -- value = s
+                     debounce = debounce
+                  }
+                , cmd
+                )
+
+        DebounceMsg debounceMsg ->
+              let
+                (debounce, cmd) =
+                  Debounce.update
+                    debounceConfig
+                    (Debounce.takeLast textTask)
+                    debounceMsg
+                    model.debounce
+              in
+                ( { model | debounce = debounce }
+                , cmd
+                )
 
         GenerateSeed ->
             ( model, Random.generate NewSeed (Random.int 1 10000) )
@@ -1973,13 +2001,12 @@ editor_ model w h =
     in
     CodeEditor.codeEditor
         [ CodeEditor.editorValue (Document.getContent model.currentDocument)
-        , CodeEditor.onEditorChanged UpdateDocumentText -- Inform the editor custom element of the change in text
-        , CodeEditor.onGutterClicked ProcessLine  -- Resond to clicks by scrolling the rendered to text to the corresponding position.
+        , CodeEditor.onEditorChanged FeedDebouncer -- Inform the editor custom element of the change in text
+        , CodeEditor.onGutterClicked ProcessLine  -- Respond to clicks by scrolling the rendered to text to the corresponding position.
         ]
         []
         |> (\x -> Html.div [ setHtmlId "_editor_",  HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
         |> Element.html
-
 
 
 

@@ -16,6 +16,7 @@ module Model exposing
     , SortMode(..)
     , UserState(..)
     , Visibility(..)
+    , debounceConfig
     )
 
 import Api.InputObject exposing (Document_order_by(..))
@@ -23,6 +24,7 @@ import BoundedDeque exposing (BoundedDeque)
 import Browser
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
+import Debounce exposing (Debounce)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Html exposing (Html)
@@ -38,11 +40,12 @@ import TocZ exposing (TocMsg(..))
 import Tree exposing (Tree)
 import Tree.Zipper exposing (Zipper)
 import Url exposing (Url)
-import User exposing (AuthorizedUser, User)
+import User exposing (User)
 
 
 type alias Model =
     { seed : Int
+    , debounce : Debounce String
 
     -- NAV
     , key : Nav.Key
@@ -105,6 +108,13 @@ type alias Model =
     , documentOutline : String
     , usernameToAddToPermmission : String
     , permissionToAdd : Permission
+    }
+
+
+debounceConfig : Debounce.Config Msg
+debounceConfig =
+    { strategy = Debounce.later 200
+    , transform = DebounceMsg
     }
 
 
@@ -198,6 +208,8 @@ type Msg
     | NewUuid
     | Tick Time.Posix
     | AdjustTimeZone Time.Zone
+    | DebounceMsg Debounce.Msg
+    | FeedDebouncer String
       -- Ports
     | Outside Outside.InfoForElm
     | LogErr String
