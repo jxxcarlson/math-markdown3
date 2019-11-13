@@ -55,7 +55,7 @@ getAllDocuments model =
                             Request.sharedDocumentsByTitleSorted Config.hasuraToken user.username "" orderByMostRecentFirst GotUserDocuments |> Cmd.map Req
 
                 PublicSearch ->
-                    Request.publicDocumentsWithTitle Config.hasuraToken "" |> Cmd.map Req
+                    Request.publicDocumentsWithTitleSorted Config.hasuraToken "" model.sortTerm GotPublicDocuments2 |> Cmd.map Req
     in
     ( { model | documentListDisplay = ( SearchResults, DequeViewOff ), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }, cmd )
 
@@ -63,7 +63,7 @@ getAllDocuments model =
 getHelpDocs : Model -> ( Model, Cmd Msg )
 getHelpDocs model =
     ( { model | documentListDisplay = ( SearchResults, DequeViewOff ), focusedElement = NoFocus, appMode = Reading, visibilityOfTools = Invisible }
-    , Request.publicDocumentsWithTag Config.hasuraToken "usermanual" |> Cmd.map Req
+    , Request.publicDocumentsWithTagSorted Config.hasuraToken "usermanual" model.sortTerm GotPublicDocuments2 |> Cmd.map Req
     )
 
 
@@ -153,10 +153,10 @@ forPublicDocuments model =
         cmd =
             case parseSearchTerm model.searchTerms of
                 ( TitleSearch, searchTerm ) ->
-                    Request.publicDocumentsWithTitle Config.hasuraToken searchTerm |> Cmd.map Req
+                    Request.publicDocumentsWithTitleSorted Config.hasuraToken searchTerm model.sortTerm GotPublicDocuments2 |> Cmd.map Req
 
                 ( KeywordSearch, searchTerm ) ->
-                    Request.publicDocumentsWithTag Config.hasuraToken searchTerm |> Cmd.map Req
+                    Request.publicDocumentsWithTagSorted Config.hasuraToken searchTerm model.sortTerm GotPublicDocuments2 |> Cmd.map Req
 
                 ( NoSearchTerm, _ ) ->
                     Cmd.none

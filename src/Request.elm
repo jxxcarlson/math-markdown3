@@ -16,8 +16,8 @@ module Request exposing
     , publicDocuments
     , publicDocumentsBySlug
     , publicDocumentsInIdList
-    , publicDocumentsWithTag
-    , publicDocumentsWithTitle
+    , publicDocumentsWithTagSorted
+    , publicDocumentsWithTitleSorted
     , sharedDocumentsByTitleSorted
     , signInUser
     , signUpUser
@@ -104,6 +104,7 @@ type RequestMsg
     | GotDequeDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotCandidateChildDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotPublicDocuments (RemoteData (Graphql.Http.Error (List Document)) (List Document))
+    | GotPublicDocuments2 (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | LoadDocument (RemoteData (Graphql.Http.Error (List Document)) (List Document))
     | GotUserAtSignin (RemoteData (Graphql.Http.Error (List User)) (List User))
     | InsertDocumentResponse (GraphQLResponse (Maybe MutationResponse))
@@ -249,11 +250,18 @@ publicDocuments authToken =
         (RemoteData.fromResult >> GotPublicDocuments)
 
 
-publicDocumentsWithTitle : String -> String -> Cmd RequestMsg
-publicDocumentsWithTitle authToken titleKey =
+publicDocumentsWithTitleSorted : String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+publicDocumentsWithTitleSorted authToken titleKey sortData requestHandler =
     makeGraphQLQuery authToken
-        (fetchDocumentsQuery (Present <| isPublicAndTitle ("%" ++ titleKey ++ "%")))
-        (RemoteData.fromResult >> GotPublicDocuments)
+        (fetchSortedDocumentsQuery (Present <| isPublicAndTitle ("%" ++ titleKey ++ "%")) sortData)
+        (RemoteData.fromResult >> requestHandler)
+
+
+publicDocumentsWithTagSorted : String -> String -> OptionalArgument (List Document_order_by) -> RequestHandler -> Cmd RequestMsg
+publicDocumentsWithTagSorted authToken tag sortData requestHandler =
+    makeGraphQLQuery authToken
+        (fetchSortedDocumentsQuery (Present <| hasTagAndIsPublic tag) sortData)
+        (RemoteData.fromResult >> requestHandler)
 
 
 insertDocument : String -> Document -> Cmd RequestMsg

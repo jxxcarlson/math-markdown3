@@ -467,15 +467,8 @@ update msg model =
                         MostRecentFirst ->
                             orderByMostRecentFirst
 
-                cmd =
-                    case model.currentUser of
-                        Just user ->
-                            Tuple.second <| Search.do model
-
-                        Nothing ->
-                            Cmd.none
             in
-            ( { model | sortMode = sortMode, sortTerm = sortTerm }, cmd )
+            Search.do { model | sortMode = sortMode, sortTerm = sortTerm }
 
         SetDocType docType ->
             let
@@ -923,6 +916,20 @@ update msg model =
                                     Update.Document.processDocumentRequest model currentDoc documentList
                             in
                             ( { newModel | currentDocument = currentDoc }, cmd )
+
+                GotPublicDocuments2 remoteData ->
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "Get author docs: not asked" ) }, Cmd.none )
+
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "Get author docs:: loading" ) }, Cmd.none )
+
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "Get author docs:: request failed" ) }, Cmd.none )
+
+                        Success documentList ->
+                            Update.Document.processDocumentRequest model Nothing documentList
 
                 InsertDocumentResponse _ ->
                     ( { model | message = ( UserMessage, "New document saved" ) }, Cmd.none )
@@ -2236,29 +2243,31 @@ heading model =
     case model.currentUser of
         Nothing ->
             case model.documentListDisplay of
-                (SearchResults, DequeViewOff) ->
-                    Input.button []
-                        { onPress = Just (SetDocumentListType DocumentChildren)
-                        , label =
-                            el (Button.headingStyle w Style.charcoal)
-                                (Element.text ("Public Documents! (" ++ n ++ ")"))
-                        }
+                (SearchResults, _) ->
+                    row [ spacing 10 ] [ Button.setDocumentListType model w n, Button.sortByMostRecentFirst model, Button.sortAlphabetical model]
+--
+--                    Input.button []
+--                        { onPress = Just (SetDocumentListType DocumentChildren)
+--                        , label =
+--                            el (Button.headingStyle w Style.charcoal)
+--                                (Element.text ("Public Documents! (" ++ n ++ ")"))
+--                        }
 
-                (DocumentChildren, DequeViewOff) ->
+                (DocumentChildren, _) ->
                     Input.button []
                         { onPress = Just (SetDocumentListType SearchResults)
                         , label =
                             el (Button.headingStyle w Style.charcoal)
                                 (Element.text ("Contents! (" ++ n ++ ")"))
                         }
-
-                (_, DequeViewOn) ->
-                    Input.button []
-                        { onPress = Just ToggleDequeview
-                        , label =
-                            el (Button.headingStyle w Style.charcoal)
-                                (Element.text "Recent")
-                      }
+--
+--                (_, DequeViewOn) ->
+--                    Input.button []
+--                        { onPress = Just ToggleDequeview
+--                        , label =
+--                            el (Button.headingStyle w Style.charcoal)
+--                                (Element.text "Recent")
+--                      }
 
         Just _ ->
             case model.documentListDisplay of
