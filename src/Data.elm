@@ -7,12 +7,12 @@ import Utility exposing (getId)
 loadingPage : Document
 loadingPage =
     { id = getId 1
-    , title = "Notes on Futhark"
+    , title = "Welcome!"
     , authorIdentifier = "jxxcarlson"
     , content = loadingPageText
     , tags = [ "system" ]
     , public = True
-    , slug = "loading"
+    , slug = "firstPage"
     , docType = Markdown MDExtendedMath
     , childInfo = []
     , permissions = []
@@ -20,11 +20,18 @@ loadingPage =
 
 
 loadingPageText =
-    """# Loading ...
+    """# Welcome!
 
+To get started
 
-![Hummingbird](https://www.allaboutbirds.org/guide/noindex/photo/60395551-1280px.jpg)
-Please stand by.  We are loading your documents
+- Use the search box (upper right) to search for public documents.  Try *phys*.
+  Or just press the *All* button.
+
+   - You can search by keyword (tag).  Try *notebook/k*
+
+- For help (documentation), press the *Help* button, upper right.
+
+-
 
 $$
 \\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
@@ -35,7 +42,7 @@ $$
 
 image =
     """
-  ![Hummingbird](http://noteimages.s3.amazonaws.com/jxxcarlson/hummingbird.jpg)
+  ![Hummingbird](http://noteimages.s    3.amazonaws.com/jxxcarlson/hummingbird.jpg)
          Hummingbird (Meditation)
 """
 

@@ -241,6 +241,7 @@ init flags url key =
     let
         ( newUuid, newSeed ) =
             step Uuid.generator (initialSeed flags.seed flags.randInts)
+        initialAst = Markdown.ElmWithId.parse -1 ExtendedMath Data.loadingPage.content
 
         model : Model
         model =
@@ -295,11 +296,11 @@ init flags url key =
             , toggleToc = False
             , candidateChildDocumentList = []
             , childDocIdString = ""
-            , currentDocument = Nothing
+            , currentDocument = Just Data.loadingPage
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
-            , lastAst = Update.Render.emptyAst
-            , renderedText = Update.Render.emptyRenderedText
+            , lastAst = initialAst  -- Update.Render.emptyAst
+            , renderedText = Update.Render.render (Markdown MDExtendedMath)  initialAst -- Update.Render.emptyRenderedText
             , tagString = ""
             , searchTerms = ""
             , sortTerm = orderByMostRecentFirst
@@ -2262,6 +2263,7 @@ heading model =
         Just _ ->
             case model.documentListDisplay of
                 (SearchResults, DequeViewOff) ->
+
                     row [ spacing 10 ] [ Button.setDocumentListType model w n, Button.sortByMostRecentFirst model, Button.sortAlphabetical model, Button.setDequeView model]
 
                 (SearchResults, DequeViewOn) ->
@@ -2370,19 +2372,22 @@ titleRow titleWidth rt =
 
 editTools : Model -> Element Msg
 editTools model =
-    if List.member model.appMode [ Editing StandardEditing, Editing SubdocumentEditing ] then
-        row [ spacing 6 ]
-            [ Button.editingMode model
-            , Button.subDocumentEditingMode model
-            , Button.newDocument model
-            , Button.firstSubDocument model
-            , Button.saveDocument model
-            , Button.deleteDocument model
-            , Button.cancelDeleteDocumentInHeader model
-            ]
+    case model.currentUser of
+        Nothing -> Element.none
+        Just _ ->
+            if List.member model.appMode [ Editing StandardEditing, Editing SubdocumentEditing ] then
+                row [ spacing 6 ]
+                    [ Button.editingMode model
+                    , Button.subDocumentEditingMode model
+                    , Button.newDocument model
+                    , Button.firstSubDocument model
+                    , Button.saveDocument model
+                    , Button.deleteDocument model
+                    , Button.cancelDeleteDocumentInHeader model
+                    ]
 
-    else
-        row [ spacing 6 ] [ Button.editingMode model, Button.subDocumentEditingMode model ]
+            else
+                row [ spacing 6 ] [ Button.editingMode model, Button.subDocumentEditingMode model ]
 
 
 

@@ -521,10 +521,19 @@ setDequeViewX model w n =
 
 
 setDocumentChildren model w n =
+    let
+        color =
+            case model.documentListDisplay of
+                ( _, DequeViewOff ) ->
+                    Style.darkBlue
+
+                ( _, DequeViewOn ) ->
+                    Style.charcoal
+    in
     Input.button []
         { onPress = Just (SetDocumentListType SearchResults)
         , label =
-            el (headingStyle w Style.charcoal)
+            el (headingStyle w color)
                 (Element.text ("Contents (" ++ n ++ ")"))
         }
 
@@ -534,15 +543,23 @@ setDocumentListType model w n =
         msg =
             case Maybe.map .childInfo model.currentDocument == Just [] of
                 True ->
-                    NoOp
+                    ToggleDequeview
 
                 False ->
                     SetDocumentListType DocumentChildren
+
+        color =
+            case model.documentListDisplay of
+                ( _, DequeViewOff ) ->
+                    Style.darkBlue
+
+                ( _, DequeViewOn ) ->
+                    Style.charcoal
     in
     Input.button []
         { onPress = Just msg
         , label =
-            el (headingStyle w Style.charcoal)
+            el (headingStyle w color)
                 (Element.text ("Documents (" ++ n ++ ")"))
         }
 
