@@ -20,6 +20,11 @@ app.ports.infoForOutside.subscribe(msg => {
         }
         break;
 
+        case "DestroyUserData":
+        console.log("DestroyUserData")
+        sessionStorage.clear();
+        break;
+
 
         case "AskForDequeData":
             console.log("AskForDequeData")

@@ -37,6 +37,7 @@ type InfoForElm
 type InfoForOutside
     = AskToReconnectUser E.Value
     | UserData E.Value
+    | DestroyUserData E.Value
     | AskForDequeData E.Value
     | DequeData E.Value
     | GetTextSelectionFromOutside E.Value
@@ -82,6 +83,9 @@ sendInfo info =
     case info of
         UserData value ->
             infoForOutside { tag = "UserData", data = value }
+
+        DestroyUserData value ->
+            infoForOutside { tag = "DestroyUserData", data = value }
 
         DequeData value ->
             infoForOutside { tag = "DequeData", data = value }

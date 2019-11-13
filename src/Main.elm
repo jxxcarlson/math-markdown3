@@ -405,7 +405,6 @@ update msg model =
                             , Cmd.Document.getUserDocumentsAtSignIn                                                                                                                                                                                user)
 
                 Outside.GotSelection selection ->
-                    -- XXX
                     let
                         maybeLineNumber = case model.currentDocument of
                            Nothing -> Nothing
@@ -414,7 +413,6 @@ update msg model =
                             Just k -> ("Line number: "  ++ String.fromInt k,  Outside.sendInfo (Outside.ScrollToLine (E.int k)))
                             Nothing -> ("Could not find line", Cmd.none)
                     in
-                    -- XXX
                     ({model | editorTargetLineNumber = maybeLineNumber, selectedText = selection, message = (UserMessage, message)}
                       , cmd)
 
@@ -579,7 +577,7 @@ update msg model =
                 , currentDocument = Nothing
                 , documentList = []
               }
-            , Request.publicDocuments hasuraToken |> Cmd.map Req
+            , Cmd.batch [Request.publicDocuments hasuraToken |> Cmd.map Req, Outside.sendInfo (Outside.DestroyUserData E.null)]
             )
 
 
