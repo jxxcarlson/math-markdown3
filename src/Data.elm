@@ -7,7 +7,7 @@ import Utility exposing (getId)
 loadingPage : Document
 loadingPage =
     { id = getId 1
-    , title = "Welcome!"
+    , title = ""
     , authorIdentifier = "jxxcarlson"
     , content = loadingPageText
     , tags = [ "system" ]
@@ -20,9 +20,7 @@ loadingPage =
 
 
 loadingPageText =
-    """# Welcome!
-
-## Getting started
+    """# Getting started
 
 - Use the search box (upper right) to search for public documents by word
   or fragment of a word in the title.  Try *phys*.
