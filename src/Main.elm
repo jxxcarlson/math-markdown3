@@ -1671,7 +1671,7 @@ outerPasswordPanel model =
         , Utility.View.showIf (model.appMode == UserMode SignUpState) (inputEmail model)
         , Utility.View.showIf (model.appMode == UserMode SignUpState) (el [ Font.size 12 ] (Element.text "A real email address is only needed for password recovery in real production."))
         , row [ spacing 12, paddingXY 0 12 ]
-            [ Utility.View.showIf (model.appMode == UserMode SignInState) Button.signIn
+            [ Utility.View.showIf (model.appMode == UserMode SignInState || model.currentUser == Nothing) Button.signIn
             , row [ spacing 12 ]
                 [ Button.signUp model
                 , Utility.View.showIf (model.appMode == UserMode SignUpState) (Button.cancelSignUp model)

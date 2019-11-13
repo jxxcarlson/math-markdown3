@@ -324,9 +324,9 @@ clearSearchTerms =
 
 
 shareUrl model =
-    Input.button []
+    Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
         { onPress = Just DoShareUrl
-        , label = el [] (Element.text "Share: ")
+        , label = el [] (Element.text "Share")
         }
 
 

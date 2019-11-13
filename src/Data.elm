@@ -22,20 +22,40 @@ loadingPage =
 loadingPageText =
     """# Welcome!
 
-To get started
+## Getting started
 
-- Use the search box (upper right) to search for public documents.  Try *phys*.
-  Or just press the *All* button.
+- Use the search box (upper right) to search for public documents by word
+  or fragment of a word in the title.  Try *phys*.
+  Or just press the **All** button.
 
    - You can search by keyword (tag).  Try *notebook/k*
 
-- For help (documentation), press the *Help* button, upper right.
+   - Use the buttons **R** and **A** to switch between sort by most recent and sort by alphabetical order.
 
--
+- For help (documentation), press the **Help** button, upper right.
+
+
+## Creating and Editing Documents
+
+For the moment, the available document format is Markdown, with the possibility of
+writing mathematical text using TeX/LaTeX:
 
 $$
 \\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
 $$
+
+We will add MiniLaTeX, a subset of LaTeX, in the near future.
+
+To create and edit documents, you must have set up an account
+and be signed in to it.  Then an **Edit** button will appear
+to the left of the **Read** button.  For editing shortcuts
+and more information on editing
+please see the [manual](#id/6ee8484c-0688-4a44-8648-e02288a26a6e).
+
+## Sharing documents
+
+Documents can be public or private.  To send get a link to a
+public document, press the button **Share** in the footer.
 
 """
 
@@ -48,6 +68,50 @@ image =
 
 
 rhsUserText =
+    """
+# Welcome!
+
+## About this app
+
+This app is a platform for creating, editing, and publishing
+documents written in Markdown, with the possibility
+of writing mathematical formulas:
+
+$$
+\\int_{-\\infty}^\\infty e^{-x^2} dx = \\pi
+$$
+
+Formulas written in TeX/LaTeX are rendered using [MathJax](https://mathjax.org).
+We will soon add the [MiniLaTeX](https://demo.minilatex.app/)    document format (a subset of LaTeX).
+
+## Getting Started
+
+- Press the **Read** button, upper left, to read public documents without signing in.
+
+- To create and edit documents, please sign in.  You have to have previously created
+  an account by signing up.
+
+## Some links
+
+- [User manual](#id/6ee8484c-0688-4a44-8648-e02288a26a6e)
+
+- [Sample document](#id/0089c6c9-aa54-4c42-8844-c821d2684c9c)
+
+If a document title is rendered in blue and is preceded by a plus sign,
+click on it to reveal its contents.
+
+## Plans
+
+This app is a work in progress and is under active development.  Eventually
+it will become a paid service for authors, but at a very, very low annual 
+membership fee.  If an author elects to not renew their membership, their
+documents remain in the system, whether they be public or private.
+
+    
+"""
+
+
+rhsUserText2 =
     """
 # Welcome!
 
