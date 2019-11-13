@@ -631,7 +631,7 @@ signIn : Element Msg
 signIn =
     Input.button Style.standardButton
         { onPress = Just SignIn
-        , label = Element.text "Sign in"
+        , label = el [] (Element.text "Sign in")
         }
 
 

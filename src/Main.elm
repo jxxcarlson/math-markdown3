@@ -314,7 +314,6 @@ init flags url key =
     ( model
     , Cmd.batch
         [ Task.perform AdjustTimeZone Time.here
-        -- , Request.publicDocuments hasuraToken |> Cmd.map Req
         , Cmd.Document.resetViewportOfRenderedText
         , Cmd.Document.resetViewportOfEditor
         , Outside.sendInfo (Outside.AskToReconnectUser E.null)
@@ -324,7 +323,67 @@ init flags url key =
         ]
     )
 
+bareModel : Model -> Model
+bareModel model =
+   let
+       initialAst = Markdown.ElmWithId.parse -1 ExtendedMath Data.loadingPage.content
+   in
+        { model |
 
+        -- UI
+         docType = Markdown MDExtendedMath
+
+        , visibilityOfTools = Invisible
+        , appMode = UserMode SignInState
+        , documentListDisplay = (SearchResults, DequeViewOff)
+        , message = ( UserMessage, "Starting ..." )
+        , pressedKeys = []
+        , focusedElement = NoFocus
+        , flashCount = 0
+
+        -- SYSTEM
+
+
+        -- USER
+        , currentUser = Nothing
+
+        --, maybeUser = Nothing
+        , token = Nothing
+        , username = ""
+        , email = ""
+        , password = ""
+        , passwordConfirmation = ""
+        , newPassword1 = ""
+        , newPassword2 = ""
+        -- EDITOR
+         , selectedText = ""
+         , editorTargetLineNumber = Nothing
+        -- documents
+        , counter = 0
+        , documentDeleteState = SafetyOn
+        , documentList = [ Data.loadingPage ]
+        , tableOfContents = []
+        , deque = BoundedDeque.empty config.dequeLength
+        , totalWordCount = 0
+        , tocData = Nothing
+        , tocCursor = Nothing
+        , toggleToc = False
+        , candidateChildDocumentList = []
+        , childDocIdString = ""
+        , currentDocument = Just Data.loadingPage
+        , currentDocumentDirty = False
+        , secondsWhileDirty = 0
+        , lastAst = initialAst  -- Update.Render.emptyAst
+        , renderedText = Update.Render.render (Markdown MDExtendedMath)  initialAst -- Update.Render.emptyRenderedText
+        , tagString = ""
+        , searchTerms = ""
+        , sortTerm = orderByMostRecentFirst
+        , searchMode = PublicSearch
+        , sortMode = MostRecentFirst
+        , documentOutline = ""
+        , usernameToAddToPermmission = ""
+        , permissionToAdd = NoPermission
+        }
 
 
 -- SUBSCRIPTION
@@ -568,16 +627,7 @@ update msg model =
             )
 
         SignOut ->
-            ( { model
-                | currentUser = Nothing
-                , token = Nothing
-                , appMode = UserMode SignInState
-                , username = ""
-                , password = ""
-                , currentDocument = Nothing
-                , documentList = []
-              }
-            , Cmd.batch [Request.publicDocuments hasuraToken |> Cmd.map Req, Outside.sendInfo (Outside.DestroyUserData E.null)]
+            ( bareModel model ,  Outside.sendInfo (Outside.DestroyUserData E.null)
             )
 
 
@@ -1798,7 +1848,7 @@ inputPassword model =
         , show = False
 
         ---, show = False
-        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100) ] (Element.text "Password")
+        , label = Input.labelLeft [ Font.size 14, moveDown 8, width (px 100), height (px 25) ] (Element.text "Password")
         }
 
 
