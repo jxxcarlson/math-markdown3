@@ -2057,7 +2057,7 @@ editor_ model w h =
     in
     CodeEditor.codeEditor
         [ CodeEditor.editorValue (Document.getContent model.currentDocument)
-        , CodeEditor.onEditorChanged FeedDebouncer -- Inform the editor custom element of the change in text
+        , CodeEditor.onEditorChanged UpdateDocumentText -- FeedDebouncer -- Inform the editor custom element of the change in text
         , CodeEditor.onGutterClicked ProcessLine  -- Respond to clicks by scrolling the rendered to text to the corresponding position.
         ]
         []

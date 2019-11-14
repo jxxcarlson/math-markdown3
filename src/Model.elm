@@ -113,7 +113,7 @@ type alias Model =
 
 debounceConfig : Debounce.Config Msg
 debounceConfig =
-    { strategy = Debounce.later 200
+    { strategy = Debounce.later 10000
     , transform = DebounceMsg
     }
 
