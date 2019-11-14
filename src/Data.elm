@@ -84,16 +84,21 @@ We will soon add the [MiniLaTeX](https://demo.minilatex.app/)    document format
 
 ## Getting Started
 
-- Press the **Read** button, upper left, to read public documents without signing in.
+- To browse without signing in: press the **Read** button, upper left.
+
 
 - To create and edit documents, please sign in.  You have to have previously created
   an account by signing up.
 
 ## Some links
 
+It is easy to make links to documents on the system, e.g.,
+
 - [User manual](#id/6ee8484c-0688-4a44-8648-e02288a26a6e)
 
-- [Sample document](#id/0089c6c9-aa54-4c42-8844-c821d2684c9c)
+- [Art notebook](#id/f3b333ff-377b-470f-b737-3bb0b30333f3)
+
+- [Draft physics book](#id/0089c6c9-aa54-4c42-8844-c821d2684c9c)
 
 If a document title is rendered in blue and is preceded by a plus sign,
 click on it to reveal its contents.
@@ -105,6 +110,17 @@ it will become a paid service for authors, but at a very, very low annual
 membership fee.  If an author elects to not renew their membership, their
 documents remain in the system, whether they be public or private.
 
+If you have comments or questions, please contact Jim Carlson:
+jxxcarlson (gmail).
+
+## Technical stuff
+
+We use a custom [Markdown parser](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/)
+written in [Elm](https://elm-lang.org).
+
+
+![Hummingbird](http://noteimages.s3.amazonaws.com/jxxcarlson/hummingbird.jpg)
+         Hummingbird (Meditation)
     
 """
 
