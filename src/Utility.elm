@@ -3,6 +3,7 @@ module Utility exposing
     , getId
     , id0
     , intSlug
+    , pageAndWordCount
     , pxFromFloat
     , uuids
     , wordCount
@@ -57,6 +58,18 @@ getId k =
 
 wordCount str =
     List.length (String.words str) |> String.fromInt
+
+
+pageAndWordCount : String -> ( Int, Int )
+pageAndWordCount str =
+    let
+        wc =
+            List.length (String.words str)
+
+        pc =
+            round (toFloat wc / 300)
+    in
+    ( wc, pc )
 
 
 join : Int -> List String -> String

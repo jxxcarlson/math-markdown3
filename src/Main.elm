@@ -20,6 +20,7 @@ import Model exposing
                  , Visibility(..)
                  )
 import Browser
+import String.Interpolate exposing(interpolate)
 import Debounce
 import Utility.Time
 import AppNavigation exposing(NavigationType(..))
@@ -2623,11 +2624,12 @@ wordCount model =
 
                 _ ->
                     ""
+        (wc, pc) = Utility.pageAndWordCount sourceText
+          |> (\(x,y) -> (String.fromInt x, String.fromInt y))
 
-        wc =
-            Utility.wordCount sourceText
+        legend = interpolate "Word count {0} ({1} pages)" [wc, pc]
     in
-    Element.el [ Font.color Style.white, Font.size 12 ] (Element.text <| "Word count: " ++ wc)
+    Element.el [ Font.color Style.white, Font.size 12 ] (Element.text <| legend )
 
 
 status model =
