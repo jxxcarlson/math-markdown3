@@ -11,6 +11,17 @@ import Test exposing (..)
 import Toc
 import TocManager
 import Utility exposing (getId)
+import Utility.List
+
+
+
+-- CONVENIENCE FUNCTION FOR TESTING --
+
+
+doTest : String -> a -> a -> Test
+doTest comment expr expectedValue =
+    test comment <|
+        \_ -> expr |> Expect.equal expectedValue
 
 
 suite : Test
@@ -75,16 +86,6 @@ suite =
 
 
 
--- CONVENIENCE FUNCTION FOR TESTING --
-
-
-doTest : String -> a -> a -> Test
-doTest comment expr expectedValue =
-    test comment <|
-        \_ -> expr |> Expect.equal expectedValue
-
-
-
 -- DATA FOR TESTS --
 -- DUMMY DOCUMENT --
 
@@ -99,6 +100,7 @@ dummy =
     , slug = "yada123"
     , docType = Markdown MDExtendedMath
     , childInfo = []
+    , permissions = []
     }
 
 

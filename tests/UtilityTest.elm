@@ -5,6 +5,7 @@ import Fuzz exposing (Fuzzer, int, list, string)
 import Prng.Uuid as Uuid exposing (Uuid)
 import Test exposing (..)
 import Utility exposing (getId)
+import Utility.List
 
 
 
@@ -55,7 +56,7 @@ primes =
 
 
 newPrimes1 =
-    Utility.insertItemInList equal ( 4, 7 ) ( 1, 2 ) primes
+    Utility.List.insertItem equal ( 4, 7 ) ( 1, 2 ) primes
 
 
 expectedNewPrimes1 =
@@ -67,7 +68,7 @@ expectedNewPrimes1 =
 
 
 newPrimes2 =
-    Utility.insertItemInList equal ( 4, 7 ) ( 2, 3 ) primes
+    Utility.List.insertItem equal ( 4, 7 ) ( 2, 3 ) primes
 
 
 expectedNewPrimes2 =
@@ -79,7 +80,7 @@ expectedNewPrimes2 =
 
 
 newPrimes3 =
-    Utility.insertItemInList equal ( 4, 7 ) ( 3, 5 ) primes
+    Utility.List.insertItem equal ( 4, 7 ) ( 3, 5 ) primes
 
 
 expectedNewPrimes3 =
@@ -106,7 +107,7 @@ eq ( uuid1, _ ) ( uuid2, _ ) =
 
 
 newData1 =
-    Utility.insertItemInList eq datum ( id1, 11 ) data
+    Utility.List.insertItem eq datum ( id1, 11 ) data
 
 
 expectedData1 =

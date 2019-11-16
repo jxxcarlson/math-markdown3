@@ -318,7 +318,7 @@ insertDocumentInList newDocument targetDocument documentList =
         equal x y =
             x.id == y.id
     in
-    Utility.List.insertItemInList equal newDocument targetDocument documentList
+    Utility.List.insertItem equal newDocument targetDocument documentList
 
 
 idAndTitleList : List Document -> List ( Uuid, String )

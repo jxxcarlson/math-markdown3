@@ -1,11 +1,11 @@
-module Utility.List exposing (insertIntegerAtIndex, insertItemInList, insertStringInList, insertUuidInList)
+module Utility.List exposing (insertIntegerAtIndex, insertItem, insertString, insertUuid)
 
 import List.Extra
 import Prng.Uuid exposing (Uuid(..))
 
 
-insertItemInList : (a -> a -> Bool) -> a -> a -> List a -> List a
-insertItemInList equal newItem targetItem list =
+insertItem : (a -> a -> Bool) -> a -> a -> List a -> List a
+insertItem equal newItem targetItem list =
     case List.Extra.splitWhen (\element -> equal element targetItem) list of
         Just ( a, b ) ->
             case List.head b of
@@ -25,8 +25,8 @@ insertItemInList equal newItem targetItem list =
     ---> ["a","b","x","c"]
 
 -}
-insertStringInList : String -> String -> List String -> List String
-insertStringInList newString targetString list =
+insertString : String -> String -> List String -> List String
+insertString newString targetString list =
     case list == [] of
         True ->
             [ newString ]
@@ -45,8 +45,8 @@ insertStringInList newString targetString list =
                     list
 
 
-insertUuidInList : Uuid -> Uuid -> List Uuid -> List Uuid
-insertUuidInList newUuid targetUuid list =
+insertUuid : Uuid -> Uuid -> List Uuid -> List Uuid
+insertUuid newUuid targetUuid list =
     case list == [] of
         True ->
             [ newUuid ]

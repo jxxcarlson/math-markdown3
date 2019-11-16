@@ -116,7 +116,7 @@ insertInMaster newDocument targetDocument masterDocument =
             uuid1 == uuid2
 
         newChildInfo =
-            Utility.List.insertItemInList eq newItem targetItem masterDocument.childInfo
+            Utility.List.insertItem eq newItem targetItem masterDocument.childInfo
     in
     { masterDocument | childInfo = newChildInfo }
 
@@ -145,7 +145,7 @@ equal d e =
 -}
 insertInChildDocumentList : Document -> Document -> List Document -> List Document
 insertInChildDocumentList newDocument targetDocument documentList =
-    Utility.List.insertItemInList equal newDocument targetDocument documentList
+    Utility.List.insertItem equal newDocument targetDocument documentList
 
 
 {-| Compute an indented outline (a string) from a master document
