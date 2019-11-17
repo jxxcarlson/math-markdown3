@@ -1415,6 +1415,7 @@ setDocumentPublic model bit =
                 in
                 ( { model
                     | currentDocument = Just newDocument
+                    , currentDocumentDirty = True
                     , documentList = Document.replaceInList newDocument model.documentList
                   }
                 , Request.updateDocument hasuraToken user.username newDocument |> Cmd.map Req

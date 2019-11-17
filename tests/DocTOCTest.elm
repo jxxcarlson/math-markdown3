@@ -87,7 +87,6 @@ suite =
 
 
 -- DATA FOR TESTS --
--- DUMMY DOCUMENT --
 
 
 dummy =
