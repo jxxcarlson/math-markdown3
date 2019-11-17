@@ -23,18 +23,21 @@ doTest comment expr expectedValue =
 suite : Test
 suite =
     describe "Toc operations"
-        [ doTest "est initial outline"
+        [ doTest "0. est initial outline"
             (TocManager.computeOutline master initialDocumentList)
             (Just initialOutline)
-        , doTest "Update by outline (identity test)"
+        , doTest "1. Update by outline (identity test)"
             (updateMaster initialOutline)
             (Just master)
-        , doTest "Permute first two subdocs"
+        , doTest "2. Permute subdocs"
             (updateMaster outline2)
             (Just master2)
-        , doTest "Permute first two subdocs and change level"
+        , doTest "3. Change level"
             (updateMaster outline3)
             (Just master3)
+        , doTest "4. Permute two middle subdocs and change level"
+            (updateMaster outline4)
+            (Just master4)
         ]
 
 
@@ -73,14 +76,14 @@ master2 =
 
 
 
--- TEST 3: Permute first two subdocs and change level
+-- TEST 3: Change level
 
 
 outline3 =
     String.trim
         """
-B
-   A
+A
+   B
 C
 D
 E
@@ -88,7 +91,26 @@ E
 
 
 master3 =
-    { master | childInfo = [ ( idB, 0 ), ( idA, 1 ), ( idC, 0 ), ( idD, 0 ), ( idE, 0 ) ] }
+    { master | childInfo = [ ( idA, 0 ), ( idB, 1 ), ( idC, 0 ), ( idD, 0 ), ( idE, 0 ) ] }
+
+
+
+-- TEST 4: Permute two subdocs in the middle and change level
+
+
+outline4 =
+    String.trim
+        """
+A
+B
+   D
+C
+E
+"""
+
+
+master4 =
+    { master | childInfo = [ ( idA, 0 ), ( idB, 0 ), ( idD, 1 ), ( idC, 0 ), ( idE, 0 ) ] }
 
 
 

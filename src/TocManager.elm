@@ -206,6 +206,9 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                 childDocuments =
                     List.drop 1 documentList
 
+                childTitles =
+                    List.map .title childDocuments
+
                 titleListUnfiltered =
                     String.split "\n" documentOutline
 
@@ -214,6 +217,9 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                         |> List.map String.trim
                         |> List.filter (\str -> str /= "")
             in
+            -- Ensure that the documentList, the masterDocument.childInfo, and
+            -- the title list from the document outline have the same length.
+            -- If so, proceed, otherwise return an error.
             case ( List.length titleList == List.length childDocuments, List.length childDocuments == List.length masterDocument.childInfo ) of
                 ( False, _ ) ->
                     Err ListsOfDifferentLengthsTM1
@@ -223,12 +229,27 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
 
                 ( True, True ) ->
                     let
-                        levels =
-                            List.map Document.level titleListUnfiltered
+                        newLevels_ : List ( String, Int )
+                        newLevels_ =
+                            -- the levels derived from the document outline
+                            List.map2 (\x y -> ( x, y ))
+                                (List.map String.trim titleListUnfiltered)
+                                (List.map Document.level titleListUnfiltered)
+
+                        newLevels : List Int
+                        newLevels =
+                            -- Put the levels in the initial order
+                            case Document.reOrder childTitles newLevels_ of
+                                Ok levels_ ->
+                                    List.map Tuple.second levels_
+
+                                Err _ ->
+                                    []
 
                         newChildInfo =
-                            -- childInfo with updated levels
-                            List.map2 (\( id, _ ) l -> ( id, l )) masterDocument.childInfo levels
+                            Debug.log "newChildInfo" <|
+                                -- childInfo with updated levels
+                                List.map2 (\( id, _ ) l -> ( id, l )) masterDocument.childInfo newLevels
 
                         newMasterDocument_ =
                             -- masterDocument_ with updated levels

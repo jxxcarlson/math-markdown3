@@ -333,6 +333,18 @@ elementsAreUnique list =
 
 {-| Reorder the annotatedList so that its projection onto the
 first component is the same as the titleList
+
+    titleList : List String
+    titleList =
+        [ "A", "C", "B" ]
+
+    annotatedList : List (String, Int)
+    annotatedList =
+        [ ( "A", 1 ), ( "B", 2 ), ( "C", 3 ) ]
+
+    reOrder titleList annotatedList
+    --> Ok [ ( "A", 1 ), ( "C", 3 ), ( "B", 2 ) ]
+
 -}
 reOrder : List String -> List ( String, a ) -> Result DocumentError (List ( String, a ))
 reOrder titleList annotatedList =
@@ -374,11 +386,6 @@ reorderChildrenInMaster masterDocument childTitleList newChildTitleList =
     let
         annotatedList =
             List.map2 (\u v -> ( u, v )) childTitleList masterDocument.childInfo
-
-        --        newChildInfo =
-        --            reOrder newChildTitleList annotatedList
-        --                |> List.map Tuple.second
-        --
     in
     case reOrder newChildTitleList annotatedList |> Result.map (List.map Tuple.second) of
         Err err ->
@@ -498,15 +505,12 @@ makeInitialSlug title authorIdentifier identifier =
     authorIdentifier ++ "." ++ Utility.String.compress title ++ "." ++ shortHash
 
 
-{-|
-
-    > create "jxxcarlson" "Intro to Chromaticity" t "First draft ..."
-    --> {   authorIdentifier = "jxxcarlson", children = [], content = "First draft ..."
-          , id = "jxxcarlson.intro-to-chromaticity.1568667528"
-          , public = False, tags = [], timeCreated = Posix 1568667528000
-          , timeUpdated = Posix 1568667528000, title = "Intro to Chromaticity" }
-        : Document
-
+{-| -- create "jxxcarlson" "Intro to Chromaticity" t "First draft ..."
+-- --> { authorIdentifier = "jxxcarlson", children = [], content = "First draft ..."
+-- , id = "jxxcarlson.intro-to-chromaticity.1568667528"
+-- , public = False, tags = [], timeCreated = Posix 1568667528000
+-- , timeUpdated = Posix 1568667528000, title = "Intro to Chromaticity" }
+-- : Document
 -}
 create : Uuid -> String -> String -> String -> Document
 create documentUuid authorIdentifier title content =

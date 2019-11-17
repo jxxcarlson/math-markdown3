@@ -42,7 +42,7 @@ suite =
         , doTest "Update from outline - change level, check master " newMasterFromOutline2 (Ok master3)
         , doTest "Update from bad outline - missing title" newMasterFromBadOutline (Err ListsOfDifferentLengthsTM1)
         , doTest "Update from bad outline - extra title" newMasterFromOutlineWithExtraTitle (Err ListsOfDifferentLengthsTM1)
-        , doTest "Update from bad outline - extraneous title" newMasterFromOutlineWithExtraneousTitle (Err UnequalSets)
+        , doTest "Update from bad outline - extraneous title" newMasterFromOutlineWithExtraneousTitle (Err ListsOfDifferentLengths)
         , doTest "Identity test for reordering by titles"
             (docReorderBy [ "A", "B", "C" ] |> Result.map childTitlesFromDoc)
             (Ok [ "A", "B", "C" ])
