@@ -247,9 +247,8 @@ updateMasterAndDocumentListFromOutline documentOutline documentList =
                                     []
 
                         newChildInfo =
-                            Debug.log "newChildInfo" <|
-                                -- childInfo with updated levels
-                                List.map2 (\( id, _ ) l -> ( id, l )) masterDocument.childInfo newLevels
+                            -- childInfo with updated levels
+                            List.map2 (\( id, _ ) l -> ( id, l )) masterDocument.childInfo newLevels
 
                         newMasterDocument_ =
                             -- masterDocument_ with updated levels
