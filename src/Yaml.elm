@@ -1,4 +1,4 @@
-module Yaml exposing (fromDocument, fromDocumentList)
+module Yaml exposing (fromDocument, fromDocumentList, toDocument, toDocumentList)
 
 import Document exposing (DocType(..), Document, Permission(..), UserPermission(..))
 import Parser exposing ((|.), (|=), Parser)
@@ -15,27 +15,53 @@ fromDocumentList noteList =
         ++ List.foldl (\document acc -> fromDocument document ++ acc) "" noteList
 
 
-toDocument : String -> Document
+fromDocument : Document -> String
+fromDocument document =
+    "- document\n"
+        ++ "   - id: "
+        ++ Uuid.toString document.id
+        ++ "\n"
+        ++ "   - authorIdentifier: "
+        ++ document.authorIdentifier
+        ++ "\n"
+        ++ "   - content"
+        ++ document.content
+        ++ "\n"
+        ++ "   - public"
+        ++ (document.public |> stringFromBool)
+        ++ "\n"
+        ++ "   - tags: ["
+        ++ String.join ", " document.tags
+        ++ "]\n"
+        ++ "   - slug"
+        ++ document.content
+        ++ "\n"
+        ++ "   - docType: "
+        ++ (document.docType |> Document.stringFromDocType)
+        ++ "\n"
+        ++ "   - timeModified: "
+        ++ (document.childInfo |> Document.stringFromChildInfo)
+        ++ "\n"
+        ++ "   - permissions: "
+        ++ (document.permissions |> Document.stringFromPermissions)
+        ++ "\n"
+
+
+toDocumentList : String -> Maybe (List Document)
+toDocumentList str =
+    Decode.fromString documentListDecoder str
+        |> Result.toMaybe
+
+
+toDocument : String -> Maybe Document
 toDocument str =
-    let
-        doc =
-            Document.dummy
-    in
-    doc
+    Decode.fromString documentDecoder str
+        |> Result.toMaybe
 
 
-type alias Document =
-    { id : Uuid
-    , title : String
-    , authorIdentifier : String
-    , content : String
-    , public : Bool
-    , tags : List String
-    , slug : String
-    , docType : DocType
-    , childInfo : List ( Uuid, Int )
-    , permissions : List UserPermission
-    }
+documentListDecoder : Decoder (List Document)
+documentListDecoder =
+    Decode.list documentDecoder
 
 
 documentDecoder : Decoder Document
@@ -181,6 +207,10 @@ decoderIdAux str =
             Decode.fail "invalid id"
 
 
+
+-- HELPERS
+
+
 custom : Decoder a -> Decoder (a -> b) -> Decoder b
 custom =
     Decode.map2 (|>)
@@ -189,47 +219,6 @@ custom =
 required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
 required key valDecoder decoder =
     custom (Decode.field key valDecoder) decoder
-
-
-
--- (Yaml.Decode.string |> Yaml.Decode.map (Uuid.fromString |> Maybe.withDefault Utility.id0))
---        |> Yaml.Decode.andThen (Yaml.Decode.string "title")
---        |> Yaml.Decode.andThen (Yaml.Decode.string "authorIdentifier")
---        |> Yaml.Decode.andThen (Yaml.Decode.string "content")
---        |> Yaml.Decode.andThen (Yaml.Decode.string "public" |> Yaml.Decode.map boolFromString)
---        |> Yaml.Decode.andThen (Yaml.Decode.list "tags" |> Yaml.Decode.map boolFromString)
-
-
-fromDocument : Document -> String
-fromDocument document =
-    "- document\n"
-        ++ "   - id: "
-        ++ Uuid.toString document.id
-        ++ "\n"
-        ++ "   - authorIdentifier: "
-        ++ document.authorIdentifier
-        ++ "\n"
-        ++ "   - content"
-        ++ document.content
-        ++ "\n"
-        ++ "   - public"
-        ++ (document.public |> stringFromBool)
-        ++ "\n"
-        ++ "   - tags: ["
-        ++ String.join ", " document.tags
-        ++ "]\n"
-        ++ "   - slug"
-        ++ document.content
-        ++ "\n"
-        ++ "   - docType: "
-        ++ (document.docType |> Document.stringFromDocType)
-        ++ "\n"
-        ++ "   - timeModified: "
-        ++ (document.childInfo |> Document.stringFromChildInfo)
-        ++ "\n"
-        ++ "   - permissions: "
-        ++ (document.permissions |> Document.stringFromPermissions)
-        ++ "\n"
 
 
 stringFromBool : Bool -> String
