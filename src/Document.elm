@@ -25,6 +25,7 @@ module Document exposing
     , level
     , listPermissions
     , makeTocStatus
+    , permissionFromString
     , permissionToString
     , pushFrontUnique
     , reOrder
@@ -33,7 +34,9 @@ module Document exposing
     , replaceInList
     , setContent
     , sortChildren
+    , stringFromChildInfo
     , stringFromDocType
+    , stringFromPermissions
     , stringOfError
     , totalWordCount
     , updateMetaData
@@ -50,6 +53,7 @@ import List.Extra
 import Maybe.Extra
 import Parser exposing ((|.), Parser, chompWhile, getChompedString, succeed, symbol)
 import Prng.Uuid as Uuid exposing (Uuid)
+import String.Interpolate exposing (interpolate)
 import Utility
 import Utility.List
 import Utility.String
@@ -309,6 +313,51 @@ stringFromDocType docType =
 
                 MDExtendedMath ->
                     "MDExtendedMath"
+
+
+stringFromChildInfo : List ( Uuid, Int ) -> String
+stringFromChildInfo uuidList =
+    uuidList
+        |> List.map (\( uuid, k ) -> interpolate "({0}, {1})" [ Uuid.toString uuid, String.fromInt k ])
+        |> String.join ", "
+        |> (\s -> interpolate "[{0]" [ s ])
+
+
+permissionFromString : String -> Permission
+permissionFromString str =
+    case str of
+        "r" ->
+            ReadPermission
+
+        "w" ->
+            WritePermission
+
+        _ ->
+            NoPermission
+
+
+stringFromPermissions : List UserPermission -> String
+stringFromPermissions permissionList =
+    let
+        stringFromPermission p =
+            case p of
+                ReadPermission ->
+                    "r"
+
+                WritePermission ->
+                    "w"
+
+                NoPermission ->
+                    "n"
+
+        stringFromUserPermission : UserPermission -> String
+        stringFromUserPermission (UserPermission user p) =
+            interpolate "({0}, {1})" [ user, stringFromPermission p ]
+    in
+    permissionList
+        |> List.map stringFromUserPermission
+        |> String.join ", "
+        |> (\s -> interpolate "[{0]" [ s ])
 
 
 insertDocumentInList : Document -> Document -> List Document -> List Document
