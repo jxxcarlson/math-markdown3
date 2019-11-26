@@ -1,9 +1,8 @@
-module Yaml exposing (fromDocument, fromDocumentList, toDocument, toDocumentList)
+module Yaml exposing (fromDocument, fromDocumentList, required, toDocument, toDocumentList)
 
 import Document exposing (DocType(..), Document, Permission(..), UserPermission(..))
 import Parser exposing ((|.), (|=), Parser)
 import Prng.Uuid as Uuid exposing (Uuid)
-import Utility
 import Yaml.Decode as Decode exposing (Decoder)
 
 
@@ -59,6 +58,10 @@ toDocument str =
         |> Result.toMaybe
 
 
+
+-- DECODERS --
+
+
 documentListDecoder : Decoder (List Document)
 documentListDecoder =
     Decode.list documentDecoder
@@ -100,6 +103,49 @@ getPermission str =
         |> Result.toMaybe
 
 
+decodeChildInfoItem : Decoder ( Uuid, Int )
+decodeChildInfoItem =
+    Decode.string
+        |> Decode.andThen decoderChildInfoItemAux
+
+
+decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
+decoderChildInfoItemAux str =
+    Decode.string
+        |> Decode.map (Parser.run childInfoItemAuxParser)
+        |> Decode.andThen handleItemParseResult
+
+
+handleItemParseResult : Result (List Parser.DeadEnd) ( Uuid, Int ) -> Decoder ( Uuid, Int )
+handleItemParseResult result =
+    case result of
+        Ok pair ->
+            Decode.succeed pair
+
+        Err _ ->
+            Decode.fail "Error parsing permission"
+
+
+decoderId : Decoder Uuid
+decoderId =
+    Decode.field "id" Decode.string
+        |> Decode.andThen decoderIdAux
+
+
+decoderIdAux : String -> Decoder Uuid
+decoderIdAux str =
+    case Uuid.fromString str of
+        Just uuid ->
+            Decode.succeed uuid
+
+        Nothing ->
+            Decode.fail "invalid id"
+
+
+
+-- PARSERS --
+
+
 parseUserPermission : Parser UserPermission
 parseUserPermission =
     Parser.succeed (\username p -> UserPermission username p)
@@ -118,34 +164,6 @@ parsePermission : Parser Document.Permission
 parsePermission =
     parseStringToChar ')'
         |> Parser.map Document.permissionFromString
-
-
-decodeChildInfoItem : Decoder ( Uuid, Int )
-decodeChildInfoItem =
-    Decode.string
-        |> Decode.andThen decoderChildInfoItemAux
-
-
-decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
-decoderChildInfoItemAux str =
-    Decode.string
-        |> Decode.map (Parser.run childInfoItemAuxParser)
-        |> unwrap
-
-
-unwrap : Decoder (Result (List Parser.DeadEnd) ( Uuid, Int )) -> Decoder ( Uuid, Int )
-unwrap =
-    Debug.todo "dd"
-
-
-
---(Decode.Decoder result) =
---  Ok data -> Decode.succeed data
---  Err _ -> Decode.fail "Invalid child info data"
-
-
-type alias ChildInfoItem =
-    ( Uuid, Int )
 
 
 childInfoItemAuxParser : Parser ( Uuid, Int )
@@ -191,24 +209,8 @@ parseWhile accepting =
     Parser.chompWhile accepting |> Parser.getChompedString
 
 
-decoderId : Decoder Uuid
-decoderId =
-    Decode.field "id" Decode.string
-        |> Decode.andThen decoderIdAux
 
-
-decoderIdAux : String -> Decoder Uuid
-decoderIdAux str =
-    case Uuid.fromString str of
-        Just uuid ->
-            Decode.succeed uuid
-
-        Nothing ->
-            Decode.fail "invalid id"
-
-
-
--- HELPERS
+-- PIPELINE
 
 
 custom : Decoder a -> Decoder (a -> b) -> Decoder b
@@ -216,6 +218,31 @@ custom =
     Decode.map2 (|>)
 
 
+{-|
+
+    import Yaml.Decode as Decode exposing (Decoder)
+
+    type alias Foo =
+        { bar : String
+        , baz : Int
+        }
+
+    fooDecoder : Decoder Foo
+    fooDecoder =
+       Decode.succeed Foo
+            |> required "bar" Decode.string
+            |> required "baz" Decode.int
+
+    str : String
+    str =
+        """   bar: hohoho!
+       baz: 43
+    """
+
+    Decode.fromString fooDecoder str
+    --> Ok { bar = "hohoho!", baz = 43 }
+
+-}
 required : String -> Decoder a -> Decoder (a -> b) -> Decoder b
 required key valDecoder decoder =
     custom (Decode.field key valDecoder) decoder
@@ -229,6 +256,10 @@ stringFromBool bit =
 
         False ->
             "False"
+
+
+
+-- HELPERS
 
 
 boolFromString : String -> Bool
