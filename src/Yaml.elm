@@ -1,4 +1,4 @@
-module Yaml exposing (childInfoItemAuxParser, decodeChildInfoItem, decoderId, decoderUuid, dummy1, dummy2, fromDocument, fromDocumentList, parseStringToChar, required, toDocument, toDocumentList, uuidParser, uuidParserAux)
+module Yaml exposing (childInfoItemAuxParser, decodeChildInfoItem, decoderChildInfoItemAux, decoderId, decoderUuid, dummy1, dummy2, foo, fromDocument, fromDocumentList, parseStringToChar, required, toDocument, toDocumentList, uuidParser, uuidParserAux)
 
 import Document exposing (DocType(..), Document, Permission(..), UserPermission(..))
 import Parser exposing ((|.), (|=), Parser)
@@ -59,7 +59,7 @@ uuid1 =
 dummy1 : Docu
 dummy1 =
     { id = Utility.getId 1
-    , title = "dummy"
+    , title = "dummy1"
     , authorIdentifier = "bozo"
     , content = "nothing\nmore\nthan\nthis"
     , public = True
@@ -75,7 +75,7 @@ dummy1 =
 dummy2 : Docu
 dummy2 =
     { id = Utility.getId 1
-    , title = "dummy"
+    , title = "dummy2"
     , authorIdentifier = "bozo"
     , content = "nothing\nmore\nthan\nthis"
     , public = True
@@ -101,7 +101,7 @@ fromDocumentList noteList =
     -- import Data.TestDocs exposing(dummy, master)
 
     fromDocument dummy1
-    -->  "   id: 59ddd53f-951f-4331-bd5b-95bdfb9b3113\n   title: dummy\n   authorIdentifier: bozo\n   content:       nothing\n      more\n      than\n      this\n   public: True\n   tags: []\n   slug: dummy.dummy\n   docType: MiniLaTeX\n   childInfo: [(3db857d2-1422-47a9-8f04-4fc6efe871cc, 1)]\n"
+    -->  "   id: 59ddd53f-951f-4331-bd5b-95bdfb9b3113\n   title: dummy1\n   authorIdentifier: bozo\n   content:       nothing\n      more\n      than\n      this\n   public: True\n   tags: []\n   slug: dummy.dummy\n   docType: MiniLaTeX\n   childInfo: [(3db857d2-1422-47a9-8f04-4fc6efe871cc:1)]\n"
 
 -}
 fromDocument : Docu -> String
@@ -272,28 +272,34 @@ uuidX =
         Uuid.fromString uuidString
         |> Maybe.withDefault Utility.id0
 
-    Decode.fromString decodeChildInfoItem ("(" ++ uuidString ++ ",4)")
-    -> Ok (uuid, 4)
+    Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8) "
+    --> Ok (uuid, 8)
 
-    Decode.fromString (Decode.list decodeChildInfoItem) ("[(" ++ uuidString ++ ",4)]")
-    -> Ok ([(uuid, 4)])
+    Decode.fromString (Decode.list decodeChildInfoItem) ("[]")
+    -> Ok ([])
 
-    Decode.fromString (Decode.list decodeChildInfoItem) ("[(3db857d2-1422-47a9-8f04-4fc6efe871cc, 1)]")
-    --> Ok ([(uuid, 44)])
+    Decode.fromString (Decode.list decodeChildInfoItem) ("[(3db857d2-1422-47a9-8f04-4fc6efe871cc:1),(3db857d2-1422-47a9-8f04-4fc6efe871cc:2)]")
+    -> Ok ([(uuid, 1),(uuid,2)])
 
 -}
 decodeChildInfoItem : Decoder ( Uuid, Int )
 decodeChildInfoItem =
-    --    Decode.succeed ( uuidX, 4 )
     Decode.string
         |> Decode.andThen decoderChildInfoItemAux
 
 
 decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
 decoderChildInfoItemAux str =
-    Decode.string
-        |> Decode.map (Parser.run childInfoItemAuxParser)
-        |> Decode.andThen handleItemParseResult
+    str
+        |> Debug.log "Parser input"
+        |> foo
+        -- |> Parser.run childInfoItemAuxParser
+        |> handleItemParseResult
+
+
+foo : String -> Result (List Parser.DeadEnd) ( Uuid, number )
+foo str =
+    Parser.run (Parser.succeed ( uuidX, 55 )) str
 
 
 handleItemParseResult : Result (List Parser.DeadEnd) ( Uuid, Int ) -> Decoder ( Uuid, Int )
@@ -304,6 +310,42 @@ handleItemParseResult result =
 
         Err _ ->
             Decode.fail "Error parsing pair"
+
+
+{-|
+
+    import Parser
+    import Prng.Uuid as Uuid exposing (Uuid)
+    import Utility
+
+    uuidString : String
+    uuidString =
+        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+
+    uuid : Uuid
+    uuid =
+        Uuid.fromString uuidString
+        |> Maybe.withDefault Utility.id0
+
+    Parser.run childInfoItemAuxParser ("(" ++ uuidString ++ " : 4)")
+    --> Ok (uuid,4)
+
+    Parser.run childInfoItemAuxParser "(3db857d2-1422-47a9-8f04-4fc6efe871cc:7)"
+    --> Ok (uuid,7)
+
+-}
+childInfoItemAuxParser : Parser ( Uuid, Int )
+childInfoItemAuxParser =
+    Parser.succeed (\uuid k -> ( uuid, k ))
+        |. Parser.symbol "("
+        |. Parser.spaces
+        |= uuidParser
+        |. Parser.spaces
+        |. Parser.symbol ":"
+        |. Parser.spaces
+        |= Parser.int
+        |. Parser.spaces
+        |. Parser.symbol ")"
 
 
 {-|
@@ -386,46 +428,13 @@ parsePermission =
         Uuid.fromString uuidString
         |> Maybe.withDefault Utility.id0
 
-    Parser.run childInfoItemAuxParser ("(" ++ uuidString ++ ",4)")
-    --> Ok (uuid,4)
-
--}
-childInfoItemAuxParser : Parser ( Uuid, Int )
-childInfoItemAuxParser =
-    Parser.succeed (\uuid k -> ( uuid, k ))
-        |. Parser.symbol "("
-        |. Parser.spaces
-        |= uuidParser
-        |. Parser.spaces
-        |. Parser.symbol ","
-        |. Parser.spaces
-        |= Parser.int
-        |. Parser.spaces
-        |. Parser.symbol ")"
-
-
-{-|
-
-    import Parser
-    import Prng.Uuid as Uuid exposing (Uuid)
-    import Utility
-
-    uuidString : String
-    uuidString =
-        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
-
-    uuid : Uuid
-    uuid =
-        Uuid.fromString uuidString
-        |> Maybe.withDefault Utility.id0
-
     Parser.run uuidParser uuidString
     --> Ok uuid
 
 -}
 uuidParser : Parser Uuid
 uuidParser =
-    parseStringToChar ',' |> Parser.andThen uuidParserAux
+    parseStringToChar ':' |> Parser.andThen uuidParserAux
 
 
 uuidParserAux : String -> Parser Uuid

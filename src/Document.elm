@@ -318,7 +318,7 @@ stringFromDocType docType =
 stringFromChildInfo : List ( Uuid, Int ) -> String
 stringFromChildInfo uuidList =
     uuidList
-        |> List.map (\( uuid, k ) -> interpolate "({0}, {1})" [ Uuid.toString uuid, String.fromInt k ])
+        |> List.map (\( uuid, k ) -> interpolate "({0}:{1})" [ Uuid.toString uuid, String.fromInt k ])
         |> String.join ", "
         |> (\s -> "[" ++ s ++ "]")
 
