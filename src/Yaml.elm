@@ -1,58 +1,175 @@
-module Yaml exposing (fromDocument, fromDocumentList, required, toDocument, toDocumentList)
+module Yaml exposing (childInfoItemAuxParser, decodeChildInfoItem, decoderId, decoderUuid, dummy1, dummy2, fromDocument, fromDocumentList, parseStringToChar, required, toDocument, toDocumentList, uuidParser, uuidParserAux)
 
 import Document exposing (DocType(..), Document, Permission(..), UserPermission(..))
 import Parser exposing ((|.), (|=), Parser)
 import Prng.Uuid as Uuid exposing (Uuid)
+import Utility
 import Yaml.Decode as Decode exposing (Decoder)
+
+
+
+--{-|
+--
+--    import Yaml.Decode as Decode exposing (Decoder)
+--
+--    type alias Foo =
+--        { bar : String
+--        , baz : Int
+--        }
+--
+--    fooDecoder : Decoder Foo
+--    fooDecoder =
+--       Decode.succeed Foo
+--            |> required "bar" Decode.string
+--            |> required "baz" Decode.int
+--
+--    str : String
+--    str =
+--        """   bar: hohoho!
+--       baz: 43
+--    """
+--
+--    Decode.fromString fooDecoder str
+--    --> Ok { bar = "hohoho!", baz = 43 }
+--
+---}
+
+
+type alias Docu =
+    { id : Uuid
+    , title : String
+    , authorIdentifier : String
+    , content : String
+    , public : Bool
+    , tags : List String
+    , slug : String
+    , docType : DocType
+    , childInfo : List ( Uuid, Int )
+
+    --    , permissions : List UserPermission
+    }
+
+
+uuid1 : Uuid
+uuid1 =
+    Uuid.fromString "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+        |> Maybe.withDefault Utility.id0
+
+
+dummy1 : Docu
+dummy1 =
+    { id = Utility.getId 1
+    , title = "dummy"
+    , authorIdentifier = "bozo"
+    , content = "nothing\nmore\nthan\nthis"
+    , public = True
+    , tags = []
+    , slug = "dummy.dummy"
+    , docType = MiniLaTeX
+    , childInfo = [ ( uuid1, 1 ) ]
+
+    --    , permissions = []
+    }
+
+
+dummy2 : Docu
+dummy2 =
+    { id = Utility.getId 1
+    , title = "dummy"
+    , authorIdentifier = "bozo"
+    , content = "nothing\nmore\nthan\nthis"
+    , public = True
+    , tags = [ "alpha", "beta" ]
+    , slug = "dummy.dummy"
+    , docType = MiniLaTeX
+    , childInfo = [ ( uuid1, 1 ) ]
+
+    --    , permissions = []
+    }
 
 
 {-| Output validated at <https://codebeautify.org/yaml-validator>
 -}
-fromDocumentList : List Document -> String
+fromDocumentList : List Docu -> String
 fromDocumentList noteList =
     "---\n"
         ++ List.foldl (\document acc -> fromDocument document ++ acc) "" noteList
 
 
-fromDocument : Document -> String
+{-|
+
+    -- import Data.TestDocs exposing(dummy, master)
+
+    fromDocument dummy1
+    -->  "   id: 59ddd53f-951f-4331-bd5b-95bdfb9b3113\n   title: dummy\n   authorIdentifier: bozo\n   content:       nothing\n      more\n      than\n      this\n   public: True\n   tags: []\n   slug: dummy.dummy\n   docType: MiniLaTeX\n   childInfo: [(3db857d2-1422-47a9-8f04-4fc6efe871cc, 1)]\n"
+
+-}
+fromDocument : Docu -> String
 fromDocument document =
-    "- document\n"
-        ++ "   - id: "
+    "   id: "
         ++ Uuid.toString document.id
         ++ "\n"
-        ++ "   - authorIdentifier: "
+        ++ "   title: "
+        ++ document.title
+        ++ "\n"
+        ++ "   authorIdentifier: "
         ++ document.authorIdentifier
         ++ "\n"
-        ++ "   - content"
-        ++ document.content
+        ++ "   content: "
+        ++ (document.content |> prepareMultiline)
         ++ "\n"
-        ++ "   - public"
+        ++ "   public: "
         ++ (document.public |> stringFromBool)
         ++ "\n"
-        ++ "   - tags: ["
+        ++ "   tags: ["
         ++ String.join ", " document.tags
         ++ "]\n"
-        ++ "   - slug"
-        ++ document.content
+        ++ "   slug: "
+        ++ document.slug
         ++ "\n"
-        ++ "   - docType: "
+        ++ "   docType: "
         ++ (document.docType |> Document.stringFromDocType)
         ++ "\n"
-        ++ "   - timeModified: "
-        ++ (document.childInfo |> Document.stringFromChildInfo)
-        ++ "\n"
-        ++ "   - permissions: "
-        ++ (document.permissions |> Document.stringFromPermissions)
+        ++ "   childInfo: "
+        ++ (document.childInfo |> Document.stringFromChildInfo |> Debug.log "CHINFO")
         ++ "\n"
 
 
-toDocumentList : String -> Maybe (List Document)
+
+--        ++ "   permissions: "
+--        ++ (document.permissions |> Document.stringFromPermissions)
+--        ++ "\n"
+
+
+prepareMultiline : String -> String
+prepareMultiline s =
+    s
+        |> String.lines
+        |> List.map (\ss -> "      " ++ ss)
+        |> String.join "\n"
+
+
+toDocumentList : String -> Maybe (List Docu)
 toDocumentList str =
     Decode.fromString documentListDecoder str
         |> Result.toMaybe
 
 
-toDocument : String -> Maybe Document
+{-|
+
+    -- XXX
+
+    toDocument (fromDocument dummy2)
+    -> Just dummy2
+
+    toDocument (fromDocument dummy1)
+    -> Just dummy1
+
+    toDocument "   id: 59ddd53f-951f-4331-bd5b-95bdfb9b3113\n   title: dummy\n   authorIdentifier: bozo\n   content:       nothing\n      more\n      than\n      this\n   public: True\n   tags: []\n   slug: dummy.dummy\n   docType: MiniLaTeX\n   childInfo: [(3db857d2-1422-47a9-8f04-4fc6efe871cc, 1)]\n"
+    -> Just dummy1
+
+-}
+toDocument : String -> Maybe Docu
 toDocument str =
     Decode.fromString documentDecoder str
         |> Result.toMaybe
@@ -62,24 +179,48 @@ toDocument str =
 -- DECODERS --
 
 
-documentListDecoder : Decoder (List Document)
+documentListDecoder : Decoder (List Docu)
 documentListDecoder =
     Decode.list documentDecoder
 
 
-documentDecoder : Decoder Document
+documentDecoder : Decoder Docu
 documentDecoder =
-    Decode.succeed Document
-        |> required "id" decoderId
+    Decode.succeed Docu
+        |> required "id" decoderUuid
         |> required "title" Decode.string
         |> required "authorIdentifier" Decode.string
         |> required "content" Decode.string
-        |> required "public" (Decode.string |> Decode.map boolFromString)
+        |> required "public" Decode.bool
         |> required "tags" (Decode.list Decode.string)
         |> required "slug" Decode.string
-        |> required "docType" (Decode.string |> Decode.map Document.docTypeFromString)
+        |> required "docType" (Decode.string |> Decode.map (adjustDocTypeString >> Document.docTypeFromString))
+        -- |> required "childInfo" (Decode.succeed [ ( uuidX, 1 ) ])
         |> required "childInfo" (Decode.list decodeChildInfoItem)
-        |> required "permissions" (Decode.list decodePermission)
+
+
+
+-- (Decode.list decodeChildInfoItem)
+--        |> required "permissions" (Decode.list decodePermission)
+
+
+adjustDocTypeString : String -> String
+adjustDocTypeString str =
+    case Debug.log "Str" str of
+        "minilatex" ->
+            "MiniLaTeX"
+
+        "mdstandard" ->
+            "MDStandard"
+
+        "mdextended" ->
+            "MDExtended"
+
+        "mdeExtendedMath" ->
+            "MDExtendedMath"
+
+        _ ->
+            str
 
 
 decodePermission : Decoder UserPermission
@@ -103,8 +244,47 @@ getPermission str =
         |> Result.toMaybe
 
 
+uuidStringX : String
+uuidStringX =
+    "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+
+
+uuidX : Uuid
+uuidX =
+    Uuid.fromString uuidStringX
+        |> Maybe.withDefault Utility.id0
+
+
+{-|
+
+    -- XXX
+
+    import Prng.Uuid as Uuid exposing (Uuid)
+    import Yaml.Decode as Decode
+    import Utility
+
+    uuidString : String
+    uuidString =
+        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+
+    uuid : Uuid
+    uuid =
+        Uuid.fromString uuidString
+        |> Maybe.withDefault Utility.id0
+
+    Decode.fromString decodeChildInfoItem ("(" ++ uuidString ++ ",4)")
+    -> Ok (uuid, 4)
+
+    Decode.fromString (Decode.list decodeChildInfoItem) ("[(" ++ uuidString ++ ",4)]")
+    -> Ok ([(uuid, 4)])
+
+    Decode.fromString (Decode.list decodeChildInfoItem) ("[(3db857d2-1422-47a9-8f04-4fc6efe871cc, 1)]")
+    --> Ok ([(uuid, 44)])
+
+-}
 decodeChildInfoItem : Decoder ( Uuid, Int )
 decodeChildInfoItem =
+    --    Decode.succeed ( uuidX, 4 )
     Decode.string
         |> Decode.andThen decoderChildInfoItemAux
 
@@ -118,12 +298,37 @@ decoderChildInfoItemAux str =
 
 handleItemParseResult : Result (List Parser.DeadEnd) ( Uuid, Int ) -> Decoder ( Uuid, Int )
 handleItemParseResult result =
-    case result of
+    case Debug.log "RRR" result of
         Ok pair ->
             Decode.succeed pair
 
         Err _ ->
-            Decode.fail "Error parsing permission"
+            Decode.fail "Error parsing pair"
+
+
+{-|
+
+    import Prng.Uuid as Uuid exposing (Uuid)
+    import Yaml.Decode as Decode
+    import Utility
+
+    uuidString : String
+    uuidString =
+        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+
+    uuid : Uuid
+    uuid =
+        Uuid.fromString uuidString
+        |> Maybe.withDefault Utility.id0
+
+    Decode.fromString decoderUuid uuidString
+    --> Ok uuid
+
+-}
+decoderUuid : Decoder Uuid
+decoderUuid =
+    Decode.string
+        |> Decode.andThen decoderIdAux
 
 
 decoderId : Decoder Uuid
@@ -166,6 +371,25 @@ parsePermission =
         |> Parser.map Document.permissionFromString
 
 
+{-|
+
+    import Parser
+    import Prng.Uuid as Uuid exposing (Uuid)
+    import Utility
+
+    uuidString : String
+    uuidString =
+        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+
+    uuid : Uuid
+    uuid =
+        Uuid.fromString uuidString
+        |> Maybe.withDefault Utility.id0
+
+    Parser.run childInfoItemAuxParser ("(" ++ uuidString ++ ",4)")
+    --> Ok (uuid,4)
+
+-}
 childInfoItemAuxParser : Parser ( Uuid, Int )
 childInfoItemAuxParser =
     Parser.succeed (\uuid k -> ( uuid, k ))
@@ -180,6 +404,25 @@ childInfoItemAuxParser =
         |. Parser.symbol ")"
 
 
+{-|
+
+    import Parser
+    import Prng.Uuid as Uuid exposing (Uuid)
+    import Utility
+
+    uuidString : String
+    uuidString =
+        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+
+    uuid : Uuid
+    uuid =
+        Uuid.fromString uuidString
+        |> Maybe.withDefault Utility.id0
+
+    Parser.run uuidParser uuidString
+    --> Ok uuid
+
+-}
 uuidParser : Parser Uuid
 uuidParser =
     parseStringToChar ',' |> Parser.andThen uuidParserAux
@@ -195,6 +438,14 @@ uuidParserAux str =
             Parser.problem "Bad uuid string"
 
 
+{-|
+
+    import Parser
+
+    Parser.run (parseStringToChar '.') "test."
+    --> Ok "test"
+
+-}
 parseStringToChar : Char -> Parser String
 parseStringToChar endChar =
     (Parser.getChompedString <|
@@ -256,16 +507,3 @@ stringFromBool bit =
 
         False ->
             "False"
-
-
-
--- HELPERS
-
-
-boolFromString : String -> Bool
-boolFromString str =
-    if str == "True" then
-        True
-
-    else
-        False

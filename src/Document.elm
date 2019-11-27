@@ -78,7 +78,7 @@ dummy =
     { id = Utility.getId 1
     , title = "dummy"
     , authorIdentifier = "bozo"
-    , content = "Nothing here"
+    , content = "nothing here"
     , public = True
     , tags = []
     , slug = "dummy.dummy"
@@ -320,7 +320,7 @@ stringFromChildInfo uuidList =
     uuidList
         |> List.map (\( uuid, k ) -> interpolate "({0}, {1})" [ Uuid.toString uuid, String.fromInt k ])
         |> String.join ", "
-        |> (\s -> interpolate "[{0]" [ s ])
+        |> (\s -> "[" ++ s ++ "]")
 
 
 permissionFromString : String -> Permission
