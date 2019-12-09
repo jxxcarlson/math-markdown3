@@ -31,6 +31,7 @@ import Model
         )
 import Prng.Uuid as Uuid exposing (Uuid(..))
 import Random.Pcg.Extended exposing (Seed, step)
+import Render
 import Request exposing (RequestMsg(..))
 import TocManager
 import Update.Document
@@ -89,47 +90,21 @@ processCandidateChildDocumentRequest model documentList =
 loadSubdocument : Model -> Document -> ( Model, Cmd Msg )
 loadSubdocument model document =
     let
-        content =
-            document.content
-
-        lastAst =
-            Update.Render.parse document.docType model.counter content
-
-        nMath =
-            Markdown.ElmWithId.numberOfMathElements lastAst
-
-        ( renderedText, cmd_ ) =
-            if nMath > 1000 then
-                let
-                    firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart content)
-
-                    renderedText_ =
-                        Update.Render.render document.docType firstAst
-
-                    cmd__ =
-                        Cmd.Document.renderAstFor lastAst
-                in
-                ( renderedText_
-                , cmd__
-                )
-
-            else
-                ( Update.Render.render document.docType lastAst, Cmd.none )
+        ( renderingData, cmd ) =
+            Update.Render.prepare model (Just document)
     in
     ( { model
         | documentList = document :: List.filter (\doc -> doc.id /= document.id) model.documentList
         , currentDocument = Just document
         , tagString = getTagString (Just document)
         , counter = model.counter + 2
-        , lastAst = lastAst
+        , renderingData = renderingData
         , appMode = Reading
         , documentListDisplay = ( SearchResults, DequeViewOff )
-        , renderedText = renderedText
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
       }
-    , cmd_
+    , cmd
     )
 
 
@@ -325,8 +300,8 @@ firstSubdocument_ model user document =
             Document.create model.currentUuid user.username "New Subdocument" newDocumentText
 
         -- Prepare AST and udpate uuid
-        lastAst =
-            Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+        renderingData =
+            Render.load model.counter (Render.documentOption newDocument) newDocument.content
 
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed
@@ -364,8 +339,7 @@ firstSubdocument_ model user document =
         , currentUuid = newUuid
         , currentSeed = newSeed
         , message = ( UserMessage, "subdocument added" )
-        , lastAst = lastAst
-        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+        , renderingData = renderingData
       }
     , Cmd.batch
         [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req
@@ -395,8 +369,8 @@ newSubdocumentAtHead model user masterDocument =
             Document.create model.currentUuid user.username "New Subdocument" newDocumentText
 
         -- Prepare AST and udpate uuid
-        lastAst =
-            Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+        renderingData =
+            Render.load model.counter (Render.documentOption newDocument) newDocument.content
 
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed
@@ -435,8 +409,7 @@ newSubdocumentAtHead model user masterDocument =
         , currentUuid = newUuid
         , currentSeed = newSeed
         , message = ( UserMessage, "subdocument added" )
-        , lastAst = lastAst
-        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+        , renderingData = renderingData
       }
     , Cmd.batch
         [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req
@@ -456,8 +429,8 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
             Document.create model.currentUuid user.username "New Subdocument" newDocumentText
 
         -- Prepare AST and udpate uuid
-        lastAst =
-            Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+        renderingData =
+            Render.load model.counter (Render.documentOption newDocument) newDocument.content
 
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed
@@ -484,7 +457,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
     ( { model
         | currentDocument = Just newDocument
         , tableOfContents = newMasterDocument :: newChildDocumentList
-        , counter = model.counter + 1 -- Necessary?
+        , counter = model.counter + 1
         , documentList = newDocumentList
         , tocData = TocManager.setupWithFocus newDocument.id (Just newMasterDocument) newChildDocumentList
         , tocCursor = Just newDocument.id
@@ -496,8 +469,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
         , currentUuid = newUuid
         , currentSeed = newSeed
         , message = ( UserMessage, "subdocument added" )
-        , lastAst = lastAst
-        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+        , renderingData = renderingData
       }
     , Cmd.batch
         [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req

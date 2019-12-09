@@ -32,11 +32,11 @@ import Model
 import ParseWithId
 import Prng.Uuid exposing (Uuid(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
+import Render
 import Request exposing (RequestMsg(..))
 import Toc exposing (TocItem)
 import TocManager
 import Tree exposing (Tree)
-import Tree.Diff as Diff
 import Update.Render
 import User exposing (User)
 
@@ -72,9 +72,6 @@ text model str =
                 newDeque =
                     Document.pushFrontUnique updatedDoc model.deque
 
-                newAst =
-                    Update.Render.diffUpdateAst updatedDoc.docType model.counter str model.lastAst
-
                 tableOfContents =
                     Document.replaceInList updatedDoc model.tableOfContents
             in
@@ -89,8 +86,7 @@ text model str =
                 , tocCursor = Just updatedDoc.id
 
                 -- rendering
-                , lastAst = newAst
-                , renderedText = Update.Render.render updatedDoc.docType newAst
+                , renderingData = Render.update model.counter updatedDoc.content model.renderingData
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -124,8 +120,8 @@ setCurrent model document extraCmd =
                 Just user ->
                     Request.updateUser Config.hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req
 
-        ( newAst, newRenderedText, renderCmd ) =
-            prepareAstAndRenderedText model document
+        ( renderingData, renderCmd ) =
+            Update.Render.prepare model (Just document)
 
         ( masterDocCmd, documentListDisplay_ ) =
             prepareIfMasterDoc model document
@@ -136,8 +132,7 @@ setCurrent model document extraCmd =
         , counter = model.counter + 2
         , deque = newDeque
         , currentUser = updateMaybeUserWithDeque newDeque model.currentUser
-        , lastAst = newAst
-        , renderedText = newRenderedText
+        , renderingData = renderingData
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
@@ -156,8 +151,8 @@ setCurrentSubdocument model document tocItem =
            one.  One solution is to expose all positive levels, not
            must level 1.
         -}
-        ( newAst, newRenderedText, renderCmd ) =
-            prepareAstAndRenderedText model document
+        ( renderingData, renderCmd ) =
+            Update.Render.prepare model (Just document)
 
         ( masterDocCmd, documentListDisplay_ ) =
             prepareIfMasterDoc model document
@@ -181,8 +176,7 @@ setCurrentSubdocument model document tocItem =
         | currentDocument = Just document
         , documentListDisplay = documentListDisplay_
         , counter = model.counter + 2
-        , lastAst = newAst
-        , renderedText = newRenderedText
+        , renderingData = renderingData
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
@@ -190,39 +184,39 @@ setCurrentSubdocument model document tocItem =
     )
 
 
-prepareAstAndRenderedText : Model -> Document -> ( Tree ParseWithId.MDBlockWithId, HtmlRecord, Cmd Msg )
-prepareAstAndRenderedText model document =
-    let
-        lastAst : Tree ParseWithId.MDBlockWithId
-        lastAst =
-            Markdown.ElmWithId.parse model.counter ExtendedMath document.content
 
-        nMath =
-            Markdown.ElmWithId.numberOfMathElements lastAst
-
-        renderedText : { title : Html msg, toc : Html msg, document : Html msg }
-        renderedText =
-            if nMath > 10 then
-                let
-                    firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
-                in
-                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
-
-            else
-                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
-
-        renderCmd =
-            if nMath > 10 then
-                Cmd.Document.renderAstFor lastAst
-
-            else
-                Cmd.none
-    in
-    ( lastAst, renderedText, renderCmd )
-
-
-
+--
+--prepareAstAndRenderedText : Model -> Document -> ( Tree ParseWithId.MDBlockWithId, HtmlRecord, Cmd Msg )
+--prepareAstAndRenderedText model document =
+--    let
+--        lastAst : Tree ParseWithId.MDBlockWithId
+--        lastAst =
+--            Markdown.ElmWithId.parse model.counter ExtendedMath document.content
+--
+--        nMath =
+--            Markdown.ElmWithId.numberOfMathElements lastAst
+--
+--        renderedText : { title : Html msg, toc : Html msg, document : Html msg }
+--        renderedText =
+--            if nMath > 10 then
+--                let
+--                    firstAst =
+--                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
+--                in
+--                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
+--
+--            else
+--                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+--
+--        renderCmd =
+--            if nMath > 10 then
+--                Cmd.Document.renderAstFor lastAst
+--
+--            else
+--                Cmd.none
+--    in
+--    ( lastAst, renderedText, renderCmd )
+--
 -- prepareIfMasterDoc : Model -> Document -> (Cmd Msg, DocumentListType)
 
 
@@ -268,7 +262,7 @@ processDocumentRequest model maybeDocument documentList =
                 Just doc_ ->
                     Just doc_
 
-        ( newAst, newRenderedText, cmd ) =
+        ( renderingData, cmd ) =
             Update.Render.prepare model currentDoc
     in
     ( { model
@@ -276,8 +270,7 @@ processDocumentRequest model maybeDocument documentList =
         , currentDocument = currentDoc
         , tagString = getTagString currentDoc
         , counter = model.counter + 2
-        , lastAst = newAst
-        , renderedText = newRenderedText
+        , renderingData = renderingData
         , docType = Document.getDocType currentDoc
         , message = ( UserMessage, "Success getting document list" )
       }
@@ -298,29 +291,8 @@ getTagString maybeDocument =
 render : Model -> Document -> ( Model, Cmd Msg )
 render model document =
     let
-        lastAst =
-            Markdown.ElmWithId.parse model.counter ExtendedMath document.content
-
-        nMath =
-            Markdown.ElmWithId.numberOfMathElements lastAst
-
-        renderedText =
-            if nMath > 10 then
-                let
-                    firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (getFirstPart document.content)
-                in
-                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" <| firstAst
-
-            else
-                Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
-
-        cmd1 =
-            if nMath > 10 then
-                Cmd.Document.renderAstFor lastAst
-
-            else
-                Cmd.none
+        ( renderingData, cmd1 ) =
+            Update.Render.prepare model (Just document)
 
         cmd2 =
             if document.childInfo == [] then
@@ -330,8 +302,7 @@ render model document =
                 Request.documentsInIdList Config.hasuraToken (Document.idList document) GotChildDocuments |> Cmd.map Req
     in
     ( { model
-        | lastAst = lastAst
-        , renderedText = renderedText
+        | renderingData = renderingData
         , counter = model.counter + 2
       }
     , Cmd.batch [ cmd1, cmd2 ]
@@ -369,8 +340,7 @@ makeNewDocument model =
                 , tagString = ""
                 , currentUuid = newUuid
                 , currentSeed = newSeed
-                , lastAst = lastAst
-                , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" lastAst
+                , renderingData = Render.load model.counter (Render.documentOption newDocument) newDocument.content
                 , deque = newDeque
               }
             , Cmd.batch [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req, Cmd.Document.sendDequeOutside newDeque ]

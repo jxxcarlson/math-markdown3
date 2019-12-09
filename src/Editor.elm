@@ -1,6 +1,8 @@
-module Editor exposing (lineNumber, selectionDecoder)
+module Editor exposing (findStringInAST, lineNumber, selectionDecoder)
 
 import Json.Decode as D exposing (Decoder)
+import Markdown.ElmWithId
+import Render exposing (RenderingData(..))
 
 
 selectionDecoder : Decoder String
@@ -22,3 +24,10 @@ lineNumber key text =
         |> List.head
         |> Maybe.map Tuple.first
         |> Maybe.map (\x -> x + 1)
+
+
+findStringInAST : String -> RenderingData msg -> Maybe ( Int, Int )
+findStringInAST str rd =
+    case rd of
+        MD data ->
+            Markdown.ElmWithId.searchAST str data.fullAst

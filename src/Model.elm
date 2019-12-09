@@ -10,7 +10,6 @@ module Model exposing
     , MessageType(..)
     , Model
     , Msg(..)
-    , RenderedText
     , SearchMode(..)
     , SearchType(..)
     , SortMode(..)
@@ -27,17 +26,15 @@ import Browser.Navigation as Nav
 import Debounce exposing (Debounce)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
-import Html exposing (Html)
 import Keyboard exposing (Key(..))
 import Outside
-import ParseWithId
 import Prng.Uuid as Uuid exposing (Uuid)
 import Random.Pcg.Extended exposing (Seed)
+import Render exposing (RenderingData)
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..))
 import Time exposing (Posix)
 import Toc exposing (TocItem)
 import TocZ exposing (TocMsg(..))
-import Tree exposing (Tree)
 import Tree.Zipper exposing (Zipper)
 import Url exposing (Url)
 import User exposing (User)
@@ -98,8 +95,7 @@ type alias Model =
     , currentDocument : Maybe Document
     , currentDocumentDirty : Bool
     , secondsWhileDirty : Int
-    , lastAst : Tree ParseWithId.MDBlockWithId
-    , renderedText : RenderedText Msg
+    , renderingData : RenderingData Msg
     , tagString : String
     , searchTerms : String
     , sortTerm : OptionalArgument (List Document_order_by)
@@ -194,10 +190,6 @@ type SearchType
     | NoSearchTerm
 
 
-type alias RenderedText msg =
-    { title : Html msg, toc : Html msg, document : Html msg }
-
-
 
 -- MSG --
 
@@ -280,7 +272,7 @@ type Msg
     | CancelDeleteDocument
       -- Doc Update
     | SetDocumentPublic Bool
-    | GotSecondPart (RenderedText Msg)
+    | GotSecondPart (RenderingData Msg)
     | GotTagString String
     | Clear
     | Req RequestMsg

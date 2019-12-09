@@ -22,16 +22,14 @@ import Browser.Dom as Dom
 import Config
 import Document exposing (Document)
 import Json.Encode as E
-import Markdown.ElmWithId
 import Maybe.Extra
 import Model exposing (Model, Msg(..))
 import Outside
-import ParseWithId
 import Prng.Uuid as Uuid exposing (Uuid)
 import Process
+import Render exposing (RenderingData)
 import Request exposing (RequestMsg(..), orderByMostRecentFirst)
 import Task exposing (Task)
-import Tree exposing (Tree)
 import Url exposing (Url)
 import User exposing (User)
 import Utility
@@ -163,12 +161,12 @@ getUserDocumentsAtSignIn user =
 -- RENDER
 
 
-renderAstFor : Tree ParseWithId.MDBlockWithId -> Cmd Msg
-renderAstFor ast =
+renderAstFor : RenderingData Msg -> Cmd Msg
+renderAstFor rd =
     Process.sleep 10
         |> Task.andThen
             (\_ ->
                 Process.sleep 100
-                    |> Task.andThen (\_ -> Task.succeed (Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast))
+                    |> Task.andThen (\_ -> Task.succeed (Render.render rd))
             )
         |> Task.perform GotSecondPart

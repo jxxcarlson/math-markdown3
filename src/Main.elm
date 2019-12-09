@@ -10,7 +10,6 @@ import Model exposing
                  , FocusedElement(..)
                  , Message
                  , MessageType(..)
-                 , RenderedText
                  , Model
                  , Msg(..)
                  , SearchMode(..)
@@ -24,7 +23,7 @@ import String.Interpolate exposing(interpolate)
 import Debounce
 import Utility.Time
 import AppNavigation exposing(NavigationType(..))
-import Browser.Dom as Dom
+import Render.Types exposing (RenderedText)
 import Editor
 import Button
 import Update.UI
@@ -37,7 +36,6 @@ import Update.Master
 import Cmd.Document
 import Utility
 import Utility.View
-import Browser.Dom as Dom
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Element exposing (..)
 import Element.Background as Background
@@ -53,10 +51,10 @@ import Html exposing (..)
 import Html.Attributes as HA
 import Json.Encode as E
 import Keyboard exposing (Key(..))
-import List.Extra
 import Document
 import Outside
 import Markdown.Elm
+import Markdown.Option as MDOption
 import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
 import ParseWithId
@@ -64,6 +62,7 @@ import Preprocessor
 import Prng.Uuid as Uuid exposing (Uuid)
 import Random
 import Search
+import Render exposing(RenderingOption(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
@@ -72,7 +71,6 @@ import Task exposing (Task)
 import Time exposing (Posix)
 import TocManager
 import TocZ exposing (TocMsg(..), viewZ)
-import Tree exposing (Tree)
 import Update.Document
 import Url exposing(Url)
 import User exposing (AuthorizedUser, User)
@@ -300,8 +298,11 @@ init flags url key =
             , currentDocument = Just Data.loadingPage
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
-            , lastAst = initialAst  -- Update.Render.emptyAst
-            , renderedText = Update.Render.render (Markdown MDExtendedMath)  initialAst -- Update.Render.emptyRenderedText
+
+            , renderingData = Render.load -1 (OMarkdown MDOption.Standard) "Empty document"
+
+
+
             , tagString = ""
             , searchTerms = ""
             , sortTerm = orderByMostRecentFirst
@@ -374,8 +375,7 @@ bareModel model =
         , currentDocument = Just Data.loadingPage
         , currentDocumentDirty = False
         , secondsWhileDirty = 0
-        , lastAst = initialAst  -- Update.Render.emptyAst
-        , renderedText = Update.Render.render (Markdown MDExtendedMath)  initialAst -- Update.Render.emptyRenderedText
+        , renderingData = Render.load -1 (OMarkdown MDOption.Standard) "Empty document"
         , tagString = ""
         , searchTerms = ""
         , sortTerm = orderByMostRecentFirst
@@ -636,7 +636,7 @@ update msg model =
         ProcessLine str ->
             let
                 id =
-                    (case Markdown.ElmWithId.searchAST str model.lastAst of
+                    (case Editor.findStringInAST str model.renderingData of
                         Nothing ->
                             "??"
 
@@ -692,8 +692,8 @@ update msg model =
         GetUserDocuments ->
             Search.forUsersDocuments model
 
-        GotSecondPart rt ->
-            ( { model | renderedText = rt }, Cmd.none )
+        GotSecondPart rd ->
+            ( { model | renderingData = rd  }, Cmd.none )
 
         AllDocuments ->
             Search.getAllDocuments model
@@ -1305,47 +1305,21 @@ signIn model =
 loadDocument : Model -> Document -> ( Model, Cmd Msg )
 loadDocument model document =
     let
-        content =
-            document.content
+        (renderingData, cmd) = Update.Render.prepare model (Just document)
 
-        lastAst =
-            Update.Render.parse document.docType model.counter content
-
-        nMath =
-            Markdown.ElmWithId.numberOfMathElements lastAst
-
-        ( renderedText, cmd_ ) =
-            if nMath > 1000 then
-                let
-                    firstAst =
-                        Markdown.ElmWithId.parse (model.counter + 1) ExtendedMath (Update.Document.getFirstPart content)
-
-                    renderedText_ =
-                        Update.Render.render document.docType firstAst
-
-                    cmd__ =
-                        Cmd.Document.renderAstFor lastAst
-                in
-                ( renderedText_
-                , cmd__
-                )
-
-            else
-                ( Update.Render.render document.docType lastAst, Cmd.none )
     in
     ( { model
         | documentList = document :: (List.filter (\doc -> doc.id /= document.id) model.documentList)
         , currentDocument = Just document
         , tagString = getTagString (Just document)
         , counter = model.counter + 2
-        , lastAst = lastAst
+        , renderingData = renderingData
         , appMode = Reading
         , documentListDisplay = (SearchResults, DequeViewOff)
-        , renderedText = renderedText
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
       }
-    , cmd_
+    , cmd
     )
 
 
@@ -1515,18 +1489,18 @@ handleDeletedDocument model =
                 newDocumentText =
                     Maybe.map .content (List.head newDocumentList) |> Maybe.withDefault "This is test"
 
-                lastAst =
-                    Update.Render.parse docType model.counter newDocumentText
+
+                (renderingData, cmd) = Update.Render.prepare model newDocument
+
             in
             ( { model
                 | documentList = newDocumentList
                 , currentDocument = List.head newDocumentList
-                , lastAst = lastAst
-                , renderedText = Update.Render.render docType lastAst
+                , renderingData = renderingData
                 , message = ( UserMessage, "Document " ++ deletedDocument.title ++ " deleted" )
                 , visibilityOfTools = Invisible
               }
-            , Cmd.none
+            , cmd
             )
 
 
@@ -1940,7 +1914,7 @@ editorView viewInfo model =
 
         rt : RenderedText Msg
         rt =
-            model.renderedText
+            Render.get model.renderingData
     in
     column []
         [ editingHeader viewInfo model rt
@@ -1965,7 +1939,7 @@ readerView viewInfo model =
 
         rt : RenderedText Msg
         rt =
-            model.renderedText
+           Render.get model.renderingData
     in
     column [ paddingXY 0 0 ]
         [ readingHeader viewInfo model rt
