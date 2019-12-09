@@ -36,7 +36,6 @@ import Request exposing (RequestMsg(..))
 import Toc exposing (TocItem)
 import TocManager
 import Tree exposing (Tree)
-import Tree.Diff as Diff
 import Update.Render
 import User exposing (User)
 

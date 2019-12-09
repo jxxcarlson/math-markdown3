@@ -131,7 +131,7 @@ fromDocument document =
         ++ (document.docType |> Document.stringFromDocType)
         ++ "\n"
         ++ "   childInfo: "
-        ++ (document.childInfo |> Document.stringFromChildInfo |> Debug.log "CHINFO")
+        ++ (document.childInfo |> Document.stringFromChildInfo)
         ++ "\n"
 
 
@@ -288,12 +288,37 @@ decodeChildInfoItem =
         |> Decode.andThen decoderChildInfoItemAux
 
 
+{-|
+
+    -- XXX
+
+    import Prng.Uuid as Uuid exposing (Uuid)
+    import Yaml.Decode as Decode exposing(Decoder)
+    import Utility
+
+    uuidString : String
+    uuidString =
+        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+
+    uuid : Uuid
+    uuid =
+        Uuid.fromString uuidString
+        |> Maybe.withDefault Utility.id0
+
+    Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8) "
+    -> Ok (uuid, 8)
+
+
+    decoderChildInfoItemAux "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8) "
+    --> Decoder (uuid, 8)
+
+-}
 decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
 decoderChildInfoItemAux str =
     str
-        |> Debug.log "Parser input"
-        |> foo
-        -- |> Parser.run childInfoItemAuxParser
+        |> Debug.log "Parser input (1)"
+        -- |> foo
+        |> Parser.run childInfoItemAuxParser
         |> handleItemParseResult
 
 
@@ -304,7 +329,7 @@ foo str =
 
 handleItemParseResult : Result (List Parser.DeadEnd) ( Uuid, Int ) -> Decoder ( Uuid, Int )
 handleItemParseResult result =
-    case Debug.log "RRR" result of
+    case Debug.log "hpr (1)" result of
         Ok pair ->
             Decode.succeed pair
 
@@ -323,7 +348,7 @@ handleItemParseResult result =
         "3db857d2-1422-47a9-8f04-4fc6efe871cc"
 
     uuid : Uuid
-    uuid =
+        uuid =
         Uuid.fromString uuidString
         |> Maybe.withDefault Utility.id0
 
@@ -331,15 +356,15 @@ handleItemParseResult result =
     --> Ok (uuid,4)
 
     Parser.run childInfoItemAuxParser "(3db857d2-1422-47a9-8f04-4fc6efe871cc:7)"
-    --> Ok (uuid,7)
+    --> Ok (uuid,7 )
 
 -}
 childInfoItemAuxParser : Parser ( Uuid, Int )
 childInfoItemAuxParser =
-    Parser.succeed (\uuid k -> ( uuid, k ))
+    Parser.succeed (\uuid k -> ( uuid, Debug.log "KK" k ))
         |. Parser.symbol "("
         |. Parser.spaces
-        |= uuidParser
+        |= (uuidParser |> Debug.log "UUU")
         |. Parser.spaces
         |. Parser.symbol ":"
         |. Parser.spaces

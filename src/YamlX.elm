@@ -21,15 +21,15 @@ decodePair =
 decoderPairAux : String -> Decoder ( String, Int )
 decoderPairAux str =
     str
-        |> Debug.log "Parser input"
-        -- |> foo
+        |> Debug.log "Parser input (2)"
+        --  |> foo
         |> Parser.run parsePair
         |> handleParseResult
 
 
 handleParseResult : Result (List Parser.DeadEnd) ( String, Int ) -> Decoder ( String, Int )
 handleParseResult result =
-    case Debug.log "RRR" result of
+    case Debug.log "hpr (2)" result of
         Ok pair ->
             Decode.succeed pair
 
@@ -53,7 +53,6 @@ foo str =
     import Parser
 
     Parser.run parsePair "(test, 43)"
-    --> Ok ( "test", 43 )
 
 -}
 parsePair : Parser ( String, Int )
