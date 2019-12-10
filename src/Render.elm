@@ -2,20 +2,34 @@ module Render exposing (RenderingData(..), RenderingOption(..), documentOption, 
 
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Html exposing (Html)
+import Html.Attributes as HA
 import Markdown.ElmWithId
 import Markdown.Option as MDOption
+import MiniLatex
+import MiniLatex.Edit
 import ParseWithId
 import Render.Markdown
 import Render.Types exposing (RenderedText)
 import Tree exposing (Tree)
 
 
+{-|
+
+    MD =
+        Markdown
+
+    ML =
+        MiniLatex
+
+-}
 type RenderingData msg
     = MD (MData msg)
+    | ML (MiniLatex.Edit.Data (Html msg))
 
 
 type RenderingOption
     = OMarkdown MDOption.Option
+    | OMiniLatex
 
 
 documentOption : Document -> RenderingOption
@@ -33,7 +47,7 @@ documentOption doc =
                     OMarkdown MDOption.ExtendedMath
 
         MiniLaTeX ->
-            OMarkdown MDOption.ExtendedMath
+            OMiniLatex
 
 
 type alias MData msg =
@@ -44,15 +58,14 @@ type alias MData msg =
     }
 
 
-
--- markdownAst : RenderingData
-
-
 load : Int -> RenderingOption -> String -> RenderingData msg
 load counter option source =
     case option of
         OMarkdown opt ->
             loadMarkdown counter opt source
+
+        OMiniLatex ->
+            loadMiniLatex counter source
 
 
 loadFast : Int -> RenderingOption -> String -> RenderingData msg
@@ -61,6 +74,9 @@ loadFast counter option source =
         OMarkdown opt ->
             loadMarkdownFast counter opt source
 
+        OMiniLatex ->
+            loadMiniLatexFast counter source
+
 
 render : RenderingData msg -> RenderingData msg
 render rd =
@@ -68,16 +84,23 @@ render rd =
         MD data ->
             MD { data | renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" data.fullAst }
 
+        ML data ->
+            -- XXX: ???
+            ML data
+
 
 update : Int -> String -> RenderingData msg -> RenderingData msg
-update counter source rd =
+update version source rd =
     case rd of
         MD data ->
             let
                 newAst =
-                    Render.Markdown.diffUpdateAst data.option counter source data.fullAst
+                    Render.Markdown.diffUpdateAst data.option version source data.fullAst
             in
             MD { data | fullAst = newAst, renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" newAst }
+
+        ML data ->
+            ML (MiniLatex.Edit.update version source data)
 
 
 get : RenderingData msg -> RenderedText msg
@@ -86,9 +109,15 @@ get rd =
         MD data ->
             data.renderedText
 
+        ML data ->
+            { document = MiniLatex.Edit.get data |> Html.div []
+            , title = Html.text "TITLE"
+            , toc = innerTableOfContents data.latexState
+            }
 
 
-{- HIDDEN -}
+
+{- HIDDEN, MARKDOWN -}
 
 
 loadMarkdown : Int -> MDOption.Option -> String -> RenderingData msg
@@ -122,47 +151,57 @@ loadMarkdownFast counter option str =
         }
 
 
+
+{- HIDDEN, MINILATEX -}
+
+
+loadMiniLatex : Int -> String -> RenderingData msg
+loadMiniLatex version str =
+    ML (MiniLatex.Edit.init version str)
+
+
+loadMiniLatexFast : Int -> String -> RenderingData msg
+loadMiniLatexFast version str =
+    ML (MiniLatex.Edit.init version (getFirstPart str))
+
+
+
+--    let
+--        fullAst =
+--            Markdown.ElmWithId.parse (counter + 1) MDOption.ExtendedMath str
+--
+--        initialAst =
+--            Markdown.ElmWithId.parse counter option (getFirstPart str)
+--    in
+--    MD
+--        { option = option
+--        , initialAst = initialAst
+--        , fullAst = fullAst
+--        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" initialAst
+--        }
+
+
+{-| HELPERS
+-}
 getFirstPart : String -> String
 getFirstPart str =
-    String.left 2000 str
+    String.left 4000 str
 
 
 
---
---prepare : Int -> Maybe Document -> ( RenderingData msg, Cmd msg )
---prepare counter currentDoc =
---    case currentDoc of
---        Nothing ->
---            ( loadMarkdown MDOption.Extended "", Cmd.none )
---
---        Just doc ->
---            let
---                content =
---                    doc.content
---
---                lastAst =
---                    parse doc.docType counter content
---
---                nMath =
---                    Markdown.ElmWithId.numberOfMathElements lastAst
---
---                ( renderedText, cmd_ ) =
---                    if nMath > 10 then
---                        let
---                            firstAst =
---                                Markdown.ElmWithId.parse (counter + 1) ExtendedMath (getFirstPart content)
---
---                            renderedText_ =
---                                render doc.docType firstAst
---
---                            cmd__ =
---                                Cmd.Document.renderAstFor lastAst
---                        in
---                        ( renderedText_
---                        , cmd__
---                        )
---
---                    else
---                        ( render doc.docType lastAst, Cmd.none )
---            in
---            ( lastAst, renderedText, cmd_ )
+{- MiniLatex Table of contents -}
+
+
+innerTableOfContents : MiniLatex.LatexState -> Html msg
+innerTableOfContents latexState =
+    Html.div [] (List.map innerTocItem (List.drop 1 latexState.tableOfContents))
+
+
+innerTocItem : MiniLatex.TocEntry -> Html msg
+innerTocItem tocEntry =
+    let
+        name =
+            tocEntry.name |> String.replace " " "" |> String.toLower
+    in
+    Html.a [ HA.href <| "#_subsection_" ++ name, HA.style "font-size" "11px", HA.style "font-color" "blue" ]
+        [ Html.text <| tocEntry.label ++ " " ++ tocEntry.name ]

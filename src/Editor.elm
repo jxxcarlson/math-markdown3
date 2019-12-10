@@ -31,3 +31,6 @@ findStringInAST str rd =
     case rd of
         MD data ->
             Markdown.ElmWithId.searchAST str data.fullAst
+
+        ML data ->
+            Nothing
