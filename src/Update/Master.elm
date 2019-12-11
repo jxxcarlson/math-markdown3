@@ -297,7 +297,7 @@ firstSubdocument_ model user document =
             "# Title...\n\n___\n\n[Main](#id/" ++ Uuid.toString document.id ++ ")\n\n___\n\nText ..."
 
         newDocument =
-            Document.create model.currentUuid user.username "New Subdocument" newDocumentText
+            Document.create model.docType model.currentUuid user.username "New Subdocument" newDocumentText
 
         -- Prepare AST and udpate uuid
         renderingData =
@@ -366,7 +366,7 @@ newSubdocumentAtHead model user masterDocument =
             "# Title...\n\n___\n\n[Main](#id/" ++ Uuid.toString masterDocument.id ++ ")\n\n___\n\nText ..."
 
         newDocument =
-            Document.create model.currentUuid user.username "New Subdocument" newDocumentText
+            Document.create model.docType model.currentUuid user.username "New Subdocument" newDocumentText
 
         -- Prepare AST and udpate uuid
         renderingData =
@@ -426,7 +426,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
             "# Title...\n\n___\n\n[Main](#id/" ++ Uuid.toString masterDocument.id ++ ")\n\n___\n\nText ..."
 
         newDocument =
-            Document.create model.currentUuid user.username "New Subdocument" newDocumentText
+            Document.create model.docType model.currentUuid user.username "New Subdocument" newDocumentText
 
         -- Prepare AST and udpate uuid
         renderingData =

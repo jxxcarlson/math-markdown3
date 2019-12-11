@@ -318,13 +318,15 @@ makeNewDocument model =
         Just user ->
             let
                 newDocumentText =
-                    "# New Document\n\nWrite something here ..."
+                    case model.docType of
+                        Document.MiniLaTeX ->
+                            "\\section{New Document}\n\nWrite something here (1) ..."
+
+                        Document.Markdown _ ->
+                            "# New Document\n\nWrite something here (1) ..."
 
                 newDocument =
-                    Document.create model.currentUuid user.username "New Document" newDocumentText
-
-                lastAst =
-                    Markdown.ElmWithId.parse -1 ExtendedMath newDocumentText
+                    Document.create model.docType model.currentUuid user.username "New Document" newDocumentText
 
                 ( newUuid, newSeed ) =
                     step Prng.Uuid.generator model.currentSeed

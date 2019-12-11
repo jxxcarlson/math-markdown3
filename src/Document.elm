@@ -573,8 +573,8 @@ makeInitialSlug title authorIdentifier identifier =
 -- , timeUpdated = Posix 1568667528000, title = "Intro to Chromaticity" }
 -- : Document
 -}
-create : Uuid -> String -> String -> String -> Document
-create documentUuid authorIdentifier title content =
+create : DocType -> Uuid -> String -> String -> String -> Document
+create docType documentUuid authorIdentifier title content =
     let
         slug =
             makeInitialSlug title authorIdentifier documentUuid
@@ -586,7 +586,7 @@ create documentUuid authorIdentifier title content =
     , tags = []
     , public = False
     , slug = slug
-    , docType = Markdown MDExtendedMath
+    , docType = docType
     , childInfo = []
     , permissions = []
     }

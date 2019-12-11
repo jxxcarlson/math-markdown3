@@ -1971,17 +1971,25 @@ renderedSource viewInfo model footerText_ rt =
         hToc =
             translate -viewInfo.vInset model.windowHeight
 
+        outerSourceStyle = [ setElementId "__rt_scroll__", width (px w_), height (px h_), clipX, Font.size 12 ]
+
+        innerSourceStyle = [setElementId Cmd.Document.masterId,  height (px h_)]
+
+        outerTocStyle = [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
+
+        innerTocStyle = [  height (px (hToc - 125)), scrollbarY, clipX ]
+
+        footerStyle = [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ]
+
     in
     row [ spacing 10 ]
-        [ column [ setElementId "__rt_scroll__", width (px w_), height (px h_), clipX, Font.size 12 ]
+        [ column outerSourceStyle
             [ column [ width (px w2_), paddingXY 10 20 ]
-                [ rt.title |> Element.html
-             , column [setElementId Cmd.Document.masterId,  height (px h_)] [ rt.document |> Element.html ]
-                ]
+                [ column innerSourceStyle [ rt.document |> Element.html ] ]
             ]
-        , Element.column [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
-            [ column [  height (px (hToc - 125)), scrollbarY, clipX ] [ rt.toc |> Element.html ]
-            , column [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ]
+        , Element.column outerTocStyle
+            [ column  innerTocStyle [ rt.toc |> Element.html ]
+            , column  footerStyle
                 [ renderFooter footerText_ ]
             ]
         ]
@@ -2399,7 +2407,7 @@ titleRowForEditing titleWidth rt =
 
 
 titleRow titleWidth rt =
-    row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
+    row [ Font.size 24, height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
         [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
 
 

@@ -111,7 +111,7 @@ get rd =
 
         ML data ->
             { document = MiniLatex.Edit.get data |> Html.div []
-            , title = Html.text (getTitle data)
+            , title = Html.span [ HA.style "font-size" "24px" ] [ Html.text (getTitle data) ]
             , toc = innerTableOfContents data.latexState
             }
 

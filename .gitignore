@@ -26,4 +26,4 @@ build.log
 measure-elm-make
 debounce-exxample/
 debounce-example/
-tests/VerifyExamples/Yaml/
+tests/VerifyExamples/
