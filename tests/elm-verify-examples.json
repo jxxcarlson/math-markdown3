@@ -1,4 +1,4 @@
 {
   "root": "../src",
-  "tests": ["Document", "Yaml", "DocParser"]
+  "tests": ["Document", "Yaml", "DocParser", "YamlX"]
 }
