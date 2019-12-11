@@ -27,3 +27,4 @@ measure-elm-make
 debounce-exxample/
 debounce-example/
 tests/VerifyExamples/
+count.sh

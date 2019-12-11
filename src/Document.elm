@@ -36,8 +36,10 @@ module Document exposing
     , setContent
     , sortChildren
     , stringFromChildInfo
+    , stringFromChildInfoItem
     , stringFromDocType
     , stringFromPermissions
+    , stringFromUserPermission
     , stringOfError
     , totalWordCount
     , updateMetaData
@@ -316,6 +318,11 @@ stringFromDocType docType =
                     "MDExtendedMath"
 
 
+stringFromChildInfoItem : ( Uuid, Int ) -> String
+stringFromChildInfoItem ( uuid, k ) =
+    interpolate "({0},{1})" [ Uuid.toString uuid, String.fromInt k ]
+
+
 stringFromChildInfo : List ( Uuid, Int ) -> String
 stringFromChildInfo uuidList =
     uuidList
@@ -337,11 +344,11 @@ permissionFromString str =
             NoPermission
 
 
-stringFromPermissions : List UserPermission -> String
-stringFromPermissions permissionList =
+stringFromUserPermission : UserPermission -> String
+stringFromUserPermission (UserPermission user p) =
     let
-        stringFromPermission p =
-            case p of
+        stringFromPermission_ p_ =
+            case p_ of
                 ReadPermission ->
                     "r"
 
@@ -350,11 +357,28 @@ stringFromPermissions permissionList =
 
                 NoPermission ->
                     "n"
-
-        stringFromUserPermission : UserPermission -> String
-        stringFromUserPermission (UserPermission user p) =
-            interpolate "({0}, {1})" [ user, stringFromPermission p ]
     in
+    interpolate "({0}, {1})" [ user, stringFromPermission_ p ]
+
+
+stringFromPermissions : List UserPermission -> String
+stringFromPermissions permissionList =
+    --    let
+    --        stringFromPermission p =
+    --            case p of
+    --                ReadPermission ->
+    --                    "r"
+    --
+    --                WritePermission ->
+    --                    "w"
+    --
+    --                NoPermission ->
+    --                    "n"
+    --
+    --        stringFromUserPermission : UserPermission -> String
+    --        stringFromUserPermission (UserPermission user p) =
+    --            interpolate "({0}, {1})" [ user, stringFromPermission p ]
+    --    in
     permissionList
         |> List.map stringFromUserPermission
         |> String.join ", "

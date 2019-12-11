@@ -1,4 +1,14 @@
-module Interchange exposing (childInfoItemAuxParser, decodeChildInfoItem, decoderUuid, documentDecoder, encodeDocument, parseStringToChar, uuidParser)
+module Interchange exposing
+    ( childInfoItemAuxParser
+    , decodeChildInfoItem
+    , decodePermission
+    , decoderUuid
+    , documentDecoder
+    , encodeDocument
+    , parseStringToChar
+    , parseUserPermission
+    , uuidParser
+    )
 
 import Document exposing (DocType(..), Document, UserPermission(..), dummy)
 import Json.Decode as Decode exposing (Decoder)
@@ -17,17 +27,29 @@ uuid1 =
 
 {-|
 
-    import Document exposing(dummy, UserPermission(..), Permission(..))
+    import Document exposing(Document, dummy, UserPermission(..), Permission(..))
     import Prng.Uuid as Uuid exposing (Uuid)
     import Utility
+    import Json.Decode as Decode
+
 
     uuid1 : Uuid
     uuid1 =
         Uuid.fromString "3db857d2-1422-47a9-8f04-4fc6efe871cc"
             |> Maybe.withDefault Utility.id0
 
-    encodeDocument {dummy | tags = ["a", "b"], slug = Document.makeSlug dummy, childInfo = [ ( uuid1, 1 ) ], permissions = [UserPermission "jxx" WritePermission] }
-    -->  "{\n    \"id\": \"59ddd53f-951f-4331-bd5b-95bdfb9b3113\",\n    \"title\": \"dummy\",\n    \"authorIdentifier\": \"bozo\",\n    \"content\": \"nothing here\",\n    \"public\": true,\n    \"tags\": [\n        \"a\",\n        \"b\"\n    ],\n    \"slug\": \"bozo.dummy.9b31\",\n    \"docType\": \"MiniLaTeX\",\n    \"childInfo\": \"[(3db857d2-1422-47a9-8f04-4fc6efe871cc,1)]\",\n    \"permissions\": \"[(jxx, w)]\"\n}"
+    testDocument1 : Document
+    testDocument1 =  {dummy | tags = ["a", "b"], slug = Document.makeSlug dummy, childInfo = [ ( uuid1, 1 ) ], permissions = [] }
+
+
+    testDocument : Document
+    testDocument =  {dummy | tags = ["a", "b"], slug = Document.makeSlug dummy, childInfo = [ ( uuid1, 1 ) ], permissions = [UserPermission "jxx" WritePermission] }
+
+    encodeDocument testDocument
+    -->  "{\n    \"id\": \"59ddd53f-951f-4331-bd5b-95bdfb9b3113\",\n    \"title\": \"dummy\",\n    \"authorIdentifier\": \"bozo\",\n    \"content\": \"nothing here\",\n    \"public\": true,\n    \"tags\": [\n        \"a\",\n        \"b\"\n    ],\n    \"slug\": \"bozo.dummy.9b31\",\n    \"docType\": \"MiniLaTeX\",\n    \"childInfo\": [\n        \"(3db857d2-1422-47a9-8f04-4fc6efe871cc,1)\"\n    ],\n    \"permissions\": [\n        \"(jxx, w)\"\n    ]\n}"
+
+    Decode.decodeString documentDecoder (encodeDocument testDocument1)
+    --> Ok testDocument1
 
 -}
 encodeDocument : Document -> String
@@ -46,9 +68,23 @@ documentEncoder doc =
         , ( "tags", Encode.list Encode.string doc.tags )
         , ( "slug", Encode.string doc.slug )
         , ( "docType", Encode.string (doc.docType |> Document.stringFromDocType) )
-        , ( "childInfo", Encode.string (doc.childInfo |> Document.stringFromChildInfo) )
-        , ( "permissions", Encode.string (doc.permissions |> Document.stringFromPermissions) )
+        , ( "childInfo", Encode.list encodeChildInfoItem doc.childInfo )
+        , ( "permissions", Encode.list encodePermission doc.permissions )
         ]
+
+
+encodePermission : UserPermission -> Value
+encodePermission up =
+    up
+        |> Document.stringFromUserPermission
+        |> Encode.string
+
+
+encodeChildInfoItem : ( Uuid, Int ) -> Value
+encodeChildInfoItem item =
+    item
+        |> Document.stringFromChildInfoItem
+        |> Encode.string
 
 
 documentDecoder : Decoder Document
@@ -66,6 +102,18 @@ documentDecoder =
         |> required "permissions" (Decode.list decodePermission)
 
 
+{-|
+
+    import Json.Decode as Decode
+    import Json.Encode as Encode
+    import Document exposing(Permission(..), UserPermission(..))
+
+    --- "(jxx, w)"
+
+    Decode.decodeString decodePermission (Document.stringFromUserPermission (UserPermission "jxx" WritePermission) |> Encode.string  |> Encode.encode 4)
+    --> Ok (UserPermission "jxx" WritePermission)
+
+-}
 decodePermission : Decoder UserPermission
 decodePermission =
     Decode.string |> Decode.andThen decodePermissionAux
@@ -78,7 +126,7 @@ decodePermissionAux str =
             Decode.succeed up
 
         Nothing ->
-            Decode.fail "Bad string for user permissin"
+            Decode.fail "Bad string for user permission"
 
 
 getPermission : String -> Maybe UserPermission
@@ -154,21 +202,20 @@ decodeChildInfoItem =
         Uuid.fromString uuidString
             |> Maybe.withDefault Utility.id0
 
-    -- Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:88)"
+    -- Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc,88)"
       x-> Ok (uuid, 88)
 
 -}
 decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
 decoderChildInfoItemAux str =
     str
-        |> Debug.log "Parser input (1)"
         |> Parser.run childInfoItemAuxParser
         |> handleItemParseResult
 
 
 handleItemParseResult : Result (List Parser.DeadEnd) ( Uuid, Int ) -> Decoder ( Uuid, Int )
 handleItemParseResult result =
-    case Debug.log "hpr (1)" result of
+    case result of
         Ok pair ->
             Decode.succeed pair
 
@@ -191,21 +238,21 @@ handleItemParseResult result =
         Uuid.fromString uuidString
         |> Maybe.withDefault Utility.id0
 
-    Parser.run childInfoItemAuxParser ("(" ++ uuidString ++ " : 4)")
+    Parser.run childInfoItemAuxParser ("(" ++ uuidString ++ ",4)")
     --> Ok (uuid,4)
 
-    Parser.run childInfoItemAuxParser "(3db857d2-1422-47a9-8f04-4fc6efe871cc:7)"
+    Parser.run childInfoItemAuxParser "(3db857d2-1422-47a9-8f04-4fc6efe871cc,7)"
     --> Ok (uuid,7 )
 
 -}
 childInfoItemAuxParser : Parser ( Uuid, Int )
 childInfoItemAuxParser =
-    Parser.succeed (\uuid k -> ( uuid, Debug.log "KK" k ))
+    Parser.succeed (\uuid k -> ( uuid, k ))
         |. Parser.symbol "("
         |. Parser.spaces
-        |= (uuidParser |> Debug.log "UUU")
+        |= uuidParser
         |. Parser.spaces
-        |. Parser.symbol ":"
+        |. Parser.symbol ","
         |. Parser.spaces
         |= Parser.int
         |. Parser.spaces
@@ -253,6 +300,15 @@ decoderIdAux str =
             Decode.fail "invalid id"
 
 
+{-|
+
+    import Parser
+    import Document exposing(Permission(..), UserPermission(..))
+
+    Parser.run parseUserPermission "(jxx, w)"
+    --> Ok (UserPermission "jxx" WritePermission)
+
+-}
 parseUserPermission : Parser UserPermission
 parseUserPermission =
     Parser.succeed (\username p -> UserPermission username p)
@@ -316,7 +372,7 @@ parseWhile accepting =
 -}
 uuidParser : Parser Uuid
 uuidParser =
-    parseStringToChar ':' |> Parser.andThen uuidParserAux
+    parseStringToChar ',' |> Parser.andThen uuidParserAux
 
 
 uuidParserAux : String -> Parser Uuid
