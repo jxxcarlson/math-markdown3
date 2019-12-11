@@ -1,4 +1,4 @@
-module Yaml exposing (childInfoItemAuxParser, decodeChildInfoItem, decoderChildInfoItemAux, decoderId, decoderUuid, dummy1, dummy2, foo, fromDocument, fromDocumentList, parseStringToChar, required, toDocument, toDocumentList, uuidParser, uuidParserAux)
+module Yaml exposing (childInfoItemAuxParser, decodeChildInfoItem, decodeItem, decoderChildInfoItemAux, decoderId, decoderUuid, dummy1, dummy2, foo, fromDocument, fromDocumentList, parseStringToChar, required, toDocument, toDocumentList, uuidParser, uuidParserAux)
 
 import Document exposing (DocType(..), Document, Permission(..), UserPermission(..))
 import Parser exposing ((|.), (|=), Parser)
@@ -285,7 +285,65 @@ uuidX =
 decodeChildInfoItem : Decoder ( Uuid, Int )
 decodeChildInfoItem =
     Decode.string
-        |> Decode.andThen decoderChildInfoItemAux
+        |> Decode.andThen bar
+
+
+bar : String -> Decoder ( Uuid, number )
+bar =
+    \s -> Decode.succeed ( uuidX, 88 )
+
+
+
+{-
+
+   -- XXX
+
+   import Prng.Uuid as Uuid exposing (Uuid)
+   import Yaml.Decode as Decode
+   import Utility
+
+   uuidString : String
+   uuidString =
+       "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+
+   uuid : Uuid
+   uuid =
+       Uuid.fromString uuidString
+       |> Maybe.withDefault Utility.id0
+
+   Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8)"
+   -> Ok (uuid, 8)
+
+   Decode.fromString (Decode.list decodeChildInfoItem) ("[]")
+   -> Ok ([])
+
+   Decode.fromString (Decode.list decodeChildInfoItem) ("[(3db857d2-1422-47a9-8f04-4fc6efe871cc:1),(3db857d2-1422-47a9-8f04-4fc6efe871cc:2)]")
+   XXX-> Ok ([(uuid, 1),(uuid,2)])
+
+-}
+
+
+{-|
+
+    import Yaml.Decode as Decode exposing (Decoder)
+
+    Decode.fromString decodeItem "(Test:88)"
+    --> Ok ("Test", 88)
+
+-}
+decodeItem : Decoder ( String, Int )
+decodeItem =
+    Decode.string
+        |> Decode.andThen baz
+
+
+baz : String -> Decoder ( String, number )
+baz =
+    \s -> Decode.succeed ( "Test", 88 )
+
+
+
+-- decoderChildInfoItemAux
 
 
 {-|
@@ -311,13 +369,24 @@ decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
 decoderChildInfoItemAux str =
     str
         |> Debug.log "Parser input (1)"
-        |> Parser.run childInfoItemAuxParser
-        |> handleItemParseResult
+        |> bar
 
 
-foo : String -> Result (List Parser.DeadEnd) ( Uuid, number )
-foo str =
-    Parser.run (Parser.succeed ( uuidX, 55 )) str
+
+-- |> Parser.run fakeChildInfoItemAuxParser
+-- |> handleItemParseResult
+--foo : String -> Result (List Parser.DeadEnd) ( Uuid, number )
+--foo str =
+--    Parser.run (Parser.succeed ( uuidX, 55 ))
+
+
+foo =
+    1
+
+
+fakeChildInfoItemAuxParser : Parser ( Uuid, number )
+fakeChildInfoItemAuxParser =
+    Parser.succeed ( uuidX, 55 )
 
 
 handleItemParseResult : Result (List Parser.DeadEnd) ( Uuid, Int ) -> Decoder ( Uuid, Int )

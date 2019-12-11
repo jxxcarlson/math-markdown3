@@ -24,6 +24,7 @@ module Document exposing
     , insertDocumentInList
     , level
     , listPermissions
+    , makeSlug
     , makeTocStatus
     , permissionFromString
     , permissionToString
@@ -318,7 +319,7 @@ stringFromDocType docType =
 stringFromChildInfo : List ( Uuid, Int ) -> String
 stringFromChildInfo uuidList =
     uuidList
-        |> List.map (\( uuid, k ) -> interpolate "({0}:{1})" [ Uuid.toString uuid, String.fromInt k ])
+        |> List.map (\( uuid, k ) -> interpolate "({0},{1})" [ Uuid.toString uuid, String.fromInt k ])
         |> String.join ", "
         |> (\s -> "[" ++ s ++ "]")
 
@@ -357,7 +358,7 @@ stringFromPermissions permissionList =
     permissionList
         |> List.map stringFromUserPermission
         |> String.join ", "
-        |> (\s -> interpolate "[{0]" [ s ])
+        |> (\s -> interpolate "[{0}]" [ s ])
 
 
 insertDocumentInList : Document -> Document -> List Document -> List Document
