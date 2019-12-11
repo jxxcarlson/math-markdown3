@@ -272,14 +272,14 @@ uuidX =
         Uuid.fromString uuidString
         |> Maybe.withDefault Utility.id0
 
-    Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8) "
-    --> Ok (uuid, 8)
+    Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8)"
+    -> Ok (uuid, 8)
 
     Decode.fromString (Decode.list decodeChildInfoItem) ("[]")
     -> Ok ([])
 
     Decode.fromString (Decode.list decodeChildInfoItem) ("[(3db857d2-1422-47a9-8f04-4fc6efe871cc:1),(3db857d2-1422-47a9-8f04-4fc6efe871cc:2)]")
-    -> Ok ([(uuid, 1),(uuid,2)])
+    XXX-> Ok ([(uuid, 1),(uuid,2)])
 
 -}
 decodeChildInfoItem : Decoder ( Uuid, Int )
@@ -289,8 +289,6 @@ decodeChildInfoItem =
 
 
 {-|
-
-    -- XXX
 
     import Prng.Uuid as Uuid exposing (Uuid)
     import Yaml.Decode as Decode exposing(Decoder)
@@ -305,19 +303,14 @@ decodeChildInfoItem =
         Uuid.fromString uuidString
         |> Maybe.withDefault Utility.id0
 
-    Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8) "
-    -> Ok (uuid, 8)
-
-
-    decoderChildInfoItemAux "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8) "
-    --> Decoder (uuid, 8)
+    Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:88)"
+    --> Ok (uuid, 88)
 
 -}
 decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
 decoderChildInfoItemAux str =
     str
         |> Debug.log "Parser input (1)"
-        -- |> foo
         |> Parser.run childInfoItemAuxParser
         |> handleItemParseResult
 
@@ -348,7 +341,7 @@ handleItemParseResult result =
         "3db857d2-1422-47a9-8f04-4fc6efe871cc"
 
     uuid : Uuid
-        uuid =
+    uuid =
         Uuid.fromString uuidString
         |> Maybe.withDefault Utility.id0
 

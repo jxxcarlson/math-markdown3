@@ -2403,7 +2403,7 @@ searchRow model =
 
 titleRowForEditing titleWidth rt =
     row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
-        [ row [ alignRight, clipX, moveUp 12 ] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ] ]
+        [ row [ alignRight, clipX , height (px 40)] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ] ]
 
 
 titleRow titleWidth rt =

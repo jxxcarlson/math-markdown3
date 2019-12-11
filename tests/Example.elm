@@ -32,7 +32,7 @@ id2 =
 
 d1 : Document
 d1 =
-    Document.create id1 "jxxcarlson" "A" "abc"
+    Document.create MiniLaTeX id1 "jxxcarlson" "A" "abc"
 
 
 d1a : Document
@@ -42,7 +42,7 @@ d1a =
 
 d2 : Document
 d2 =
-    Document.create id2 "jxxcarlson" "B" "xyz"
+    Document.create MiniLaTeX id2 "jxxcarlson" "B" "xyz"
 
 
 list =
