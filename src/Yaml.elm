@@ -285,12 +285,7 @@ uuidX =
 decodeChildInfoItem : Decoder ( Uuid, Int )
 decodeChildInfoItem =
     Decode.string
-        |> Decode.andThen bar
-
-
-bar : String -> Decoder ( Uuid, number )
-bar =
-    \s -> Decode.succeed ( uuidX, 88 )
+        |> Decode.andThen decoderChildInfoItemAux
 
 
 
@@ -369,12 +364,11 @@ decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
 decoderChildInfoItemAux str =
     str
         |> Debug.log "Parser input (1)"
-        |> bar
+        |> Parser.run fakeChildInfoItemAuxParser
+        |> handleItemParseResult
 
 
 
--- |> Parser.run fakeChildInfoItemAuxParser
--- |> handleItemParseResult
 --foo : String -> Result (List Parser.DeadEnd) ( Uuid, number )
 --foo str =
 --    Parser.run (Parser.succeed ( uuidX, 55 ))
