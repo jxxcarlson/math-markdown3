@@ -47,11 +47,11 @@ module Document exposing
     )
 
 import BoundedDeque exposing (BoundedDeque)
+import DocParser
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as E
 import List.Extra
 import Maybe.Extra
-import Parser exposing ((|.), Parser, chompWhile, getChompedString, succeed, symbol)
 import Prng.Uuid as Uuid exposing (Uuid)
 import String.Interpolate exposing (interpolate)
 import Utility
@@ -542,6 +542,18 @@ makeSlug document =
     document.authorIdentifier ++ "." ++ Utility.String.compress document.title ++ "." ++ shortHash
 
 
+makeSlugWithTitle : Document -> String -> String
+makeSlugWithTitle document title =
+    let
+        endOfHash =
+            Uuid.toString document.id |> String.right 6
+
+        shortHash =
+            String.left 4 endOfHash
+    in
+    document.authorIdentifier ++ "." ++ Utility.String.compress title ++ "." ++ shortHash
+
+
 makeInitialSlug : String -> String -> Uuid -> String
 makeInitialSlug title authorIdentifier identifier =
     let
@@ -624,9 +636,22 @@ replaceInList targetDocument documentList =
     List.Extra.setIf (\doc -> doc.id == targetDocument.id) targetDocument documentList
 
 
+{-|
+
+    testDoc : Document
+    testDoc = {dummy | content = "\\section{Intro}" }
+
+    updateMetaData testDoc |> .title
+    --> "Intro"
+
+-}
 updateMetaData : Document -> Document
 updateMetaData document =
-    { document | slug = makeSlug document, title = newTitle document }
+    let
+        title_ =
+            newTitle document
+    in
+    { document | slug = makeSlugWithTitle document title_, title = title_ }
 
 
 newTitle : Document -> String
@@ -642,54 +667,22 @@ newTitle document =
 
 -- PARSING
 -- PARSE LEVEL
-
-
-parseLeadingSpace : Parser String
-parseLeadingSpace =
-    getChompedString <|
-        succeed identity
-            |. parseWhile (\c -> c == ' ')
-
-
-level : String -> Int
-level str =
-    case Parser.run parseLeadingSpace str of
-        Ok leadingSpace ->
-            String.length leadingSpace // 3
-
-        _ ->
-            0
-
-
-
 -- PARSE HEADING
 
 
 getHeading : Document -> Maybe String
 getHeading document =
-    case Parser.run parseHeading document.content of
-        Ok result ->
-            String.dropLeft 1 result |> String.trim |> Just
-
-        Err _ ->
-            Nothing
+    DocParser.parseHeading document.content
 
 
-parseHeading : Parser String
-parseHeading =
-    (getChompedString <|
-        succeed identity
-            |. parseWhile (\c -> c /= '#')
-            |. symbol "#"
-            |. symbol " "
-            |. parseWhile (\c -> c /= '\n')
-    )
-        |> Parser.map String.trim
+level : String -> Int
+level str =
+    case DocParser.getLeadingSpace str of
+        Just s ->
+            String.length s // 3
 
-
-parseWhile : (Char -> Bool) -> Parser String
-parseWhile accepting =
-    chompWhile accepting |> getChompedString
+        Nothing ->
+            0
 
 
 totalWordCount : List Document -> Int

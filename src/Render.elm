@@ -111,9 +111,17 @@ get rd =
 
         ML data ->
             { document = MiniLatex.Edit.get data |> Html.div []
-            , title = Html.text "TITLE"
+            , title = Html.text (getTitle data)
             , toc = innerTableOfContents data.latexState
             }
+
+
+getTitle : MiniLatex.Edit.Data (Html msg) -> String
+getTitle data =
+    data.latexState.tableOfContents
+        |> List.head
+        |> Maybe.map .name
+        |> Maybe.withDefault "TITLE"
 
 
 
@@ -194,7 +202,7 @@ getFirstPart str =
 
 innerTableOfContents : MiniLatex.LatexState -> Html msg
 innerTableOfContents latexState =
-    Html.div [] (List.map innerTocItem (List.drop 1 latexState.tableOfContents))
+    Html.div [ HA.style "margin-top" "20px", HA.style "margin-left" "20px" ] (List.map innerTocItem (List.drop 1 latexState.tableOfContents))
 
 
 innerTocItem : MiniLatex.TocEntry -> Html msg
@@ -203,5 +211,7 @@ innerTocItem tocEntry =
         name =
             tocEntry.name |> String.replace " " "" |> String.toLower
     in
-    Html.a [ HA.href <| "#_subsection_" ++ name, HA.style "font-size" "11px", HA.style "font-color" "blue" ]
-        [ Html.text <| tocEntry.label ++ " " ++ tocEntry.name ]
+    Html.div [ HA.style "margin-bottom" "8px" ]
+        [ Html.a [ HA.href <| "#_subsection_" ++ name, HA.style "font-size" "14px", HA.style "font-color" "blue" ]
+            [ Html.text <| tocEntry.label ++ " " ++ tocEntry.name ]
+        ]
