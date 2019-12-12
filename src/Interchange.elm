@@ -1,14 +1,4 @@
-module Interchange exposing
-    ( childInfoItemAuxParser
-    , decodeChildInfoItem
-    , decodePermission
-    , decoderUuid
-    , documentDecoder
-    , encodeDocument
-    , parseStringToChar
-    , parseUserPermission
-    , uuidParser
-    )
+module Interchange exposing (documentDecoder, encodeDocument)
 
 import Document exposing (DocType(..), Document, UserPermission(..), dummy)
 import Json.Decode as Decode exposing (Decoder)
@@ -19,10 +9,8 @@ import Prng.Uuid as Uuid exposing (Uuid)
 import Utility
 
 
-uuid1 : Uuid
-uuid1 =
-    Uuid.fromString "3db857d2-1422-47a9-8f04-4fc6efe871cc"
-        |> Maybe.withDefault Utility.id0
+
+-- ENCODER
 
 
 {-|
@@ -87,6 +75,10 @@ encodeChildInfoItem item =
         |> Encode.string
 
 
+
+-- DECODER --
+
+
 documentDecoder : Decoder Document
 documentDecoder =
     Decode.succeed Document
@@ -102,18 +94,6 @@ documentDecoder =
         |> required "permissions" (Decode.list decodePermission)
 
 
-{-|
-
-    import Json.Decode as Decode
-    import Json.Encode as Encode
-    import Document exposing(Permission(..), UserPermission(..))
-
-    --- "(jxx, w)"
-
-    Decode.decodeString decodePermission (Document.stringFromUserPermission (UserPermission "jxx" WritePermission) |> Encode.string  |> Encode.encode 4)
-    --> Ok (UserPermission "jxx" WritePermission)
-
--}
 decodePermission : Decoder UserPermission
 decodePermission =
     Decode.string |> Decode.andThen decodePermissionAux
@@ -154,58 +134,12 @@ adjustDocTypeString str =
             str
 
 
-{-|
-
-    -- XXX
-
-    import Prng.Uuid as Uuid exposing (Uuid)
-    import Json.Decode as Decode
-    import Utility
-
-    uuidString : String
-    uuidString =
-        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
-
-    uuid : Uuid
-    uuid =
-        Uuid.fromString uuidString
-        |> Maybe.withDefault Utility.id0
-
-    Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc:8)"
-    -> Ok (uuid, 8)
-
-    Decode.fromString (Decode.list decodeChildInfoItem) ("[]")
-    -> Ok ([])
-
-    Decode.fromString (Decode.list decodeChildInfoItem) ("[(3db857d2-1422-47a9-8f04-4fc6efe871cc:1),(3db857d2-1422-47a9-8f04-4fc6efe871cc:2)]")
-    XXX-> Ok ([(uuid, 1),(uuid,2)])
-
--}
 decodeChildInfoItem : Decoder ( Uuid, Int )
 decodeChildInfoItem =
     Decode.string
         |> Decode.andThen decoderChildInfoItemAux
 
 
-{-|
-
-    import Json.Decode as Decode exposing (Decoder)
-    import Prng.Uuid as Uuid exposing (Uuid)
-    import Utility
-
-    uuidString : String
-    uuidString =
-        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
-
-    uuid : Uuid
-    uuid =
-        Uuid.fromString uuidString
-            |> Maybe.withDefault Utility.id0
-
-    -- Decode.fromString decodeChildInfoItem "(3db857d2-1422-47a9-8f04-4fc6efe871cc,88)"
-      x-> Ok (uuid, 88)
-
--}
 decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
 decoderChildInfoItemAux str =
     str
@@ -223,61 +157,6 @@ handleItemParseResult result =
             Decode.fail "Error parsing pair"
 
 
-{-|
-
-    import Parser
-    import Prng.Uuid as Uuid exposing (Uuid)
-    import Utility
-
-    uuidString : String
-    uuidString =
-        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
-
-    uuid : Uuid
-    uuid =
-        Uuid.fromString uuidString
-        |> Maybe.withDefault Utility.id0
-
-    Parser.run childInfoItemAuxParser ("(" ++ uuidString ++ ",4)")
-    --> Ok (uuid,4)
-
-    Parser.run childInfoItemAuxParser "(3db857d2-1422-47a9-8f04-4fc6efe871cc,7)"
-    --> Ok (uuid,7 )
-
--}
-childInfoItemAuxParser : Parser ( Uuid, Int )
-childInfoItemAuxParser =
-    Parser.succeed (\uuid k -> ( uuid, k ))
-        |. Parser.symbol "("
-        |. Parser.spaces
-        |= uuidParser
-        |. Parser.spaces
-        |. Parser.symbol ","
-        |. Parser.spaces
-        |= Parser.int
-        |. Parser.spaces
-        |. Parser.symbol ")"
-
-
-{-|
-
-    import Prng.Uuid as Uuid exposing (Uuid)
-    import Json.Decode as Decode
-    import Utility
-
-    uuidString : String
-    uuidString =
-        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
-
-    uuid : Uuid
-    uuid =
-        Uuid.fromString uuidString
-        |> Maybe.withDefault Utility.id0
-
-    -- Decode.fromString decoderUuid uuidString
-    -> Ok uuid
-
--}
 decoderUuid : Decoder Uuid
 decoderUuid =
     Decode.string
@@ -300,15 +179,24 @@ decoderIdAux str =
             Decode.fail "invalid id"
 
 
-{-|
 
-    import Parser
-    import Document exposing(Permission(..), UserPermission(..))
+-- PARSING --
 
-    Parser.run parseUserPermission "(jxx, w)"
-    --> Ok (UserPermission "jxx" WritePermission)
 
--}
+childInfoItemAuxParser : Parser ( Uuid, Int )
+childInfoItemAuxParser =
+    Parser.succeed (\uuid k -> ( uuid, k ))
+        |. Parser.symbol "("
+        |. Parser.spaces
+        |= uuidParser
+        |. Parser.spaces
+        |. Parser.symbol ","
+        |. Parser.spaces
+        |= Parser.int
+        |. Parser.spaces
+        |. Parser.symbol ")"
+
+
 parseUserPermission : Parser UserPermission
 parseUserPermission =
     Parser.succeed (\username p -> UserPermission username p)
@@ -329,14 +217,6 @@ parsePermission =
         |> Parser.map Document.permissionFromString
 
 
-{-|
-
-    import Parser
-
-    Parser.run (parseStringToChar '.') "test."
-    --> Ok "test"
-
--}
 parseStringToChar : Char -> Parser String
 parseStringToChar endChar =
     (Parser.getChompedString <|
@@ -351,25 +231,6 @@ parseWhile accepting =
     Parser.chompWhile accepting |> Parser.getChompedString
 
 
-{-|
-
-    import Parser
-    import Prng.Uuid as Uuid exposing (Uuid)
-    import Utility
-
-    uuidString : String
-    uuidString =
-        "3db857d2-1422-47a9-8f04-4fc6efe871cc"
-
-    uuid : Uuid
-    uuid =
-        Uuid.fromString uuidString
-        |> Maybe.withDefault Utility.id0
-
-    Parser.run uuidParser uuidString
-    --> Ok uuid
-
--}
 uuidParser : Parser Uuid
 uuidParser =
     parseStringToChar ',' |> Parser.andThen uuidParserAux
@@ -383,3 +244,13 @@ uuidParserAux str =
 
         Nothing ->
             Parser.problem "Bad uuid string"
+
+
+
+-- TEST DATA --
+
+
+uuid1 : Uuid
+uuid1 =
+    Uuid.fromString "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+        |> Maybe.withDefault Utility.id0
