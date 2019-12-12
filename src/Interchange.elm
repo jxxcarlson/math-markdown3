@@ -1,4 +1,4 @@
-module Interchange exposing (documentDecoder, encodeDocument)
+module Interchange exposing (documentDecoder, documentListDecoder, encodeDocument, encodeDocumentList)
 
 import Document exposing (DocType(..), Document, UserPermission(..), dummy)
 import Json.Decode as Decode exposing (Decoder)
@@ -45,6 +45,40 @@ encodeDocument doc =
     Encode.encode 4 (documentEncoder doc)
 
 
+{-|
+
+    import Document exposing(Document, dummy, UserPermission(..), Permission(..))
+    import Prng.Uuid as Uuid exposing (Uuid)
+    import Utility
+    import Json.Decode as Decode
+
+
+    uuid1 : Uuid
+    uuid1 =
+        Uuid.fromString "3db857d2-1422-47a9-8f04-4fc6efe871cc"
+            |> Maybe.withDefault Utility.id0
+
+    testDocument1 : Document
+    testDocument1 =  {dummy | tags = ["a", "b"], slug = Document.makeSlug dummy, childInfo = [ ( uuid1, 1 ) ], permissions = [] }
+
+
+    testDocument : Document
+    testDocument =  {dummy | tags = ["a", "b"], slug = Document.makeSlug dummy, childInfo = [ ( uuid1, 1 ) ], permissions = [UserPermission "jxx" WritePermission] }
+
+    Decode.decodeString documentListDecoder (encodeDocumentList [testDocument, testDocument1])
+    --> Ok [testDocument, testDocument1]
+
+-}
+encodeDocumentList : List Document -> String
+encodeDocumentList list =
+    Encode.encode 4 (documentListEncoder list)
+
+
+documentListEncoder : List Document -> Value
+documentListEncoder list =
+    Encode.list documentEncoder list
+
+
 documentEncoder : Document -> Value
 documentEncoder doc =
     Encode.object
@@ -77,6 +111,11 @@ encodeChildInfoItem item =
 
 
 -- DECODER --
+
+
+documentListDecoder : Decoder (List Document)
+documentListDecoder =
+    Decode.list documentDecoder
 
 
 documentDecoder : Decoder Document
