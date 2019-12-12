@@ -9,6 +9,7 @@ module Button exposing
     , clearSearchTerms
     , deleteDocument
     , deleteSubdocument
+    , downloadArchive
     , editingMode
     , expandCollapseToc
     , extendedMarkdown
@@ -327,6 +328,13 @@ shareUrl model =
     Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
         { onPress = Just DoShareUrl
         , label = el [] (Element.text "Share")
+        }
+
+
+downloadArchive =
+    Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
+        { onPress = Just DownloadArchive
+        , label = el [] (Element.text "Archive")
         }
 
 

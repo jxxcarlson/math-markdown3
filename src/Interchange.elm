@@ -156,7 +156,7 @@ getPermission str =
 
 adjustDocTypeString : String -> String
 adjustDocTypeString str =
-    case Debug.log "Str" str of
+    case str of
         "minilatex" ->
             "MiniLaTeX"
 

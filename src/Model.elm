@@ -248,8 +248,9 @@ type Msg
     | ToggleDequeview
     | SetDocType DocType
     | SetCurrentDocument Document
-    | SetCurrentSubDocument Document TocItem
+    | DownloadArchive
       -- Subdocuments
+    | SetCurrentSubDocument Document TocItem
     | NewSubdocument
     | FirstSubdocument
     | AddSubdocument

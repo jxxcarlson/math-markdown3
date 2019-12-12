@@ -1,5 +1,6 @@
 module Update.Document exposing
-    ( getFirstPart
+    ( downloadArchive
+    , getFirstPart
     , makeNewDocument
     , processDocumentRequest
     , render
@@ -14,9 +15,9 @@ import BoundedDeque exposing (BoundedDeque)
 import Cmd.Document
 import Config
 import Document exposing (Document)
+import File.Download as Download
 import Html exposing (Html)
-import Markdown.ElmWithId
-import Markdown.Option exposing (..)
+import Interchange
 import Model
     exposing
         ( AppMode(..)
@@ -29,7 +30,6 @@ import Model
         , Msg(..)
         , Visibility(..)
         )
-import ParseWithId
 import Prng.Uuid exposing (Uuid(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import Render
@@ -366,3 +366,15 @@ saveDocument model =
             ( { model | message = ( UserMessage, "Saving document ..." ), currentDocument = Just document }
             , Request.updateDocument Config.hasuraToken user.username document |> Cmd.map Req
             )
+
+
+downloadArchive : Model -> ( Model, Cmd Msg )
+downloadArchive model =
+    let
+        currentUserName =
+            Maybe.map .username model.currentUser
+
+        userDocuments =
+            List.filter (\doc -> Just doc.authorIdentifier == currentUserName) model.documentList
+    in
+    ( model, Download.string "documents.json" "application/json" (Interchange.encodeDocumentList userDocuments) )

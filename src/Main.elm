@@ -26,6 +26,7 @@ import AppNavigation exposing(NavigationType(..))
 import Render.Types exposing (RenderedText)
 import Editor
 import Button
+import File.Download as Download
 import Update.UI
 import KeyboardManager
 import Browser.Events
@@ -715,6 +716,9 @@ update msg model =
 
         SetCurrentDocument document ->
              Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside  model.deque)
+
+        DownloadArchive ->
+            Update.Document.downloadArchive model
 
 
         SetCurrentSubDocument document tocItem ->
@@ -2454,6 +2458,7 @@ footer model =
         , Button.getTextSelection
         , dirtyDocumentDisplay model
         , wordCount model
+        , Button.downloadArchive
         , Button.shareUrl model
         , shareUrlDisplay model
         , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]

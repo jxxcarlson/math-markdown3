@@ -206,7 +206,7 @@ documentDecoder =
 
 adjustDocTypeString : String -> String
 adjustDocTypeString str =
-    case Debug.log "Str" str of
+    case str of
         "minilatex" ->
             "MiniLaTeX"
 
@@ -363,7 +363,6 @@ baz =
 decoderChildInfoItemAux : String -> Decoder ( Uuid, Int )
 decoderChildInfoItemAux str =
     str
-        |> Debug.log "Parser input (1)"
         |> Parser.run fakeChildInfoItemAuxParser
         |> handleItemParseResult
 
@@ -385,7 +384,7 @@ fakeChildInfoItemAuxParser =
 
 handleItemParseResult : Result (List Parser.DeadEnd) ( Uuid, Int ) -> Decoder ( Uuid, Int )
 handleItemParseResult result =
-    case Debug.log "hpr (1)" result of
+    case result of
         Ok pair ->
             Decode.succeed pair
 
@@ -417,10 +416,10 @@ handleItemParseResult result =
 -}
 childInfoItemAuxParser : Parser ( Uuid, Int )
 childInfoItemAuxParser =
-    Parser.succeed (\uuid k -> ( uuid, Debug.log "KK" k ))
+    Parser.succeed (\uuid k -> ( uuid, k ))
         |. Parser.symbol "("
         |. Parser.spaces
-        |= (uuidParser |> Debug.log "UUU")
+        |= uuidParser
         |. Parser.spaces
         |. Parser.symbol ":"
         |. Parser.spaces
