@@ -694,6 +694,14 @@ update msg model =
                          ,  message = message}
                      , cmd )
 
+        SaveImportedArchive ->
+            let
+               insertDoc = (\doc -> Request.insertDocument Config.hasuraToken doc |> Cmd.map Req)
+               cmdList = List.map insertDoc model.documentList
+            in
+              (model, Cmd.batch cmdList)
+
+
         CreateDocument ->
             Update.Document.makeNewDocument model
 
@@ -2486,8 +2494,9 @@ footer model =
         , Button.getTextSelection
         , dirtyDocumentDisplay model
         , wordCount model
-        , Button.downloadArchive
-        , Button.uploadArchive
+        , Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.downloadArchive
+        , Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.uploadArchive
+         ,Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.saveImportedArchive
         , Button.shareUrl model
         , shareUrlDisplay model
         , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]

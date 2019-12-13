@@ -23,6 +23,7 @@ module Button exposing
     , newSubdocument
     , readingMode
     , saveDocument
+    , saveImportedArchive
     , search
     , selectPermission
     , setDequeView
@@ -343,6 +344,13 @@ uploadArchive =
     Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
         { onPress = Just ArchiveRequested
         , label = el [] (Element.text "Import")
+        }
+
+
+saveImportedArchive =
+    Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
+        { onPress = Just SaveImportedArchive
+        , label = el [] (Element.text "Save Import")
         }
 
 

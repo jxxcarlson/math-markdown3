@@ -253,6 +253,7 @@ type Msg
     | ArchiveRequested
     | ArchiveSelected File
     | ArchiveLoaded String
+    | SaveImportedArchive
       -- Subdocuments
     | SetCurrentSubDocument Document TocItem
     | NewSubdocument
