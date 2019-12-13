@@ -130,6 +130,10 @@ written in [Elm](https://elm-lang.org).
 I wish to acknowledge the generous help that I have received throughout this project from
 the Elm and MathJax communities,  ith special thanks to Ilias van Peer (@ilias),
 Luke Westby (@luke), Davide Cervone (MathJax.org), and Evan Czaplicki (@evancz).
+
+
+___
+
 """
 
 
