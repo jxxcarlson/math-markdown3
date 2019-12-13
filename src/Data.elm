@@ -80,7 +80,7 @@ $$
 $$
 
 Formulas written in TeX/LaTeX are rendered using [MathJax](https://mathjax.org).
-We will soon add the [MiniLaTeX](https://demo.minilatex.app/)    document format (a subset of LaTeX).
+Documents may be written in Markdown or MiniLaTeX, a subset of LaTeX.
 
 ## Getting Started
 
@@ -98,10 +98,12 @@ It is easy to make links to documents on the system, e.g.,
 
 - [Art notebook](#id/f3b333ff-377b-470f-b737-3bb0b30333f3)
 
-- [Draft physics book](#id/0089c6c9-aa54-4c42-8844-c821d2684c9c)
+- [Draft physics book (very rough, markdown)](#id/0089c6c9-aa54-4c42-8844-c821d2684c9c)
+
+- [QFT Notes (MiniLaTeX)](https://math-markdown.netlify.com/#id/b8c37c0b-bbcf-4737-bbf7-cfc80f47bc0b)
 
 If a document title is rendered in blue and is preceded by a plus sign,
-click on it to reveal its contents.
+click on it to reveal its table of contents.
 
 ## Plans
 
@@ -115,13 +117,19 @@ jxxcarlson (gmail).
 
 ## Technical stuff
 
-We use a custom [Markdown parser](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/)
+We use custom parsers for  [Markdown](https://package.elm-lang.org/packages/jxxcarlson/elm-markdown/latest/)
+and [MiniLaTeX](https://package.elm-lang.org/packages/jxxcarlson/meenylatex/latest/), both
 written in [Elm](https://elm-lang.org).
 
 
 ![Hummingbird](http://noteimages.s3.amazonaws.com/jxxcarlson/hummingbird.jpg)
          Hummingbird (Meditation)
-    
+
+## Thanks
+
+I wish to acknowledge the generous help that I have received throughout this project from
+the Elm and MathJax communities,  ith special thanks to Ilias van Peer (@ilias),
+Luke Westby (@luke), Davide Cervone (MathJax.org), and Evan Czaplicki (@evancz).
 """
 
 
