@@ -112,8 +112,7 @@ it will become a paid service for authors, but at a very, very low annual
 membership fee.  If an author elects to not renew their membership, their
 documents remain in the system, whether they be public or private.
 
-If you have comments or questions, please contact Jim Carlson:
-jxxcarlson (gmail).
+
 
 ## Technical stuff
 
@@ -128,13 +127,14 @@ written in [Elm](https://elm-lang.org).
 ## Thanks
 
 I wish to acknowledge the generous help that I have received throughout this project from
-the Elm and MathJax communities,  ith special thanks to Ilias van Peer ,
+the Elm and MathJax communities,  with special thanks to Ilias van Peer ,
 Luke Westby, Davide Cervone (MathJax.org), and Evan Czaplicki.
 
 
-___
+## Contact
 
-Contact: jxxcarlson -- gmail
+If you have comments or questions, please contact Jim Carlson:
+jxxcarlson (gmail).
 
 ---
 
