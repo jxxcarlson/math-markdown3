@@ -23,8 +23,14 @@ import Tree exposing (Tree)
 
 -}
 type RenderingData msg
-    = MD (MData msg)
-    | ML (MiniLatex.Edit.Data (Html msg))
+    = MD (MDData msg)
+    | ML (MLData msg)
+
+
+type alias MLData msg =
+    { fullText : Maybe String
+    , editRecord : MiniLatex.Edit.Data (Html msg)
+    }
 
 
 type RenderingOption
@@ -50,7 +56,7 @@ documentOption doc =
             OMiniLatex
 
 
-type alias MData msg =
+type alias MDData msg =
     { option : MDOption.Option
     , renderedText : RenderedText msg
     , initialAst : Tree ParseWithId.MDBlockWithId
@@ -85,8 +91,12 @@ render rd =
             MD { data | renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" data.fullAst }
 
         ML data ->
-            -- XXX: ???
-            ML data
+            case data.fullText of
+                Nothing ->
+                    ML data
+
+                Just fullText ->
+                    loadMiniLatex -2 fullText
 
 
 update : Int -> String -> RenderingData msg -> RenderingData msg
@@ -100,7 +110,7 @@ update version source rd =
             MD { data | fullAst = newAst, renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" newAst }
 
         ML data ->
-            ML (MiniLatex.Edit.update version source data)
+            ML { data | editRecord = MiniLatex.Edit.update version source data.editRecord }
 
 
 get : RenderingData msg -> RenderedText msg
@@ -110,9 +120,9 @@ get rd =
             data.renderedText
 
         ML data ->
-            { document = MiniLatex.Edit.get data |> Html.div []
-            , title = Html.span [ HA.style "font-size" "24px" ] [ Html.text (getTitle data) ]
-            , toc = innerTableOfContents data.latexState
+            { document = MiniLatex.Edit.get data.editRecord |> Html.div []
+            , title = Html.span [ HA.style "font-size" "24px" ] [ Html.text (getTitle data.editRecord) ]
+            , toc = innerTableOfContents data.editRecord.latexState
             }
 
 
@@ -165,12 +175,12 @@ loadMarkdownFast counter option str =
 
 loadMiniLatex : Int -> String -> RenderingData msg
 loadMiniLatex version str =
-    ML (MiniLatex.Edit.init version str)
+    ML { fullText = Nothing, editRecord = MiniLatex.Edit.init version str }
 
 
 loadMiniLatexFast : Int -> String -> RenderingData msg
 loadMiniLatexFast version str =
-    ML (MiniLatex.Edit.init version (getFirstPart str))
+    ML { fullText = Just str, editRecord = MiniLatex.Edit.init version (getFirstPart str) }
 
 
 

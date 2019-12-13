@@ -680,10 +680,19 @@ update msg model =
                 author = List.map .authorIdentifier importedDocuments  |> List.head |> Maybe.withDefault "NoAuthor"
                 message =
                   ( UserMessage, "Imported docs:  " ++ String.fromInt (List.length importedDocuments) ++ " (by " ++ author ++ ")")
-
-
             in
-            ( { model | message = message}, Cmd.none )
+            case List.length importedDocuments > 0 of
+                False -> ( { model | message = message}, Cmd.none )
+                True ->
+                  let
+                    (renderingData, cmd) = Update.Render.prepare model (List.head importedDocuments)
+                  in
+                    ( { model | documentList = importedDocuments
+                         , currentDocument = List.head importedDocuments
+                         , renderingData = renderingData
+                         , counter = model.counter + 2
+                         ,  message = message}
+                     , cmd )
 
         CreateDocument ->
             Update.Document.makeNewDocument model
