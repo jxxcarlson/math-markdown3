@@ -26,7 +26,6 @@ import AppNavigation exposing(NavigationType(..))
 import Render.Types exposing (RenderedText)
 import Editor
 import Button
-import File.Download as Download
 import Update.UI
 import KeyboardManager
 import Browser.Events
@@ -663,6 +662,12 @@ update msg model =
             (model, Outside.sendInfo (Outside.GetTextSelectionFromOutside E.null))
 
         -- DOCUMENT --
+        ArchiveRequested -> (model, Cmd.none)
+
+        ArchiveSelected file -> (model, Cmd.none)
+
+        ArchiveLoaded str -> (model, Cmd.none)
+
         CreateDocument ->
             Update.Document.makeNewDocument model
 
@@ -2476,7 +2481,7 @@ shareUrlDisplay model =
         (Just doc, True) ->
             case doc.public of
                 True ->
-                   el [] (Element.text <| Config.endpoint                                                                                                                                                      ++ "/#id/" ++ Uuid.toString doc.id)
+                   el [] (Element.text <| Config.endpoint ++ "/#id/" ++ Uuid.toString doc.id)
                 False ->
                     el [] (Element.text "Document is private, can't share")
 

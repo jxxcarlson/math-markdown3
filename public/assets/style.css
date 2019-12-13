@@ -162,10 +162,14 @@ p.mm-table-cell {
 	font: 16px courier; background-color: #eee; padding: 8px;
 }
 
-pre { font-size: 10pt; }
+pre { font-size: 10pt;
+      padding-left: 18px;
+      overflow: scroll;}
 
 .mm-line-height {
-    line-height: 1.4
+    line-height: 1.4;
+
+
 }
 
 .mm-thematic-break {

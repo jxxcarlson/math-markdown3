@@ -25,6 +25,7 @@ import Browser.Dom as Dom
 import Browser.Navigation as Nav
 import Debounce exposing (Debounce)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
+import File exposing (File)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
 import Keyboard exposing (Key(..))
 import Outside
@@ -249,6 +250,9 @@ type Msg
     | SetDocType DocType
     | SetCurrentDocument Document
     | DownloadArchive
+    | ArchiveRequested
+    | ArchiveSelected File
+    | ArchiveLoaded String
       -- Subdocuments
     | SetCurrentSubDocument Document TocItem
     | NewSubdocument
