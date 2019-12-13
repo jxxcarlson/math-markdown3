@@ -128,8 +128,8 @@ written in [Elm](https://elm-lang.org).
 ## Thanks
 
 I wish to acknowledge the generous help that I have received throughout this project from
-the Elm and MathJax communities,  ith special thanks to Ilias van Peer (@ilias),
-Luke Westby (@luke), Davide Cervone (MathJax.org), and Evan Czaplicki (@evancz).
+the Elm and MathJax communities,  ith special thanks to Ilias van Peer ,
+Luke Westby, Davide Cervone (MathJax.org), and Evan Czaplicki.
 
 
 ___
