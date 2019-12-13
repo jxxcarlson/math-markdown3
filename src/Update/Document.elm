@@ -375,6 +375,6 @@ downloadArchive model =
             Maybe.map .username model.currentUser
 
         userDocuments =
-            List.filter (\doc -> Just doc.authorIdentifier == currentUserName) model.documentList
+            List.filter (\doc -> Just doc.authorIdentifier == currentUserName) model.tableOfContents
     in
     ( model, Download.string "documents.json" "application/json" (Interchange.encodeDocumentList userDocuments) )

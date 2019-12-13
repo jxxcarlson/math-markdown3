@@ -1,4 +1,4 @@
-module Interchange exposing (documentDecoder, documentListDecoder, encodeDocument, encodeDocumentList)
+module Interchange exposing (decodeDocumentList, documentDecoder, documentListDecoder, encodeDocument, encodeDocumentList)
 
 import Document exposing (DocType(..), Document, UserPermission(..), dummy)
 import Json.Decode as Decode exposing (Decoder)
@@ -43,6 +43,12 @@ import Utility
 encodeDocument : Document -> String
 encodeDocument doc =
     Encode.encode 4 (documentEncoder doc)
+
+
+decodeDocumentList : String -> Maybe (List Document)
+decodeDocumentList str =
+    Decode.decodeString documentListDecoder str
+        |> Result.toMaybe
 
 
 {-|

@@ -42,6 +42,7 @@ module Button exposing
     , togglePublic
     , totalWordCount
     , updateChildren
+    , uploadArchive
     , userPageMode
     )
 
@@ -334,7 +335,14 @@ shareUrl model =
 downloadArchive =
     Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
         { onPress = Just DownloadArchive
-        , label = el [] (Element.text "Archive")
+        , label = el [] (Element.text "Export")
+        }
+
+
+uploadArchive =
+    Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
+        { onPress = Just ArchiveRequested
+        , label = el [] (Element.text "Import")
         }
 
 

@@ -20,7 +20,10 @@ import Model exposing
                  )
 import Browser
 import String.Interpolate exposing(interpolate)
+import Interchange
 import Debounce
+import File exposing (File)
+import File.Select as Select
 import Utility.Time
 import AppNavigation exposing(NavigationType(..))
 import Render.Types exposing (RenderedText)
@@ -662,11 +665,25 @@ update msg model =
             (model, Outside.sendInfo (Outside.GetTextSelectionFromOutside E.null))
 
         -- DOCUMENT --
-        ArchiveRequested -> (model, Cmd.none)
+        DownloadArchive ->
+             Update.Document.downloadArchive model
 
-        ArchiveSelected file -> (model, Cmd.none)
+        ArchiveRequested ->
+            ( model, Select.file ["application/json"] ArchiveSelected )
 
-        ArchiveLoaded str -> (model, Cmd.none)
+        ArchiveSelected file ->
+            (model, Task.perform ArchiveLoaded (File.toString file))
+
+        ArchiveLoaded archiveString ->
+            let
+                importedDocuments = Interchange.decodeDocumentList archiveString |> Maybe.withDefault []
+                author = List.map .authorIdentifier importedDocuments  |> List.head |> Maybe.withDefault "NoAuthor"
+                message =
+                  ( UserMessage, "Imported docs:  " ++ String.fromInt (List.length importedDocuments) ++ " (by " ++ author ++ ")")
+
+
+            in
+            ( { model | message = message}, Cmd.none )
 
         CreateDocument ->
             Update.Document.makeNewDocument model
@@ -721,9 +738,6 @@ update msg model =
 
         SetCurrentDocument document ->
              Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside  model.deque)
-
-        DownloadArchive ->
-            Update.Document.downloadArchive model
 
 
         SetCurrentSubDocument document tocItem ->
@@ -2464,6 +2478,7 @@ footer model =
         , dirtyDocumentDisplay model
         , wordCount model
         , Button.downloadArchive
+        , Button.uploadArchive
         , Button.shareUrl model
         , shareUrlDisplay model
         , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]
