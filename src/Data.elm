@@ -134,6 +134,11 @@ Luke Westby (@luke), Davide Cervone (MathJax.org), and Evan Czaplicki (@evancz).
 
 ___
 
+Contact: jxxcarlson -- gmail
+
+---
+
+
 """
 
 
