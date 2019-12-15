@@ -2446,8 +2446,8 @@ editingHeader viewInfo model rt =
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
         [ modeButtonStrip model lhWidth
         , row [ spacing 10, width fill ]
-            [ titleRowForEditing titleWidth rt
-            , searchRow model
+            [ -- titleRowForEditing titleWidth rt
+             searchRow model
             , el [ width (px 20) ] (Element.text "")
             ]
         ]
