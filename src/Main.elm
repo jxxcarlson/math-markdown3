@@ -1967,7 +1967,8 @@ editorView viewInfo model =
         rt =
             Render.get model.renderingData
 
-        newViewInfo = {viewInfo | editorWidth = viewInfo.editorWidth + viewInfo.tocWidth / 2
+        newViewInfo = {viewInfo | docListWidth = viewInfo.docListWidth +  0.1* viewInfo.editorWidth
+                        , editorWidth = viewInfo.editorWidth + viewInfo.tocWidth / 2 -  0.1* viewInfo.editorWidth
                         , renderedDisplayWidth = viewInfo.renderedDisplayWidth + viewInfo.tocWidth / 2
                         , tocWidth = 0}
     in
@@ -2472,7 +2473,7 @@ editTools model =
         Nothing -> Element.none
         Just _ ->
             if List.member model.appMode [ Editing StandardEditing, Editing SubdocumentEditing ] then
-                row [ spacing 6, width (px 330) ]
+                row [ spacing 6, width (px 360) ]
                     [ Button.editingMode model
                     , Button.subDocumentEditingMode model
                     , Button.newDocument model
