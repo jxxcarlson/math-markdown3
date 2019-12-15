@@ -1966,13 +1966,17 @@ editorView viewInfo model =
         rt : RenderedText Msg
         rt =
             Render.get model.renderingData
+
+        newViewInfo = {viewInfo | editorWidth = viewInfo.editorWidth + viewInfo.tocWidth / 2
+                        , renderedDisplayWidth = viewInfo.renderedDisplayWidth + viewInfo.tocWidth / 2
+                        , tocWidth = 0}
     in
     column []
-        [ editingHeader viewInfo model rt
-        , row [] [ tabStrip viewInfo model
-          , toolsOrDocs viewInfo model
-          , editor viewInfo model
-          , Element.Lazy.lazy (renderedSource viewInfo model footerText) rt ]
+        [ editingHeader newViewInfo model rt
+        , row [] [ tabStrip newViewInfo model
+          , toolsOrDocs newViewInfo model
+          , editor newViewInfo model
+          , Element.Lazy.lazy (renderedSource newViewInfo model footerText) rt ]
         , footer model
         ]
 
@@ -2017,7 +2021,7 @@ renderedSource viewInfo model footerText_ rt =
             affine viewInfo.renderedDisplayWidth (viewInfo.hExtra + 160) model.windowWidth
 
         wToc =
-            affine viewInfo.tocWidth viewInfo.hExtra model.windowWidth
+          affine viewInfo.tocWidth viewInfo.hExtra model.windowWidth
 
         hToc =
             translate -viewInfo.vInset model.windowHeight
