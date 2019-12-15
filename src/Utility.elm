@@ -9,6 +9,7 @@ module Utility exposing
     , wordCount
     )
 
+import Config
 import Prng.Uuid exposing (Uuid(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 
@@ -67,7 +68,7 @@ pageAndWordCount str =
             List.length (String.words str)
 
         pc =
-            round (toFloat wc / 450)
+            round (toFloat wc / Config.wordsPerPage)
     in
     ( wc, pc )
 

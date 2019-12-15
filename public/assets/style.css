@@ -81,7 +81,7 @@ h5 p {font-size: 12pt}
 	white-space: normal;
 }
 .mm-quotation {
-	margin-left: 24px;
+	margin-left: 24px !important;
 	margin-top: 18px;
 	margin-right: 36px;
 	margin-bottom: 18px;

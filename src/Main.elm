@@ -2555,7 +2555,7 @@ totalWordCountDisplay model =
                 model.totalWordCount
 
             pages =
-                Basics.round <| toFloat words / 300.0
+                Basics.round <| toFloat words / Config.wordsPerPage
 
             t =
                 String.fromInt words ++ " (" ++ String.fromInt pages ++ " pages)"
