@@ -2531,7 +2531,9 @@ shareUrlDisplay model =
         (Just doc, True) ->
             case doc.public of
                 True ->
-                   el [] (Element.text <| Config.endpoint ++ "/#id/" ++ Uuid.toString doc.id)
+                   -- el [] (Element.text <| Config.endpoint ++ "/#id/" ++ Uuid.toString doc.id)
+                   el [] (Element.text <| Config.endpoint ++ "/#doc/" ++ doc.slug)
+
                 False ->
                     el [] (Element.text "Document is private, can't share")
 
