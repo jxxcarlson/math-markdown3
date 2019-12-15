@@ -67,7 +67,7 @@ pageAndWordCount str =
             List.length (String.words str)
 
         pc =
-            round (toFloat wc / 300)
+            round (toFloat wc / 450)
     in
     ( wc, pc )
 
