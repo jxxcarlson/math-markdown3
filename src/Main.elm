@@ -264,7 +264,8 @@ init flags url key =
             , message = ( UserMessage, "Starting ..." )
             , pressedKeys = []
             , focusedElement = NoFocus
-            , flashCount = 0
+            , flashCounterForTotalWordCount = 0
+            , flashCounterForShareUrl = 0
 
             -- SYSTEM
             , currentSeed = newSeed -- initialSeed flags.seed flags.randInts
@@ -344,7 +345,7 @@ bareModel model =
         , message = ( UserMessage, "Starting ..." )
         , pressedKeys = []
         , focusedElement = NoFocus
-        , flashCount = 0
+        , flashCounterForTotalWordCount = 0
 
         -- SYSTEM
 
@@ -817,10 +818,10 @@ update msg model =
             ( { model | childDocIdString = str }, Cmd.none )
 
         DoTotalWordCount ->
-            ( { model | totalWordCount = Document.totalWordCount model.tableOfContents, flashCount = config.maxFlashCount }, Cmd.none )
+            ( { model | totalWordCount = Document.totalWordCount model.tableOfContents, flashCounterForTotalWordCount = config.maxFlashCount }, Cmd.none )
 
         DoShareUrl ->
-             ( { model |  flashCount = config.maxFlashCount }, Cmd.none )
+             ( { model |  flashCounterForShareUrl = config.maxFlashCount }, Cmd.none )
 
         GotSearchTerms str ->
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
@@ -1255,12 +1256,19 @@ appModeAsString model =
 handleTime : Model -> Posix -> ( Model, Cmd Msg )
 handleTime model newTime =
     let
-        flashCount =
-            if model.flashCount > 0 then
-                model.flashCount - 1
+        flashCounterForTotalWordCount =
+            if model.flashCounterForTotalWordCount > 0 then
+                model.flashCounterForTotalWordCount - 1
 
             else
                 0
+
+        flashCounterForShareUrl =
+            if model.flashCounterForShareUrl > 0 then
+                            model.flashCounterForShareUrl - 1
+
+                        else
+                            0
 
         secondsWhileDirty =
             if model.currentDocumentDirty then
@@ -1284,7 +1292,10 @@ handleTime model newTime =
             else
                 Cmd.none
     in
-    ( { model | time = newTime, secondsWhileDirty = secondsWhileDirty, flashCount = flashCount }
+    ( { model | time = newTime
+       , secondsWhileDirty = secondsWhileDirty
+       , flashCounterForTotalWordCount = flashCounterForTotalWordCount
+       , flashCounterForShareUrl = flashCounterForShareUrl}
     , cmd
     )
 
@@ -2442,8 +2453,8 @@ searchRow model =
 
 
 titleRowForEditing titleWidth rt =
-    row [ Font.size 12, height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
-        [ row [ alignRight, clipX , height (px 40)] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ] ]
+    row [  height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
+        [ row [ width (px 200), alignRight, clipX , clipY, height (px 40), Font.size 8] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ] ]
 
 
 titleRow titleWidth rt =
@@ -2457,7 +2468,7 @@ editTools model =
         Nothing -> Element.none
         Just _ ->
             if List.member model.appMode [ Editing StandardEditing, Editing SubdocumentEditing ] then
-                row [ spacing 6 ]
+                row [ spacing 6, width (px 330) ]
                     [ Button.editingMode model
                     , Button.subDocumentEditingMode model
                     , Button.newDocument model
@@ -2494,12 +2505,13 @@ footer model =
         , Button.getTextSelection
         , dirtyDocumentDisplay model
         , wordCount model
+        , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]
         , Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.downloadArchive
         , Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.uploadArchive
          ,Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.saveImportedArchive
         , Button.shareUrl model
         , shareUrlDisplay model
-        , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]
+
         , displayMessage model.message
         -- , currentTime model
         ]
@@ -2508,7 +2520,7 @@ footer model =
 
 shareUrlDisplay : Model -> Element Msg
 shareUrlDisplay model =
-    case (model.currentDocument, model.flashCount > 0) of
+    case (model.currentDocument, model.flashCounterForShareUrl > 0) of
         (Nothing, _) -> Element.none
         (_, False) -> Element.none
         (Just doc, True) ->
@@ -2527,7 +2539,7 @@ displayMessage (messageType, str) =
 
 
 totalWordCountDisplay model =
-    if model.flashCount == 0 then
+    if model.flashCounterForTotalWordCount == 0 then
         Element.none
 
     else

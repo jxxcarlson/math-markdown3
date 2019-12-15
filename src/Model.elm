@@ -59,7 +59,8 @@ type alias Model =
     , message : Message
     , pressedKeys : List Key
     , focusedElement : FocusedElement
-    , flashCount : Int
+    , flashCounterForTotalWordCount : Int
+    , flashCounterForShareUrl : Int
 
     -- SYSTEM
     , currentSeed : Seed

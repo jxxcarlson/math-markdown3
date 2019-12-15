@@ -364,7 +364,7 @@ getTextSelection =
 totalWordCount =
     Input.button []
         { onPress = Just DoTotalWordCount
-        , label = el [] (Element.text "Total word count: ")
+        , label = el [] (Element.text "Total wc: ")
         }
 
 
