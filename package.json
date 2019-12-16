@@ -19,5 +19,13 @@
     "publish": "git push",
     "build": "yarn run parcel build public/index.html",
     "test": "elm-test"
+  },
+  "dependencies": {
+    "@webcomponents/custom-elements": "^1.2.4",
+    "markdown-it": "^8.4.2",
+    "prosemirror-example-setup": "^1.0.1",
+    "prosemirror-markdown": "^1.3.1",
+    "prosemirror-state": "^1.2.4",
+    "prosemirror-view": "^1.10.1"
   }
 }

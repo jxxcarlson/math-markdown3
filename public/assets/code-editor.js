@@ -64,6 +64,14 @@ customElements.define('code-editor', class extends HTMLElement {
       this.dispatchEvent(new CustomEvent('editorChanged'));
     });
 
+
+      this._editor.on('cursorActivity', () => {
+          function myFunction() {
+       			  alert ("Cursor moved!");
+       			}
+      });
+
+
   }
 })
 

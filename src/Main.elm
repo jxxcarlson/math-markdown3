@@ -29,6 +29,7 @@ import AppNavigation exposing(NavigationType(..))
 import Render.Types exposing (RenderedText)
 import Editor
 import Button
+import Views.MarkdownEditor exposing (editor, onBlur, onChanged, onFocus, value)
 import Update.UI
 import KeyboardManager
 import Browser.Events
@@ -2086,8 +2087,8 @@ editor viewInfo model =
             )
         ]
 {-| Does teh real editing work.  -}
-editor_ : Model -> Float -> Float -> Element Msg
-editor_ model w h =
+editor_1 : Model -> Float -> Float -> Element Msg
+editor_1 model w h =
     let
         wpx =
             Utility.pxFromFloat w
@@ -2097,13 +2098,33 @@ editor_ model w h =
     in
     CodeEditor.codeEditor
         [ CodeEditor.editorValue (Document.getContent model.currentDocument)
-        , CodeEditor.onEditorChanged UpdateDocumentText -- FeedDebouncer -- Inform the editor custom element of the change in text
+        -- , CodeEditor.onEditorChanged UpdateDocumentText -- FeedDebouncer -- Inform the editor custom element of the change in text
+        , CodeEditor.onEditorChanged FeedDebouncer -- Inform the editor custom element of the change in text
         , CodeEditor.onGutterClicked ProcessLine  -- Respond to clicks by scrolling the rendered to text to the corresponding position.
         ]
         []
         |> (\x -> Html.div [ setHtmlId "_editor_",  HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
         |> Element.html
 
+
+editor_ : Model -> Float -> Float -> Element Msg
+editor_ model w h =
+    let
+        wpx =
+            Utility.pxFromFloat w
+
+        hpx =
+            Utility.pxFromFloat h
+    in
+    Views.MarkdownEditor.editor
+        [
+             value (Document.getContent model.currentDocument)
+            -- , onChanged UpdateDocumentText -- FeedDebouncer -- Inform the editor custom element of the change in text
+           , onChanged FeedDebouncer -- Inform the editor custom element of the change in text
+           -- , CodeEditor.onGutterClicked ProcessLine  -- Respond to clicks by scrolling the rendered to text to the corresponding position.
+        ]
+           |> (\x -> Html.div [ setHtmlId "_editor_",  HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
+           |> Element.html
 
 
 
