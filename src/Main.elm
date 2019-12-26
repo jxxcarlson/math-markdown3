@@ -1163,7 +1163,7 @@ update msg model =
 
 
 -- NAVIGATION HELPERS --
--- XYXY
+
 
 focusOnId : Model -> Uuid -> (Model, Cmd Msg)
 focusOnId model id =
@@ -1199,12 +1199,6 @@ handleLink model link =
         (DocRef, slug)  ->(model, Cmd.Document.getBySlug hasuraToken slug)
         (IdRef, idRef)  -> (model, Cmd.Document.getById hasuraToken idRef)
         (SubdocIdRef, idRef)  -> focusOnId model (idRef |> Uuid.fromString |> Maybe.withDefault Utility.id0)
-
-
---
-
--- STRINGS
-
 
 
 -- TIME HELPERS
