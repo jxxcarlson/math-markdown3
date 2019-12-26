@@ -1309,15 +1309,7 @@ signIn model =
     )
 
 
--- SEARCH HELPERS
-
-
-
 -- DOCUMENT HELPERS --
-
-
-
-
 
 
 loadDocument : Model -> Document -> ( Model, Cmd Msg )
@@ -1339,22 +1331,6 @@ loadDocument model document =
       }
     , cmd
     )
-
-
---updateDeque : Model -> Document -> (BoundedDeque Document, Cmd Msg)
---updateDeque model document =
---    let
---        newDeque = Document.pushFrontUnique document model.deque
---    in
---    case model.currentUser of
---          Nothing -> (model.deque, Cmd.none)
---          Just user -> (newDeque, Request.updateUser hasuraToken (updateUserWithDeque newDeque user) |> Cmd.map Req)
-
-
-
-
-
-
 
 
 deleteDocument : Model -> ( Model, Cmd Msg )
@@ -1441,13 +1417,6 @@ processTagString model str =
 
 
 
--- PARSE AND RENDER
-
-
-
-
-
-
 getTagString : Maybe Document -> String
 getTagString maybeDocument =
     case maybeDocument of
@@ -1522,7 +1491,7 @@ view model =
                |> documentMsgFromHtmlMsg "Editing"
 
         Editing SubdocumentEditing ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (subdocumentEditorView viewInfoEditingSubdocuemnt model)
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (View.Editor.viewSubdocuments viewInfoEditingSubdocuemnt model)
                |> documentMsgFromHtmlMsg "Edit Subdocuments"
 
         UserMode _ ->
@@ -1545,67 +1514,6 @@ myFocusStyle =
     , backgroundColor = Nothing
     , shadow = Nothing
     }
-
-
--- SUBDOCUMENT EDITOR
-
-
-subdocumentEditorView : ViewInfo -> Model -> Element Msg
-subdocumentEditorView viewInfo model =
-    let
-        footerText =
-            Maybe.map Document.footer model.currentDocument
-                |> Maybe.withDefault "--"
-    in
-    column []
-        [ simpleEditingHeader viewInfo model
-        , row []
-            [ View.Widget.tabStrip viewInfo model
-            , View.Widget.toolsOrDocs viewInfo model
-            , subDocumentTools model
-            , column [ spacing 12, alignTop, padding 20 ]
-                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), Button.setupOutline model, Button.updateChildren model ]
-                , inputOutline model
-                ]
-            ]
-        , View.Widget.footer model
-        ]
-
-
-subDocumentTools model =
-    let
-        ( message1, message2 ) =
-            case model.currentDocument of
-                Nothing ->
-                    ( "Master document not selected", "" )
-
-                Just master ->
-                    ( "Search, then click below to add subdocument to", master.title )
-    in
-    column [ spacing 12, paddingXY 18 24, alignTop ]
-        [ el [ Font.size 14, width (px 300) ] (Element.text message1)
-        , el [ Font.size 14, width (px 300), Font.bold ] (Element.text message2)
-        , column [ Font.size 13, spacing 8, width (px 350), height (px 500), Border.color Style.charcoal, Border.width 1, padding 12, scrollbarY ]
-            (List.map Button.addSubdocument2 model.candidateChildDocumentList)
-        ]
-
-
-
-
-getTitles : List Document -> String
-getTitles docList =
-    List.map .title docList
-        |> String.join "\n"
-
-
-inputOutline model =
-    Input.multiline (Style.textInputStyleSimple 300 500)
-        { onChange = GotOutline
-        , text = model.documentOutline
-        , placeholder = Nothing
-        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "")
-        , spellcheck = False
-        }
 
 
 
@@ -1663,33 +1571,6 @@ readingHeader viewInfo model rt =
         , row [ spacing 10, alignLeft ]
             [ titleRow titleWidth rt
             , View.Widget.searchRow model
-            ]
-        ]
-
-
-simpleEditingHeader : ViewInfo -> Model -> Element Msg
-simpleEditingHeader viewInfo model =
-    let
-        lhWidth =
-            View.Common.scale (viewInfo.toolStripWidth + viewInfo.docListWidth + viewInfo.editorWidth / 2) model.windowWidth
-
-        rh =
-            viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth
-
-        --        titleWidth =
-        --            scale (rh / 2) model.windowWidth
-        titleWidth =
-            View.Common.scale (0.45 * rh) model.windowWidth
-
-        rhWidth =
-            View.Common.scale (viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
-    in
-    row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [View.Widget.modeButtonStrip model lhWidth
-        , row [ spacing 10, width fill ]
-            [ el [ Font.color Style.white ] (Element.text "Subdocument Editor")
-            , View.Widget.searchRow model
-            , el [ width (px 20) ] (Element.text "")
             ]
         ]
 

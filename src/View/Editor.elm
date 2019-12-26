@@ -1,32 +1,18 @@
-module View.Editor exposing (view)
+module View.Editor exposing (view, viewSubdocuments)
 
+import Button
 import CustomElement.CodeEditor as CodeEditor
 import Document
 import Element exposing (..)
 import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Element.Input as Input
 import Element.Keyed
 import Element.Lazy
 import Html
 import Html.Attributes as HA
-import Model
-    exposing
-        ( --                  AppMode(..)
-          --                 , DequeViewState(..)
-          --                 , DocumentDeleteState(..)
-          --                 , DocumentListDisplay
-          --                 , DocumentListType(..)
-          --                 , EditMode(..)
-          --                 , FocusedElement(..)
-          --                 , Message
-          --                 , MessageType(..)
-          Model
-        , Msg(..)
-          --                 , SearchMode(..)
-          --                 , SearchType(..)
-          --                 , SortMode(..)
-          --                 , UserState(..)
-          --                 , Visibility(..)
-        )
+import Model exposing (Model, Msg(..))
 import Render exposing (RenderingOption(..))
 import Render.Types exposing (RenderedText)
 import Style
@@ -136,3 +122,84 @@ editor_ model w h =
         []
         |> (\x -> Html.div [ View.Common.setHtmlId "_editor_", HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
         |> Element.html
+
+
+
+-- SUBDOCUMENT EDITOR
+
+
+viewSubdocuments : ViewInfo -> Model -> Element Msg
+viewSubdocuments viewInfo model =
+    let
+        footerText =
+            Maybe.map Document.footer model.currentDocument
+                |> Maybe.withDefault "--"
+    in
+    column []
+        [ simpleEditingHeader viewInfo model
+        , row []
+            [ View.Widget.tabStrip viewInfo model
+            , View.Widget.toolsOrDocs viewInfo model
+            , subDocumentTools model
+            , column [ spacing 12, alignTop, padding 20 ]
+                [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), Button.setupOutline model, Button.updateChildren model ]
+                , inputOutline model
+                ]
+            ]
+        , View.Widget.footer model
+        ]
+
+
+simpleEditingHeader : ViewInfo -> Model -> Element Msg
+simpleEditingHeader viewInfo model =
+    let
+        lhWidth =
+            View.Common.scale (viewInfo.toolStripWidth + viewInfo.docListWidth + viewInfo.editorWidth / 2) model.windowWidth
+
+        rh =
+            viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth
+
+        --        titleWidth =
+        --            scale (rh / 2) model.windowWidth
+        titleWidth =
+            View.Common.scale (0.45 * rh) model.windowWidth
+
+        rhWidth =
+            View.Common.scale (viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
+    in
+    row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
+        [ View.Widget.modeButtonStrip model lhWidth
+        , row [ spacing 10, width fill ]
+            [ el [ Font.color Style.white ] (Element.text "Subdocument Editor")
+            , View.Widget.searchRow model
+            , el [ width (px 20) ] (Element.text "")
+            ]
+        ]
+
+
+subDocumentTools model =
+    let
+        ( message1, message2 ) =
+            case model.currentDocument of
+                Nothing ->
+                    ( "Master document not selected", "" )
+
+                Just master ->
+                    ( "Search, then click below to add subdocument to", master.title )
+    in
+    column [ spacing 12, paddingXY 18 24, alignTop ]
+        [ el [ Font.size 14, width (px 300) ] (Element.text message1)
+        , el [ Font.size 14, width (px 300), Font.bold ] (Element.text message2)
+        , column [ Font.size 13, spacing 8, width (px 350), height (px 500), Border.color Style.charcoal, Border.width 1, padding 12, scrollbarY ]
+            (List.map Button.addSubdocument2 model.candidateChildDocumentList)
+        ]
+
+
+inputOutline model =
+    Input.multiline (Style.textInputStyleSimple 300 500)
+        { onChange = GotOutline
+        , text = model.documentOutline
+        , placeholder = Nothing
+        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "")
+        , spellcheck = False
+        }
