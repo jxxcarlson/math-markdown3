@@ -21,18 +21,14 @@ import Model exposing
 import Browser
 import Interchange
 import Debounce
-import View.Common exposing (ViewInfo, RenderedDocumentRecord)
 import View.Editor
-import View.Widget
-import View.Render
+import View.Reader
 import View.User
 import File exposing (File)
 import File.Select as Select
 import Utility.Time
 import AppNavigation exposing(NavigationType(..))
-import Render.Types exposing (RenderedText)
 import Editor
-import Button
 import Update.UI
 import KeyboardManager
 import Browser.Events
@@ -43,21 +39,15 @@ import Cmd.Document
 import Utility
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Element exposing (..)
-import Element.Background as Background
 import Update.Render
-import Element.Border as Border
 import Config
 import Element.Font as Font
-import Element.Input as Input
 import BoundedDeque exposing(BoundedDeque)
-import Element.Lazy
 import Html exposing (..)
-import Html.Attributes as HA
 import Json.Encode as E
 import Keyboard exposing (Key(..))
 import Document
 import Outside
-import Markdown.Elm
 import Markdown.Option as MDOption
 import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
@@ -74,7 +64,7 @@ import Style
 import Task exposing (Task)
 import Time exposing (Posix)
 import TocManager
-import TocZ exposing (TocMsg(..), viewZ)
+import TocZ exposing (TocMsg(..))
 import Update.Document
 import Url exposing(Url)
 import User exposing (AuthorizedUser, User)
@@ -1468,21 +1458,14 @@ handleDeletedDocument model =
 
 --
 -- VIEW FUNCTIONS
----
-
-documentMsgFromHtmlMsg : String -> Html msg -> Browser.Document msg
-documentMsgFromHtmlMsg title msg  =
-    { title = title
-    , body = [msg] }
-
-
+--
 
 
 view : Model -> Browser.Document Msg
 view model =
     case model.appMode of
         Reading ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (readerView viewInfoReading model)
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (View.Reader.view viewInfoReading model)
                |> documentMsgFromHtmlMsg "Reading"
 
 
@@ -1497,6 +1480,12 @@ view model =
         UserMode _ ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (View.User.view viewInfoUserPage model)
                |> documentMsgFromHtmlMsg "User Mode"
+
+
+documentMsgFromHtmlMsg : String -> Html msg -> Browser.Document msg
+documentMsgFromHtmlMsg title msg  =
+    { title = title
+    , body = [msg] }
 
 
 
@@ -1514,91 +1503,6 @@ myFocusStyle =
     , backgroundColor = Nothing
     , shadow = Nothing
     }
-
-
-
-
--- READER
-
-
-readerView : ViewInfo -> Model -> Element Msg
-readerView viewInfo model =
-    let
-        footerText =
-            Maybe.map Document.footer model.currentDocument
-                |> Maybe.withDefault "---"
-
-        rt : RenderedText Msg
-        rt =
-           Render.get model.renderingData
-    in
-    column [ paddingXY 0 0 ]
-        [ readingHeader viewInfo model rt
-        , row []
-            [ View.Widget.tabStrip viewInfo model
-            , View.Widget.toolsOrDocs viewInfo model
-            , Element.Lazy.lazy (View.Render.renderedSource viewInfo model footerText) rt
-            ]
-        , View.Widget.footer model
-        ]
-
--- VIEW RENDERED SOURCE --
-
-
-
-
--- DOCUMENT TOOL PANEL: BUTTONS AND INPUTS --
-
-
--- HEADERS
-
-
-readingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
-readingHeader viewInfo model rt =
-    let
-        lhWidth =
-            View.Common.scale (viewInfo.toolStripWidth + viewInfo.docListWidth) model.windowWidth
-
-        -- scale viewInfo.docListWidth model.windowWidth
-        titleWidth =
-            View.Common.scale (0.75 * viewInfo.renderedDisplayWidth) model.windowWidth
-
-        rhWidth =
-            View.Common.scale (0.25 * viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
-    in
-    row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [ View.Widget.modeButtonStrip model lhWidth
-        , row [ spacing 10, alignLeft ]
-            [ titleRow titleWidth rt
-            , View.Widget.searchRow model
-            ]
-        ]
-
-
-
-
-titleRowForEditing titleWidth rt =
-    row [  height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
-        [ row [ width (px 200), alignRight, clipX , clipY, height (px 40), Font.size 8] [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ] ]
-
-
-titleRow titleWidth rt =
-    row [ Font.size 24, height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
-        [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
-
-
-
-
-
-
-currentTime model =
-    Element.el [ alignRight, Font.color Style.white, Font.size 12 ]
-        (Element.text <| "Current time: " ++ Utility.Time.humanTimeHM model.zone model.time)
-
-
-status model =
-    el [ Font.color Style.white, Font.size 12, centerX ]
-        (Element.text <| "w: " ++ String.fromInt model.windowWidth ++ ", h: " ++ String.fromInt model.windowHeight)
 
 
 
