@@ -1,8 +1,27 @@
-module View.Common exposing (RenderedDocumentRecord, ViewInfo, affine, scale, setElementId, setHtmlId, translate)
+module View.Common exposing (RenderedDocumentRecord, ViewInfo, affine, appModeAsString, scale, setElementId, setHtmlId, translate)
 
 import Element
 import Html exposing (Html)
 import Html.Attributes as HA
+import Model
+    exposing
+        ( AppMode(..)
+        , DequeViewState(..)
+        , DocumentDeleteState(..)
+        , DocumentListDisplay
+        , DocumentListType(..)
+        , EditMode(..)
+        , FocusedElement(..)
+        , Message
+        , MessageType(..)
+        , Model
+        , Msg(..)
+        , SearchMode(..)
+        , SearchType(..)
+        , SortMode(..)
+        , UserState(..)
+        , Visibility(..)
+        )
 
 
 type alias ViewInfo =
@@ -47,3 +66,28 @@ affine factor shift input =
 translate : Float -> Int -> Int
 translate amount input =
     toFloat input + amount |> round
+
+
+appModeAsString : Model -> String
+appModeAsString model =
+    case model.appMode of
+        Reading ->
+            "Reading"
+
+        Editing StandardEditing ->
+            "Editing"
+
+        Editing SubdocumentEditing ->
+            "Editing subdocuments"
+
+        UserMode SignInState ->
+            "U, Signing in"
+
+        UserMode SignUpState ->
+            "U, Signing up"
+
+        UserMode ChangePasswordState ->
+            "U, Changing Password"
+
+        UserMode SignedInState ->
+            "U, Signed in"
