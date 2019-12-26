@@ -2027,7 +2027,7 @@ renderedSource viewInfo model footerText_ rt =
         hToc =
             translate -viewInfo.vInset model.windowHeight
 
-        outerSourceStyle = [ setElementId "__rt_scroll__", width (px w_), height (px h_), clipX, Font.size 12 ]
+        outerSourceStyle = [ setElementId "__rt_scroll__", width (px w_), height (px h_), Element.paddingEach {left = 0, right = 20, top = 0, bottom = 30}, clipX, Font.size 12 ]
 
         innerSourceStyle = [setElementId Cmd.Document.masterId,  height (px h_)]
 

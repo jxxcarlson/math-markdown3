@@ -19,7 +19,7 @@ ul {
 li { list-style-type:none; line-height: 25px;}
 
 
-
+.mm-paragraph{ margin-left: 12px; margin-right: 12px; }
 
 
 a:link {color: #00a;}      /* unvisited link */
@@ -164,7 +164,8 @@ p.mm-table-cell {
 
 pre { font-size: 10pt;
       padding-left: 18px;
-      overflow: scroll;}
+      overflow: scroll;
+      }
 
 .mm-line-height {
     line-height: 1.4;
