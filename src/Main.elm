@@ -19,9 +19,12 @@ import Model exposing
                  , Visibility(..)
                  )
 import Browser
-import String.Interpolate exposing(interpolate)
 import Interchange
 import Debounce
+import View.Common exposing (ViewInfo, RenderedDocumentRecord)
+import View.Editor
+import View.Widget
+import View.Render
 import File exposing (File)
 import File.Select as Select
 import Utility.Time
@@ -33,7 +36,6 @@ import Update.UI
 import KeyboardManager
 import Browser.Events
 import Browser.Navigation as Nav
-import CustomElement.CodeEditor as CodeEditor
 import Data
 import Update.Master
 import Cmd.Document
@@ -47,7 +49,6 @@ import Element.Border as Border
 import Config
 import Element.Font as Font
 import Element.Input as Input
-import Element.Keyed
 import BoundedDeque exposing(BoundedDeque)
 import Element.Lazy
 import Html exposing (..)
@@ -160,15 +161,6 @@ type alias Flags =
     }
 
 
-type alias ViewInfo =
-    { toolStripWidth : Float
-    , docListWidth : Float
-    , editorWidth : Float
-    , renderedDisplayWidth : Float
-    , tocWidth : Float
-    , vInset : Float
-    , hExtra : Float
-    }
 
 
 
@@ -1480,32 +1472,6 @@ processTagString model str =
 
 
 
--- UI HELPERS
-
-
-
-setElementId : String -> Element.Attribute msg
-setElementId id =
-   Element.htmlAttribute <| HA.attribute "id" id
-
-setHtmlId : String -> Html.Attribute msg
-setHtmlId id =
-    HA.attribute "id" id
-
-scale : Float -> Int -> Int
-scale factor input =
-    factor * toFloat input |> round
-
-
-affine : Float -> Float -> Int -> Int
-affine factor shift input =
-    factor * (toFloat input - shift) |> round
-
-
-translate : Float -> Int -> Int
-translate amount input =
-    toFloat input + amount |> round
-
 
 getTagString : Maybe Document -> String
 getTagString maybeDocument =
@@ -1565,9 +1531,6 @@ documentMsgFromHtmlMsg title msg  =
     { title = title
     , body = [msg] }
 
-type alias RenderedDocumentRecord msg =
-    { document : Html msg, title : Html msg, toc : Html msg }
-
 
 
 
@@ -1580,7 +1543,7 @@ view model =
 
 
         Editing StandardEditing ->
-            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (editorView viewInfoEditing model)
+            Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (View.Editor.view viewInfoEditing model)
                |> documentMsgFromHtmlMsg "Editing"
 
         Editing SubdocumentEditing ->
@@ -1621,7 +1584,7 @@ userView : ViewInfoUserPage -> Model -> Element Msg
 userView viewInfo model =
     let
         h_ =
-            translate -viewInfo.vInset model.windowHeight
+            View.Common.translate -viewInfo.vInset model.windowHeight
     in
     column [ Background.color (Style.makeGrey 0.35), Font.color Style.white ]
         [ userPageHeader viewInfo model
@@ -1633,10 +1596,10 @@ userView viewInfo model =
 lhsViewInfoPage viewInfo model =
     let
         w =
-            scale viewInfo.lhsFraction model.windowWidth
+            View.Common.scale viewInfo.lhsFraction model.windowWidth
 
         h =
-            translate -viewInfo.vInset model.windowHeight
+            View.Common.translate -viewInfo.vInset model.windowHeight
     in
     column [ width (px w), height (px h), padding 12, spacing 24 ]
         [ if model.appMode == UserMode SignInState then
@@ -1655,13 +1618,13 @@ lhsViewInfoPage viewInfo model =
 rhsViewInfoPage viewInfo model =
     let
         w1 =
-            scale (0.7 * viewInfo.rhsFraction) model.windowWidth
+            View.Common.scale (0.7 * viewInfo.rhsFraction) model.windowWidth
 
         w2 =
-            scale (0.3 * viewInfo.rhsFraction) model.windowWidth
+            View.Common.scale (0.3 * viewInfo.rhsFraction) model.windowWidth
 
         h =
-            translate -viewInfo.vInset model.windowHeight
+            View.Common.translate -viewInfo.vInset model.windowHeight
 
         rt : { title : Html msg, toc : Html msg, document : Html msg }
         rt =
@@ -1701,23 +1664,16 @@ userPageHeader : ViewInfoUserPage -> Model -> Element Msg
 userPageHeader viewInfo model =
     let
         lhsWidth =
-            scale viewInfo.lhsFraction model.windowWidth
+            View.Common.scale viewInfo.lhsFraction model.windowWidth
 
         rhsWidth =
-            scale viewInfo.rhsFraction model.windowWidth
+            View.Common.scale viewInfo.rhsFraction model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [ modeButtonStrip model lhsWidth
+        [ View.Widget.modeButtonStrip model lhsWidth
         , column [ width (px rhsWidth) ] []
         ]
 
-
-modeButtonStrip model lhWidth =
-    row [ width (px lhWidth), height (px 45), spacing 10, paddingXY 20 0 ]
-        [ editTools model
-        , Button.readingMode model
-        , Button.userPageMode model
-        ]
 
 
 
@@ -1904,15 +1860,15 @@ subdocumentEditorView viewInfo model =
     column []
         [ simpleEditingHeader viewInfo model
         , row []
-            [ tabStrip viewInfo model
-            , toolsOrDocs viewInfo model
+            [ View.Widget.tabStrip viewInfo model
+            , View.Widget.toolsOrDocs viewInfo model
             , subDocumentTools model
             , column [ spacing 12, alignTop, padding 20 ]
                 [ row [ spacing 8 ] [ el [ Font.size 14 ] (Element.text "Edit outline below"), Button.setupOutline model, Button.updateChildren model ]
                 , inputOutline model
                 ]
             ]
-        , footer model
+        , View.Widget.footer model
         ]
 
 
@@ -1953,35 +1909,6 @@ inputOutline model =
 
 
 
--- TEXT EDITOR
-
-
-editorView : ViewInfo -> Model -> Element Msg
-editorView viewInfo model =
-    let
-        footerText =
-            Maybe.map Document.footer model.currentDocument
-                |> Maybe.withDefault "---"
-
-        rt : RenderedText Msg
-        rt =
-            Render.get model.renderingData
-
-        newViewInfo = {viewInfo | docListWidth = viewInfo.docListWidth +  0.1* viewInfo.editorWidth
-                        , editorWidth = viewInfo.editorWidth + viewInfo.tocWidth / 2 -  0.1* viewInfo.editorWidth
-                        , renderedDisplayWidth = viewInfo.renderedDisplayWidth + viewInfo.tocWidth / 2
-                        , tocWidth = 0}
-    in
-    column []
-        [ editingHeader newViewInfo model rt
-        , row [] [ tabStrip newViewInfo model
-          , toolsOrDocs newViewInfo model
-          , editor newViewInfo model
-          , Element.Lazy.lazy (renderedSource newViewInfo model footerText) rt ]
-        , footer model
-        ]
-
-
 
 -- READER
 
@@ -2000,378 +1927,19 @@ readerView viewInfo model =
     column [ paddingXY 0 0 ]
         [ readingHeader viewInfo model rt
         , row []
-            [ tabStrip viewInfo model
-            , toolsOrDocs viewInfo model
-            , Element.Lazy.lazy (renderedSource viewInfo model footerText) rt
+            [ View.Widget.tabStrip viewInfo model
+            , View.Widget.toolsOrDocs viewInfo model
+            , Element.Lazy.lazy (View.Render.renderedSource viewInfo model footerText) rt
             ]
-        , footer model
+        , View.Widget.footer model
         ]
 
 -- VIEW RENDERED SOURCE --
-
-renderedSource : ViewInfo -> Model -> String -> RenderedText Msg -> Element Msg
-renderedSource viewInfo model footerText_ rt =
-    let
-        w_ =
-            affine viewInfo.renderedDisplayWidth viewInfo.hExtra model.windowWidth
-
-        h_ =
-            translate -viewInfo.vInset model.windowHeight
-
-        w2_ =
-            affine viewInfo.renderedDisplayWidth (viewInfo.hExtra + 160) model.windowWidth
-
-        wToc =
-          affine viewInfo.tocWidth viewInfo.hExtra model.windowWidth
-
-        hToc =
-            translate -viewInfo.vInset model.windowHeight
-
-        outerSourceStyle = [ setElementId "__rt_scroll__", width (px w_), height (px h_), Element.paddingEach {left = 0, right = 20, top = 0, bottom = 30}, clipX, Font.size 12 ]
-
-        innerSourceStyle = [setElementId Cmd.Document.masterId,  height (px h_)]
-
-        outerTocStyle = [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
-
-        innerTocStyle = [  height (px (hToc - 125)), scrollbarY, clipX ]
-
-        footerStyle = [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ]
-
-    in
-    row [ spacing 10 ]
-        [ column outerSourceStyle
-            [ column [ width (px w2_), paddingXY 10 20 ]
-                [ column innerSourceStyle [ rt.document |> Element.html ] ]
-            ]
-        , Element.column outerTocStyle
-            [ column  innerTocStyle [ rt.toc |> Element.html ]
-            , column  footerStyle
-                [ renderFooter footerText_ ]
-            ]
-        ]
-
-
-renderFooter : String -> Element Msg
-renderFooter str =
-    pre [ HA.style "font-size" "10px" ] [ Html.text str ] |> Element.html
-
-
-toolsOrDocs viewInfo model =
-    case ( model.visibilityOfTools, model.appMode ) of
-        ( Visible, Editing StandardEditing ) ->
-            toolPanel viewInfo model
-
-        ( _, _ ) ->
-            docListViewer viewInfo model
-
-
-
--- EDITOR --
-
-
-{-| A wrapper for editor_, which does the real editing work. -}
-editor : ViewInfo -> Model -> Element Msg
-editor viewInfo model =
-    let
-        w =
-            affine viewInfo.editorWidth viewInfo.hExtra model.windowWidth |> toFloat
-
-        h =
-            translate -viewInfo.vInset model.windowHeight |> toFloat
-    in
-    column []
-        [ Element.Keyed.el []
-            ( String.fromInt 0
-            , editor_ model w h
-            )
-        ]
-{-| Does teh real editing work.  -}
-editor_ : Model -> Float -> Float -> Element Msg
-editor_ model w h =
-    let
-        wpx =
-            Utility.pxFromFloat w
-
-        hpx =
-            Utility.pxFromFloat h
-    in
-    CodeEditor.codeEditor
-        [ CodeEditor.editorValue (Document.getContent model.currentDocument)
-        , CodeEditor.onEditorChanged UpdateDocumentText -- FeedDebouncer -- Inform the editor custom element of the change in text
-        , CodeEditor.onGutterClicked ProcessLine  -- Respond to clicks by scrolling the rendered to text to the corresponding position.
-        ]
-        []
-        |> (\x -> Html.div [ setHtmlId "_editor_",  HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
-        |> Element.html
-
 
 
 
 
 -- DOCUMENT TOOL PANEL: BUTTONS AND INPUTS --
-
-
-toolPanel viewInfo model =
-    let
-        h_ =
-            translate -viewInfo.vInset model.windowHeight
-    in
-    column
-        [ width (px (scale (1.35*viewInfo.docListWidth) model.windowWidth))
-        , height (px h_)
-        , Background.color (Style.makeGrey 0.5)
-        , paddingXY 20 20
-        , alignTop
-        ]
-        [ column [ Font.size 13, spacing 25 ]
-            [ el [ Font.size 16, Font.bold, Font.color Style.white ] (Element.text "Document tools")
-            , Button.togglePublic model
-            , inputTags model
-            , docTypePanel model
-            , userPermissions model
-            ]
-        ]
-
-userPermissions model =
-    column [spacing 10, padding 10, Background.color Style.charcoal]
-      [  el [Font.color Style.white] (Element.text "User permissions")
-        , addUserRow model
-        , viewPermissions model
-      ]
-
-
-viewPermissions model =
-    case model.currentDocument of
-        Nothing -> Element.none
-        Just doc ->
-          let
-              permissionList = Document.listPermissions doc
-          in
-            column [Font.color Style.white]
-              (List.map (\p -> row [] [Element.text p]) permissionList)
-
-
-addUserRow model =
-    row [spacing 8]
-    [Button.addUserPermission, usernameToAddField model, Button.selectPermission model]
-
-
-usernameToAddField model =
-    Input.text (Style.inputStyle 100)
-      { onChange = AddUserNameForPermissions
-     , text = model.usernameToAddToPermmission
-     , placeholder = Nothing
-     , label = Input.labelLeft [ Font.size 14, width (px 0) ] (Element.text "")
-     }
-
-
-
-
-
-
-inputTags model =
-    Input.multiline (Style.textInputStyleSimple 180 80)
-        { onChange = GotTagString
-        , text = model.tagString
-        , placeholder = Nothing
-        , label = Input.labelAbove [ Font.size 12, Font.bold, Font.color Style.white ] (Element.text "Keywords")
-        , spellcheck = False
-        }
-
-
-
-
-
--- DOCUMENT LIST --
-
-
-docListViewer viewInfo model =
-    let
-        h_ =
-            translate -viewInfo.vInset model.windowHeight
-
-        renderedList =
-            case model.documentListDisplay of
-                (SearchResults, DequeViewOff) ->
-                    renderTocForSearchResults model
-
-                (DocumentChildren, DequeViewOff) ->
-                    (Button.expandCollapseToc |> Element.map TOC) :: renderTocForMaster model
-
-                (_, DequeViewOn) ->
-                    renderTocForDeque model
-
-
-    in
-    column
-        [ width (px (scale viewInfo.docListWidth model.windowWidth))
-        , height (px h_)
-        , Background.color (Style.makeGrey 0.9)
-        , paddingXY 12 20
-        , alignTop
-        , clipX
-        ]
-        [ column [ Font.size 13, spacing 8 ]
-            (heading model
-                :: Button.newSubdocument model
-                :: Button.deleteSubdocument model
-                :: renderedList
-            )
-        ]
-
-
-
--- TABLE OF CONTENTS
-
-
-renderTocForSearchResults : Model -> List (Element Msg)
-renderTocForSearchResults model =
-    List.map (tocEntry model.currentDocument) model.documentList
-
-
-renderTocForDeque: Model -> List (Element Msg)
-renderTocForDeque model =
-    List.map (tocEntry model.currentDocument)
-      (BoundedDeque.toList model.deque |> List.sortBy (\doc -> doc.title))
-
-renderTocForMaster : Model -> List (Element Msg)
-renderTocForMaster model =
-    case model.tocData of
-        Nothing ->
-            [ el [] (Element.text <| "Loading TOC ...") ]
-
-        Just zipper ->
-            [ viewZ model.toggleToc zipper |> Element.map TOC ]
-
-
-
-
-
-tocEntry : Maybe Document -> Document -> Element Msg
-tocEntry currentDocument_ document =
-    let
-        ( color, fontWeight ) =
-            tocEntryStyle currentDocument_ document
-    in
-    Input.button [] { onPress = Just (SetCurrentDocument document),
-      label = el [ Font.color color, fontWeight ] (Element.text <| tocEntryPrefix document ++ document.title) }
-
-tocEntryPrefix : Document -> String
-tocEntryPrefix doc =
-    case List.length doc.childInfo > 0 of
-        True -> "+ "
-        False -> ""
-
-tocEntryStyle : Maybe Document -> Document -> ( Color, Element.Attribute msg )
-tocEntryStyle currentDocument_ document =
-    let
-        currentDocId =
-            case currentDocument_ of
-                Nothing ->
-                    Utility.id0
-
-                Just doc ->
-                    doc.id
-
-        color =
-            case currentDocument_ of
-                Nothing ->
-                    Style.buttonGrey
-
-                Just _ ->
-                    case ( currentDocId == document.id, document.childInfo /= [] ) of
-                        ( True, True ) ->
-                            Style.brighterBlue
-
-                        ( True, False ) ->
-                            Style.red
-
-                        ( False, True ) ->
-                            Style.brighterBlue
-
-                        ( False, False ) ->
-                            Style.grey 0.2
-
-        fontWeight =
-            case currentDocId == document.id of
-                True ->
-                    Font.bold
-
-                False ->
-                    Font.regular
-    in
-    ( color, fontWeight )
-
-
-
-
-
-
-heading : Model -> Element Msg
-heading model =
-    let
-        n_ =
-            case model.documentListDisplay of
-                (SearchResults, DequeViewOff) ->
-                    List.length model.documentList
-
-                (DocumentChildren, DequeViewOff) ->
-                    List.length model.tableOfContents
-
-                (_, DequeViewOn) ->
-                   BoundedDeque.length model.deque
-
-        n =
-            n_
-                |> String.fromInt
-
-        w =
-            140
-    in
-    case model.currentUser of
-        Nothing ->
-            case model.documentListDisplay of
-                (SearchResults, _) ->
-                    row [ spacing 10 ] [ Button.setDocumentListType model w n, Button.sortByMostRecentFirst model, Button.sortAlphabetical model]
---
---                    Input.button []
---                        { onPress = Just (SetDocumentListType DocumentChildren)
---                        , label =
---                            el (Button.headingStyle w Style.charcoal)
---                                (Element.text ("Public Documents! (" ++ n ++ ")"))
---                        }
-
-                (DocumentChildren, _) ->
-                    Input.button []
-                        { onPress = Just (SetDocumentListType SearchResults)
-                        , label =
-                            el (Button.headingStyle w Style.charcoal)
-                                (Element.text ("Contents! (" ++ n ++ ")"))
-                        }
---
---                (_, DequeViewOn) ->
---                    Input.button []
---                        { onPress = Just ToggleDequeview
---                        , label =
---                            el (Button.headingStyle w Style.charcoal)
---                                (Element.text "Recent")
---                      }
-
-        Just _ ->
-            case model.documentListDisplay of
-                (SearchResults, DequeViewOff) ->
-
-                    row [ spacing 10 ] [ Button.setDocumentListType model w n, Button.sortByMostRecentFirst model, Button.sortAlphabetical model, Button.setDequeView model]
-
-                (SearchResults, DequeViewOn) ->
-                    row [ spacing 10 ] [ Button.setDocumentListType model w n,  Button.setDequeView model]
-
-                (DocumentChildren, DequeViewOff) ->
-                    row [ spacing 10 ] [Button.setDocumentChildren model w n, Button.setDequeViewX model w n]
-
-                (DocumentChildren, DequeViewOn) ->
-                    row [ spacing 10 ] [Button.setDocumentListType model w n, Button.setDequeViewX model w n]
-
 
 
 -- HEADERS
@@ -2381,20 +1949,20 @@ readingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
 readingHeader viewInfo model rt =
     let
         lhWidth =
-            scale (viewInfo.toolStripWidth + viewInfo.docListWidth) model.windowWidth
+            View.Common.scale (viewInfo.toolStripWidth + viewInfo.docListWidth) model.windowWidth
 
         -- scale viewInfo.docListWidth model.windowWidth
         titleWidth =
-            scale (0.75 * viewInfo.renderedDisplayWidth) model.windowWidth
+            View.Common.scale (0.75 * viewInfo.renderedDisplayWidth) model.windowWidth
 
         rhWidth =
-            scale (0.25 * viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
+            View.Common.scale (0.25 * viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [ modeButtonStrip model lhWidth
+        [ View.Widget.modeButtonStrip model lhWidth
         , row [ spacing 10, alignLeft ]
             [ titleRow titleWidth rt
-            , searchRow model
+            , View.Widget.searchRow model
             ]
         ]
 
@@ -2403,7 +1971,7 @@ simpleEditingHeader : ViewInfo -> Model -> Element Msg
 simpleEditingHeader viewInfo model =
     let
         lhWidth =
-            scale (viewInfo.toolStripWidth + viewInfo.docListWidth + viewInfo.editorWidth / 2) model.windowWidth
+            View.Common.scale (viewInfo.toolStripWidth + viewInfo.docListWidth + viewInfo.editorWidth / 2) model.windowWidth
 
         rh =
             viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth
@@ -2411,50 +1979,21 @@ simpleEditingHeader viewInfo model =
         --        titleWidth =
         --            scale (rh / 2) model.windowWidth
         titleWidth =
-            scale (0.45 * rh) model.windowWidth
+            View.Common.scale (0.45 * rh) model.windowWidth
 
         rhWidth =
-            scale (viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
+            View.Common.scale (viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
     in
     row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [ modeButtonStrip model lhWidth
+        [View.Widget.modeButtonStrip model lhWidth
         , row [ spacing 10, width fill ]
             [ el [ Font.color Style.white ] (Element.text "Subdocument Editor")
-            , searchRow model
+            , View.Widget.searchRow model
             , el [ width (px 20) ] (Element.text "")
             ]
         ]
 
 
-editingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
-editingHeader viewInfo model rt =
-    let
-        lhWidth =
-            scale (viewInfo.toolStripWidth + viewInfo.docListWidth + viewInfo.editorWidth / 2) model.windowWidth
-
-        rh =
-            viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth
-
-        --        titleWidth =
-        --            scale (rh / 2) model.windowWidth
-        titleWidth =
-            scale (0.45 * rh) model.windowWidth
-
-        rhWidth =
-            scale (viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
-    in
-    row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
-        [ modeButtonStrip model lhWidth
-        , row [ spacing 10, width fill ]
-            [ -- titleRowForEditing titleWidth rt
-             searchRow model
-            , el [ width (px 20) ] (Element.text "")
-            ]
-        ]
-
-
-searchRow model =
-    row [ spacing 10, alignRight ] [ Search.inputTerms model, Button.clearSearchTerms,  Button.search model,  Button.allDocuments,  Button.helpDocs ]
 
 
 titleRowForEditing titleWidth rt =
@@ -2466,111 +2005,6 @@ titleRow titleWidth rt =
     row [ Font.size 24, height (px 40), width (px titleWidth), Font.color Style.white, alignRight, clipX ]
         [ rt.title |> Element.html |> Element.map (\_ -> NoOp) ]
 
-
-editTools : Model -> Element Msg
-editTools model =
-    case model.currentUser of
-        Nothing -> Element.none
-        Just _ ->
-            if List.member model.appMode [ Editing StandardEditing, Editing SubdocumentEditing ] then
-                row [ spacing 6, width (px 360) ]
-                    [ Button.editingMode model
-                    , Button.subDocumentEditingMode model
-                    , Button.newDocument model
-                    , Button.firstSubDocument model
-                    , Button.saveDocument model
-                    , Button.deleteDocument model
-                    , Button.cancelDeleteDocumentInHeader model
-                    ]
-
-            else
-                row [ spacing 6 ] [ Button.editingMode model, Button.subDocumentEditingMode model ]
-
-
-
--- TAB-STRIP ON LEFT --
-
-
-tabStrip : ViewInfo -> Model -> Element Msg
-tabStrip viewInfo model =
-    column [ width (px 30), height (px 200), Background.color (Style.grey 0.1), alignTop ]
-        [ row [ spacing 15, rotate -1.5708, moveLeft 50, moveDown 70 ] [ Button.showTools model, Button.showDocumentList model ]
-        ]
-
-
-
--- FOOTER --
-
-
-footer : Model -> Element Msg
-footer model =
-    row [ paddingXY 20 0, height (px 30), width (px model.windowWidth), Background.color Style.charcoal, Font.color Style.white, spacing 24, Font.size 12 ]
-        [ currentAuthorDisplay model
-        -- , el [] (Element.text <| slugOfCurrentDocument model)
-        , Button.getTextSelection
-        , dirtyDocumentDisplay model
-        , wordCount model
-        , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]
-        , Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.downloadArchive
-        , Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.uploadArchive
-         ,Utility.View.showIf (Maybe.map .username model.currentUser ==  Just "jxxcarlson") Button.saveImportedArchive
-        , Button.shareUrl model
-        , shareUrlDisplay model
-
-        , displayMessage model.message
-        -- , currentTime model
-        ]
-
-
-
-shareUrlDisplay : Model -> Element Msg
-shareUrlDisplay model =
-    case (model.currentDocument, model.flashCounterForShareUrl > 0) of
-        (Nothing, _) -> Element.none
-        (_, False) -> Element.none
-        (Just doc, True) ->
-            case doc.public of
-                True ->
-                   -- el [] (Element.text <| Config.endpoint ++ "/#id/" ++ Uuid.toString doc.id)
-                   el [] (Element.text <| Config.endpoint ++ "/#doc/" ++ doc.slug)
-
-                False ->
-                    el [] (Element.text "Document is private, can't share")
-
-displayMessage : Message -> Element Msg
-displayMessage (messageType, str) =
-    case messageType of
-        ErrorMessage -> el [Font.color Style.white, Background.color (Style.brightRed),  alignRight, Font.size 12, Font.bold,  paddingXY 10 4, centerY] (Element.text str)
-        _ -> el [alignRight, paddingXY 10 0] (Element.text str)
-
-
-
-totalWordCountDisplay model =
-    if model.flashCounterForTotalWordCount == 0 then
-        Element.none
-
-    else
-        let
-            words =
-                model.totalWordCount
-
-            pages =
-                Basics.round <| toFloat words / Config.wordsPerPage
-
-            t =
-                String.fromInt words ++ " (" ++ String.fromInt pages ++ " pages)"
-        in
-        el [] (Element.text t)
-
-
-showToken : Model -> Element Msg
-showToken model =
-    case model.token of
-        Nothing ->
-            el [] (Element.text "Token: --")
-
-        Just token ->
-            el [] (Element.text <| "Token: " ++ token)
 
 
 displayLevels model =
@@ -2596,63 +2030,7 @@ displayToggle model =
         el [] (Element.text "Toggle OFF")
 
 
-tocCursorDisplay : Model -> Element Msg
-tocCursorDisplay model =
-    case model.tocCursor of
-        Nothing ->
-            el [] (Element.text "No focus")
 
-        Just uuid ->
-            el [] (Element.text <| "Focus: " ++ Uuid.toString uuid)
-
-
-dirtyDocumentDisplay : Model -> Element Msg
-dirtyDocumentDisplay model =
-    case ( model.appMode == Editing StandardEditing, model.currentUser ) of
-        ( True, Just _ ) ->
-            dirtyDocumentDisplay_ model
-
-        ( _, _ ) ->
-            Element.none
-
-
-dirtyDocumentDisplay_ model =
-    if model.currentDocumentDirty then
-        row [ width (px 30), height (px 20), Background.color Style.red, Font.color Style.white ]
-            [ el [ centerX, centerY ] (Element.text <| String.fromInt model.secondsWhileDirty) ]
-
-    else
-        row [ width (px 30), height (px 20), Background.color Style.green, Font.color Style.white ]
-            [ el [ centerX, centerY ] (Element.text <| String.fromInt model.secondsWhileDirty) ]
-
-
-slugOfCurrentDocument : Model -> String
-slugOfCurrentDocument model =
-    case model.currentDocument of
-        Nothing ->
-            ""
-
-        Just document ->
-            document.slug
-
-
-currentAuthorDisplay model =
-    let
-        message =
-            case model.currentUser of
-                Nothing ->
-                    ( UserMessage, "Not signed in" )
-
-                Just user ->
-                    ( UserMessage, "Signed in as " ++ user.username )
-    in
-    Element.el [ Font.color Style.white, Font.size 12 ]
-        (Element.text <| messageContent <| message)
-
-
-messageContent : Message -> String
-messageContent ( _, messageContent_ ) =
-    messageContent_
 
 
 currentTime model =
@@ -2660,40 +2038,9 @@ currentTime model =
         (Element.text <| "Current time: " ++ Utility.Time.humanTimeHM model.zone model.time)
 
 
-wordCount model =
-    let
-        sourceText =
-            case model.currentDocument of
-                Just document ->
-                    document.content
-
-                _ ->
-                    ""
-        (wc, pc) = Utility.pageAndWordCount sourceText
-          |> (\(x,y) -> (String.fromInt x, String.fromInt y))
-
-        legend = interpolate "Word count {0} ({1} pages)" [wc, pc]
-    in
-    Element.el [ Font.color Style.white, Font.size 12 ] (Element.text <| legend )
-
-
 status model =
     el [ Font.color Style.white, Font.size 12, centerX ]
         (Element.text <| "w: " ++ String.fromInt model.windowWidth ++ ", h: " ++ String.fromInt model.windowHeight)
-
-
-docTypePanel model =
-    let
-        w =
-            120
-    in
-    column [ spacing 0 ]
-        [ el [ Font.color Style.white, Font.bold, paddingXY 0 8 ] (Element.text "Document Type")
-        , Button.miniLaTeX model w
-        , Button.extendedMarkdown model w
-        , Button.extendedMathMarkdown model w
-        ]
-
 
 
 

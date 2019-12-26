@@ -1,1 +1,138 @@
-module View.Editor exposing (..)
+module View.Editor exposing (view)
+
+import CustomElement.CodeEditor as CodeEditor
+import Document
+import Element exposing (..)
+import Element.Background as Background
+import Element.Keyed
+import Element.Lazy
+import Html
+import Html.Attributes as HA
+import Model
+    exposing
+        ( --                  AppMode(..)
+          --                 , DequeViewState(..)
+          --                 , DocumentDeleteState(..)
+          --                 , DocumentListDisplay
+          --                 , DocumentListType(..)
+          --                 , EditMode(..)
+          --                 , FocusedElement(..)
+          --                 , Message
+          --                 , MessageType(..)
+          Model
+        , Msg(..)
+          --                 , SearchMode(..)
+          --                 , SearchType(..)
+          --                 , SortMode(..)
+          --                 , UserState(..)
+          --                 , Visibility(..)
+        )
+import Render exposing (RenderingOption(..))
+import Render.Types exposing (RenderedText)
+import Style
+import Utility
+import View.Common exposing (RenderedDocumentRecord, ViewInfo)
+import View.Render
+import View.Widget
+
+
+view : ViewInfo -> Model -> Element Msg
+view viewInfo model =
+    let
+        footerText =
+            Maybe.map Document.footer model.currentDocument
+                |> Maybe.withDefault "---"
+
+        rt : RenderedText Msg
+        rt =
+            Render.get model.renderingData
+
+        newViewInfo =
+            { viewInfo
+                | docListWidth = viewInfo.docListWidth + 0.1 * viewInfo.editorWidth
+                , editorWidth = viewInfo.editorWidth + viewInfo.tocWidth / 2 - 0.1 * viewInfo.editorWidth
+                , renderedDisplayWidth = viewInfo.renderedDisplayWidth + viewInfo.tocWidth / 2
+                , tocWidth = 0
+            }
+    in
+    column []
+        [ editingHeader newViewInfo model rt
+        , row []
+            [ View.Widget.tabStrip newViewInfo model
+            , View.Widget.toolsOrDocs newViewInfo model
+            , editor newViewInfo model
+            , Element.Lazy.lazy (View.Render.renderedSource newViewInfo model footerText) rt
+            ]
+        , View.Widget.footer model
+        ]
+
+
+editingHeader : ViewInfo -> Model -> RenderedDocumentRecord msg -> Element Msg
+editingHeader viewInfo model rt =
+    let
+        lhWidth =
+            View.Common.scale (viewInfo.toolStripWidth + viewInfo.docListWidth + viewInfo.editorWidth / 2) model.windowWidth
+
+        rh =
+            viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth
+
+        --        titleWidth =
+        --            scale (rh / 2) model.windowWidth
+        titleWidth =
+            View.Common.scale (0.45 * rh) model.windowWidth
+
+        rhWidth =
+            View.Common.scale (viewInfo.editorWidth / 2 + viewInfo.renderedDisplayWidth + viewInfo.tocWidth) model.windowWidth
+    in
+    row [ height (px 45), width (px model.windowWidth), Background.color Style.charcoal ]
+        [ View.Widget.modeButtonStrip model lhWidth
+        , row [ spacing 10, width fill ]
+            [ -- titleRowForEditing titleWidth rt
+              View.Widget.searchRow model
+            , el [ width (px 20) ] (Element.text "")
+            ]
+        ]
+
+
+
+-- EDITOR --
+
+
+{-| A wrapper for editor\_, which does the real editing work.
+-}
+editor : ViewInfo -> Model -> Element Msg
+editor viewInfo model =
+    let
+        w =
+            View.Common.affine viewInfo.editorWidth viewInfo.hExtra model.windowWidth |> toFloat
+
+        h =
+            View.Common.translate -viewInfo.vInset model.windowHeight |> toFloat
+    in
+    column []
+        [ Element.Keyed.el []
+            ( String.fromInt 0
+            , editor_ model w h
+            )
+        ]
+
+
+{-| Does teh real editing work.
+-}
+editor_ : Model -> Float -> Float -> Element Msg
+editor_ model w h =
+    let
+        wpx =
+            Utility.pxFromFloat w
+
+        hpx =
+            Utility.pxFromFloat h
+    in
+    CodeEditor.codeEditor
+        [ CodeEditor.editorValue (Document.getContent model.currentDocument)
+        , CodeEditor.onEditorChanged UpdateDocumentText -- FeedDebouncer -- Inform the editor custom element of the change in text
+        , CodeEditor.onGutterClicked ProcessLine -- Respond to clicks by scrolling the rendered to text to the corresponding position.
+        ]
+        []
+        |> (\x -> Html.div [ View.Common.setHtmlId "_editor_", HA.style "width" wpx, HA.style "height" hpx, HA.style "overflow" "scroll" ] [ x ])
+        |> Element.html
