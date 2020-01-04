@@ -3,6 +3,7 @@ module View.Editor exposing (view, viewSubdocuments)
 import Button
 import CustomElement.CodeEditor as CodeEditor
 import Document
+import Editor
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -12,7 +13,7 @@ import Element.Keyed
 import Element.Lazy
 import Html
 import Html.Attributes as HA
-import Model exposing (Model, Msg(..))
+import Model exposing (Model, Msg(..), editorConfig)
 import Render exposing (RenderingOption(..))
 import Render.Types exposing (RenderedText)
 import Style
@@ -46,10 +47,12 @@ view viewInfo model =
         , row []
             [ View.Widget.tabStrip newViewInfo model
             , View.Widget.toolsOrDocs newViewInfo model
-            , editor newViewInfo model
-            , Element.Lazy.lazy (View.Render.renderedSource newViewInfo model footerText) rt
+            , column [ Font.size 12, width (px editorConfig.width), alignTop ]
+                [ Editor.embedded editorConfig model.editorState model.editorBuffer |> Element.html ]
+
+            -- , editor newViewInfo model
+            , Element.Lazy.lazy (View.Render.renderedSourceForEditing newViewInfo model footerText) rt
             ]
-        , View.Widget.footer model
         ]
 
 
@@ -103,7 +106,7 @@ editor viewInfo model =
         ]
 
 
-{-| Does teh real editing work.
+{-| Does the real editing work.
 -}
 editor_ : Model -> Float -> Float -> Element Msg
 editor_ model w h =

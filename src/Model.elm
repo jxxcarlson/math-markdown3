@@ -16,6 +16,7 @@ module Model exposing
     , UserState(..)
     , Visibility(..)
     , debounceConfig
+    , editorConfig
     )
 
 import Api.InputObject exposing (Document_order_by(..))
@@ -23,16 +24,22 @@ import BoundedDeque exposing (BoundedDeque)
 import Browser
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
+import Buffer exposing (Buffer)
 import Debounce exposing (Debounce)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
+import Editor exposing (EditorConfig, PEEditorMsg, State)
+import Editor.Config exposing (WrapOption(..))
 import File exposing (File)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
+import Html
+import Html.Attributes as HA
 import Keyboard exposing (Key(..))
 import Outside
 import Prng.Uuid as Uuid exposing (Uuid)
 import Random.Pcg.Extended exposing (Seed)
 import Render exposing (RenderingData)
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..))
+import SingleSlider as Slider
 import Time exposing (Posix)
 import Toc exposing (TocItem)
 import TocZ exposing (TocMsg(..))
@@ -106,7 +113,31 @@ type alias Model =
     , documentOutline : String
     , usernameToAddToPermmission : String
     , permissionToAdd : Permission
+
+    -- Editor
+    , editorBuffer : Buffer
+    , editorState : State
     }
+
+
+editorConfig =
+    { editorMsg = EditorMsg
+    , sliderMsg = SliderMsg
+    , editorStyle = editorStyle
+    , width = 500
+    , lines = 50
+    , lineHeight = 14.0
+    , showInfoPanel = True
+    , wrapParams = { maximumWidth = 55, optimalWidth = 50, stringWidth = String.length }
+    , wrapOption = DontWrap
+    }
+
+
+editorStyle : List (Html.Attribute msg)
+editorStyle =
+    [ HA.style "background-color" "#dddddd"
+    , HA.style "border" "solid 0.5px"
+    ]
 
 
 debounceConfig : Debounce.Config Msg
@@ -288,3 +319,6 @@ type Msg
     | AddUserNameForPermissions String
     | CyclePermission
     | AddUserPermission
+      -- Editor
+    | EditorMsg PEEditorMsg
+    | SliderMsg Slider.Msg

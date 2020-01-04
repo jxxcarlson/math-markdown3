@@ -17,6 +17,7 @@ import Model exposing
                  , SortMode(..)
                  , UserState(..)
                  , Visibility(..)
+                 , editorConfig
                  )
 import Browser
 import Interchange
@@ -71,7 +72,7 @@ import User exposing (AuthorizedUser, User)
 import Utility
 import Buffer exposing (Buffer)
 import Editor exposing (EditorConfig, PEEditorMsg, State)
-import Editor.Config exposing (WrapOption(..))
+
 import SingleSlider as Slider
 
 
@@ -301,6 +302,8 @@ init flags url key =
             , documentOutline = ""
             , usernameToAddToPermmission = ""
             , permissionToAdd = NoPermission
+            , editorBuffer = Buffer.init "Some text"
+            , editorState = Editor.init editorConfig
             }
     in
     ( model
@@ -314,6 +317,7 @@ init flags url key =
 
         ]
     )
+
 
 bareModel : Model -> Model
 bareModel model =
@@ -387,8 +391,8 @@ subscriptions model =
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         , Outside.getInfo Outside LogErr
+        , Sub.map SliderMsg <| Slider.subscriptions (Editor.slider model.editorState)
         ]
-
 
 
 -- UPDATE FUNCTION
@@ -398,6 +402,32 @@ textTask str =
     Task.perform UpdateDocumentText (Task.succeed str)
 
 
+feedDebouncer : Model -> String -> (Model, Cmd Msg)
+feedDebouncer model str =
+     let
+        -- Push your values here.
+        (debounce, cmd) =
+          Debounce.push debounceConfig str model.debounce
+      in
+        ( { model
+            | value = str
+             , debounce = debounce
+          }
+        , cmd
+        )
+feedDebouncer2 : (Cmd Msg) -> Model -> String -> (Model, Cmd Msg)
+feedDebouncer2 cmd_ model str =
+     let
+        -- Push your values here.
+        (debounce, cmd) =
+          Debounce.push debounceConfig str model.debounce
+      in
+        ( { model
+            | value = str
+             , debounce = debounce
+          }
+        , Cmd.batch [cmd, cmd_]
+        )
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -406,17 +436,8 @@ update msg model =
             ( model, Cmd.none )
 
         FeedDebouncer str ->
-              let
-                -- Push your values here.
-                (debounce, cmd) =
-                  Debounce.push debounceConfig str model.debounce
-              in
-                ( { model
-                    | -- value = s
-                     debounce = debounce
-                  }
-                , cmd
-                )
+            feedDebouncer model str
+
 
         DebounceMsg debounceMsg ->
               let
@@ -1164,6 +1185,26 @@ update msg model =
                                       ]
                                     )
 
+        EditorMsg msg_ ->
+            let
+                ( editor, content, cmd ) =
+                    Editor.update model.editorBuffer msg_ model.editorState
+                cmd_ = Cmd.map EditorMsg cmd
+                -- Use a line line the below to do something
+                -- with new content flowing out of the editor
+                -- TODO: use data flowing out of buffer:
+                updatedContent = Buffer.toString content
+
+            in
+            -- feedDebouncer2 cmd_ { model | editorState = editor, editorBuffer = content } updatedContent
+            feedDebouncer { model | editorState = editor, editorBuffer = content } updatedContent
+
+
+        SliderMsg sliderMsg ->
+          let
+            (newEditorState, cmd) = Editor.sliderUpdate sliderMsg  model.editorState model.editorBuffer
+          in
+            ( { model | editorState = newEditorState }, cmd  |> Cmd.map SliderMsg )
 
 
 -- NAVIGATION HELPERS --
