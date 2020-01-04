@@ -1,4 +1,4 @@
-module Editor exposing (findStringInAST, lineNumber, selectionDecoder)
+module EditorTools exposing (findStringInAST, lineNumber, selectionDecoder)
 
 import Json.Decode as D exposing (Decoder)
 import Markdown.ElmWithId

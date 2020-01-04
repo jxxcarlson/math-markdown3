@@ -28,7 +28,7 @@ import File exposing (File)
 import File.Select as Select
 import Utility.Time
 import AppNavigation exposing(NavigationType(..))
-import Editor
+import EditorTools
 import Update.UI
 import KeyboardManager
 import Browser.Events
@@ -69,6 +69,10 @@ import Update.Document
 import Url exposing(Url)
 import User exposing (AuthorizedUser, User)
 import Utility
+import Buffer exposing (Buffer)
+import Editor exposing (EditorConfig, PEEditorMsg, State)
+import Editor.Config exposing (WrapOption(..))
+import SingleSlider as Slider
 
 
 
@@ -454,7 +458,7 @@ update msg model =
                     let
                         maybeLineNumber = case model.currentDocument of
                            Nothing -> Nothing
-                           Just doc -> Editor.lineNumber (String.left 16 selection) doc.content
+                           Just doc -> EditorTools.lineNumber (String.left 16 selection) doc.content
                         (message, cmd) = case maybeLineNumber of
                             Just k -> ("Line number: "  ++ String.fromInt k,  Outside.sendInfo (Outside.ScrollToLine (E.int k)))
                             Nothing -> ("Could not find line", Cmd.none)
@@ -622,7 +626,7 @@ update msg model =
         ProcessLine str ->
             let
                 id =
-                    (case Editor.findStringInAST str model.renderingData of
+                    (case EditorTools.findStringInAST str model.renderingData of
                         Nothing ->
                             "??"
 

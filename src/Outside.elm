@@ -8,7 +8,7 @@ port module Outside exposing
 
 import BoundedDeque exposing (BoundedDeque)
 import Document exposing (Document)
-import Editor
+import EditorTools
 import Json.Decode as D
 import Json.Encode as E
 import Prng.Uuid as Uuid exposing (Uuid)
@@ -58,7 +58,7 @@ getInfo tagger onError =
                             onError <| ""
 
                 "GotSelection" ->
-                    case D.decodeValue Editor.selectionDecoder outsideInfo.data of
+                    case D.decodeValue EditorTools.selectionDecoder outsideInfo.data of
                         Ok result ->
                             tagger <| GotSelection result
 
