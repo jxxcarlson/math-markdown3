@@ -234,7 +234,7 @@ type Msg
     | Tick Time.Posix
     | AdjustTimeZone Time.Zone
     | DebounceMsg Debounce.Msg
-    | FeedDebouncer String
+      -- | FeedDebouncer String
       -- Ports
     | Outside Outside.InfoForElm
     | LogErr String

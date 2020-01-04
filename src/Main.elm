@@ -402,41 +402,33 @@ textTask str =
     Task.perform UpdateDocumentText (Task.succeed str)
 
 
-feedDebouncer : Model -> String -> (Model, Cmd Msg)
-feedDebouncer model str =
-     let
-        -- Push your values here.
-        (debounce, cmd) =
-          Debounce.push debounceConfig str model.debounce
-      in
-        ( { model
-            | value = str
-             , debounce = debounce
-          }
-        , cmd
-        )
-feedDebouncer2 : (Cmd Msg) -> Model -> String -> (Model, Cmd Msg)
-feedDebouncer2 cmd_ model str =
-     let
-        -- Push your values here.
-        (debounce, cmd) =
-          Debounce.push debounceConfig str model.debounce
-      in
-        ( { model
-            | value = str
-             , debounce = debounce
-          }
-        , Cmd.batch [cmd, cmd_]
-        )
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
-
-        FeedDebouncer str ->
-            feedDebouncer model str
+--
+--        FeedDebouncer msg_ ->
+--
+--              let
+--                ( editor_, content, cmd ) =
+--                     Editor.update model.editorBuffer msg_ model.editorState
+--
+--                newSourceText = Buffer.toString content
+--
+--                ( debounce, cmd2 ) =
+--                             Debounce.push debounceConfig newSourceText model.debounce
+--
+--              in
+--                ( { model
+--                              | editorState = editor_
+--                              , editorBuffer = content
+--                              -- , sourceText = newSourceText
+--                              , debounce = debounce
+--                            }
+--                          , Cmd.batch [Cmd.map EditorMsg cmd, cmd2]
+--                          )
 
 
         DebounceMsg debounceMsg ->
@@ -1186,18 +1178,35 @@ update msg model =
                                     )
 
         EditorMsg msg_ ->
-            let
-                ( editor, content, cmd ) =
-                    Editor.update model.editorBuffer msg_ model.editorState
-                cmd_ = Cmd.map EditorMsg cmd
-                -- Use a line line the below to do something
-                -- with new content flowing out of the editor
-                -- TODO: use data flowing out of buffer:
-                updatedContent = Buffer.toString content
+             let
+                 ( editor_, content, cmd ) =
+                     Editor.update model.editorBuffer msg_ model.editorState
 
-            in
-            -- feedDebouncer2 cmd_ { model | editorState = editor, editorBuffer = content } updatedContent
-            feedDebouncer { model | editorState = editor, editorBuffer = content } updatedContent
+                -- TODO: use data flowing out of buffer:
+                 newSourceText = Buffer.toString content
+
+                 ( debounce, cmd2 ) =
+                             Debounce.push debounceConfig newSourceText model.debounce
+
+             in
+             ( { model
+                 | editorState = editor_
+                 , editorBuffer = content
+                 --, sourceText = newSourceText
+                 , debounce = debounce
+               }
+             , Cmd.batch [Cmd.map EditorMsg cmd, cmd2]
+             )
+
+--
+--            let
+--                ( editor, content, cmd ) =
+--                    Editor.update model.editorBuffer msg_ model.editorState
+--                cmd_ = Cmd.map EditorMsg cmd
+--                -- Use a line line the below to do something
+--                -- with new content flowing out of the editor
+--                -- TODO: use data flowing out of buffer:
+--                updatedContent = Buffer.toString content
 
 
         SliderMsg sliderMsg ->
