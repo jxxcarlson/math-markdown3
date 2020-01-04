@@ -7,6 +7,7 @@ import Markdown.ElmWithId
 import Markdown.Option as MDOption
 import MiniLatex
 import MiniLatex.Edit
+import MiniLatex.Render exposing (MathJaxRenderOption(..))
 import ParseWithId
 import Render.Markdown
 import Render.Types exposing (RenderedText)
@@ -110,7 +111,7 @@ update version source rd =
             MD { data | fullAst = newAst, renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" newAst }
 
         ML data ->
-            ML { data | editRecord = MiniLatex.Edit.update version source data.editRecord }
+            ML { data | editRecord = MiniLatex.Edit.update NoDelay version source data.editRecord }
 
 
 get : RenderingData msg -> RenderedText msg
@@ -175,12 +176,12 @@ loadMarkdownFast counter option str =
 
 loadMiniLatex : Int -> String -> RenderingData msg
 loadMiniLatex version str =
-    ML { fullText = Nothing, editRecord = MiniLatex.Edit.init version str }
+    ML { fullText = Nothing, editRecord = MiniLatex.Edit.init Delay version str }
 
 
 loadMiniLatexFast : Int -> String -> RenderingData msg
 loadMiniLatexFast version str =
-    ML { fullText = Just str, editRecord = MiniLatex.Edit.init version (getFirstPart str) }
+    ML { fullText = Just str, editRecord = MiniLatex.Edit.init Delay version (getFirstPart str) }
 
 
 
