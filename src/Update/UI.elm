@@ -1,7 +1,11 @@
 module Update.UI exposing (setModeToEditing, setModeToReading, setUserMode, toggleKeyboardTools)
 
+--import Buffer exposing (Buffer)
+--import Editor exposing (EditorConfig, PEEditorMsg, State)
+
 import Model exposing (AppMode(..), EditMode(..), Model, Msg(..), UserState, Visibility(..))
 import Update.Master
+import Update.Tool
 
 
 setModeToReading : Model -> ( Model, Cmd Msg )
@@ -16,6 +20,7 @@ setModeToEditing model editMode =
         , visibilityOfTools = Invisible
         , documentOutline = Update.Master.setupOutline_ model
       }
+        |> Update.Tool.setupToEdit model
     , Cmd.none
     )
 

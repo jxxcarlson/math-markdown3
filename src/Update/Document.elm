@@ -38,6 +38,7 @@ import Toc exposing (TocItem)
 import TocManager
 import Tree exposing (Tree)
 import Update.Render
+import Update.Tool
 import User exposing (User)
 
 
@@ -136,6 +137,7 @@ setCurrent model document extraCmd =
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
+        |> Update.Tool.setupToEdit_
     , Cmd.batch [ extraCmd, saveDocumentCommand, renderCmd, updateDequeCmd, masterDocCmd, Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfEditor ]
     )
 
