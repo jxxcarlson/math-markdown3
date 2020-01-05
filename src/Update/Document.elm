@@ -347,6 +347,7 @@ makeNewDocument model =
                 , renderingData = Render.load model.counter (Render.documentOption newDocument) newDocument.content
                 , deque = newDeque
               }
+                |> Update.Tool.setupToEdit_
             , Cmd.batch [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req, Cmd.Document.sendDequeOutside newDeque ]
             )
 
