@@ -1,26 +1,25 @@
-module Update.Tool exposing (setupToEdit, setupToEdit_)
+module Update.Tool exposing (setupToEdit)
 
 import Buffer exposing (Buffer)
 import Editor exposing (EditorConfig, PEEditorMsg, State)
 import Model exposing (Model)
 
 
-setupToEdit : Model -> Model -> Model
-setupToEdit model =
-    case model.currentDocument of
-        Nothing ->
-            identity
-
-        Just doc ->
-            \model_ -> { model_ | editorBuffer = Buffer.init doc.content, editorState = Editor.init Model.editorConfig }
-
-
-setupToEdit_ : Model -> Model
-setupToEdit_ =
+setupToEdit : Model -> Model
+setupToEdit =
     \model ->
         case model.currentDocument of
             Nothing ->
                 model
 
             Just doc ->
-                { model | editorBuffer = Buffer.init doc.content, editorState = Editor.init Model.editorConfig }
+                let
+                    st =
+                        Editor.getSelectedText model.editorState |> Maybe.withDefault ""
+                in
+                { model
+                    | editorBuffer = Buffer.init doc.content
+                    , editorState =
+                        Editor.init Model.editorConfig
+                            |> Editor.setSelectedText st
+                }
