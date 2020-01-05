@@ -18,7 +18,6 @@ app.ports.infoForOutside.subscribe(msg => {
         navigator.clipboard.readText()
           .then(text => {
             console.log('Clipboard (outside):', text);
-            // app.ports.infoForElm.send({tag: "GotClipboard", data: JSON.parse({clipboard: text})})
             app.ports.infoForElm.send({tag: "GotClipboard", data:  text})
           })
           .catch(err => {

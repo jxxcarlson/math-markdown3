@@ -1184,7 +1184,8 @@ update msg model =
              )
 
         PasteClipboard ->
-            (model, Cmd.none)
+            pasteToClipboard model
+
 
         SliderMsg sliderMsg ->
           let
@@ -1194,6 +1195,14 @@ update msg model =
 
         AskForClipBoard ->
             (model, Outside.sendInfo (Outside.AskForClipBoard E.null))
+
+
+pasteToClipboard : Model -> (Model, Cmd msg)
+pasteToClipboard model =
+   let
+     newBuffer = Buffer.insert (Editor.getCursor model.editorState) model.clipboard model.editorBuffer
+   in
+     ({ model | editorBuffer = newBuffer} , Cmd.none)
 
 
 -- NAVIGATION HELPERS --

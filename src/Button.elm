@@ -15,13 +15,14 @@ module Button exposing
     , extendedMarkdown
     , extendedMathMarkdown
     , firstSubDocument
-    , getClipBoard
+    , getClipboard
     , getTextSelection
     , headingStyle
     , helpDocs
     , miniLaTeX
     , newDocument
     , newSubdocument
+    , pasteClipboard
     , readingMode
     , saveDocument
     , saveImportedArchive
@@ -714,11 +715,19 @@ signOut model =
 -- EDITOR
 
 
-getClipBoard : Model -> Element Msg
-getClipBoard model =
-    Input.button Style.standardButton
+getClipboard : Model -> Element Msg
+getClipboard model =
+    Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
         { onPress = Just AskForClipBoard
-        , label = Element.text "Clipboard"
+        , label = Element.text "C"
+        }
+
+
+pasteClipboard : Model -> Element Msg
+pasteClipboard model =
+    Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
+        { onPress = Just PasteClipboard
+        , label = Element.text "P"
         }
 
 
