@@ -32,6 +32,7 @@ type InfoForElm
     = UserDataFromOutside OutsideUser
     | GotSelection String
     | UuidList (List Uuid)
+    | GotClipboard String
 
 
 type InfoForOutside
@@ -42,6 +43,7 @@ type InfoForOutside
     | DequeData E.Value
     | GetTextSelectionFromOutside E.Value
     | ScrollToLine E.Value
+    | AskForClipBoard E.Value
 
 
 getInfo : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -61,6 +63,14 @@ getInfo tagger onError =
                     case D.decodeValue EditorTools.selectionDecoder outsideInfo.data of
                         Ok result ->
                             tagger <| GotSelection result
+
+                        Err e ->
+                            onError <| ""
+
+                "GotClipboard" ->
+                    case D.decodeValue clipboardDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| GotClipboard result
 
                         Err e ->
                             onError <| ""
@@ -101,3 +111,16 @@ sendInfo info =
 
         ScrollToLine value ->
             infoForOutside { tag = "ScrollToLine", data = value }
+
+        AskForClipBoard value ->
+            infoForOutside { tag = "AskForClipBoard", data = E.null }
+
+
+
+-- DECODERS --
+
+
+clipboardDecoder : D.Decoder String
+clipboardDecoder =
+    --    D.field "data" D.string
+    D.string

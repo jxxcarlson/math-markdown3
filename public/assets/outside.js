@@ -13,6 +13,20 @@ app.ports.infoForOutside.subscribe(msg => {
         }
         break;
 
+        case "AskForClipBoard":
+        console.log("AskForClipBoard")
+        navigator.clipboard.readText()
+          .then(text => {
+            console.log('Clipboard (outside):', text);
+            // app.ports.infoForElm.send({tag: "GotClipboard", data: JSON.parse({clipboard: text})})
+            app.ports.infoForElm.send({tag: "GotClipboard", data:  text})
+          })
+          .catch(err => {
+            console.error('Failed to read clipboard: ', err);
+          });
+
+        break;
+
         case "UserData":
         console.log("UserData")
         if (msg.data != null) {

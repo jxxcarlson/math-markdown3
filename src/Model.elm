@@ -88,6 +88,7 @@ type alias Model =
     -- EDITOR
     , selectedText : String
     , editorTargetLineNumber : Maybe Int
+    , clipboard : String
 
     -- DOCUMENT
     , counter : Int
@@ -268,6 +269,7 @@ type Msg
     | SyncEditorToLine Int
     | SetViewPortForElement (Result Dom.Error ( Dom.Element, Dom.Viewport ))
     | GetTextSelection
+    | AskForClipBoard
       -- Document
     | CreateDocument
     | SaveDocument
@@ -322,3 +324,4 @@ type Msg
       -- Editor
     | EditorMsg PEEditorMsg
     | SliderMsg Slider.Msg
+    | PasteClipboard

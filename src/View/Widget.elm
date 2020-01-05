@@ -60,6 +60,7 @@ footer model =
         -- , el [] (Element.text <| slugOfCurrentDocument model)
         , Button.getTextSelection
         , dirtyDocumentDisplay model
+        , Button.getClipBoard model
         , wordCount model
         , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]
         , Utility.View.showIf (Maybe.map .username model.currentUser == Just "jxxcarlson") Button.downloadArchive

@@ -274,6 +274,7 @@ init flags url key =
             -- EDITOR
              , selectedText = ""
              , editorTargetLineNumber = Nothing
+             , clipboard = ""
             -- documents
             , counter = 0
             , documentDeleteState = SafetyOn
@@ -408,27 +409,6 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
---
---        FeedDebouncer msg_ ->
---
---              let
---                ( editor_, content, cmd ) =
---                     Editor.update model.editorBuffer msg_ model.editorState
---
---                newSourceText = Buffer.toString content
---
---                ( debounce, cmd2 ) =
---                             Debounce.push debounceConfig newSourceText model.debounce
---
---              in
---                ( { model
---                              | editorState = editor_
---                              , editorBuffer = content
---                              -- , sourceText = newSourceText
---                              , debounce = debounce
---                            }
---                          , Cmd.batch [Cmd.map EditorMsg cmd, cmd2]
---                          )
 
 
         DebounceMsg debounceMsg ->
@@ -478,6 +458,9 @@ update msg model =
                     in
                     ({model | editorTargetLineNumber = maybeLineNumber, selectedText = selection, message = (UserMessage, message)}
                       , cmd)
+
+                Outside.GotClipboard clipboard ->
+                    ({model | clipboard = clipboard, message = (UserMessage, (String.left 20 clipboard) ++ " ...")}, Cmd.none)
 
                 Outside.UuidList uuidList ->
                     (model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req)
@@ -1176,6 +1159,8 @@ update msg model =
                                       , Cmd.batch[tokenCmd, dequeCommand]
                                       ]
                                     )
+        -- EDITOR II
+
 
         EditorMsg msg_ ->
              let
@@ -1198,22 +1183,17 @@ update msg model =
              , Cmd.batch [Cmd.map EditorMsg cmd, cmd2]
              )
 
---
---            let
---                ( editor, content, cmd ) =
---                    Editor.update model.editorBuffer msg_ model.editorState
---                cmd_ = Cmd.map EditorMsg cmd
---                -- Use a line line the below to do something
---                -- with new content flowing out of the editor
---                -- TODO: use data flowing out of buffer:
---                updatedContent = Buffer.toString content
-
+        PasteClipboard ->
+            (model, Cmd.none)
 
         SliderMsg sliderMsg ->
           let
             (newEditorState, cmd) = Editor.sliderUpdate sliderMsg  model.editorState model.editorBuffer
           in
             ( { model | editorState = newEditorState }, cmd  |> Cmd.map SliderMsg )
+
+        AskForClipBoard ->
+            (model, Outside.sendInfo (Outside.AskForClipBoard E.null))
 
 
 -- NAVIGATION HELPERS --

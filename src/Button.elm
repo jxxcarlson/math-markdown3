@@ -15,6 +15,7 @@ module Button exposing
     , extendedMarkdown
     , extendedMathMarkdown
     , firstSubDocument
+    , getClipBoard
     , getTextSelection
     , headingStyle
     , helpDocs
@@ -706,6 +707,18 @@ signOut model =
     Input.button Style.standardButton
         { onPress = Just SignOut
         , label = Element.text "Sign out"
+        }
+
+
+
+-- EDITOR
+
+
+getClipBoard : Model -> Element Msg
+getClipBoard model =
+    Input.button Style.standardButton
+        { onPress = Just AskForClipBoard
+        , label = Element.text "Clipboard"
         }
 
 
