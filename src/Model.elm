@@ -24,10 +24,9 @@ import BoundedDeque exposing (BoundedDeque)
 import Browser
 import Browser.Dom as Dom
 import Browser.Navigation as Nav
-import Buffer exposing (Buffer)
 import Debounce exposing (Debounce)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
-import Editor exposing (EditorConfig, PEEditorMsg, State)
+import Editor exposing (Editor, EditorConfig, EditorMsg)
 import Editor.Config exposing (WrapOption(..))
 import File exposing (File)
 import Graphql.OptionalArgument exposing (OptionalArgument(..))
@@ -116,8 +115,7 @@ type alias Model =
     , permissionToAdd : Permission
 
     -- Editor
-    , editorBuffer : Buffer
-    , editorState : State
+    , editor : Editor
     }
 
 
@@ -322,6 +320,6 @@ type Msg
     | CyclePermission
     | AddUserPermission
       -- Editor
-    | EditorMsg PEEditorMsg
+    | EditorMsg EditorMsg
     | SliderMsg Slider.Msg
     | PasteClipboard

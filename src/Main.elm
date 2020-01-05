@@ -61,7 +61,6 @@ import Render exposing(RenderingOption(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
-import Style
 import Task exposing (Task)
 import Time exposing (Posix)
 import TocManager
@@ -70,9 +69,7 @@ import Update.Document
 import Url exposing(Url)
 import User exposing (AuthorizedUser, User)
 import Utility
-import Buffer exposing (Buffer)
-import Editor exposing (EditorConfig, PEEditorMsg, State)
-
+import Editor exposing (EditorConfig, EditorMsg)
 import SingleSlider as Slider
 
 
@@ -303,8 +300,7 @@ init flags url key =
             , documentOutline = ""
             , usernameToAddToPermmission = ""
             , permissionToAdd = NoPermission
-            , editorBuffer = Buffer.init "Some text"
-            , editorState = Editor.init editorConfig
+            , editor = Editor.init Model.editorConfig  "Some text"
             }
     in
     ( model
@@ -392,7 +388,7 @@ subscriptions model =
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         , Outside.getInfo Outside LogErr
-        , Sub.map SliderMsg <| Slider.subscriptions (Editor.slider model.editorState)
+        , Sub.map SliderMsg <| Slider.subscriptions (Editor.slider model.editor)
         ]
 
 
@@ -1164,20 +1160,18 @@ update msg model =
 
         EditorMsg msg_ ->
              let
-                 ( editor_, content, cmd ) =
-                     Editor.update model.editorBuffer msg_ model.editorState
+                 ( newEditor, cmd ) =
+                     Editor.update msg_ model.editor
 
                 -- TODO: use data flowing out of buffer:
-                 newSourceText = Buffer.toString content
+                 newSourceText = Editor.getSource newEditor
 
                  ( debounce, cmd2 ) =
                              Debounce.push debounceConfig newSourceText model.debounce
 
              in
              ( { model
-                 | editorState = editor_
-                 , editorBuffer = content
-                 --, sourceText = newSourceText
+                 | editor = newEditor
                  , debounce = debounce
                }
              , Cmd.batch [Cmd.map EditorMsg cmd, cmd2]
@@ -1189,9 +1183,9 @@ update msg model =
 
         SliderMsg sliderMsg ->
           let
-            (newEditorState, cmd) = Editor.sliderUpdate sliderMsg  model.editorState model.editorBuffer
+            (newEditor, cmd) = Editor.sliderUpdate sliderMsg  model.editor
           in
-            ( { model | editorState = newEditorState }, cmd  |> Cmd.map SliderMsg )
+            ( { model | editor = newEditor }, cmd  |> Cmd.map SliderMsg )
 
         AskForClipBoard ->
             (model, Outside.sendInfo (Outside.AskForClipBoard E.null))
@@ -1200,9 +1194,9 @@ update msg model =
 pasteToClipboard : Model -> (Model, Cmd msg)
 pasteToClipboard model =
    let
-     newBuffer = Buffer.insert (Editor.getCursor model.editorState) model.clipboard model.editorBuffer
+     newEditor = Editor.insert (Editor.getCursor model.editor) model.clipboard model.editor
    in
-     ({ model | editorBuffer = newBuffer} , Cmd.none)
+     ({ model | editor = newEditor} , Cmd.none)
 
 
 -- NAVIGATION HELPERS --

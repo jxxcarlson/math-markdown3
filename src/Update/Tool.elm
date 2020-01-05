@@ -1,8 +1,11 @@
 module Update.Tool exposing (setupToEdit)
 
-import Buffer exposing (Buffer)
-import Editor exposing (EditorConfig, PEEditorMsg, State)
+import Editor
 import Model exposing (Model)
+
+
+setupToEdit1 =
+    identity
 
 
 setupToEdit : Model -> Model
@@ -15,11 +18,10 @@ setupToEdit =
             Just doc ->
                 let
                     st =
-                        Editor.getSelectedText model.editorState |> Maybe.withDefault ""
-                in
-                { model
-                    | editorBuffer = Buffer.init doc.content
-                    , editorState =
-                        Editor.init Model.editorConfig
+                        Editor.getSelectedText model.editor |> Maybe.withDefault ""
+
+                    newEditor =
+                        Editor.init Model.editorConfig doc.content
                             |> Editor.setSelectedText st
-                }
+                in
+                { model | editor = newEditor }

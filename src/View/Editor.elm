@@ -48,7 +48,7 @@ view viewInfo model =
             [ View.Widget.tabStrip newViewInfo model
             , View.Widget.toolsOrDocs newViewInfo model
             , column [ Font.size 12, width (px editorConfig.width), alignTop ]
-                [ Editor.embedded editorConfig model.editorState model.editorBuffer |> Element.html ]
+                [ Editor.embedded editorConfig model.editor |> Element.html ]
             , Element.Lazy.lazy (View.Render.renderedSourceForEditing newViewInfo model footerText) rt
             ]
         , View.Widget.footer model
