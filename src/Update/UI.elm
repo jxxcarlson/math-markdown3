@@ -20,7 +20,7 @@ setModeToEditing model editMode =
         , visibilityOfTools = Invisible
         , documentOutline = Update.Master.setupOutline_ model
       }
-        |> Update.Tool.setupToEdit model
+        |> Update.Tool.setupToEdit
     , Cmd.none
     )
 

@@ -137,7 +137,7 @@ setCurrent model document extraCmd =
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
-        |> Update.Tool.setupToEdit_
+        |> Update.Tool.setupToEdit
     , Cmd.batch [ extraCmd, saveDocumentCommand, renderCmd, updateDequeCmd, masterDocCmd, Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfEditor ]
     )
 
@@ -347,7 +347,7 @@ makeNewDocument model =
                 , renderingData = Render.load model.counter (Render.documentOption newDocument) newDocument.content
                 , deque = newDeque
               }
-                |> Update.Tool.setupToEdit_
+                |> Update.Tool.setupToEdit
             , Cmd.batch [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req, Cmd.Document.sendDequeOutside newDeque ]
             )
 
