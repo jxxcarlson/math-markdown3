@@ -341,6 +341,7 @@ makeNewDocument model =
                 , documentList = newDocument :: model.documentList
                 , visibilityOfTools = Visible
                 , appMode = Editing StandardEditing
+                , documentListDisplay = ( SearchResults, DequeViewOff )
                 , tagString = ""
                 , currentUuid = newUuid
                 , currentSeed = newSeed

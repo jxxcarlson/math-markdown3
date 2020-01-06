@@ -457,13 +457,6 @@ heading model =
                 ( SearchResults, _ ) ->
                     row [ spacing 10 ] [ Button.setDocumentListType model w n, Button.sortByMostRecentFirst model, Button.sortAlphabetical model ]
 
-                --
-                --                    Input.button []
-                --                        { onPress = Just (SetDocumentListType DocumentChildren)
-                --                        , label =
-                --                            el (Button.headingStyle w Style.charcoal)
-                --                                (Element.text ("Public Documents! (" ++ n ++ ")"))
-                --                        }
                 ( DocumentChildren, _ ) ->
                     Input.button []
                         { onPress = Just (SetDocumentListType SearchResults)
@@ -472,14 +465,6 @@ heading model =
                                 (Element.text ("Contents! (" ++ n ++ ")"))
                         }
 
-        --
-        --                (_, DequeViewOn) ->
-        --                    Input.button []
-        --                        { onPress = Just ToggleDequeview
-        --                        , label =
-        --                            el (Button.headingStyle w Style.charcoal)
-        --                                (Element.text "Recent")
-        --                      }
         Just _ ->
             case model.documentListDisplay of
                 ( SearchResults, DequeViewOff ) ->
