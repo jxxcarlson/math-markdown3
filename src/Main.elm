@@ -456,7 +456,7 @@ update msg model =
                       , cmd)
 
                 Outside.GotClipboard clipboard ->
-                    ({model | clipboard = clipboard, message = (UserMessage, (String.left 20 clipboard) ++ " ...")}, Cmd.none)
+                    pasteToEditorClipboard model clipboard
 
                 Outside.UuidList uuidList ->
                     (model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req)
@@ -1194,10 +1194,20 @@ update msg model =
 pasteToClipboard : Model -> (Model, Cmd msg)
 pasteToClipboard model =
    let
-     newEditor = Editor.insert (Editor.getCursor model.editor) model.clipboard model.editor
+     newEditor = Editor.insert (Editor.getWrapOption model.editor) (Editor.getCursor model.editor) model.clipboard model.editor
    in
      ({ model | editor = newEditor} , Cmd.none)
 
+pasteToEditorClipboard : Model -> String -> ( Model, Cmd msg )
+pasteToEditorClipboard model str =
+    let
+        cursor =
+            Editor.getCursor model.editor
+
+        editor2 =
+            Editor.placeInClipboard str model.editor
+    in
+    ( { model | editor = Editor.insert (Editor.getWrapOption model.editor) cursor str editor2 }, Cmd.none )
 
 -- NAVIGATION HELPERS --
 

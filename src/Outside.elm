@@ -67,18 +67,18 @@ getInfo tagger onError =
                         Err e ->
                             onError <| ""
 
-                "GotClipboard" ->
-                    case D.decodeValue clipboardDecoder outsideInfo.data of
-                        Ok result ->
-                            tagger <| GotClipboard result
-
-                        Err e ->
-                            onError <| ""
-
                 "UuidList" ->
                     case D.decodeValue Document.uuidListDecoder outsideInfo.data of
                         Ok result ->
                             tagger <| UuidList result
+
+                        Err e ->
+                            onError <| ""
+
+                "GotClipboard" ->
+                    case D.decodeValue clipboardDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| GotClipboard result
 
                         Err e ->
                             onError <| ""
