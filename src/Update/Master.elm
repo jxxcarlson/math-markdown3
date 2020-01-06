@@ -36,6 +36,7 @@ import Request exposing (RequestMsg(..))
 import TocManager
 import Update.Document
 import Update.Render
+import Update.Tool
 import User exposing (User)
 
 
@@ -341,6 +342,7 @@ firstSubdocument_ model user document =
         , message = ( UserMessage, "subdocument added" )
         , renderingData = renderingData
       }
+        |> Update.Tool.setupToEdit
     , Cmd.batch
         [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req
         , Request.updateDocument Config.hasuraToken user.username masterDocument |> Cmd.map Req
@@ -411,6 +413,7 @@ newSubdocumentAtHead model user masterDocument =
         , message = ( UserMessage, "subdocument added" )
         , renderingData = renderingData
       }
+        |> Update.Tool.setupToEdit
     , Cmd.batch
         [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req
         , Request.updateDocument Config.hasuraToken user.username newMasterDocument |> Cmd.map Req
@@ -471,6 +474,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
         , message = ( UserMessage, "subdocument added" )
         , renderingData = renderingData
       }
+        |> Update.Tool.setupToEdit
     , Cmd.batch
         [ Request.insertDocument Config.hasuraToken newDocument |> Cmd.map Req
         , Request.updateDocument Config.hasuraToken user.username newMasterDocument |> Cmd.map Req
