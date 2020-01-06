@@ -126,7 +126,7 @@ editorConfig =
     , width = 500
     , lines = 50
     , lineHeight = 14.0
-    , showInfoPanel = True
+    , showInfoPanel = False
     , wrapParams = { maximumWidth = 55, optimalWidth = 50, stringWidth = String.length }
     , wrapOption = DontWrap
     }
