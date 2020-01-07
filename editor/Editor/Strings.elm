@@ -67,7 +67,8 @@ Text
 Indent            Tab
 De-indent         shift-Tab
 
-Wrap text         ctrl-w
+Wrap selection    ctrl-w
+Wrap text         ctrl-shift-w
 Toggle wrap       ctrl-shift w   (for wrap on load)
 
 Clear all        ctrl-shift c

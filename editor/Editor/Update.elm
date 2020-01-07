@@ -67,7 +67,8 @@ type Msg
     | RollSearchSelectionForward
     | RollSearchSelectionBackward
     | Clear
-    | WrapText
+    | WrapSelection
+    | WrapAll
     | ToggleWrapping
     | ToggleHelp
     | ToggleInfoPanel
@@ -1008,9 +1009,34 @@ update buffer msg state =
         Clear ->
             ( clearState state, Buffer.init "", Cmd.none )
 
-        WrapText ->
+        WrapAll ->
             ( state, Buffer.init (Editor.Text.prepareLines state.config (Buffer.toString buffer)), Cmd.none )
                 |> recordHistory state buffer
+
+        WrapSelection ->
+            case state.selection of
+                Nothing ->
+                    ( state, buffer, Cmd.none )
+
+                Just sel ->
+                    let
+                        ( start, end ) =
+                            Position.order sel state.cursor
+
+                        selectedText =
+                            Buffer.between start end buffer
+
+                        wrappedText =
+                            Editor.Text.prepareLinesWithWrapping state.config selectedText
+
+                        newState =
+                            { state | selectedText = Just selectedText }
+
+                        newBuffer =
+                            Buffer.replace start end wrappedText buffer
+                    in
+                    ( newState, newBuffer, Cmd.none )
+                        |> recordHistory state buffer
 
         ToggleWrapping ->
             if state.config.wrapOption == DoWrap then

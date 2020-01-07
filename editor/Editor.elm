@@ -251,6 +251,39 @@ sliderView (Editor data) =
 --  EDITOR FUNCTIONS --
 
 
+wrapSelection : Editor -> Editor
+wrapSelection ((Editor data) as editor) =
+    case data.state.selection of
+        Nothing ->
+            editor
+
+        Just sel ->
+            let
+                ( start, end ) =
+                    Position.order sel data.state.cursor
+
+                selectedText =
+                    Buffer.between start end data.buffer
+
+                wrappedText =
+                    Editor.Text.prepareLinesWithWrapping data.state.config selectedText
+
+                oldState =
+                    data.state
+
+                newState =
+                    { oldState | selectedText = Just selectedText }
+
+                newBuffer =
+                    Buffer.replace start end wrappedText data.buffer
+            in
+            Editor { state = newState, buffer = newBuffer }
+
+
+
+-- ?? -- |> recordHistory state buffer
+
+
 insert : WrapOption -> Position -> String -> Editor -> Editor
 insert wrapOption position string (Editor data) =
     let

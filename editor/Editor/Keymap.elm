@@ -123,6 +123,7 @@ keymaps =
         Dict.fromList
             [ ( "ArrowUp", FirstLine )
             , ( "ArrowDown", LastLine )
+            , ( "w", ToggleWrapping )
             ]
     , control =
         Dict.fromList
@@ -142,7 +143,7 @@ keymaps =
             , ( "r", ToggleReplacePanel )
             , ( "v", Paste )
             , ( "z", Undo )
-            , ( "w", WrapText )
+            , ( "w", WrapSelection )
             , ( "y", Redo )
             ]
     , controlAndShift =
@@ -153,7 +154,7 @@ keymaps =
             , ( "I", ToggleInfoPanel )
             , ( "V", PasteFromClipboard )
             , ( "U", CopyPasteClipboard )
-            , ( "W", ToggleWrapping )
+            , ( "W", WrapAll )
             ]
     }
 

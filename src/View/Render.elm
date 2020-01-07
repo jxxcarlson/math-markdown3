@@ -88,38 +88,24 @@ renderedSourceForEditing viewInfo model footerText_ rt =
         w2_ =
             View.Common.affine viewInfo.renderedDisplayWidth (viewInfo.hExtra + 160) model.windowWidth
 
-        wToc =
-            View.Common.affine viewInfo.tocWidth viewInfo.hExtra model.windowWidth
-
-        hToc =
-            View.Common.translate -viewInfo.vInset model.windowHeight
-
         outerSourceStyle =
-            [ View.Common.setElementId "__rt_scroll__", width (px w_), height (px h_), Element.paddingEach { left = 0, right = 20, top = 0, bottom = 30 }, clipX, Font.size 12 ]
+            [ View.Common.setElementId "__rt_scroll__"
+            , width (px w_)
+            , height (px h_)
+            , Element.paddingEach { left = 0, right = 20, top = 0, bottom = 30 }
+            , clipX
+            , Background.color (Style.makeGrey 1.0)
+            , Font.size 12
+            ]
 
         innerSourceStyle =
-            [ View.Common.setElementId Cmd.Document.masterId, height (px h_) ]
-
-        outerTocStyle =
-            [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
-
-        innerTocStyle =
-            [ height (px (hToc - 125)), scrollbarY, clipX ]
-
-        footerStyle =
-            [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ]
+            [ View.Common.setElementId Cmd.Document.masterId, height (px h_), Background.color (Style.makeGrey 1.0) ]
     in
-    row [ spacing 10 ]
+    row [ spacing 20 ]
         [ column outerSourceStyle
             [ column [ width (px w2_), paddingXY 10 20 ]
                 [ column innerSourceStyle [ rt.document |> Element.html ] ]
             ]
-
-        --        , Element.column outerTocStyle
-        --            [ column innerTocStyle [ rt.toc |> Element.html ]
-        --            , column footerStyle
-        --                [ renderFooter footerText_ ]
-        --            ]
         ]
 
 
