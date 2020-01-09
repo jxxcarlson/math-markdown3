@@ -1,7 +1,7 @@
 module EditorTools exposing (findStringInAST, lineNumber, selectionDecoder)
 
 import Json.Decode as D exposing (Decoder)
-import Markdown.ElmWithId
+import Markdown.Parse as Parse
 import Render exposing (RenderingData(..))
 
 
@@ -30,7 +30,7 @@ findStringInAST : String -> RenderingData msg -> Maybe ( Int, Int )
 findStringInAST str rd =
     case rd of
         MD data ->
-            Markdown.ElmWithId.searchAST str data.fullAst
+            Parse.searchAST str data.fullAst
 
         ML data ->
             Nothing

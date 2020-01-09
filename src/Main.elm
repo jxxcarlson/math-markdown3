@@ -27,7 +27,6 @@ import View.Reader
 import View.User
 import File exposing (File)
 import File.Select as Select
-import Utility.Time
 import AppNavigation exposing(NavigationType(..))
 import EditorTools
 import Update.UI
@@ -42,7 +41,6 @@ import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(
 import Element exposing (..)
 import Update.Render
 import Config
-import Element.Font as Font
 import BoundedDeque exposing(BoundedDeque)
 import Html exposing (..)
 import Json.Encode as E
@@ -50,9 +48,8 @@ import Keyboard exposing (Key(..))
 import Document
 import Outside
 import Markdown.Option as MDOption
-import Markdown.ElmWithId
 import Markdown.Option exposing (Option(..))
-import ParseWithId
+import Markdown.Parse as Parse
 import Preprocessor
 import Prng.Uuid as Uuid exposing (Uuid)
 import Random
@@ -227,7 +224,7 @@ init flags url key =
     let
         ( newUuid, newSeed ) =
             step Uuid.generator (initialSeed flags.seed flags.randInts)
-        initialAst = Markdown.ElmWithId.parse -1 ExtendedMath Data.loadingPage.content
+        initialAst = Parse.toMDBlockTree -1 ExtendedMath Data.loadingPage.content
 
         model : Model
         model =
@@ -319,7 +316,7 @@ init flags url key =
 bareModel : Model -> Model
 bareModel model =
    let
-       initialAst = Markdown.ElmWithId.parse -1 ExtendedMath Data.loadingPage.content
+       initialAst = Parse.toMDBlockTree -1 ExtendedMath Data.loadingPage.content
    in
         { model |
 
@@ -623,7 +620,7 @@ update msg model =
                             "??"
 
                         Just id_ ->
-                            id_ |> ParseWithId.stringOfId)
+                            id_ |> Parse.stringOfId)
             in
             ( { model | message = ( UserMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id ) }
             , Cmd.Document.setViewportForElement id

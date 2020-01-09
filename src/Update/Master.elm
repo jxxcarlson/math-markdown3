@@ -105,6 +105,7 @@ loadSubdocument model document =
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
       }
+        |> Update.Tool.setupToEdit
     , cmd
     )
 

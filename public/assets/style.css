@@ -19,37 +19,27 @@ ul {
 li { list-style-type:none; line-height: 25px;}
 
 
-.mm-paragraph{ margin-left: 12px; margin-right: 12px; }
 
-
-a:link {color: #00a;}      /* unvisited link */
-a:visited {color: #00a;}   /* visited link */
-a:hover {color: #00a;}     /* mouse over link */
-a:active {color:#00a;}    /* selected link */
-
-
-#toc a p.mm-paragraph { line-height: 5pt; }
-#toc h1 p.mm-paragraph { font-size: 12pt; }
-.toc-level-0 { margin-left: 0em; font-size : 10pt;  font-weight: normal; text-decoration: none; }
-.toc-level-1 {  margin-left: 1em; font-size : 10pt; font-weight: normal; text-decoration: none;  }
-.toc-level-2 {  margin-left: 2em; font-size : 10pt; font-weight: normal; text-decoration: none;  }
-.toc-level-3 {  margin-left: 3em; font-size : 10pt; font-weight: normal; text-decoration: none;  }
-
-.mm-code {font-family: "Courier New"
-  , Courier, monospace; padding: 8px; background-color: #f5f5f5; *An image, just for fun*
+.mm-paragraph {
+	white-space: normal;
 }
 
+.elmsh-line {
+    padding : 8px;
+    line-height: 12px !important;
+ }
+
+.toc-level-0 { margin-left: 0em; font-size : 10pt; line-height: 4pt; font-weight: normal; text-decoration: none; }
+.toc-level-1 {  margin-left: 1em; font-size : 10pt; line-height: 4pt; font-weight: normal; text-decoration: none;  }
+.toc-level-2 {  margin-left: 2em; font-size : 10pt; line-height: 4pt; font-weight: normal; text-decoration: none;  }
+.toc-level-3 {  margin-left: 3em; font-size : 10pt; line-height: 4pt; font-weight: normal; text-decoration: none;  }
 
 .mm-code {font-family: "Courier New"
-  , Courier, monospace; padding: 8px; background-color: #f5f5f5; *An image, just for fun*
+  , Courier, monospace; padding: 8px; background-color: #f5f5f5; font-size: 11pt;
 }
-
-
 .mm-inline-code {font-family: "Courier New"
-  , Courier, monospace; padding-left: 5px; padding-right: 5px;background-color: #f5f5f5;
+  , Courier, monospace; padding-left: 5px; padding-right: 5px;background-color: #f5f5f5; font-size: 11pt;
 }
-code { font-size: 10pt; }
-
 
 .mm-image {width : 100%; }
 .mm-image-left {float: left; width: 40%; margin-right: 12px;}
@@ -61,27 +51,45 @@ code { font-size: 10pt; }
   width: 60%;
 }
 
-h1 p {font-size: 18pt}
-h2 p {font-size: 16pt}
-h3 p {font-size: 12pt}
-h4 p {font-size: 12pt}
-h5 p {font-size: 12pt}
+.mm-h1 {font-size: 18pt}
+.mm-h2 {font-size: 16pt}
+.mm-h3 {font-size: 12pt}
+.mm-h4 {font-size: 10pt}
+.mm-h5 {font-size: 10pt}
+
+
+.mm-block-1 {
+  margin-left: 16px;
+}
+
+.mm-block-2 {
+  margin-left: 32px;
+}
+
+
+.mm-block-3 {
+  margin-left: 78px;
+}
+
+.mm-block-4 {
+  margin-left: 104px;
+}
+
 
 .mm-olist-item {
 	list-style: none;
   margin-bottom: 8px;
-  padding-left: 10px;
-  text-indent: -10px;
+  padding-left: 18px;
+  text-indent: -18px;
 }
 .mm-ulist-item {
 	list-style: none;
   margin-bottom: 8px;
   padding-left: 18px;
-  text-indent: -18px;
+  text-indent: -12px;
 	white-space: normal;
 }
 .mm-quotation {
-	margin-left: 24px !important;
 	margin-top: 18px;
 	margin-right: 36px;
 	margin-bottom: 18px;
@@ -93,11 +101,9 @@ h5 p {font-size: 12pt}
 	margin-right: 36px;
 	margin-bottom: 18px;
 	white-space: nowrap;
-	line-height: 12pt;
-	font-size: 10pt;
 }
 .mm-closed-block {
-	margin-bottom: 12px;
+	margin-bottom; 12px;
 	width: inherit;
 	white-space: normal;
 }
@@ -113,30 +119,12 @@ h5 p {font-size: 12pt}
 .mm-error-message {
 	color: red; margin-bottom: 12px;
 }
+.mm-code {
+	font: 16px courier; background-color: #eee; padding: 8px;
+}
 
 .mm-strike-through {
 	 text-decoration: line-through;
-     position: relative;
-}
-
-.strikeout {
-  font-size: 4em;
-  position: relative;
-}
-
-.mm-strike-through::after {
-  border-bottom: 0.150em solid rgba(0, 0, 0, 0.1);
-  content: "";
-  left: 0;
-  line-height: 1em;
-  margin-top: calc(0.125em / 2 * -1);
-  position: absolute;
-  right: 0;
-  top: 50%;
-}
-
-.mm-table {
-
 }
 
 .mm-table-row {
@@ -151,31 +139,15 @@ p.mm-table-row {
 
 .mm-table-cell {
     display: inline-block;
-		width: 100px;
+		width: 80px;
 }
 
 p.mm-table-cell {
 	display: inline-block;
 }
 
+
 .mm-verbatim {
 	font: 16px courier; background-color: #eee; padding: 8px;
 }
-
-pre { font-size: 10pt;
-      padding-left: 18px;
-      overflow: scroll;
-      }
-
-.mm-line-height {
-    line-height: 1.4;
-
-
 }
-
-.mm-thematic-break {
-  border: 0.5px solid #bbb;
-  width : 150px;
-  text-align: left;
-  margin-left: 0;
-  }

@@ -5,10 +5,10 @@ import Html exposing (Html)
 import Html.Attributes as HA
 import Markdown.ElmWithId
 import Markdown.Option as MDOption
+import Markdown.Parse as Parse
 import MiniLatex
 import MiniLatex.Edit
 import MiniLatex.Render exposing (MathJaxRenderOption(..))
-import ParseWithId
 import Render.Markdown
 import Render.Types exposing (RenderedText)
 import Tree exposing (Tree)
@@ -60,8 +60,8 @@ documentOption doc =
 type alias MDData msg =
     { option : MDOption.Option
     , renderedText : RenderedText msg
-    , initialAst : Tree ParseWithId.MDBlockWithId
-    , fullAst : Tree ParseWithId.MDBlockWithId
+    , initialAst : Tree Parse.MDBlockWithId
+    , fullAst : Tree Parse.MDBlockWithId
     }
 
 
@@ -143,7 +143,7 @@ loadMarkdown : Int -> MDOption.Option -> String -> RenderingData msg
 loadMarkdown counter option str =
     let
         ast =
-            Markdown.ElmWithId.parse counter MDOption.ExtendedMath str
+            Parse.toMDBlockTree counter MDOption.ExtendedMath str
     in
     MD
         { option = option
@@ -157,10 +157,10 @@ loadMarkdownFast : Int -> MDOption.Option -> String -> RenderingData msg
 loadMarkdownFast counter option str =
     let
         fullAst =
-            Markdown.ElmWithId.parse (counter + 1) MDOption.ExtendedMath str
+            Parse.toMDBlockTree (counter + 1) MDOption.ExtendedMath str
 
         initialAst =
-            Markdown.ElmWithId.parse counter option (getFirstPart str)
+            Parse.toMDBlockTree counter option (getFirstPart str)
     in
     MD
         { option = option
@@ -187,10 +187,10 @@ loadMiniLatexFast version str =
 
 --    let
 --        fullAst =
---            Markdown.ElmWithId.parse (counter + 1) MDOption.ExtendedMath str
+--            Parse.toMDBlockTree (counter + 1) MDOption.ExtendedMath str
 --
 --        initialAst =
---            Markdown.ElmWithId.parse counter option (getFirstPart str)
+--            Parse.toMDBlockTree counter option (getFirstPart str)
 --    in
 --    MD
 --        { option = option
