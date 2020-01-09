@@ -28,9 +28,9 @@ import Editor.Config exposing (WrapOption(..), WrapParams)
 import Editor.History
 import Editor.Model exposing (InternalState)
 import Editor.Styles
-import Editor.Text
 import Editor.Update
 import Editor.View
+import Editor.Wrap
 import Html exposing (Attribute, Html, div)
 import Html.Attributes as HA exposing (style)
 import Position exposing (Position)
@@ -266,7 +266,7 @@ wrapSelection ((Editor data) as editor) =
                     Buffer.between start end data.buffer
 
                 wrappedText =
-                    Editor.Text.prepareLinesWithWrapping data.state.config selectedText
+                    Editor.Wrap.paragraphs data.state.config selectedText
 
                 oldState =
                     data.state
@@ -290,7 +290,7 @@ insert wrapOption position string (Editor data) =
         textToInsert =
             case wrapOption of
                 DoWrap ->
-                    Editor.Text.prepareLinesWithWrapping data.state.config string
+                    Editor.Wrap.paragraphs data.state.config string
 
                 DontWrap ->
                     string
@@ -334,7 +334,7 @@ load wrapOption content ((Editor data) as editor) =
 
         buffer =
             if wrapOption == DoWrap && maxLineLength > config.wrapParams.maximumWidth then
-                Buffer.fromString (Editor.Text.prepareLines config content)
+                Buffer.fromString (Editor.Wrap.paragraphs config content)
 
             else
                 Buffer.fromString content

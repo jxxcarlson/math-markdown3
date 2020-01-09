@@ -1,4 +1,4 @@
-module Editor.Config exposing (Config, WrapOption(..), WrapParams, setMaximumWrapWidth, setOptimumWrapWidth, setWrapOption)
+module Editor.Config exposing (Config, WrapOption(..), WrapParams, default, setMaximumWrapWidth, setOptimumWrapWidth, setWrapOption)
 
 
 type alias Config =
@@ -13,6 +13,14 @@ type alias WrapParams =
     { maximumWidth : Int
     , optimalWidth : Int
     , stringWidth : String -> Int
+    }
+
+
+default m o =
+    { lines = 10
+    , wrapParams = { maximumWidth = m, optimalWidth = o, stringWidth = String.length }
+    , showInfoPanel = False
+    , wrapOption = DoWrap
     }
 
 

@@ -8,7 +8,7 @@ import Editor.History
 import Editor.Model exposing (InternalState, Snapshot)
 import Editor.Search
 import Editor.Strings
-import Editor.Text
+import Editor.Wrap
 import Json.Encode as E
 import Outside
 import Position exposing (Position)
@@ -1010,7 +1010,7 @@ update buffer msg state =
             ( clearState state, Buffer.init "", Cmd.none )
 
         WrapAll ->
-            ( state, Buffer.init (Editor.Text.prepareLines state.config (Buffer.toString buffer)), Cmd.none )
+            ( state, Buffer.init (Editor.Wrap.paragraphs state.config (Buffer.toString buffer)), Cmd.none )
                 |> recordHistory state buffer
 
         WrapSelection ->
@@ -1027,7 +1027,7 @@ update buffer msg state =
                             Buffer.between start end buffer
 
                         wrappedText =
-                            Editor.Text.prepareLinesWithWrapping state.config selectedText
+                            Editor.Wrap.paragraphs state.config selectedText
 
                         newState =
                             { state | selectedText = Just selectedText }
@@ -1130,7 +1130,7 @@ load wrapOption content state =
 
         buffer =
             if wrapOption == DoWrap && maxLineLength > config.wrapParams.maximumWidth then
-                Buffer.fromString (Editor.Text.prepareLines config content)
+                Buffer.fromString (Editor.Wrap.paragraphs config content)
 
             else
                 Buffer.fromString content
