@@ -381,7 +381,7 @@ bareModel model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Time.every 1000 Tick
+        [ Time.every Config.tick Tick
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         , Outside.getInfo Outside LogErr
@@ -1208,7 +1208,7 @@ pasteToEditorClipboard model str =
 
 -- NAVIGATION HELPERS --
 
-
+{-| focusOnId is used to load a subdocuemnt when the user licks on it itn the table of contents -}
 focusOnId : Model -> Uuid -> (Model, Cmd Msg)
 focusOnId model id =
     case model.tocData of
@@ -1232,7 +1232,7 @@ focusOnId model id =
                 | currentDocument = currentDocument
                 , tocData = Just (TocZ.focus id zipper)
                 , tocCursor = Just id
-              }
+              } |> Update.Tool.setupToEdit
             , cmd
             )
 

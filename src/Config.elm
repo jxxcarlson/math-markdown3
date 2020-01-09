@@ -1,4 +1,4 @@
-module Config exposing (endpoint, hasuraToken, wordsPerPage)
+module Config exposing (endpoint, hasuraToken, tick, wordsPerPage)
 
 
 endpoint =
@@ -12,3 +12,8 @@ hasuraToken =
 wordsPerPage : Float
 wordsPerPage =
     450.0
+
+
+tick : Float
+tick =
+    1 * 1000
