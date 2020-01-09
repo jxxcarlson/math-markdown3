@@ -145,14 +145,7 @@ setCurrent model document extraCmd =
 setCurrentSubdocument : Model -> Document -> TocItem -> ( Model, Cmd Msg )
 setCurrentSubdocument model document tocItem =
     let
-        {- Set the currently open node.
-           At the moment this works only for the top level.
-           That is, we change it only if it has level zero.
-           At the moment this is necessary because otherwise if one
-           clicks on an interior item, it would close the enclosing
-           one.  One solution is to expose all positive levels, not
-           must level 1.
-        -}
+        {- ... -}
         ( renderingData, renderCmd ) =
             Update.Render.prepare model (Just document)
 
@@ -182,6 +175,7 @@ setCurrentSubdocument model document tocItem =
         , tagString = document.tags |> String.join ", "
         , message = ( UserMessage, "Success getting document list" )
       }
+        |> Update.Tool.setupToEdit
     , Cmd.batch [ renderCmd, loadChildrenCmd, saveDocumentCommand, Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfEditor ]
     )
 

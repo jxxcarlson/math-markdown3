@@ -68,7 +68,7 @@ import User exposing (AuthorizedUser, User)
 import Utility
 import Editor exposing (EditorConfig, EditorMsg)
 import SingleSlider as Slider
-
+import Update.Tool
 
 
 {-
@@ -1356,7 +1356,7 @@ loadDocument model document =
         , documentListDisplay = (SearchResults, DequeViewOff)
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
-      }
+      }  |> Update.Tool.setupToEdit
     , cmd
     )
 
