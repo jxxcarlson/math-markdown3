@@ -15,8 +15,8 @@ module Model exposing
     , SortMode(..)
     , UserState(..)
     , Visibility(..)
+    , config
     , debounceConfig
-    , editorConfig
     )
 
 import Api.InputObject exposing (Document_order_by(..))
@@ -119,15 +119,15 @@ type alias Model =
     }
 
 
-editorConfig =
+config : EditorConfig Msg
+config =
     { editorMsg = EditorMsg
     , sliderMsg = SliderMsg
-    , editorStyle = editorStyle
     , width = 500
-    , lines = 50
+    , height = 700
     , lineHeight = 14.0
     , showInfoPanel = False
-    , wrapParams = { maximumWidth = 55, optimalWidth = 50, stringWidth = String.length }
+    , wrapParams = { maximumWidth = 40, optimalWidth = 35, stringWidth = String.length }
     , wrapOption = DontWrap
     }
 

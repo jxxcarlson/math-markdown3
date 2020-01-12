@@ -40,7 +40,6 @@ import Model
         , SortMode(..)
         , UserState(..)
         , Visibility(..)
-        , editorConfig
         )
 import Outside
 import Preprocessor
@@ -288,7 +287,7 @@ init flags url key =
             , documentOutline = ""
             , usernameToAddToPermmission = ""
             , permissionToAdd = NoPermission
-            , editor = Editor.init Model.editorConfig "Some text"
+            , editor = Editor.init Model.config "Some text"
             }
     in
     ( model
