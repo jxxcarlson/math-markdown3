@@ -11,6 +11,7 @@ import Data
 import Debounce
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Editor exposing (EditorConfig, EditorMsg)
+import Editor.Update
 import EditorTools
 import Element exposing (..)
 import File exposing (File)
@@ -1190,24 +1191,38 @@ update msg model =
                                     )
 
         -- EDITOR II
-        EditorMsg msg_ ->
+        EditorMsg editorMsg ->
             let
-                ( newEditor, cmd ) =
-                    Editor.update msg_ model.editor
-
-                -- TODO: use data flowing out of buffer:
-                newSourceText =
-                    Editor.getSource newEditor
-
-                ( debounce, cmd2 ) =
-                    Debounce.push debounceConfig newSourceText model.debounce
+                ( editor_, cmd_ ) =
+                    Editor.update editorMsg model.editor
             in
-            ( { model
-                | editor = newEditor
-                , debounce = debounce
-              }
-            , Cmd.batch [ Cmd.map EditorMsg cmd, cmd2 ]
-            )
+            case editorMsg of
+                Editor.Update.Insert str ->
+                    let
+                        ( newEditor, cmd ) =
+                            Editor.update editorMsg model.editor
+
+                        -- TODO: use data flowing out of buffer:
+                        newSourceText =
+                            Editor.getSource editor_
+
+                        ( debounce, cmd2 ) =
+                            Debounce.push debounceConfig newSourceText model.debounce
+                    in
+                    ( { model
+                        | editor = newEditor
+                        , debounce = debounce
+                      }
+                    , Cmd.batch [ Cmd.map EditorMsg cmd, cmd2 ]
+                    )
+
+                Editor.Update.CopyPasteClipboard ->
+                    --                    updateText model editor_ cmd_
+                    --                      |> (\(m, _) -> (m, Outside.sendInfo (Outside.AskForClipBoard E.null)))
+                    ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
+
+                _ ->
+                    ( { model | editor = editor_ }, Cmd.none )
 
         PasteClipboard ->
             pasteToClipboard model
