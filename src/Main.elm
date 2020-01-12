@@ -3,6 +3,7 @@ module Main exposing (main)
 import AppNavigation exposing (NavigationType(..))
 import BoundedDeque exposing (BoundedDeque)
 import Browser
+import Browser.Dom as Dom
 import Browser.Events
 import Browser.Navigation as Nav
 import Cmd.Document
@@ -48,7 +49,7 @@ import Prng.Uuid as Uuid exposing (Uuid)
 import Random
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
-import Render exposing (RenderingOption(..))
+import Render exposing (RenderingData(..), RenderingOption(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
 import Search
 import SingleSlider as Slider
@@ -642,7 +643,7 @@ update msg model =
                     ( model, Cmd.Document.setViewPortForSelectedLine element viewport )
 
                 Err _ ->
-                    ( { model | message = ( ErrorMessage, Tuple.second model.message ++ ", doc VP ERROR" ) }, Cmd.none )
+                    ( { model | message = ( ErrorMessage, Tuple.second model.message ) }, Cmd.none )
 
         GetTextSelection ->
             ( model, Outside.sendInfo (Outside.GetTextSelectionFromOutside E.null) )
@@ -1216,6 +1217,9 @@ update msg model =
                     , Cmd.batch [ Cmd.map EditorMsg cmd, cmd2 ]
                     )
 
+                Editor.Update.SendLine ->
+                    ( { model | editor = editor_ }, syncRenderedText (Editor.lineAtCursor editor_) model )
+
                 Editor.Update.CopyPasteClipboard ->
                     --                    updateText model editor_ cmd_
                     --                      |> (\(m, _) -> (m, Outside.sendInfo (Outside.AskForClipBoard E.null)))
@@ -1257,6 +1261,51 @@ pasteToEditorClipboard model str =
             Editor.placeInClipboard str model.editor
     in
     ( { model | editor = Editor.insert (Editor.getWrapOption model.editor) cursor str editor2 }, Cmd.none )
+
+
+
+-- UPDATE HELPERS
+
+
+syncRenderedText : String -> Model -> Cmd Msg
+syncRenderedText str model =
+    let
+        id =
+            case model.renderingData of
+                MD data ->
+                    case Parse.searchAST str data.fullAst of
+                        Nothing ->
+                            "???"
+
+                        Just id_ ->
+                            id_ |> Parse.stringOfId
+
+                ML data ->
+                    "???"
+    in
+    setViewportForElement id
+
+
+setViewportForElement : String -> Cmd Msg
+setViewportForElement id =
+    Dom.getViewportOf "__rt_scroll__"
+        |> Task.andThen (\vp -> getElementWithViewPort vp id)
+        |> Task.attempt SetViewPortForElement
+
+
+getElementWithViewPort : Dom.Viewport -> String -> Task Dom.Error ( Dom.Element, Dom.Viewport )
+getElementWithViewPort vp id =
+    Dom.getElement id
+        |> Task.map (\el -> ( el, vp ))
+
+
+setViewPortForSelectedLine : Dom.Element -> Dom.Viewport -> Cmd Msg
+setViewPortForSelectedLine element viewport =
+    let
+        y =
+            viewport.viewport.y + element.element.y - element.element.height - 100
+    in
+    Task.attempt (\_ -> NoOp) (Dom.setViewportOf "__rt_scroll__" 0 y)
 
 
 

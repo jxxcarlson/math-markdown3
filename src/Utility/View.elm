@@ -1,6 +1,7 @@
 module Utility.View exposing (hideIf, showIf, showOne)
 
 import Element exposing (Element)
+import Html.Attributes
 import Model exposing (Msg)
 
 

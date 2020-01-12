@@ -141,7 +141,7 @@ setViewPortForSelectedLine element viewport =
         y =
             viewport.viewport.y + element.element.y - element.element.height - 150
     in
-    Task.attempt (\_ -> NoOp) (Dom.setViewportOf masterId 0 y)
+    Task.attempt (\_ -> NoOp) (Dom.setViewportOf "__rt_scroll__" 0 y)
 
 
 masterId =

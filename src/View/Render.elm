@@ -27,6 +27,7 @@ import Model
         )
 import Render.Types exposing (RenderedText)
 import Style
+import Utility.View
 import View.Common exposing (ViewInfo)
 
 
@@ -54,11 +55,12 @@ renderedSource viewInfo model footerText_ rt =
         innerSourceStyle =
             [ View.Common.setElementId Cmd.Document.masterId, height (px h_) ]
 
+        outerTocStyle : List (Attribute msg)
         outerTocStyle =
             [ height (px hToc), width (px wToc), Font.size 12, paddingXY 8 0, Background.color (Style.makeGrey 0.9) ]
 
         innerTocStyle =
-            [ height (px (hToc - 125)), scrollbarY, clipX ]
+            [ height (px (hToc - 125)), scrollbarY, clipX, View.Common.setElementId Cmd.Document.masterId ]
 
         footerStyle =
             [ paddingXY 12 3, width fill, height (px 125), clipX, Background.color (Style.makeGrey 0.5), Font.color (Style.makeGrey 1.0) ]

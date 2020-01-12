@@ -1,7 +1,7 @@
 {
     "type": "application",
     "source-directories": [
-        "src", "editor"
+        "src"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
@@ -28,7 +28,8 @@
             "folkertdev/elm-deque": "3.0.1",
             "folkertdev/elm-paragraph": "1.0.0",
             "jinjor/elm-debounce": "3.0.0",
-            "jxxcarlson/elm-markdown": "4.0.1",
+            "jxxcarlson/elm-markdown": "4.0.3",
+            "jxxcarlson/elm-text-editor": "4.0.0",
             "jxxcarlson/htree": "2.0.1",
             "jxxcarlson/meenylatex": "9.0.0",
             "krisajenkins/remotedata": "6.0.1",
