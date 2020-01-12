@@ -1,74 +1,73 @@
 module Main exposing (main)
 
-import Model exposing
-                 ( AppMode(..)
-                 , DequeViewState(..)
-                 , DocumentDeleteState(..)
-                 , DocumentListDisplay
-                 , DocumentListType(..)
-                 , EditMode(..)
-                 , FocusedElement(..)
-                 , Message
-                 , MessageType(..)
-                 , Model
-                 , Msg(..)
-                 , SearchMode(..)
-                 , SearchType(..)
-                 , SortMode(..)
-                 , UserState(..)
-                 , Visibility(..)
-                 , editorConfig
-                 )
+import AppNavigation exposing (NavigationType(..))
+import BoundedDeque exposing (BoundedDeque)
 import Browser
-import Interchange
-import Debounce
-import View.Editor
-import View.Reader
-import View.User
-import File exposing (File)
-import File.Select as Select
-import AppNavigation exposing(NavigationType(..))
-import EditorTools
-import Update.UI
-import KeyboardManager
 import Browser.Events
 import Browser.Navigation as Nav
-import Data
-import Update.Master
 import Cmd.Document
-import Utility
-import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
-import Element exposing (..)
-import Update.Render
 import Config
-import BoundedDeque exposing(BoundedDeque)
+import Data
+import Debounce
+import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
+import Editor exposing (EditorConfig, EditorMsg)
+import EditorTools
+import Element exposing (..)
+import File exposing (File)
+import File.Select as Select
 import Html exposing (..)
+import Interchange
 import Json.Encode as E
 import Keyboard exposing (Key(..))
-import Document
-import Outside
-import Markdown.Option as MDOption
-import Markdown.Option exposing (Option(..))
+import KeyboardManager
+import Markdown.Option as MDOption exposing (Option(..))
 import Markdown.Parse as Parse
+import Model
+    exposing
+        ( AppMode(..)
+        , DequeViewState(..)
+        , DocumentDeleteState(..)
+        , DocumentListDisplay
+        , DocumentListType(..)
+        , EditMode(..)
+        , FocusedElement(..)
+        , Message
+        , MessageType(..)
+        , Model
+        , Msg(..)
+        , SearchMode(..)
+        , SearchType(..)
+        , SortMode(..)
+        , UserState(..)
+        , Visibility(..)
+        , editorConfig
+        )
+import Outside
 import Preprocessor
 import Prng.Uuid as Uuid exposing (Uuid)
 import Random
-import Search
-import Render exposing(RenderingOption(..))
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
+import Render exposing (RenderingOption(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
+import Search
+import SingleSlider as Slider
 import Task exposing (Task)
 import Time exposing (Posix)
 import TocManager
 import TocZ exposing (TocMsg(..))
 import Update.Document
-import Url exposing(Url)
+import Update.Master
+import Update.Render
+import Update.Tool
+import Update.UI
+import Url exposing (Url)
 import User exposing (AuthorizedUser, User)
 import Utility
-import Editor exposing (EditorConfig, EditorMsg)
-import SingleSlider as Slider
-import Update.Tool
+import View.Editor
+import View.Reader
+import View.User
+
 
 
 {-
@@ -121,24 +120,20 @@ main =
         }
 
 
-
-
-
 debounceConfig : Debounce.Config Msg
 debounceConfig =
-  { strategy = Debounce.later 100
-  , transform = DebounceMsg
-  }
+    { strategy = Debounce.later 100
+    , transform = DebounceMsg
+    }
+
+
 
 -- TYPES FOR MODEL
 
+
 type UrlRequest
-  = Internal Url.Url
-  | External String
-
-
-
-
+    = Internal Url.Url
+    | External String
 
 
 type alias Flags =
@@ -148,8 +143,6 @@ type alias Flags =
     , randInts : List Int
     , location : String
     }
-
-
 
 
 
@@ -224,7 +217,9 @@ init flags url key =
     let
         ( newUuid, newSeed ) =
             step Uuid.generator (initialSeed flags.seed flags.randInts)
-        initialAst = Parse.toMDBlockTree -1 ExtendedMath Data.loadingPage.content
+
+        initialAst =
+            Parse.toMDBlockTree -1 ExtendedMath Data.loadingPage.content
 
         model : Model
         model =
@@ -233,15 +228,13 @@ init flags url key =
             , url = url
             , debounce = Debounce.init
 
-
-
             -- UI
             , docType = Markdown MDExtendedMath
             , windowWidth = flags.width
             , windowHeight = flags.height
             , visibilityOfTools = Invisible
             , appMode = UserMode SignInState
-            , documentListDisplay = (SearchResults, DequeViewOff)
+            , documentListDisplay = ( SearchResults, DequeViewOff )
             , message = ( UserMessage, "Starting ..." )
             , pressedKeys = []
             , focusedElement = NoFocus
@@ -265,10 +258,12 @@ init flags url key =
             , passwordConfirmation = ""
             , newPassword1 = ""
             , newPassword2 = ""
+
             -- EDITOR
-             , selectedText = ""
-             , editorTargetLineNumber = Nothing
-             , clipboard = ""
+            , selectedText = ""
+            , editorTargetLineNumber = Nothing
+            , clipboard = ""
+
             -- documents
             , counter = 0
             , documentDeleteState = SafetyOn
@@ -284,11 +279,7 @@ init flags url key =
             , currentDocument = Just Data.loadingPage
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
-
             , renderingData = Render.load -1 (OMarkdown MDOption.Standard) "Empty document"
-
-
-
             , tagString = ""
             , searchTerms = ""
             , sortTerm = orderByMostRecentFirst
@@ -297,7 +288,7 @@ init flags url key =
             , documentOutline = ""
             , usernameToAddToPermmission = ""
             , permissionToAdd = NoPermission
-            , editor = Editor.init Model.editorConfig  "Some text"
+            , editor = Editor.init Model.editorConfig "Some text"
             }
     in
     ( model
@@ -308,32 +299,28 @@ init flags url key =
         , Outside.sendInfo (Outside.AskToReconnectUser E.null)
         , Outside.sendInfo (Outside.AskForDequeData E.null)
         , Cmd.Document.processUrl flags.location
-
         ]
     )
 
 
 bareModel : Model -> Model
 bareModel model =
-   let
-       initialAst = Parse.toMDBlockTree -1 ExtendedMath Data.loadingPage.content
-   in
-        { model |
-
-        -- UI
-         docType = Markdown MDExtendedMath
-
+    let
+        initialAst =
+            Parse.toMDBlockTree -1 ExtendedMath Data.loadingPage.content
+    in
+    { model
+        | -- UI
+          docType = Markdown MDExtendedMath
         , visibilityOfTools = Invisible
         , appMode = UserMode SignInState
-        , documentListDisplay = (SearchResults, DequeViewOff)
+        , documentListDisplay = ( SearchResults, DequeViewOff )
         , message = ( UserMessage, "Starting ..." )
         , pressedKeys = []
         , focusedElement = NoFocus
         , flashCounterForTotalWordCount = 0
 
         -- SYSTEM
-
-
         -- USER
         , currentUser = Nothing
 
@@ -345,9 +332,11 @@ bareModel model =
         , passwordConfirmation = ""
         , newPassword1 = ""
         , newPassword2 = ""
+
         -- EDITOR
-         , selectedText = ""
-         , editorTargetLineNumber = Nothing
+        , selectedText = ""
+        , editorTargetLineNumber = Nothing
+
         -- documents
         , counter = 0
         , documentDeleteState = SafetyOn
@@ -372,7 +361,8 @@ bareModel model =
         , documentOutline = ""
         , usernameToAddToPermmission = ""
         , permissionToAdd = NoPermission
-        }
+    }
+
 
 
 -- SUBSCRIPTION
@@ -389,12 +379,13 @@ subscriptions model =
         ]
 
 
+
 -- UPDATE FUNCTION
+
 
 textTask : String -> Cmd Msg
 textTask str =
     Task.perform UpdateDocumentText (Task.succeed str)
-
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -403,19 +394,18 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-
         DebounceMsg debounceMsg ->
-              let
-                (debounce, cmd) =
-                  Debounce.update
-                    debounceConfig
-                    (Debounce.takeLast textTask)
-                    debounceMsg
-                    model.debounce
-              in
-                ( { model | debounce = debounce }
-                , cmd
-                )
+            let
+                ( debounce, cmd ) =
+                    Debounce.update
+                        debounceConfig
+                        (Debounce.takeLast textTask)
+                        debounceMsg
+                        model.debounce
+            in
+            ( { model | debounce = debounce }
+            , cmd
+            )
 
         GenerateSeed ->
             ( model, Random.generate NewSeed (Random.int 1 10000) )
@@ -424,45 +414,58 @@ update msg model =
             ( { model | seed = newSeed }, Cmd.none )
 
         -- PORTS --
-
         Outside infoForElm ->
             case infoForElm of
                 Outside.UserDataFromOutside outsideUser ->
                     let
-                        user = User.fromOutside outsideUser
+                        user =
+                            User.fromOutside outsideUser
                     in
-                      ({model | currentUser = Just user
-                                 ,appMode = Reading
-                                  , documentListDisplay = (SearchResults, DequeViewOn)
-                                  , focusedElement = NoFocus
-                                  , visibilityOfTools = Invisible
-                                  , searchMode = UserSearch
-                                , token =  Just outsideUser.token}
-                            , Cmd.Document.getUserDocumentsAtSignIn                                                                                                                                                                                user)
+                    ( { model
+                        | currentUser = Just user
+                        , appMode = Reading
+                        , documentListDisplay = ( SearchResults, DequeViewOn )
+                        , focusedElement = NoFocus
+                        , visibilityOfTools = Invisible
+                        , searchMode = UserSearch
+                        , token = Just outsideUser.token
+                      }
+                    , Cmd.Document.getUserDocumentsAtSignIn user
+                    )
 
                 Outside.GotSelection selection ->
                     let
-                        maybeLineNumber = case model.currentDocument of
-                           Nothing -> Nothing
-                           Just doc -> EditorTools.lineNumber (String.left 16 selection) doc.content
-                        (message, cmd) = case maybeLineNumber of
-                            Just k -> ("Line number: "  ++ String.fromInt k,  Outside.sendInfo (Outside.ScrollToLine (E.int k)))
-                            Nothing -> ("Could not find line", Cmd.none)
+                        maybeLineNumber =
+                            case model.currentDocument of
+                                Nothing ->
+                                    Nothing
+
+                                Just doc ->
+                                    EditorTools.lineNumber (String.left 16 selection) doc.content
+
+                        ( message, cmd ) =
+                            case maybeLineNumber of
+                                Just k ->
+                                    ( "Line number: " ++ String.fromInt k, Outside.sendInfo (Outside.ScrollToLine (E.int k)) )
+
+                                Nothing ->
+                                    ( "Could not find line", Cmd.none )
                     in
-                    ({model | editorTargetLineNumber = maybeLineNumber, selectedText = selection, message = (UserMessage, message)}
-                      , cmd)
+                    ( { model | editorTargetLineNumber = maybeLineNumber, selectedText = selection, message = ( UserMessage, message ) }
+                    , cmd
+                    )
 
                 Outside.GotClipboard clipboard ->
                     pasteToEditorClipboard model clipboard
 
                 Outside.UuidList uuidList ->
-                    (model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req)
+                    ( model, Request.documentsInIdList hasuraToken uuidList GotDequeDocuments |> Cmd.map Req )
 
         LogErr err ->
-            ({model | message = (ErrorMessage, err)}, Cmd.none)
+            ( { model | message = ( ErrorMessage, err ) }, Cmd.none )
 
-
-        Model.Clear ->    ( { model
+        Model.Clear ->
+            ( { model
                 | counter = model.counter + 1
               }
             , Cmd.none
@@ -470,29 +473,34 @@ update msg model =
 
         SetDocumentListType documentListType ->
             let
-                dv = Tuple.second model.documentListDisplay
+                dv =
+                    Tuple.second model.documentListDisplay
             in
             case documentListType of
-                SearchResults  ->
-                    ( { model | documentListDisplay = (SearchResults, DequeViewOff) }, Cmd.none )
+                SearchResults ->
+                    ( { model | documentListDisplay = ( SearchResults, DequeViewOff ) }, Cmd.none )
 
                 DocumentChildren ->
-                    ( { model | documentListDisplay = (DocumentChildren, DequeViewOff) }, Cmd.none )
+                    ( { model | documentListDisplay = ( DocumentChildren, DequeViewOff ) }, Cmd.none )
 
         SetDequeview dv ->
-                    let
-                        slt = Tuple.first model.documentListDisplay
-                    in
-                    ( { model | documentListDisplay = (slt, dv) }, Cmd.none )
+            let
+                slt =
+                    Tuple.first model.documentListDisplay
+            in
+            ( { model | documentListDisplay = ( slt, dv ) }, Cmd.none )
 
         ToggleDequeview ->
-           let
-              newDocumentListDisplay = case model.documentListDisplay of
-                (slt, DequeViewOn) -> (slt, DequeViewOff)
-                (slt, DequeViewOff) -> (slt, DequeViewOn)
+            let
+                newDocumentListDisplay =
+                    case model.documentListDisplay of
+                        ( slt, DequeViewOn ) ->
+                            ( slt, DequeViewOff )
 
-           in
-             ({model | documentListDisplay = newDocumentListDisplay}, Cmd.none)
+                        ( slt, DequeViewOff ) ->
+                            ( slt, DequeViewOn )
+            in
+            ( { model | documentListDisplay = newDocumentListDisplay }, Cmd.none )
 
         SetSortMode sortMode ->
             let
@@ -503,7 +511,6 @@ update msg model =
 
                         MostRecentFirst ->
                             orderByMostRecentFirst
-
             in
             Search.do { model | sortMode = sortMode, sortTerm = sortTerm }
 
@@ -607,76 +614,88 @@ update msg model =
             )
 
         SignOut ->
-            ( bareModel model ,  Outside.sendInfo (Outside.DestroyUserData E.null)
+            ( bareModel model
+            , Outside.sendInfo (Outside.DestroyUserData E.null)
             )
-
 
         -- EDITOR --
         ProcessLine str ->
             let
                 id =
-                    (case EditorTools.findStringInAST str model.renderingData of
+                    case EditorTools.findStringInAST str model.renderingData of
                         Nothing ->
                             "??"
 
                         Just id_ ->
-                            id_ |> Parse.stringOfId)
+                            id_ |> Parse.stringOfId
             in
             ( { model | message = ( UserMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id ) }
             , Cmd.Document.setViewportForElement id
             )
 
         SyncEditorToLine k ->
-            (model, Cmd.none)
+            ( model, Cmd.none )
 
         SetViewPortForElement result ->
             case result of
-                Ok ( element, viewport )  ->
+                Ok ( element, viewport ) ->
                     ( model, Cmd.Document.setViewPortForSelectedLine element viewport )
 
                 Err _ ->
-                   ({ model | message =  (ErrorMessage, (Tuple.second model.message) ++ ", doc VP ERROR") }, Cmd.none )
+                    ( { model | message = ( ErrorMessage, Tuple.second model.message ++ ", doc VP ERROR" ) }, Cmd.none )
 
         GetTextSelection ->
-            (model, Outside.sendInfo (Outside.GetTextSelectionFromOutside E.null))
+            ( model, Outside.sendInfo (Outside.GetTextSelectionFromOutside E.null) )
 
         -- DOCUMENT --
         DownloadArchive ->
-             Update.Document.downloadArchive model
+            Update.Document.downloadArchive model
 
         ArchiveRequested ->
-            ( model, Select.file ["application/json"] ArchiveSelected )
+            ( model, Select.file [ "application/json" ] ArchiveSelected )
 
         ArchiveSelected file ->
-            (model, Task.perform ArchiveLoaded (File.toString file))
+            ( model, Task.perform ArchiveLoaded (File.toString file) )
 
         ArchiveLoaded archiveString ->
             let
-                importedDocuments = Interchange.decodeDocumentList archiveString |> Maybe.withDefault []
-                author = List.map .authorIdentifier importedDocuments  |> List.head |> Maybe.withDefault "NoAuthor"
+                importedDocuments =
+                    Interchange.decodeDocumentList archiveString |> Maybe.withDefault []
+
+                author =
+                    List.map .authorIdentifier importedDocuments |> List.head |> Maybe.withDefault "NoAuthor"
+
                 message =
-                  ( UserMessage, "Imported docs:  " ++ String.fromInt (List.length importedDocuments) ++ " (by " ++ author ++ ")")
+                    ( UserMessage, "Imported docs:  " ++ String.fromInt (List.length importedDocuments) ++ " (by " ++ author ++ ")" )
             in
             case List.length importedDocuments > 0 of
-                False -> ( { model | message = message}, Cmd.none )
+                False ->
+                    ( { model | message = message }, Cmd.none )
+
                 True ->
-                  let
-                    (renderingData, cmd) = Update.Render.prepare model (List.head importedDocuments)
-                  in
-                    ( { model | documentList = importedDocuments
-                         , currentDocument = List.head importedDocuments
-                         , renderingData = renderingData
-                         , counter = model.counter + 2
-                         ,  message = message}
-                     , cmd )
+                    let
+                        ( renderingData, cmd ) =
+                            Update.Render.prepare model (List.head importedDocuments)
+                    in
+                    ( { model
+                        | documentList = importedDocuments
+                        , currentDocument = List.head importedDocuments
+                        , renderingData = renderingData
+                        , counter = model.counter + 2
+                        , message = message
+                      }
+                    , cmd
+                    )
 
         SaveImportedArchive ->
             let
-               insertDoc = (\doc -> Request.insertDocument Config.hasuraToken doc |> Cmd.map Req)
-               cmdList = List.map insertDoc model.documentList
-            in
-              (model, Cmd.batch cmdList)
+                insertDoc =
+                    \doc -> Request.insertDocument Config.hasuraToken doc |> Cmd.map Req
 
+                cmdList =
+                    List.map insertDoc model.documentList
+            in
+            ( model, Cmd.batch cmdList )
 
         CreateDocument ->
             Update.Document.makeNewDocument model
@@ -709,7 +728,7 @@ update msg model =
             Search.forUsersDocuments model
 
         GotSecondPart rd ->
-            ( { model | renderingData = rd  }, Cmd.none )
+            ( { model | renderingData = rd }, Cmd.none )
 
         AllDocuments ->
             Search.getAllDocuments model
@@ -730,8 +749,7 @@ update msg model =
             Update.Document.text model (Preprocessor.apply str)
 
         SetCurrentDocument document ->
-             Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside  model.deque)
-
+            Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside model.deque)
 
         SetCurrentSubDocument document tocItem ->
             Update.Document.setCurrentSubdocument model document tocItem
@@ -740,23 +758,27 @@ update msg model =
             ( Update.Master.setupOutline model, Cmd.none )
 
         AddUserNameForPermissions str ->
-            ( { model | usernameToAddToPermmission = str}, Cmd.none)
+            ( { model | usernameToAddToPermmission = str }, Cmd.none )
 
+        CyclePermission ->
+            let
+                nextPermission =
+                    case model.permissionToAdd of
+                        NoPermission ->
+                            ReadPermission
 
-        CyclePermission  ->
-           let
-             nextPermission = case model.permissionToAdd of
-                 NoPermission -> ReadPermission
-                 ReadPermission -> WritePermission
-                 WritePermission -> NoPermission
-           in
-            ( { model | permissionToAdd = nextPermission}, Cmd.none)
+                        ReadPermission ->
+                            WritePermission
 
-
+                        WritePermission ->
+                            NoPermission
+            in
+            ( { model | permissionToAdd = nextPermission }, Cmd.none )
 
         AddUserPermission ->
             let
-                _ = "ADD clicked"
+                _ =
+                    "ADD clicked"
             in
             addUserPermission model
 
@@ -768,11 +790,12 @@ update msg model =
                 Just masterDocument ->
                     case TocManager.updateMasterAndDocumentListFromOutline model.documentOutline model.tableOfContents of
                         Err error ->
-                            ( {model | message = (ErrorMessage, Document.stringOfError   error)}, Cmd.none )
+                            ( { model | message = ( ErrorMessage, Document.stringOfError error ) }, Cmd.none )
 
                         Ok ( newMasterDocument, newDocumentList ) ->
                             let
-                              user = model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
+                                user =
+                                    model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
                             in
                             ( { model
                                 | currentDocument = Just newMasterDocument
@@ -796,7 +819,7 @@ update msg model =
             ( { model | totalWordCount = Document.totalWordCount model.tableOfContents, flashCounterForTotalWordCount = config.maxFlashCount }, Cmd.none )
 
         DoShareUrl ->
-             ( { model |  flashCounterForShareUrl = config.maxFlashCount }, Cmd.none )
+            ( { model | flashCounterForShareUrl = config.maxFlashCount }, Cmd.none )
 
         GotSearchTerms str ->
             ( { model | searchTerms = str, focusedElement = FocusOnSearchBox }, Cmd.none )
@@ -816,34 +839,30 @@ update msg model =
                     focusOnId model id
 
                 Toggle ->
-                    ( { model | toggleToc = not model.toggleToc }, Cmd.batch [Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfRenderedText])  -- Cmd.none |> Cmd.map TOC )
+                    ( { model | toggleToc = not model.toggleToc }, Cmd.batch [ Cmd.Document.resetViewportOfRenderedText, Cmd.Document.resetViewportOfRenderedText ] )
 
-
+        -- Cmd.none |> Cmd.map TOC )
         -- NAVIGATION --
-
         -- XYXY1
-
         ScrollAttempted _ ->
-              ( model
-              , Cmd.none
-              )
-
+            ( model
+            , Cmd.none
+            )
 
         LinkClicked urlRequest ->
-              case urlRequest of
+            case urlRequest of
                 Browser.Internal url ->
-                  ( model, Nav.pushUrl model.key (Url.toString url) )
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
 
                 Browser.External href ->
-                  ( model, Nav.load href )
+                    ( model, Nav.load href )
 
         UrlChanged url ->
-           let
-               id = String.replace "%20" " "( Maybe.withDefault "foo"  url.fragment)
-
-           in
-              handleLink model id
-
+            let
+                id =
+                    String.replace "%20" " " (Maybe.withDefault "foo" url.fragment)
+            in
+            handleLink model id
 
         -- REQ --
         Req requestMsg ->
@@ -922,25 +941,38 @@ update msg model =
                             ( { model | message = ( ErrorMessage, "Get child docs:: request failed" ) }, Cmd.none )
 
                         Success documentList ->
-                           let
-                               _ = "SETTING UO DEQUE"
-                               newDeque = BoundedDeque.fromList config.dequeLength documentList
-                               currentUser = if BoundedDeque.isEmpty  newDeque then
-                                                 model.currentUser
-                                              else
-                                                 Update.Document.updateMaybeUserWithDeque newDeque model.currentUser
-                               cmd = case BoundedDeque.isEmpty  newDeque of
-                                   False -> Cmd.none
-                                   True ->
-                                     let
-                                        docIds  = case model.currentUser of
-                                                      Nothing -> []
-                                                      Just user -> user.recentDocs
-                                     in
-                                       Request.documentsInIdList hasuraToken docIds GotDocumentsForDeque |> Cmd.map Req
+                            let
+                                _ =
+                                    "SETTING UO DEQUE"
 
-                           in
-                            ({model | deque = newDeque, currentUser = currentUser}, cmd)
+                                newDeque =
+                                    BoundedDeque.fromList config.dequeLength documentList
+
+                                currentUser =
+                                    if BoundedDeque.isEmpty newDeque then
+                                        model.currentUser
+
+                                    else
+                                        Update.Document.updateMaybeUserWithDeque newDeque model.currentUser
+
+                                cmd =
+                                    case BoundedDeque.isEmpty newDeque of
+                                        False ->
+                                            Cmd.none
+
+                                        True ->
+                                            let
+                                                docIds =
+                                                    case model.currentUser of
+                                                        Nothing ->
+                                                            []
+
+                                                        Just user ->
+                                                            user.recentDocs
+                                            in
+                                            Request.documentsInIdList hasuraToken docIds GotDocumentsForDeque |> Cmd.map Req
+                            in
+                            ( { model | deque = newDeque, currentUser = currentUser }, cmd )
 
                 GotCandidateChildDocuments remoteData ->
                     case remoteData of
@@ -1079,35 +1111,36 @@ update msg model =
                             ( { model | message = ( ErrorMessage, "LoadDocument: failed request" ) }, Cmd.none )
 
                         Success documentList ->
-                           case List.head documentList of
-                               Nothing -> ( { model| message = (UserMessage, "Couldn't load linked document")}, Cmd.none)
-                               Just document ->
-                                   loadDocument model document
+                            case List.head documentList of
+                                Nothing ->
+                                    ( { model | message = ( UserMessage, "Couldn't load linked document" ) }, Cmd.none )
 
-
+                                Just document ->
+                                    loadDocument model document
 
                 GotDocumentsForDeque remoteData ->
-                     case remoteData of
-                         NotAsked ->
-                             ( { model | message = ( ErrorMessage, "Get deque: not asked" ) }, Cmd.none )
+                    case remoteData of
+                        NotAsked ->
+                            ( { model | message = ( ErrorMessage, "Get deque: not asked" ) }, Cmd.none )
 
-                         Loading ->
-                             ( { model | message = ( ErrorMessage, "Get deque: loading" ) }, Cmd.none )
+                        Loading ->
+                            ( { model | message = ( ErrorMessage, "Get deque: loading" ) }, Cmd.none )
 
-                         Failure _ ->
-                             ( { model | message = ( ErrorMessage, "Get deque: failed request" ) }, Cmd.none )
+                        Failure _ ->
+                            ( { model | message = ( ErrorMessage, "Get deque: failed request" ) }, Cmd.none )
 
-                         Success documentList ->
-                           let
-                               newDeque = BoundedDeque.fromList config.dequeLength documentList
-                           in
-                             ( { model
-                                 | message = ( UserMessage, "Got deque: successful" )
-                                 , currentUser = Update.Document.updateMaybeUserWithDeque newDeque model.currentUser
-                                 , deque = newDeque
-                               }
-                             , Cmd.none
-                             )
+                        Success documentList ->
+                            let
+                                newDeque =
+                                    BoundedDeque.fromList config.dequeLength documentList
+                            in
+                            ( { model
+                                | message = ( UserMessage, "Got deque: successful" )
+                                , currentUser = Update.Document.updateMaybeUserWithDeque newDeque model.currentUser
+                                , deque = newDeque
+                              }
+                            , Cmd.none
+                            )
 
                 GotUserAtSignin remoteData ->
                     case remoteData of
@@ -1131,69 +1164,74 @@ update msg model =
                                     )
 
                                 Just user ->
-                                   let
-                                       tokenCmd  = case model.token of
-                                          Nothing -> Cmd.none
-                                          Just token -> Outside.sendInfo (Outside.UserData <| User.outsideUserEncoder (User.outsideUserWithToken token user))
+                                    let
+                                        tokenCmd =
+                                            case model.token of
+                                                Nothing ->
+                                                    Cmd.none
 
-                                       dequeCommand = Request.documentsInIdList hasuraToken user.recentDocs GotDocumentsForDeque |> Cmd.map Req
-                                   in
+                                                Just token ->
+                                                    Outside.sendInfo (Outside.UserData <| User.outsideUserEncoder (User.outsideUserWithToken token user))
+
+                                        dequeCommand =
+                                            Request.documentsInIdList hasuraToken user.recentDocs GotDocumentsForDeque |> Cmd.map Req
+                                    in
                                     ( { model
                                         | message = ( UserMessage, "User signup successful (2)" )
                                         , currentUser = Just user
                                         , appMode = Reading
-                                        , documentListDisplay = (SearchResults, DequeViewOn)
+                                        , documentListDisplay = ( SearchResults, DequeViewOn )
                                         , focusedElement = NoFocus
                                         , visibilityOfTools = Invisible
                                       }
-                                    ,
-                                    Cmd.batch [
-                                      Cmd.Document.getUserDocumentsAtSignIn  user
-                                      , Cmd.batch[tokenCmd, dequeCommand]
-                                      ]
+                                    , Cmd.batch
+                                        [ Cmd.Document.getUserDocumentsAtSignIn user
+                                        , Cmd.batch [ tokenCmd, dequeCommand ]
+                                        ]
                                     )
+
         -- EDITOR II
-
-
         EditorMsg msg_ ->
-             let
-                 ( newEditor, cmd ) =
-                     Editor.update msg_ model.editor
+            let
+                ( newEditor, cmd ) =
+                    Editor.update msg_ model.editor
 
                 -- TODO: use data flowing out of buffer:
-                 newSourceText = Editor.getSource newEditor
+                newSourceText =
+                    Editor.getSource newEditor
 
-                 ( debounce, cmd2 ) =
-                             Debounce.push debounceConfig newSourceText model.debounce
-
-             in
-             ( { model
-                 | editor = newEditor
-                 , debounce = debounce
-               }
-             , Cmd.batch [Cmd.map EditorMsg cmd, cmd2]
-             )
+                ( debounce, cmd2 ) =
+                    Debounce.push debounceConfig newSourceText model.debounce
+            in
+            ( { model
+                | editor = newEditor
+                , debounce = debounce
+              }
+            , Cmd.batch [ Cmd.map EditorMsg cmd, cmd2 ]
+            )
 
         PasteClipboard ->
             pasteToClipboard model
 
-
         SliderMsg sliderMsg ->
-          let
-            (newEditor, cmd) = Editor.sliderUpdate sliderMsg  model.editor
-          in
-            ( { model | editor = newEditor }, cmd  |> Cmd.map SliderMsg )
+            let
+                ( newEditor, cmd ) =
+                    Editor.sliderUpdate sliderMsg model.editor
+            in
+            ( { model | editor = newEditor }, cmd |> Cmd.map SliderMsg )
 
         AskForClipBoard ->
-            (model, Outside.sendInfo (Outside.AskForClipBoard E.null))
+            ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
 
 
-pasteToClipboard : Model -> (Model, Cmd msg)
+pasteToClipboard : Model -> ( Model, Cmd msg )
 pasteToClipboard model =
-   let
-     newEditor = Editor.insert (Editor.getWrapOption model.editor) (Editor.getCursor model.editor) model.clipboard model.editor
-   in
-     ({ model | editor = newEditor} , Cmd.none)
+    let
+        newEditor =
+            Editor.insert (Editor.getWrapOption model.editor) (Editor.getCursor model.editor) model.clipboard model.editor
+    in
+    ( { model | editor = newEditor }, Cmd.none )
+
 
 pasteToEditorClipboard : Model -> String -> ( Model, Cmd msg )
 pasteToEditorClipboard model str =
@@ -1206,10 +1244,14 @@ pasteToEditorClipboard model str =
     in
     ( { model | editor = Editor.insert (Editor.getWrapOption model.editor) cursor str editor2 }, Cmd.none )
 
+
+
 -- NAVIGATION HELPERS --
 
-{-| focusOnId is used to load a subdocuemnt when the user licks on it itn the table of contents -}
-focusOnId : Model -> Uuid -> (Model, Cmd Msg)
+
+{-| focusOnId is used to load a subdocuemnt when the user licks on it itn the table of contents
+-}
+focusOnId : Model -> Uuid -> ( Model, Cmd Msg )
 focusOnId model id =
     case model.tocData of
         Nothing ->
@@ -1232,17 +1274,27 @@ focusOnId model id =
                 | currentDocument = currentDocument
                 , tocData = Just (TocZ.focus id zipper)
                 , tocCursor = Just id
-              } |> Update.Tool.setupToEdit
+              }
+                |> Update.Tool.setupToEdit
             , cmd
             )
 
-handleLink : Model -> String -> (Model, Cmd Msg)
+
+handleLink : Model -> String -> ( Model, Cmd Msg )
 handleLink model link =
-    case  AppNavigation.classify link of
-        (TocRef, id_) -> (model, Cmd.Document.scrollIfNeeded id_)
-        (DocRef, slug)  ->(model, Cmd.Document.getBySlug hasuraToken slug)
-        (IdRef, idRef)  -> (model, Cmd.Document.getById hasuraToken idRef)
-        (SubdocIdRef, idRef)  -> focusOnId model (idRef |> Uuid.fromString |> Maybe.withDefault Utility.id0)
+    case AppNavigation.classify link of
+        ( TocRef, id_ ) ->
+            ( model, Cmd.Document.scrollIfNeeded id_ )
+
+        ( DocRef, slug ) ->
+            ( model, Cmd.Document.getBySlug hasuraToken slug )
+
+        ( IdRef, idRef ) ->
+            ( model, Cmd.Document.getById hasuraToken idRef )
+
+        ( SubdocIdRef, idRef ) ->
+            focusOnId model (idRef |> Uuid.fromString |> Maybe.withDefault Utility.id0)
+
 
 
 -- TIME HELPERS
@@ -1260,10 +1312,10 @@ handleTime model newTime =
 
         flashCounterForShareUrl =
             if model.flashCounterForShareUrl > 0 then
-                            model.flashCounterForShareUrl - 1
+                model.flashCounterForShareUrl - 1
 
-                        else
-                            0
+            else
+                0
 
         secondsWhileDirty =
             if model.currentDocumentDirty then
@@ -1282,46 +1334,51 @@ handleTime model newTime =
                         Cmd.none
 
                     ( Just user, Just document ) ->
-                            Request.updateDocument hasuraToken user.username document |> Cmd.map Req
+                        Request.updateDocument hasuraToken user.username document |> Cmd.map Req
 
             else
                 Cmd.none
     in
-    ( { model | time = newTime
-       , secondsWhileDirty = secondsWhileDirty
-       , flashCounterForTotalWordCount = flashCounterForTotalWordCount
-       , flashCounterForShareUrl = flashCounterForShareUrl}
+    ( { model
+        | time = newTime
+        , secondsWhileDirty = secondsWhileDirty
+        , flashCounterForTotalWordCount = flashCounterForTotalWordCount
+        , flashCounterForShareUrl = flashCounterForShareUrl
+      }
     , cmd
     )
 
 
 
-
-
-
-
 -- USER HELPERS
 
-addUserPermission : Model -> (Model, Cmd Msg)
+
+addUserPermission : Model -> ( Model, Cmd Msg )
 addUserPermission model =
-    case (model.currentUser, model.currentDocument) of
-        (Nothing, _) -> (model, Cmd.none)
-        (_, Nothing) -> (model, Cmd.none)
-        (Just user, Just document) ->
+    case ( model.currentUser, model.currentDocument ) of
+        ( Nothing, _ ) ->
+            ( model, Cmd.none )
+
+        ( _, Nothing ) ->
+            ( model, Cmd.none )
+
+        ( Just user, Just document ) ->
             let
+                updatedPermissions =
+                    Document.addPermission model.usernameToAddToPermmission model.permissionToAdd document.permissions
 
-               updatedPermissions = Document.addPermission model.usernameToAddToPermmission model.permissionToAdd  document.permissions
+                updatedDocument =
+                    { document | permissions = updatedPermissions }
 
-               updatedDocument = {document | permissions = updatedPermissions }
-
-               newDocumentList = Document.replaceInList updatedDocument model.documentList
-
+                newDocumentList =
+                    Document.replaceInList updatedDocument model.documentList
             in
-                  ( {model | currentDocument = Just updatedDocument
-                     , documentList = newDocumentList
-                    }
-                   , Request.updateDocument hasuraToken user.username updatedDocument |> Cmd.map Req)
-
+            ( { model
+                | currentDocument = Just updatedDocument
+                , documentList = newDocumentList
+              }
+            , Request.updateDocument hasuraToken user.username updatedDocument |> Cmd.map Req
+            )
 
 
 signIn : Model -> ( Model, Cmd Msg )
@@ -1337,26 +1394,28 @@ signIn model =
     )
 
 
+
 -- DOCUMENT HELPERS --
 
 
 loadDocument : Model -> Document -> ( Model, Cmd Msg )
 loadDocument model document =
     let
-        (renderingData, cmd) = Update.Render.prepare model (Just document)
-
+        ( renderingData, cmd ) =
+            Update.Render.prepare model (Just document)
     in
     ( { model
-        | documentList = document :: (List.filter (\doc -> doc.id /= document.id) model.documentList)
+        | documentList = document :: List.filter (\doc -> doc.id /= document.id) model.documentList
         , currentDocument = Just document
         , tagString = getTagString (Just document)
         , counter = model.counter + 2
         , renderingData = renderingData
         , appMode = Reading
-        , documentListDisplay = (SearchResults, DequeViewOff)
+        , documentListDisplay = ( SearchResults, DequeViewOff )
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
-      }  |> Update.Tool.setupToEdit
+      }
+        |> Update.Tool.setupToEdit
     , cmd
     )
 
@@ -1375,20 +1434,23 @@ deleteDocument model =
                     )
 
                 Armed ->
-                   let
-                     user = model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
-                     newDeque = BoundedDeque.filter (\doc -> doc.id /= document.id) model.deque
-                   in
-                    ( { model | message = ( UserMessage, "Deleting document ..." )
-                       , documentDeleteState = SafetyOn
-                       , deque = newDeque}
-                    , Cmd.batch [
-                         Request.deleteDocument hasuraToken user.username document |> Cmd.map Req
-                         , Cmd.Document.sendDequeOutside  newDeque
-                       ]
+                    let
+                        user =
+                            model.currentUser |> Maybe.withDefault (User.dummy "_nobody_")
 
+                        newDeque =
+                            BoundedDeque.filter (\doc -> doc.id /= document.id) model.deque
+                    in
+                    ( { model
+                        | message = ( UserMessage, "Deleting document ..." )
+                        , documentDeleteState = SafetyOn
+                        , deque = newDeque
+                      }
+                    , Cmd.batch
+                        [ Request.deleteDocument hasuraToken user.username document |> Cmd.map Req
+                        , Cmd.Document.sendDequeOutside newDeque
+                        ]
                     )
-
 
 
 setDocumentPublic : Model -> Bool -> ( Model, Cmd Msg )
@@ -1444,7 +1506,6 @@ processTagString model str =
     )
 
 
-
 getTagString : Maybe Document -> String
 getTagString maybeDocument =
     case maybeDocument of
@@ -1478,9 +1539,8 @@ handleDeletedDocument model =
                 newDocumentText =
                     Maybe.map .content (List.head newDocumentList) |> Maybe.withDefault "This is test"
 
-
-                (renderingData, cmd) = Update.Render.prepare model newDocument
-
+                ( renderingData, cmd ) =
+                    Update.Render.prepare model newDocument
             in
             ( { model
                 | documentList = newDocumentList
@@ -1504,26 +1564,26 @@ view model =
     case model.appMode of
         Reading ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (View.Reader.view viewInfoReading model)
-               |> documentMsgFromHtmlMsg "Reading"
-
+                |> documentMsgFromHtmlMsg "Reading"
 
         Editing StandardEditing ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (View.Editor.view viewInfoEditing model)
-               |> documentMsgFromHtmlMsg "Editing"
+                |> documentMsgFromHtmlMsg "Editing"
 
         Editing SubdocumentEditing ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (View.Editor.viewSubdocuments viewInfoEditingSubdocuemnt model)
-               |> documentMsgFromHtmlMsg "Edit Subdocuments"
+                |> documentMsgFromHtmlMsg "Edit Subdocuments"
 
         UserMode _ ->
             Element.layoutWith { options = [ focusStyle myFocusStyle ] } [] (View.User.view viewInfoUserPage model)
-               |> documentMsgFromHtmlMsg "User Mode"
+                |> documentMsgFromHtmlMsg "User Mode"
 
 
 documentMsgFromHtmlMsg : String -> Html msg -> Browser.Document msg
-documentMsgFromHtmlMsg title msg  =
+documentMsgFromHtmlMsg title msg =
     { title = title
-    , body = [msg] }
+    , body = [ msg ]
+    }
 
 
 
@@ -1541,6 +1601,3 @@ myFocusStyle =
     , backgroundColor = Nothing
     , shadow = Nothing
     }
-
-
-
