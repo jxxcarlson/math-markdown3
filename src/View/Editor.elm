@@ -13,7 +13,7 @@ import Element.Keyed
 import Element.Lazy
 import Html
 import Html.Attributes as HA
-import Model exposing (Model, Msg(..), config)
+import Model exposing (Model, Msg(..), editorConfig)
 import Render exposing (RenderingOption(..))
 import Render.Types exposing (RenderedText)
 import Style
@@ -47,8 +47,14 @@ view viewInfo model =
         , row []
             [ View.Widget.tabStrip newViewInfo model
             , View.Widget.toolsOrDocs newViewInfo model
-            , column [ Font.size (round <| (Editor.getFontSize model.editor / 0.85)), width (px (floor config.width)), alignTop ]
-                [ Editor.embedded config model.editor |> Element.html ]
+            , column
+                [ Font.size (round <| (Editor.getFontSize model.editor / 0.85))
+                , width (px (floor editorConfig.width + 5))
+                , alignTop
+                , Border.widthEach { top = 0, left = 0, bottom = 0, right = 1 }
+                , Border.solid
+                ]
+                [ Editor.embedded editorConfig model.editor |> Element.html ]
             , Element.Lazy.lazy (View.Render.renderedSourceForEditing newViewInfo model footerText) rt
             ]
         , View.Widget.footer model

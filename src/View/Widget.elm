@@ -62,6 +62,7 @@ footer model =
         , dirtyDocumentDisplay model
         , wordCount model
         , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]
+        , Utility.View.showIf (Maybe.map .username model.currentUser == Just "jxxcarlson") Button.downloadFile
         , Utility.View.showIf (Maybe.map .username model.currentUser == Just "jxxcarlson") Button.downloadArchive
         , Utility.View.showIf (Maybe.map .username model.currentUser == Just "jxxcarlson") Button.uploadArchive
         , Utility.View.showIf (Maybe.map .username model.currentUser == Just "jxxcarlson") Button.saveImportedArchive

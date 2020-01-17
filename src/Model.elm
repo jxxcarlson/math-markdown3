@@ -15,8 +15,8 @@ module Model exposing
     , SortMode(..)
     , UserState(..)
     , Visibility(..)
-    , config
     , debounceConfig
+    , editorConfig
     )
 
 import Api.InputObject exposing (Document_order_by(..))
@@ -119,8 +119,8 @@ type alias Model =
     }
 
 
-config : EditorConfig Msg
-config =
+editorConfig : EditorConfig Msg
+editorConfig =
     { editorMsg = EditorMsg
     , sliderMsg = SliderMsg
     , width = 500
@@ -282,6 +282,7 @@ type Msg
     | SetDocType DocType
     | SetCurrentDocument Document
     | DownloadArchive
+    | DownloadFile
     | ArchiveRequested
     | ArchiveSelected File
     | ArchiveLoaded String

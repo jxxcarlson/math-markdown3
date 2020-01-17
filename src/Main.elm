@@ -289,7 +289,7 @@ init flags url key =
             , documentOutline = ""
             , usernameToAddToPermmission = ""
             , permissionToAdd = NoPermission
-            , editor = Editor.init Model.config "Some text"
+            , editor = Editor.init Model.editorConfig "Some text"
             }
     in
     ( model
@@ -420,7 +420,10 @@ update msg model =
 
                 E.WriteToSystemClipBoard ->
                     ( { model | editor = newEditor }
-                    , Outside.sendInfo (Outside.WriteToClipBoard (Editor.getSelectedText newEditor |> Maybe.withDefault "Nothing!!"))
+                    , Cmd.batch
+                        [ Outside.sendInfo (Outside.WriteToClipBoard (Editor.getSelectedText newEditor |> Maybe.withDefault "Nothing!!"))
+                        , editorCmd |> Cmd.map EditorMsg
+                        ]
                     )
 
                 E.Unload str ->
@@ -454,10 +457,20 @@ update msg model =
                     syncWithEditor model newEditor editorCmd
 
                 E.SendLine ->
-                    ( { model | editor = newEditor }, syncRenderedText (Editor.lineAtCursor newEditor) model )
+                    ( { model | editor = newEditor }
+                    , Cmd.batch
+                        [ syncRenderedText (Editor.lineAtCursor newEditor) model
+                        , editorCmd |> Cmd.map EditorMsg
+                        ]
+                    )
 
                 E.CopyPasteClipboard ->
-                    ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
+                    ( { model | editor = newEditor }
+                    , Cmd.batch
+                        [ Outside.sendInfo (Outside.AskForClipBoard E.null)
+                        , editorCmd |> Cmd.map EditorMsg
+                        ]
+                    )
 
                 _ ->
                     updateEditor model newEditor editorCmd
@@ -715,9 +728,11 @@ update msg model =
         GetTextSelection ->
             ( model, Outside.sendInfo (Outside.GetTextSelectionFromOutside E.null) )
 
-        -- DOCUMENT --
         DownloadArchive ->
             Update.Document.downloadArchive model
+
+        DownloadFile ->
+            Update.Document.downloadFile model
 
         ArchiveRequested ->
             ( model, Select.file [ "application/json" ] ArchiveSelected )

@@ -10,6 +10,7 @@ module Button exposing
     , deleteDocument
     , deleteSubdocument
     , downloadArchive
+    , downloadFile
     , editingMode
     , expandCollapseToc
     , extendedMarkdown
@@ -339,6 +340,13 @@ downloadArchive =
     Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
         { onPress = Just DownloadArchive
         , label = el [] (Element.text "Export")
+        }
+
+
+downloadFile =
+    Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
+        { onPress = Just DownloadFile
+        , label = el [] (Element.text "Download")
         }
 
 

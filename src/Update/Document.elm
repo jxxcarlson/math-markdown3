@@ -1,5 +1,6 @@
 module Update.Document exposing
     ( downloadArchive
+    , downloadFile
     , getFirstPart
     , makeNewDocument
     , processDocumentRequest
@@ -376,3 +377,20 @@ downloadArchive model =
             List.filter (\doc -> Just doc.authorIdentifier == currentUserName) model.tableOfContents
     in
     ( model, Download.string "documents.json" "application/json" (Interchange.encodeDocumentList userDocuments) )
+
+
+downloadFile : Model -> ( Model, Cmd Msg )
+downloadFile model =
+    let
+        currentUserName =
+            Maybe.map .username model.currentUser
+
+        userDocuments =
+            List.filter (\doc -> Just doc.authorIdentifier == currentUserName) model.tableOfContents
+    in
+    case ( currentUserName == Maybe.map .authorIdentifier model.currentDocument, model.currentDocument ) of
+        ( True, Just doc ) ->
+            ( model, Download.string (doc.title ++ ".txt") "application/txt" doc.content )
+
+        ( _, _ ) ->
+            ( model, Cmd.none )
