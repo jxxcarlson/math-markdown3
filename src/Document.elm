@@ -599,8 +599,11 @@ makeInitialSlug title authorIdentifier identifier =
 -- : Document
 -}
 create : DocType -> Uuid -> String -> String -> String -> Document
-create docType documentUuid authorIdentifier title content =
+create docType documentUuid authorIdentifier title_ content =
     let
+        title =
+            Utility.String.ensureNotEmpty "Untitled Document" title_
+
         slug =
             makeInitialSlug title authorIdentifier documentUuid
     in
