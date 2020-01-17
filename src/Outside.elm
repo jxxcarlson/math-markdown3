@@ -44,6 +44,7 @@ type InfoForOutside
     | GetTextSelectionFromOutside E.Value
     | ScrollToLine E.Value
     | AskForClipBoard E.Value
+    | WriteToClipBoard String
 
 
 getInfo : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -114,6 +115,9 @@ sendInfo info =
 
         AskForClipBoard value ->
             infoForOutside { tag = "AskForClipBoard", data = E.null }
+
+        WriteToClipBoard str ->
+            infoForOutside { tag = "WriteToClipboard", data = E.string str }
 
 
 

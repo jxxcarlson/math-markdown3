@@ -384,8 +384,8 @@ subscriptions model =
 -- UPDATE FUNCTION
 
 
-textTask : String -> Cmd Msg
-textTask str =
+updateTextTask : String -> Cmd Msg
+updateTextTask str =
     Task.perform UpdateDocumentText (Task.succeed str)
 
 
@@ -400,7 +400,7 @@ update msg model =
                 ( debounce, cmd ) =
                     Debounce.update
                         debounceConfig
-                        (Debounce.takeLast textTask)
+                        (Debounce.takeLast updateTextTask)
                         debounceMsg
                         model.debounce
             in
@@ -411,31 +411,52 @@ update msg model =
         -- EDITOR II
         EditorMsg editorMsg ->
             let
-                ( editor_, cmd_ ) =
+                ( newEditor, editorCmd ) =
                     Editor.update editorMsg model.editor
             in
             case editorMsg of
                 E.Insert str ->
-                    let
-                        ( newEditor, cmd ) =
-                            Editor.update editorMsg model.editor
+                    syncWithEditor model newEditor editorCmd
 
-                        -- TODO: use data flowing out of buffer:
-                        newSourceText =
-                            Editor.getSource editor_
+                E.WriteToSystemClipBoard ->
+                    ( { model | editor = newEditor }, Outside.sendInfo (Outside.WriteToClipBoard (Editor.getSelectedText newEditor |> Maybe.withDefault "Nothing!!")) )
 
-                        ( debounce, cmd2 ) =
-                            Debounce.push debounceConfig newSourceText model.debounce
-                    in
-                    ( { model
-                        | editor = newEditor
-                        , debounce = debounce
-                      }
-                    , Cmd.batch [ Cmd.map EditorMsg cmd, cmd2 ]
-                    )
+                E.Unload str ->
+                    -- TODO: Editor is not feeding debounce messages
+                    ( model, Cmd.none )
 
+                E.RemoveCharAfter ->
+                    syncWithEditor model newEditor editorCmd
+
+                E.RemoveCharBefore ->
+                    syncWithEditor model newEditor editorCmd
+
+                E.Cut ->
+                    syncWithEditor model newEditor editorCmd
+
+                E.Paste ->
+                    syncWithEditor model newEditor editorCmd
+
+                E.Undo ->
+                    syncWithEditor model newEditor editorCmd
+
+                E.Redo ->
+                    syncWithEditor model newEditor editorCmd
+
+                E.WrapSelection ->
+                    syncWithEditor model newEditor editorCmd
+
+                E.Clear ->
+                    syncWithEditor model newEditor editorCmd
+
+                E.WrapAll ->
+                    syncWithEditor model newEditor editorCmd
+
+                --                E.SendLine ->
+                --                    ( { model | editor = newEditor }, syncRenderedText (Editor.lineAtCursor newEditor) model )
+                -- END
                 E.SendLine ->
-                    ( { model | editor = editor_ }, syncRenderedText (Editor.lineAtCursor editor_) model )
+                    ( { model | editor = newEditor }, syncRenderedText (Editor.lineAtCursor newEditor) model )
 
                 E.CopyPasteClipboard ->
                     --                    updateText model editor_ cmd_
@@ -443,7 +464,7 @@ update msg model =
                     ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
 
                 _ ->
-                    ( { model | editor = editor_ }, Cmd.none )
+                    ( { model | editor = newEditor }, Cmd.none )
 
         PasteClipboard ->
             pasteToClipboard model
@@ -1265,6 +1286,11 @@ pasteToEditorClipboard model str =
 
 
 -- UPDATE HELPERS
+
+
+syncWithEditor model newEditor editorCmd =
+    Update.Document.text { model | editor = newEditor } (Preprocessor.apply (Editor.getSource newEditor))
+        |> (\( m, _ ) -> ( m, editorCmd |> Cmd.map EditorMsg ))
 
 
 syncRenderedText : String -> Model -> Cmd Msg

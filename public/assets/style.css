@@ -6,6 +6,10 @@ p {
 	font-size: 10pt;
 }
 
+h1 {font-size: 24px !important; }
+h2 {font-size: 18px !important; }
+h3, h4, h5 {font-size: 12px !important; }
+
 .current { font-weight: bold; color: darkred; }
 
 .current-root { font-weight: bold; color: darkblue; }
@@ -53,11 +57,10 @@ li { list-style-type:none; line-height: 25px;}
   width: 60%;
 }
 
-.mm-h1 {font-size: 18pt}
-.mm-h2 {font-size: 16pt}
-.mm-h3 {font-size: 12pt}
-.mm-h4 {font-size: 10pt}
-.mm-h5 {font-size: 10pt}
+.mm-h1 {font-size: 24px;}
+.mm-h2 {font-size: 18px;}
+.mm-h3, .mm-h4, .mm-h5 {font-size: 12px;}
+
 
 
 .mm-block-1 {
