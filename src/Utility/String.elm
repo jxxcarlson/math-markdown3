@@ -1,4 +1,4 @@
-module Utility.String exposing (compress, normalize)
+module Utility.String exposing (compress, ensureNotEmpty, normalize)
 
 
 normalize : String -> String
@@ -50,3 +50,13 @@ lowInfoWords =
 isAlphaNumOrWhiteSpace : String -> Bool
 isAlphaNumOrWhiteSpace x =
     List.member x [ " ", "\n", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "z", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+
+
+ensureNotEmpty : String -> String -> String
+ensureNotEmpty default str =
+    case str of
+        "" ->
+            default
+
+        _ ->
+            str
