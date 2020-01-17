@@ -12,7 +12,7 @@ import Data
 import Debounce
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
 import Editor exposing (EditorConfig, EditorMsg)
-import Editor.Update
+import Editor.Update as E
 import EditorTools
 import Element exposing (..)
 import File exposing (File)
@@ -407,6 +407,56 @@ update msg model =
             ( { model | debounce = debounce }
             , cmd
             )
+
+        -- EDITOR II
+        EditorMsg editorMsg ->
+            let
+                ( editor_, cmd_ ) =
+                    Editor.update editorMsg model.editor
+            in
+            case editorMsg of
+                E.Insert str ->
+                    let
+                        ( newEditor, cmd ) =
+                            Editor.update editorMsg model.editor
+
+                        -- TODO: use data flowing out of buffer:
+                        newSourceText =
+                            Editor.getSource editor_
+
+                        ( debounce, cmd2 ) =
+                            Debounce.push debounceConfig newSourceText model.debounce
+                    in
+                    ( { model
+                        | editor = newEditor
+                        , debounce = debounce
+                      }
+                    , Cmd.batch [ Cmd.map EditorMsg cmd, cmd2 ]
+                    )
+
+                E.SendLine ->
+                    ( { model | editor = editor_ }, syncRenderedText (Editor.lineAtCursor editor_) model )
+
+                E.CopyPasteClipboard ->
+                    --                    updateText model editor_ cmd_
+                    --                      |> (\(m, _) -> (m, Outside.sendInfo (Outside.AskForClipBoard E.null)))
+                    ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
+
+                _ ->
+                    ( { model | editor = editor_ }, Cmd.none )
+
+        PasteClipboard ->
+            pasteToClipboard model
+
+        SliderMsg sliderMsg ->
+            let
+                ( newEditor, cmd ) =
+                    Editor.sliderUpdate sliderMsg model.editor
+            in
+            ( { model | editor = newEditor }, cmd |> Cmd.map SliderMsg )
+
+        AskForClipBoard ->
+            ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
 
         GenerateSeed ->
             ( model, Random.generate NewSeed (Random.int 1 10000) )
@@ -1190,56 +1240,6 @@ update msg model =
                                         , Cmd.batch [ tokenCmd, dequeCommand ]
                                         ]
                                     )
-
-        -- EDITOR II
-        EditorMsg editorMsg ->
-            let
-                ( editor_, cmd_ ) =
-                    Editor.update editorMsg model.editor
-            in
-            case editorMsg of
-                Editor.Update.Insert str ->
-                    let
-                        ( newEditor, cmd ) =
-                            Editor.update editorMsg model.editor
-
-                        -- TODO: use data flowing out of buffer:
-                        newSourceText =
-                            Editor.getSource editor_
-
-                        ( debounce, cmd2 ) =
-                            Debounce.push debounceConfig newSourceText model.debounce
-                    in
-                    ( { model
-                        | editor = newEditor
-                        , debounce = debounce
-                      }
-                    , Cmd.batch [ Cmd.map EditorMsg cmd, cmd2 ]
-                    )
-
-                Editor.Update.SendLine ->
-                    ( { model | editor = editor_ }, syncRenderedText (Editor.lineAtCursor editor_) model )
-
-                Editor.Update.CopyPasteClipboard ->
-                    --                    updateText model editor_ cmd_
-                    --                      |> (\(m, _) -> (m, Outside.sendInfo (Outside.AskForClipBoard E.null)))
-                    ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
-
-                _ ->
-                    ( { model | editor = editor_ }, Cmd.none )
-
-        PasteClipboard ->
-            pasteToClipboard model
-
-        SliderMsg sliderMsg ->
-            let
-                ( newEditor, cmd ) =
-                    Editor.sliderUpdate sliderMsg model.editor
-            in
-            ( { model | editor = newEditor }, cmd |> Cmd.map SliderMsg )
-
-        AskForClipBoard ->
-            ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
 
 
 pasteToClipboard : Model -> ( Model, Cmd msg )
