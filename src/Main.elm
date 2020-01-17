@@ -416,14 +416,15 @@ update msg model =
             in
             case editorMsg of
                 E.Insert str ->
-                    syncWithEditor model newEditor editorCmd
+                    updateEditor model newEditor editorCmd
 
                 E.WriteToSystemClipBoard ->
-                    ( { model | editor = newEditor }, Outside.sendInfo (Outside.WriteToClipBoard (Editor.getSelectedText newEditor |> Maybe.withDefault "Nothing!!")) )
+                    ( { model | editor = newEditor }
+                    , Outside.sendInfo (Outside.WriteToClipBoard (Editor.getSelectedText newEditor |> Maybe.withDefault "Nothing!!"))
+                    )
 
                 E.Unload str ->
-                    -- TODO: Editor is not feeding debounce messages
-                    ( model, Cmd.none )
+                    syncWithEditor model newEditor editorCmd
 
                 E.RemoveCharAfter ->
                     syncWithEditor model newEditor editorCmd
@@ -452,19 +453,14 @@ update msg model =
                 E.WrapAll ->
                     syncWithEditor model newEditor editorCmd
 
-                --                E.SendLine ->
-                --                    ( { model | editor = newEditor }, syncRenderedText (Editor.lineAtCursor newEditor) model )
-                -- END
                 E.SendLine ->
                     ( { model | editor = newEditor }, syncRenderedText (Editor.lineAtCursor newEditor) model )
 
                 E.CopyPasteClipboard ->
-                    --                    updateText model editor_ cmd_
-                    --                      |> (\(m, _) -> (m, Outside.sendInfo (Outside.AskForClipBoard E.null)))
                     ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
 
                 _ ->
-                    ( { model | editor = newEditor }, Cmd.none )
+                    updateEditor model newEditor editorCmd
 
         PasteClipboard ->
             pasteToClipboard model
@@ -1288,9 +1284,15 @@ pasteToEditorClipboard model str =
 -- UPDATE HELPERS
 
 
+syncWithEditor : Model -> Editor.Editor -> Cmd EditorMsg -> ( Model, Cmd Msg )
 syncWithEditor model newEditor editorCmd =
     Update.Document.text { model | editor = newEditor } (Preprocessor.apply (Editor.getSource newEditor))
         |> (\( m, _ ) -> ( m, editorCmd |> Cmd.map EditorMsg ))
+
+
+updateEditor : Model -> Editor.Editor -> Cmd EditorMsg -> ( Model, Cmd Msg )
+updateEditor model newEditor editorCmd =
+    ( { model | editor = newEditor }, editorCmd |> Cmd.map EditorMsg )
 
 
 syncRenderedText : String -> Model -> Cmd Msg
