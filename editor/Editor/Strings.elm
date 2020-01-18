@@ -17,7 +17,11 @@ help =
 ------------------------------------------
 
 NEW: ctrl-shift-S to sync with external
-window if the hosting app implements it
+window if the hosting app implements it.
+Still flaky.  Aslo: ctrl-shift-C to copy
+text to the system keyboard, ctrl-shift-V
+to paste text from the system keyboard
+to the editor.  For now, Chrome only.
 
 Show help         ctrl-h         (Toggle)
 Show info panel   ctrl-shift-i   (Toggle)
@@ -56,6 +60,9 @@ Paste selection   ctrl-v
 External copy-paste
 -------------------
 
+- ctrl-shift-C copies selected text to the
+system clipboard.
+
 - ctrl-shift-V copies text from the system
   clipboard and pastes the content to the
   editor at current cursor.  The copied
@@ -78,7 +85,7 @@ De-indent         shift-Tab
 Wrap selection    ctrl-w
 Wrap all          ctrl-shift-w
 
-Clear all         ctrl-shift c
+Clear all         ctrl-option c
 
 Search
 ------

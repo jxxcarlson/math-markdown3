@@ -1,6 +1,7 @@
 module Editor.Model exposing (InternalState, Snapshot, slider)
 
 import Buffer exposing (Buffer)
+import Debounce exposing (Debounce)
 import Editor.Config exposing (Config)
 import Editor.History exposing (History)
 import Position exposing (Position)
@@ -36,6 +37,7 @@ type alias InternalState =
     , showGoToLinePanel : Bool
     , showSearchPanel : Bool
     , savedBuffer : Buffer
+    , debounce : Debounce String
     , slider : Slider.Model
     }
 

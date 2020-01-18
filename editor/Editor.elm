@@ -2,11 +2,12 @@ module Editor exposing
     ( embedded, init
     , load, update, insert
     , Editor, EditorConfig, EditorMsg
-    , getSource, getCursor, getWrapOption, getSelectedText, getFontSize, lineAt, lineAtCursor
+    , getBuffer, getState, getSource, getCursor, getWrapOption, getSelectedText, getFontSize, lineAt, lineAtCursor
     , setSelectedText
     , placeInClipboard
     , scrollToLine, scrollToString
     , slider, sliderUpdate
+    , smallConfig
     )
 
 {-| Use this module to embed a text editor in an Elm app.
@@ -40,7 +41,7 @@ module Editor exposing
 
 ## Getters
 
-@docs getSource, getCursor, getWrapOption, getSelectedText, getFontSize, lineAt, lineAtCursor
+@docs getBuffer, getState, getSource, getCursor, getWrapOption, getSelectedText, getFontSize, lineAt, lineAtCursor
 
 
 ## Setters
@@ -65,6 +66,7 @@ module Editor exposing
 -}
 
 import Buffer exposing (Buffer)
+import Debounce exposing (Debounce)
 import Editor.Config exposing (WrapOption(..), WrapParams)
 import Editor.History
 import Editor.Model exposing (InternalState)
@@ -107,10 +109,25 @@ type Editor
         }
 
 
+{-| Get the buffer (mostly for tests)
+-}
+getBuffer : Editor -> Buffer
+getBuffer (Editor data) =
+    data.buffer
+
+
+{-| Get the state (mostly for tests)
+-}
+getState : Editor -> InternalState
+getState (Editor data) =
+    data.state
+
+
 
 -- GETTERS --
 
 
+{-| -}
 getFontSize : Editor -> Float
 getFontSize (Editor data) =
     0.8 * data.state.config.lineHeight
@@ -222,11 +239,12 @@ type alias SmallEditorConfig =
     }
 
 
-{-| xxx
+{-| XXX: Changed
 -}
 smallConfig : EditorConfig a -> SmallEditorConfig
 smallConfig c =
-    { lines = floor <| c.height / c.lineHeight
+    { --- lines = floor <| c.height / c.lineHeight
+      lines = maxLines
     , showInfoPanel = c.showInfoPanel
     , wrapParams = c.wrapParams
     , wrapOption = c.wrapOption
@@ -235,11 +253,19 @@ smallConfig c =
     }
 
 
+{-| XXX: Added
+-}
+maxLines =
+    10000
+
+
 
 -- EMBEDDED EDITOR --
 
 
-{-| Embed the editor in the host app:
+{-| XXX: Changed
+
+Embed the editor in the host app:
 
     view : Model -> Html Msg
     view model =
@@ -259,23 +285,16 @@ embedded editorConfig editor =
             , lineHeight = editorConfig.lineHeight
             }
 
-        m =
-            1.04348
-
-        b =
-            90.87
-
         height_ =
             editorConfig.height
-
-        -- m * editorConfig.height + b
     in
-    div [ style "position" "absolute" ]
+    div []
         [ Editor.Styles.editorStyles styleConfig
         , view (innerStyle height_) editor
             |> Html.map editorConfig.editorMsg
-        , div [ HA.style "position" "absolute" ]
-            [ sliderView editor |> Html.map editorConfig.sliderMsg ]
+
+        --        , div [ HA.style "position" "absolute" ]
+        --            [ sliderView editor |> Html.map editorConfig.sliderMsg ]
         ]
 
 
@@ -284,6 +303,9 @@ innerStyle h =
     , style "border" "solid"
     , style "border-width" "0.5px"
     , style "border-color" "#aaa"
+    , HA.attribute "id" "__inner_editor__"
+    , style "overflow-y" "scroll"
+    , style "height" "544px"
     ]
 
 
@@ -292,7 +314,9 @@ lines editorConfig =
     floor <| editorConfig.height / editorConfig.lineHeight
 
 
-{-| Initialize the embedded editor:
+{-| XXX: Changed
+
+Initialize the embedded editor:
 
     init : () -> ( Model, Cmd Msg )
     init () =
@@ -311,7 +335,9 @@ init editorConfig text =
             { config = smallConfig editorConfig
             , scrolledLine = 0
             , cursor = Position 0 0
-            , window = { first = 0, last = lines editorConfig }
+
+            ---, window = { first = 0, last = lines editorConfig }
+            , window = { first = 0, last = maxLines }
             , selection = Nothing
             , selectedText = Nothing
             , clipboard = ""
@@ -327,9 +353,35 @@ init editorConfig text =
             , showGoToLinePanel = False
             , showSearchPanel = False
             , savedBuffer = Buffer.fromString ""
+            , debounce = Debounce.init
             , slider = Editor.Model.slider
             }
         }
+
+
+initialState editorConfig =
+    { config = smallConfig editorConfig
+    , scrolledLine = 0
+    , cursor = Position 0 0
+    , window = { first = 0, last = lines editorConfig }
+    , selection = Nothing
+    , selectedText = Nothing
+    , clipboard = ""
+    , currentLine = Nothing
+    , dragging = False
+    , history = Editor.History.empty
+    , searchTerm = ""
+    , replacementText = ""
+    , canReplace = False
+    , searchResults = RollingList.fromList []
+    , showHelp = True
+    , showInfoPanel = editorConfig.showInfoPanel
+    , showGoToLinePanel = False
+    , showSearchPanel = False
+    , savedBuffer = Buffer.fromString ""
+    , debounce = Debounce.init
+    , slider = Editor.Model.slider
+    }
 
 
 

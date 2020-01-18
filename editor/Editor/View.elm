@@ -11,6 +11,7 @@ import Html exposing (Attribute, Html, div, span, text)
 import Html.Attributes as Attribute exposing (class, classList, style)
 import Html.Events as Event
 import Json.Decode as Decode
+import List.Extra
 import Position exposing (Position)
 import RollingList
 import Window exposing (Window)
@@ -89,15 +90,16 @@ character window cursor selection position char =
 line : Window -> Position -> Maybe Position -> Int -> String -> Html Msg
 line window cursor selection index content =
     let
-        length =
-            String.length content
-
-        endPosition =
-            { line = index, column = length }
-
         {- Used below to correctly position and display the cursor -}
         offset =
             window.first
+
+        length =
+            String.length content
+
+        {- Add offset to index to compensate for scrolling -}
+        endPosition =
+            { line = index + offset, column = length }
     in
     div
         [ class <| name ++ "-line"
@@ -199,16 +201,54 @@ infoPanel state lines =
         div [] []
 
 
+infoPanel_ : InternalState -> List String -> Html Msg
 infoPanel_ state lines =
     div infoPanelStyle
         [ toggleHelpButton state
         , scrollPosition state
         , cursorPosition state
+        , currentLineLength state lines
+        , displayLineHeight state lines
         , lineCount lines
         , wordCount lines
         , wrappingOption state
         , dismissInfoPanel
         ]
+
+
+
+-- displayLineHeight : InternalState -> List String -> Html Msg
+
+
+displayLineHeight state lines =
+    let
+        h =
+            state.config.lineHeight * toFloat state.cursor.line
+    in
+    div [ style "margin-top" "10px" ] [ text <| "Height: " ++ (String.fromFloat <| roundTo 2 h) ]
+
+
+roundTo : Int -> Float -> Float
+roundTo places x =
+    let
+        pp =
+            places |> toFloat
+
+        factor =
+            10 ^ pp
+    in
+    x * factor |> round |> (\u -> toFloat u / factor)
+
+
+currentLineLength : InternalState -> List String -> Html Msg
+currentLineLength state lines =
+    let
+        lineLength =
+            List.Extra.getAt state.cursor.line lines
+                |> Maybe.map (String.length >> String.fromInt)
+                |> Maybe.withDefault "-1"
+    in
+    div [ style "margin-top" "10px" ] [ text <| "Length: " ++ lineLength ]
 
 
 wrappingOption state =
@@ -224,8 +264,8 @@ wrappingOption state =
 
 
 infoPanelStyle =
-    [ style "width" "90px"
-    , style "position" "absolute"
+    [ style "width" "100px"
+    , style "position" "fixed"
     , style "right" "8px"
     , style "top" "8px"
     , style "opacity" "1.0"
@@ -320,7 +360,7 @@ wordCount lines =
 
 cursorPosition : InternalState -> Html Msg
 cursorPosition state =
-    div Widget.columnButtonStyle [ text ("Cursor: " ++ String.fromInt (state.cursor.line + 1)) ]
+    div Widget.columnButtonStyle [ text ("Cursor = (" ++ String.fromInt (state.cursor.line + 1) ++ ", " ++ String.fromInt state.cursor.column ++ ")") ]
 
 
 scrollPosition : InternalState -> Html Msg

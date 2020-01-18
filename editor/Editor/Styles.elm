@@ -85,9 +85,9 @@ body { font-size: {2}px;
   user-select: none;
   -webkit-user-select: none;
   display: flex;
-  overflow-x : scroll;
-  overflow-y : hidden;
-  height: {6}px;
+  // overflow-x : scroll;
+  // overflow-y : scroll;
+  // height: {6}px;
 }
 
 .elm-editor-container:focus {

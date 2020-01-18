@@ -1,5 +1,5 @@
 module Buffer exposing
-    ( Buffer
+    ( Buffer(..)
     , Direction(..)
     , at
     , between
@@ -561,6 +561,56 @@ If the cursor is:
     - before the first column of the line, go to the last column of the previous
       line.
 
+    import Buffer exposing(Buffer(..))
+
+    -- FORWARD
+
+    -- cursor inside line; keep as is
+    clampPosition Forward (Buffer "abc\nxyz") {column = 1, line = 0}
+    --> {column = 1, line = 0}
+
+    -- cursor at end of first line; keep as is
+    clampPosition Forward (Buffer "abc\nxyz") {column = 2, line = 0}
+    --> {column = 2, line = 0}
+
+    -- cursor beyond end of first line; move to beginning of next line
+    clampPosition Forward (Buffer "abc\nxyz") {column = 3, line = 0}
+    --> {column = 0, line = 1}
+
+    -- cursor at end of last line; keep in place (3)
+    clampPosition Forward (Buffer "abc\nxyz") {column = 2, line = 1}
+    --> {column = 2, line = 1}
+
+    -- cursor beyond end of last line;  move to end of last line
+    clampPosition Forward (Buffer "abc\nxyz") {column = 3, line = 1}
+    --> {column = 2, line = 1}
+
+    -- line in beyond last line
+    clampPosition Forward (Buffer "a") {column = 0, line = 1}
+    --> {column = 1, line = 0}
+
+    -- line in beyond last line
+    clampPosition Forward (Buffer "a") {column = 3, line = 1}
+    --> {column = 1, line = 0}
+
+    BACKWARDS
+
+    -- cursor in line;  move to end of last line
+    clampPosition Backward (Buffer "abc\nxyz") {column = 1, line = 0}
+    --> {column = 1, line = 0}
+
+    -- cursor at beginning of first line; keep in place
+    clampPosition Backward (Buffer "abc\nxyz") {column = 0, line = 0}
+    --> {column = 0, line = 0}
+
+    -- cursor at beginning of second line;  keep on place
+    clampPosition Backward (Buffer "abc\nxyz") {column = 0, line = 1}
+    --> {column = 0, line = 1}
+
+    -- SPECIAL
+    clampPosition Forward (Buffer "a") {column = 1, line = 0}
+    --> {column = 1, line = 0}
+
 -}
 clampPosition : Direction -> Buffer -> Position -> Position
 clampPosition direction buffer position =
@@ -574,17 +624,23 @@ clampPosition direction buffer position =
     else
         case Array.get position.line lines_ of
             Just line ->
-                if position.column > String.length line then
+                if position.column >= String.length line then
+                    -- cursor is beyond end of line
                     case direction of
                         Forward ->
-                            if position.line < (Array.length lines_ - 1) then
-                                Position (position.line + 1) 0
+                            if position.line == Array.length lines_ - 1 then
+                                -- at last line
+                                Position position.line (String.length line - 1)
 
                             else
-                                position
+                                Position (position.line + 1) 0
 
                         Backward ->
                             Position position.line (String.length line)
+
+                else if position.column == String.length line - 1 then
+                    -- cursor is at end of line
+                    position
 
                 else if position.column < 0 then
                     Array.get (position.line - 1) lines_

@@ -8,6 +8,7 @@ module Editor.Update exposing (Msg(..), blur, clearState, focus, scrollToLine, s
 
 import Browser.Dom as Dom
 import Buffer exposing (Buffer)
+import Debounce exposing (Debounce)
 import Dict exposing (Dict)
 import Editor.Config as Config exposing (Config, WrapOption(..))
 import Editor.History
@@ -17,7 +18,7 @@ import Editor.Strings
 import Editor.Wrap
 import Position exposing (Position)
 import RollingList
-import Task
+import Task exposing (Task)
 import Window
 
 
@@ -34,6 +35,7 @@ type Msg
     | MouseUp
     | Copy
     | CopyPasteClipboard
+    | WriteToSystemClipBoard
     | Cut
     | CursorLeft
     | CursorRight
@@ -87,6 +89,15 @@ type Msg
     | ToggleSearchPanel
     | ToggleReplacePanel
     | OpenReplaceField
+    | DebounceMsg Debounce.Msg
+    | Unload String
+
+
+debounceConfig : Debounce.Config Msg
+debounceConfig =
+    { strategy = Debounce.later 100
+    , transform = DebounceMsg
+    }
 
 
 autoclose : Dict String String
@@ -190,6 +201,14 @@ update buffer msg state =
                     in
                     Position.previousColumn moveFrom
                         |> Buffer.clampPosition Buffer.Backward buffer
+
+                cmd =
+                    case state.cursor.line /= newCursor.line of
+                        True ->
+                            setEditorViewportForLine newCursor.line
+
+                        False ->
+                            Cmd.none
             in
             ( { state
                 | cursor = newCursor
@@ -197,7 +216,7 @@ update buffer msg state =
                 , selection = Nothing
               }
             , buffer
-            , Cmd.none
+            , cmd
             )
 
         CursorRight ->
@@ -215,6 +234,14 @@ update buffer msg state =
                     in
                     Position.nextColumn moveFrom
                         |> Buffer.clampPosition Buffer.Forward buffer
+
+                cmd =
+                    case state.cursor.line /= newCursor.line of
+                        True ->
+                            setEditorViewportForLine newCursor.line
+
+                        False ->
+                            Cmd.none
             in
             ( { state
                 | cursor = newCursor
@@ -222,7 +249,7 @@ update buffer msg state =
                 , selection = Nothing
               }
             , buffer
-            , Cmd.none
+            , cmd
             )
 
         CursorUp ->
@@ -240,17 +267,13 @@ update buffer msg state =
                     in
                     Position.previousLine moveFrom
                         |> Buffer.clampPosition Buffer.Backward buffer
-
-                newWindow =
-                    Window.scroll -1 state.window
             in
             ( { state
                 | cursor = newCursor
-                , window = newWindow --  Window.scrollToIncludeCursor newCursor state.window
                 , selection = Nothing
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine newCursor.line
             )
 
         CursorDown ->
@@ -271,11 +294,10 @@ update buffer msg state =
             in
             ( { state
                 | cursor = newCursor
-                , window = Window.scrollToIncludeCursor newCursor state.window
                 , selection = Nothing
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine newCursor.line
             )
 
         CursorToLineEnd ->
@@ -361,6 +383,28 @@ update buffer msg state =
             -}
             ( state, buffer, Cmd.none )
 
+        WriteToSystemClipBoard ->
+            {- The msg WriteToSystemClipBoard is detected and acted upon by the
+               host app's update function.
+            -}
+            case state.selection of
+                Nothing ->
+                    ( state, buffer, Cmd.none )
+
+                Just sel ->
+                    let
+                        ( start, end ) =
+                            Position.order sel state.cursor
+
+                        selectedText =
+                            Buffer.between start end buffer
+
+                        newState =
+                            { state | selectedText = Just selectedText }
+                    in
+                    ( newState, buffer, Cmd.none )
+                        |> recordHistory state buffer
+
         Insert string ->
             case ( state.selection, Dict.get string autoclose ) of
                 ( Just selection, Just closing ) ->
@@ -426,26 +470,24 @@ update buffer msg state =
 
                             else
                                 string
+
+                        ( debounce, debounceCmd ) =
+                            Debounce.push debounceConfig insertString state.debounce
                     in
                     let
-                        newCursor =
+                        ( newCursor, scrollCmd ) =
                             if string == "\n" then
-                                { line = state.cursor.line + 1, column = 0 }
+                                ( { line = state.cursor.line + 1, column = 0 }, setEditorViewportForLine (state.cursor.line + 1) )
 
                             else
-                                Position.nextColumn state.cursor
+                                ( Position.nextColumn state.cursor, Cmd.none )
                     in
                     ( { state
-                        | cursor = newCursor
-                        , window =
-                            if string == "\n" then
-                                Window.scrollToIncludeCursor newCursor state.window
-
-                            else
-                                state.window
+                        | debounce = debounce
+                        , cursor = newCursor
                       }
                     , Buffer.insert state.cursor insertString buffer
-                    , Cmd.none
+                    , Cmd.batch [ debounceCmd, scrollCmd ]
                     )
                         |> recordHistory state buffer
 
@@ -453,11 +495,8 @@ update buffer msg state =
             let
                 cursor =
                     { line = 0, column = 0 }
-
-                window =
-                    Window.scrollToIncludeCursor cursor state.window
             in
-            ( { state | cursor = cursor, window = window, selection = Nothing }, buffer, Cmd.none ) |> recordHistory state buffer
+            ( { state | cursor = cursor, selection = Nothing }, buffer, setEditorViewportForLine cursor.line ) |> recordHistory state buffer
 
         AcceptLineNumber nString ->
             case String.toInt nString of
@@ -466,16 +505,13 @@ update buffer msg state =
 
                 Just n_ ->
                     let
-                        n =
+                        lineNumber =
                             clamp 0 (List.length (Buffer.lines buffer) - 1) (n_ - 1)
 
                         cursor =
-                            { line = n, column = 0 }
-
-                        window =
-                            Window.scrollToIncludeCursor cursor state.window
+                            { line = lineNumber, column = 0 }
                     in
-                    ( { state | cursor = cursor, window = window, selection = Nothing }, buffer, Cmd.none ) |> recordHistory state buffer
+                    ( { state | cursor = cursor, selection = Nothing }, buffer, setEditorViewportForLine lineNumber ) |> recordHistory state buffer
 
         AcceptSearchText str ->
             scrollToTextInternal str state buffer
@@ -509,11 +545,8 @@ update buffer msg state =
             let
                 cursor =
                     { line = List.length (Buffer.lines buffer) - 1, column = 0 }
-
-                window =
-                    Window.scrollToIncludeCursor cursor state.window
             in
-            ( { state | cursor = cursor, window = window, selection = Nothing }, buffer, Cmd.none ) |> recordHistory state buffer
+            ( { state | cursor = cursor, selection = Nothing }, buffer, setEditorViewportForLine cursor.line ) |> recordHistory state buffer
 
         RemoveCharAfter ->
             case state.selection of
@@ -628,7 +661,7 @@ update buffer msg state =
                         selectedText =
                             Buffer.between start end buffer
                      in
-                     ( { state | selectedText = Just selectedText }, Buffer.replace start end "" buffer, Cmd.none )
+                     ( { state | selectedText = Just selectedText, selection = Nothing }, Buffer.replace start end "" buffer, Cmd.none )
                     )
                         |> recordHistory state buffer
 
@@ -747,7 +780,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine cursor.line
             )
 
         SelectDown ->
@@ -772,7 +805,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine cursor.line
             )
 
         SelectLeft ->
@@ -797,7 +830,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine cursor.line
             )
 
         SelectRight ->
@@ -822,7 +855,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine cursor.line
             )
 
         SelectToLineStart ->
@@ -898,7 +931,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine cursor.line
             )
 
         SelectToGroupEnd ->
@@ -922,7 +955,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine cursor.line
             )
 
         SelectAll ->
@@ -931,7 +964,7 @@ update buffer msg state =
                 , selection = Just (Position 0 0)
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine 0
             )
 
         SelectGroup ->
@@ -972,7 +1005,8 @@ update buffer msg state =
                 newWindow =
                     Window.shift (k - 5) state.window
             in
-            ( { state | currentLine = Buffer.lineAt state.cursor buffer, window = newWindow }, buffer, Cmd.none )
+            -- ( { state | currentLine = Buffer.lineAt state.cursor buffer, window = newWindow }, buffer, Cmd.none )
+            ( { state | currentLine = Buffer.lineAt state.cursor buffer }, buffer, Cmd.none )
 
         Undo ->
             case Editor.History.undo (stateToSnapshot state buffer) state.history of
@@ -983,7 +1017,7 @@ update buffer msg state =
                         , history = history
                       }
                     , snapshot.buffer
-                    , Cmd.none
+                    , setEditorViewportForLine snapshot.cursor.line
                     )
 
                 Nothing ->
@@ -998,7 +1032,7 @@ update buffer msg state =
                         , history = history
                       }
                     , snapshot.buffer
-                    , Cmd.none
+                    , setEditorViewportForLine snapshot.cursor.line
                     )
 
                 Nothing ->
@@ -1006,31 +1040,17 @@ update buffer msg state =
 
         ScrollUp k ->
             let
-                maxDelta =
-                    min state.window.first k
-
-                ( newCursor, newWindow ) =
-                    ( Position.shift -maxDelta state.cursor, Window.shift -maxDelta state.window )
+                newCursor =
+                    Position.shift -k state.cursor
             in
-            ( { state | cursor = newCursor, window = newWindow, selection = Nothing }, buffer, Cmd.none )
+            ( { state | cursor = newCursor, selection = Nothing }, buffer, setEditorViewportForLine newCursor.line )
 
         ScrollDown k ->
             let
-                deltaMax =
-                    List.length (Buffer.lines buffer) - state.cursor.line
-
-                delta =
-                    min (deltaMax - 1) k
-
-                ( newCursor, newWindow ) =
-                    -- if state.window.last < List.length (Buffer.lines buffer) - k then
-                    --               if deltaMax > state.window.last - state.window.first then
-                    ( Position.shift delta state.cursor, Window.shift delta state.window )
-
-                --               else
-                --                 (state.cursor, state.window)
+                newCursor =
+                    Position.shift k state.cursor
             in
-            ( { state | cursor = newCursor, window = newWindow, selection = Nothing }, buffer, Cmd.none )
+            ( { state | cursor = newCursor, selection = Nothing }, buffer, setEditorViewportForLine newCursor.line )
 
         Clear ->
             ( clearState state, Buffer.init "", Cmd.none )
@@ -1112,9 +1132,52 @@ update buffer msg state =
         OpenReplaceField ->
             ( { state | canReplace = True }, buffer, Cmd.none )
 
+        DebounceMsg msg_ ->
+            let
+                ( debounce, cmd ) =
+                    Debounce.update
+                        debounceConfig
+                        (Debounce.takeLast unload)
+                        msg_
+                        state.debounce
+            in
+            ( { state | debounce = debounce }, buffer, cmd )
+
+        Unload str ->
+            ( { state | debounce = state.debounce }, buffer, Cmd.none )
+
 
 
 -- HELPERS --
+
+
+setViewportForElement : (Result Dom.Error ( Dom.Element, Dom.Viewport ) -> msg) -> String -> String -> Cmd msg
+setViewportForElement msg vpId id =
+    Dom.getViewportOf vpId
+        |> Task.andThen (\vp -> getElementWithViewPort vp id)
+        |> Task.attempt msg
+
+
+getElementWithViewPort : Dom.Viewport -> String -> Task Dom.Error ( Dom.Element, Dom.Viewport )
+getElementWithViewPort vp id =
+    Dom.getElement id
+        |> Task.map (\el -> ( el, vp ))
+
+
+setEditorViewportForLine : Int -> Cmd Msg
+setEditorViewportForLine lineNumber =
+    let
+        y =
+            toFloat lineNumber * 16.0
+
+        -- viewport.viewport.y + element.element.y - element.element.height - 100
+    in
+    Task.attempt (\_ -> NoOp) (Dom.setViewportOf "__inner_editor__" 0 y)
+
+
+unload : String -> Cmd Msg
+unload s =
+    Task.perform Unload (Task.succeed s)
 
 
 {-| Return a pair (InternalState, Buffer) representing the editor scrolled

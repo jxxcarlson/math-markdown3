@@ -124,6 +124,7 @@ keymaps =
             [ ( "ArrowUp", FirstLine )
             , ( "ArrowDown", LastLine )
             , ( "w", ToggleWrapping )
+            , ( "C", Clear )
             ]
     , control =
         Dict.fromList
@@ -150,7 +151,7 @@ keymaps =
         Dict.fromList
             [ ( "ArrowRight", SelectToGroupEnd )
             , ( "ArrowLeft", SelectToGroupStart )
-            , ( "C", Clear )
+            , ( "C", WriteToSystemClipBoard )
             , ( "I", ToggleInfoPanel )
             , ( "V", CopyPasteClipboard )
             , ( "W", WrapAll )
