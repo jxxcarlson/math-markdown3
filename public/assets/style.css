@@ -1,45 +1,43 @@
-.flex-column {
-  display: flex;
-  flex-direction: column;
+
+
+p {
+	white-space: normal;
+	line-height: 14pt;
+	font-size: 10pt;
 }
 
-.flex-column-space {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
+// HEADINGS
 
-
-.flex-row {
-  display: flex;
-  flex-direction: row;
-}
-
-.flex-row-text-aligned {
-  display: flex;
-  flex-direction: row;
-  align-items: baseline;
-}
-
-
-
-
-.elmsh-line {
-    padding : 8px;
-    line-height: 12px !important;
- }
-
- h1 {font-size: 24px;}
- h2 {font-size: 20px;}
+ h1 {font-size: 24px; font.style: none !important ''}
+ h2 {font-size: 40px;}
  h3 {font-size: 16px;}
  h4 {font-size: 12px;}
- h5 {font-size: 12px;}
+ h5 {font-size: 12px;}}
+
+.current { font-weight: bold; color: darkred; }
+
+.current-root { font-weight: bold; color: darkblue; }
+
+.root { color: darkblue;}
+
+ul {
+  padding-left: 12px;
+}
+
+li { list-style-type:none; line-height: 25px;}
 
 
 
 .mm-paragraph {
 	white-space: normal;
 }
+
+.elmsh-line {
+    padding : 8px;
+    line-height: 12px !important;
+    width : 400px !important;
+    overflow : scroll;
+ }
 
 .toc-level-0 { margin-left: 0em; font-size : 10pt; line-height: 4pt; font-weight: normal; text-decoration: none; }
 .toc-level-1 {  margin-left: 1em; font-size : 10pt; line-height: 4pt; font-weight: normal; text-decoration: none;  }
@@ -63,12 +61,11 @@
   width: 60%;
 }
 
-.mm-h1 {font-size: 18pt}
-.mm-h2 {font-size: 16pt}
-.mm-h3 {font-size: 12pt}
-.mm-h4 {font-size: 10pt}
-.mm-h5 {font-size: 10pt}
+.mm-h1 {font-size: 24px;}
+.mm-h2 {font-size: 18px;}
+.mm-h3, .mm-h4, .mm-h5 {font-size: 12px;}
 
+// BLOCKS
 
 .mm-block-0 {
  }
@@ -90,13 +87,7 @@
   margin-left: 64px;
 }
 
-
-.mm-olist-item {
-	list-style: none;
-  margin-bottom: 8px;
-  padding-left: 18px;
-  text-indent: -18px;
-}
+// LISTS
 
 .mm-olist-item.mm-block-0 {
    margin-left: 12px;
@@ -107,6 +98,12 @@
  }
 
 
+.mm-olist-item {
+	list-style: none;
+  margin-bottom: 8px;
+  padding-left: 18px;
+  text-indent: -18px;
+}
 .mm-ulist-item {
 	list-style: none;
   margin-bottom: 8px;
@@ -114,11 +111,6 @@
   text-indent: -12px;
 	white-space: normal;
 }
-
-.mm-ulist-item.mm-block-0 {
-   margin-left: 8px;
- }
-
 .mm-quotation {
 	margin-top: 18px;
 	margin-right: 36px;
@@ -179,4 +171,5 @@ p.mm-table-cell {
 
 .mm-verbatim {
 	font: 16px courier; background-color: #eee; padding: 8px;
+}
 }
