@@ -124,8 +124,8 @@ editorConfig =
     { editorMsg = EditorMsg
     , sliderMsg = SliderMsg
     , width = 500
-    , height = 700
-    , lineHeight = 14.0
+    , height = 800
+    , lineHeight = 16.0
     , showInfoPanel = False
     , wrapParams = { maximumWidth = 40, optimalWidth = 35, stringWidth = String.length }
     , wrapOption = DontWrap

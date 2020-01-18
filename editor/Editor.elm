@@ -305,7 +305,7 @@ innerStyle h =
     , style "border-color" "#aaa"
     , HA.attribute "id" "__inner_editor__"
     , style "overflow-y" "scroll"
-    , style "height" "544px"
+    , style "height" (String.fromFloat h ++ "px")
     ]
 
 
