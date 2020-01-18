@@ -385,10 +385,10 @@ downloadFile model =
         currentUserName =
             Maybe.map .username model.currentUser
 
-        userDocuments =
-            List.filter (\doc -> Just doc.authorIdentifier == currentUserName) model.tableOfContents
+        authorName =
+            Maybe.map .authorIdentifier model.currentDocument
     in
-    case ( currentUserName == Maybe.map .authorIdentifier model.currentDocument, model.currentDocument ) of
+    case ( currentUserName == authorName, model.currentDocument ) of
         ( True, Just doc ) ->
             ( model, Download.string (doc.title ++ ".txt") "application/txt" doc.content )
 
