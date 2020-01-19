@@ -14,7 +14,6 @@ import Json.Decode as Decode
 import List.Extra
 import Position exposing (Position)
 import RollingList
-import Window exposing (Window)
 
 
 name : String
@@ -65,21 +64,21 @@ captureOnMouseOver msg =
         (Decode.map withTrue (Decode.succeed msg))
 
 
-character : Window -> Position -> Maybe Position -> Position -> Char -> Html Msg
-character window cursor selection position char =
+character : Position -> Maybe Position -> Position -> Char -> Html Msg
+character cursor selection position char =
     span
         [ classList
             [ ( name ++ "-line__character", True )
-            , ( name ++ "-line__character--has-cursor", cursor == Window.shiftPosition_ window position )
+            , ( name ++ "-line__character--has-cursor", cursor == position )
             , ( name ++ "-line__character--selected"
-              , selected (Window.shiftPosition__ window cursor) (Maybe.map (Window.shiftPosition__ window) selection) position
+              , selected cursor selection position
               )
             ]
-        , captureOnMouseDown (MouseDown (Window.shiftPosition_ window position))
-        , captureOnMouseOver (MouseOver (Window.shiftPosition_ window position))
+        , captureOnMouseDown (MouseDown position)
+        , captureOnMouseOver (MouseOver position)
         ]
         [ text <| String.fromChar <| ensureNonBreakingSpace char
-        , if cursor == Window.shiftPosition_ window position then
+        , if cursor == position then
             span [ class <| name ++ "-cursor" ] [ text " " ]
 
           else
@@ -87,19 +86,15 @@ character window cursor selection position char =
         ]
 
 
-line : Window -> Position -> Maybe Position -> Int -> String -> Html Msg
-line window cursor selection index content =
+line : Position -> Maybe Position -> Int -> String -> Html Msg
+line cursor selection index content =
     let
-        {- Used below to correctly position and display the cursor -}
-        offset =
-            window.first
-
         length =
             String.length content
 
         {- Add offset to index to compensate for scrolling -}
         endPosition =
-            { line = index + offset, column = length }
+            { line = index, column = length }
     in
     div
         [ class <| name ++ "-line"
@@ -116,9 +111,9 @@ line window cursor selection index content =
                     [ text <| String.fromChar nonBreakingSpace ]
               ]
             , List.indexedMap
-                (Window.identity window index >> character window cursor selection)
+                (Position index >> character cursor selection)
                 (String.toList content)
-            , if index == (Window.shiftPosition__ window cursor).line && cursor.column >= length then
+            , if index == cursor.line && cursor.column >= length then
                 [ span
                     [ class <| name ++ "-line__character"
                     , class <| name ++ "-line__character--has-cursor"
@@ -159,10 +154,11 @@ lineNumber number =
         [ text <| String.fromInt (number + 0) ]
 
 
-gutter : Position -> Window -> Html Msg
-gutter cursor window =
+gutter : Html Msg
+gutter =
+    -- XXX: Todo: rationalize maxlines
     div [ class <| name ++ "-gutter" ] <|
-        List.map lineNumber (List.range (window.first + 1) (window.last + 1))
+        List.map lineNumber (List.range 1 1000)
 
 
 linesContainer : List (Html Msg) -> Html Msg
@@ -186,9 +182,9 @@ view attr lines state =
             , onTripleClick SelectLine
             , Attribute.tabindex 0
             ]
-            [ gutter state.cursor state.window
+            [ gutter
             , linesContainer <|
-                List.indexedMap (line state.window state.cursor state.selection) (Window.select state.window lines)
+                List.indexedMap (line state.cursor state.selection) lines
             ]
         ]
 
@@ -205,7 +201,6 @@ infoPanel_ : InternalState -> List String -> Html Msg
 infoPanel_ state lines =
     div infoPanelStyle
         [ toggleHelpButton state
-        , scrollPosition state
         , cursorPosition state
         , currentLineLength state lines
         , displayLineHeight state lines
@@ -361,11 +356,6 @@ wordCount lines =
 cursorPosition : InternalState -> Html Msg
 cursorPosition state =
     div Widget.columnButtonStyle [ text ("Cursor = (" ++ String.fromInt (state.cursor.line + 1) ++ ", " ++ String.fromInt state.cursor.column ++ ")") ]
-
-
-scrollPosition : InternalState -> Html Msg
-scrollPosition state =
-    div Widget.columnButtonStyle [ text ("Scroll: " ++ String.fromInt state.window.first) ]
 
 
 

@@ -1,4 +1,4 @@
-module Editor.Model exposing (InternalState, Snapshot, slider)
+module Editor.Model exposing (InternalState, Snapshot)
 
 import Buffer exposing (Buffer)
 import Debounce exposing (Debounce)
@@ -6,8 +6,6 @@ import Editor.Config exposing (Config)
 import Editor.History exposing (History)
 import Position exposing (Position)
 import RollingList exposing (RollingList)
-import SingleSlider as Slider exposing (..)
-import Window exposing (Window)
 
 
 type alias Snapshot =
@@ -20,7 +18,6 @@ type alias Snapshot =
 type alias InternalState =
     { config : Config
     , scrolledLine : Int
-    , window : Window
     , cursor : Position
     , selection : Maybe Position
     , selectedText : Maybe String
@@ -38,19 +35,4 @@ type alias InternalState =
     , showSearchPanel : Bool
     , savedBuffer : Buffer
     , debounce : Debounce String
-    , slider : Slider.Model
-    }
-
-
-slider : Slider.Model
-slider =
-    let
-        initialSlider =
-            Slider.defaultModel
-    in
-    { initialSlider
-        | min = 0
-        , max = 100
-        , step = 0.01
-        , value = 0
     }

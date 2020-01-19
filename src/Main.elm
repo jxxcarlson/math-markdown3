@@ -11,7 +11,7 @@ import Config
 import Data
 import Debounce
 import Document exposing (DocType(..), Document, MarkdownFlavor(..), Permission(..))
-import Editor exposing (EditorConfig, EditorMsg)
+import Editor exposing (Editor, EditorConfig, EditorMsg)
 import Editor.Update as E
 import EditorTools
 import Element exposing (..)
@@ -52,7 +52,6 @@ import RemoteData exposing (RemoteData(..))
 import Render exposing (RenderingData(..), RenderingOption(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
 import Search
-import SingleSlider as Slider
 import Task exposing (Task)
 import Time exposing (Posix)
 import TocManager
@@ -213,6 +212,16 @@ vInset =
 -- INIT --
 
 
+editorWindowHeight : Float -> Float
+editorWindowHeight windowHeight =
+    windowHeight - 90
+
+
+px : Float -> String
+px k =
+    String.fromFloat k ++ "px"
+
+
 init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
@@ -222,8 +231,12 @@ init flags url key =
         initialAst =
             Parse.toMDBlockTree -1 ExtendedMath Data.loadingPage.content
 
-        model : Model
-        model =
+        newEditorConfig =
+            Model.defaultEditorConfig
+                |> Model.setEditorDimensions flags.height
+
+        model_ : Model
+        model_ =
             { seed = 0
             , key = key
             , url = url
@@ -289,10 +302,11 @@ init flags url key =
             , documentOutline = ""
             , usernameToAddToPermmission = ""
             , permissionToAdd = NoPermission
-            , editor = Editor.init Model.editorConfig "Some text"
+            , editor = Editor.init Model.defaultEditorConfig "Some text" -- |> setEditorHeight model.windowHeight
+            , editorConfig = Model.defaultEditorConfig |> Model.setEditorDimensions flags.height
             }
     in
-    ( model
+    ( model_
     , Cmd.batch
         [ Task.perform AdjustTimeZone Time.here
         , Cmd.Document.resetViewportOfRenderedText
@@ -376,7 +390,6 @@ subscriptions model =
         , Browser.Events.onResize WindowSize
         , Sub.map KeyMsg Keyboard.subscriptions
         , Outside.getInfo Outside LogErr
-        , Sub.map SliderMsg <| Slider.subscriptions (Editor.slider model.editor)
         ]
 
 
@@ -477,13 +490,6 @@ update msg model =
 
         PasteClipboard ->
             pasteToClipboard model
-
-        SliderMsg sliderMsg ->
-            let
-                ( newEditor, cmd ) =
-                    Editor.sliderUpdate sliderMsg model.editor
-            in
-            ( { model | editor = newEditor }, cmd |> Cmd.map SliderMsg )
 
         AskForClipBoard ->
             ( model, Outside.sendInfo (Outside.AskForClipBoard E.null) )
@@ -644,7 +650,13 @@ update msg model =
             handleTime model newTime
 
         WindowSize width height ->
-            ( { model | windowWidth = width, windowHeight = height }, Cmd.none )
+            ( { model
+                | windowWidth = width
+                , windowHeight = height
+                , editorConfig = Model.defaultEditorConfig |> Model.setEditorDimensions height
+              }
+            , Cmd.none
+            )
 
         KeyMsg keyMsg ->
             let

@@ -14,10 +14,10 @@ which you can modify like this:
 
 {-| -}
 type alias Config =
-    { lines : Int
-    , wrapParams : WrapParams
+    { wrapParams : WrapParams
     , showInfoPanel : Bool
     , wrapOption : WrapOption
+    , width : Float
     , height : Float
     , lineHeight : Float
     }
@@ -40,10 +40,10 @@ type WrapOption
 {-| -}
 default : Config
 default =
-    { lines = 10
-    , wrapParams = { maximumWidth = 50, optimalWidth = 45, stringWidth = String.length }
+    { wrapParams = { maximumWidth = 50, optimalWidth = 45, stringWidth = String.length }
     , showInfoPanel = False
     , wrapOption = DoWrap
+    , width = 400
     , height = 400
     , lineHeight = 14
     }

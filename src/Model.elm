@@ -16,7 +16,8 @@ module Model exposing
     , UserState(..)
     , Visibility(..)
     , debounceConfig
-    , editorConfig
+    , defaultEditorConfig
+    , setEditorDimensions
     )
 
 import Api.InputObject exposing (Document_order_by(..))
@@ -115,21 +116,26 @@ type alias Model =
     , permissionToAdd : Permission
 
     -- Editor
+    , editorConfig : EditorConfig Msg
     , editor : Editor
     }
 
 
-editorConfig : EditorConfig Msg
-editorConfig =
+defaultEditorConfig : EditorConfig Msg
+defaultEditorConfig =
     { editorMsg = EditorMsg
-    , sliderMsg = SliderMsg
     , width = 500
-    , height = 800
+    , height = 650
     , lineHeight = 16.0
     , showInfoPanel = False
     , wrapParams = { maximumWidth = 40, optimalWidth = 35, stringWidth = String.length }
     , wrapOption = DontWrap
     }
+
+
+setEditorDimensions : Int -> EditorConfig Msg -> EditorConfig Msg
+setEditorDimensions h config =
+    { config | height = toFloat <| h - 75 }
 
 
 editorStyle : List (Html.Attribute msg)
@@ -322,5 +328,4 @@ type Msg
     | AddUserPermission
       -- Editor
     | EditorMsg EditorMsg
-    | SliderMsg Slider.Msg
     | PasteClipboard

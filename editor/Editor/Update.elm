@@ -212,11 +212,10 @@ update buffer msg state =
             in
             ( { state
                 | cursor = newCursor
-                , window = Window.scrollToIncludeCursor newCursor state.window
                 , selection = Nothing
               }
             , buffer
-            , cmd
+            , setEditorViewportForLine newCursor.line
             )
 
         CursorRight ->
@@ -245,7 +244,6 @@ update buffer msg state =
             in
             ( { state
                 | cursor = newCursor
-                , window = Window.scrollToIncludeCursor newCursor state.window
                 , selection = Nothing
               }
             , buffer
@@ -475,19 +473,19 @@ update buffer msg state =
                             Debounce.push debounceConfig insertString state.debounce
                     in
                     let
-                        ( newCursor, scrollCmd ) =
+                        newCursor =
                             if string == "\n" then
-                                ( { line = state.cursor.line + 1, column = 0 }, setEditorViewportForLine (state.cursor.line + 1) )
+                                { line = state.cursor.line + 1, column = 0 }
 
                             else
-                                ( Position.nextColumn state.cursor, Cmd.none )
+                                Position.nextColumn state.cursor
                     in
                     ( { state
                         | debounce = debounce
                         , cursor = newCursor
                       }
                     , Buffer.insert state.cursor insertString buffer
-                    , Cmd.batch [ debounceCmd, scrollCmd ]
+                    , Cmd.batch [ debounceCmd ]
                     )
                         |> recordHistory state buffer
 
@@ -1000,12 +998,8 @@ update buffer msg state =
         SendLine ->
             let
                 k =
-                    state.cursor.line - state.window.first
-
-                newWindow =
-                    Window.shift (k - 5) state.window
+                    state.cursor.line
             in
-            -- ( { state | currentLine = Buffer.lineAt state.cursor buffer, window = newWindow }, buffer, Cmd.none )
             ( { state | currentLine = Buffer.lineAt state.cursor buffer }, buffer, Cmd.none )
 
         Undo ->
@@ -1191,11 +1185,8 @@ scrollToLine k state buffer =
 
         cursor =
             { line = n, column = 0 }
-
-        window =
-            Window.scrollToIncludeCursor cursor state.window
     in
-    ( { state | cursor = cursor, window = window, selection = Nothing }, buffer )
+    ( { state | cursor = cursor, selection = Nothing }, buffer )
 
 
 
@@ -1243,14 +1234,15 @@ scrollToTextInternal str state buffer =
             ( { state | searchResults = RollingList.fromList [], searchTerm = str, selection = Nothing }, buffer, Cmd.none )
 
         Just ( cursor, end ) ->
-            let
-                window_ =
-                    Window.scrollToIncludeCursor cursor state.window
-
-                ( cursor_, end_ ) =
-                    ( Window.shiftPosition__ window_ cursor, Window.shiftPosition__ window_ end )
-            in
-            ( { state | window = window_, cursor = cursor_, selection = Just end_, searchResults = RollingList.fromList searchResults, searchTerm = str }, buffer, Cmd.none )
+            ( { state
+                | cursor = cursor
+                , selection = Just end
+                , searchResults = RollingList.fromList searchResults
+                , searchTerm = str
+              }
+            , buffer
+            , setEditorViewportForLine cursor.line
+            )
 
 
 {-| Return data representing the editor scrolled toa given string (first search occurrence).
@@ -1266,14 +1258,14 @@ scrollToText str state buffer =
             ( { state | searchResults = RollingList.fromList [], searchTerm = str }, buffer )
 
         Just ( cursor, end ) ->
-            let
-                window_ =
-                    Window.scrollToIncludeCursor cursor state.window
-
-                ( cursor_, end_ ) =
-                    ( cursor, end )
-            in
-            ( { state | window = window_, cursor = cursor_, selection = Just end_, searchResults = RollingList.fromList searchResults, searchTerm = str }, buffer )
+            ( { state
+                | cursor = cursor
+                , selection = Just end
+                , searchResults = RollingList.fromList searchResults
+                , searchTerm = str
+              }
+            , buffer
+            )
 
 
 rollSearchSelectionForward : InternalState -> Buffer -> ( InternalState, Buffer, Cmd Msg )
@@ -1287,21 +1279,13 @@ rollSearchSelectionForward state buffer =
             ( state, buffer, Cmd.none )
 
         Just ( cursor, end ) ->
-            let
-                window_ =
-                    Window.scrollToIncludeCursor cursor state.window
-
-                ( cursor_, end_ ) =
-                    ( Window.shiftPosition__ window_ cursor, Window.shiftPosition__ window_ end )
-            in
             ( { state
-                | cursor = cursor_
-                , window = window_
-                , selection = Just end_
+                | cursor = cursor
+                , selection = Just end
                 , searchResults = searchResults_
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine cursor.line
             )
 
 
@@ -1316,21 +1300,13 @@ rollSearchSelectionBackward state buffer =
             ( state, buffer, Cmd.none )
 
         Just ( cursor, end ) ->
-            let
-                window_ =
-                    Window.scrollToIncludeCursor cursor state.window
-
-                ( cursor_, end_ ) =
-                    ( Window.shiftPosition__ window_ cursor, Window.shiftPosition__ window_ end )
-            in
             ( { state
-                | cursor = cursor_
-                , window = window_
-                , selection = Just end_
+                | cursor = cursor
+                , selection = Just end
                 , searchResults = searchResults_
               }
             , buffer
-            , Cmd.none
+            , setEditorViewportForLine cursor.line
             )
 
 
@@ -1359,8 +1335,7 @@ lift f =
 clearState : InternalState -> InternalState
 clearState state =
     { state
-        | window = { first = 0, last = state.config.lines - 1 }
-        , cursor = { line = 0, column = 0 }
+        | cursor = { line = 0, column = 0 }
         , selection = Nothing
         , selectedText = Nothing
         , dragging = False

@@ -21,7 +21,7 @@ setupToEdit =
                         Editor.getSelectedText model.editor |> Maybe.withDefault ""
 
                     newEditor =
-                        Editor.init Model.editorConfig doc.content
+                        Editor.init Model.defaultEditorConfig doc.content
                             |> Editor.setSelectedText st
                 in
                 { model | editor = newEditor }
