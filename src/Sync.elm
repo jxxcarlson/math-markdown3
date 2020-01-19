@@ -11,8 +11,7 @@ getId1 : String -> Dict String String -> Maybe String
 getId1 str_ sourceMap =
     let
         str =
-            Debug.log "KEY"
-                (Parse.toMDBlockTree 66 ExtendedMath str_ |> Parse.getLeadingTextFromAST |> String.trim)
+            Parse.toMDBlockTree 66 ExtendedMath str_ |> Parse.getLeadingTextFromAST |> String.trim
     in
     Dict.get str sourceMap
 

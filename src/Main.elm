@@ -1331,10 +1331,10 @@ syncRenderedText str model =
                 MD data ->
                     case Sync.getId (String.trim str) data.sourceMap of
                         Nothing ->
-                            Debug.log "FAIL" "666"
+                            "666"
 
                         Just id_ ->
-                            Debug.log "SUCCESS" id_
+                            id_
 
                 ML data ->
                     "???"
