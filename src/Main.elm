@@ -52,6 +52,7 @@ import RemoteData exposing (RemoteData(..))
 import Render exposing (RenderingData(..), RenderingOption(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
 import Search
+import Sync
 import Task exposing (Task)
 import Time exposing (Posix)
 import TocManager
@@ -1328,12 +1329,12 @@ syncRenderedText str model =
         id =
             case model.renderingData of
                 MD data ->
-                    case Parse.searchAST str data.fullAst of
+                    case Sync.getId (String.trim str) data.sourceMap of
                         Nothing ->
-                            "???"
+                            Debug.log "FAIL" "666"
 
                         Just id_ ->
-                            id_ |> Parse.stringOfId
+                            Debug.log "SUCCESS" id_
 
                 ML data ->
                     "???"

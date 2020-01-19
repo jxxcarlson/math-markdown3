@@ -999,8 +999,20 @@ update buffer msg state =
             let
                 k =
                     state.cursor.line
+
+                offset =
+                    15
+
+                kk =
+                    max offset (k - offset)
+
+                --                    if k > 10 then
+                --                        k - 5
+                --
+                --                    else
+                --                        clamp 0 5 (k - 5)
             in
-            ( { state | currentLine = Buffer.lineAt state.cursor buffer }, buffer, Cmd.none )
+            ( { state | currentLine = Buffer.lineAt state.cursor buffer }, buffer, setEditorViewportForLine kk )
 
         Undo ->
             case Editor.History.undo (stateToSnapshot state buffer) state.history of
