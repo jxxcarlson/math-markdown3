@@ -1005,12 +1005,6 @@ update buffer msg state =
 
                 kk =
                     max offset (k - offset)
-
-                --                    if k > 10 then
-                --                        k - 5
-                --
-                --                    else
-                --                        clamp 0 5 (k - 5)
             in
             ( { state | currentLine = Buffer.lineAt state.cursor buffer }, buffer, setEditorViewportForLine kk )
 
