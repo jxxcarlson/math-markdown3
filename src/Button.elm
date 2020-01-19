@@ -43,6 +43,7 @@ module Button exposing
     , sortAlphabetical
     , sortByMostRecentFirst
     , subDocumentEditingMode
+    , testButton
     , togglePublic
     , totalWordCount
     , updateChildren
@@ -368,6 +369,13 @@ getTextSelection =
     Input.button []
         { onPress = Just GetTextSelection
         , label = el [] (Element.text "Sync L <- R")
+        }
+
+
+testButton =
+    Input.button [ Border.width 1, Border.color Style.white, padding 4 ]
+        { onPress = Just Test
+        , label = el [] (Element.text "Test")
         }
 
 

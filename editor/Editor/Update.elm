@@ -997,16 +997,23 @@ update buffer msg state =
 
         SendLine ->
             let
-                k =
-                    state.cursor.line
+                --                _ =
+                --                    Debug.log "SendLine" state.cursor.line
+                y =
+                    max 0 (13.0 * (toFloat state.cursor.line - 5))
 
-                offset =
-                    15
+                newCursor =
+                    Position.setColumn 0 state.cursor
 
-                kk =
-                    max offset (k - offset)
+                selection =
+                    case Buffer.lineEnd newCursor.line buffer of
+                        Just n ->
+                            Just (Position newCursor.line n)
+
+                        Nothing ->
+                            Nothing
             in
-            ( { state | currentLine = Buffer.lineAt state.cursor buffer }, buffer, setEditorViewportForLine kk )
+            ( { state | cursor = newCursor, selection = selection }, buffer, jumpToHeight y )
 
         Undo ->
             case Editor.History.undo (stateToSnapshot state buffer) state.history of
@@ -1168,11 +1175,22 @@ setEditorViewportForLine : Int -> Cmd Msg
 setEditorViewportForLine lineNumber =
     let
         y =
-            toFloat lineNumber * 16.0
-
-        -- viewport.viewport.y + element.element.y - element.element.height - 100
+            toFloat lineNumber
+                * 16.0
     in
-    Task.attempt (\_ -> NoOp) (Dom.setViewportOf "__inner_editor__" 0 y)
+    case y >= 0 of
+        True ->
+            Dom.setViewportOf "__inner_editor__" 0 y
+                |> Task.attempt (\_ -> NoOp)
+
+        False ->
+            Cmd.none
+
+
+jumpToHeight : Float -> Cmd Msg
+jumpToHeight y =
+    Dom.setViewportOf "__inner_editor__" 0 y
+        |> Task.attempt (\_ -> NoOp)
 
 
 unload : String -> Cmd Msg

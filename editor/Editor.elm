@@ -6,7 +6,6 @@ module Editor exposing
     , setSelectedText, setHeight, setWidth
     , placeInClipboard
     , scrollToLine, scrollToString
-    , smallConfig
     )
 
 {-| Use this module to embed a text editor in an Elm app.

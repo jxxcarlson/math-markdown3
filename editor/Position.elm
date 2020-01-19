@@ -94,4 +94,9 @@ previousLine =
 
 shift : Int -> Position -> Position
 shift k position =
-    { position | line = position.line + k }
+    case position.line + k >= 0 of
+        True ->
+            { position | line = position.line + k }
+
+        False ->
+            { position | line = 0 }

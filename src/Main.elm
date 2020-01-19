@@ -409,6 +409,25 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        Test ->
+            ( model, Dom.getViewportOf "__inner_editor__" |> Task.attempt GotViewport )
+
+        GotViewport result ->
+            case result of
+                Ok vp ->
+                    --                    let
+                    --                        _ =
+                    --                            Debug.log "VP" vp
+                    --                    in
+                    ( model, Cmd.none )
+
+                Err _ ->
+                    --                    let
+                    --                        _ =
+                    --                            Debug.log "GotViewport" "error"
+                    --                    in
+                    ( model, Cmd.none )
+
         DebounceMsg debounceMsg ->
             let
                 ( debounce, cmd ) =

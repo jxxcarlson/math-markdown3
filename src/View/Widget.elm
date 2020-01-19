@@ -58,7 +58,7 @@ footer model =
         [ currentAuthorDisplay model
 
         -- , el [] (Element.text <| slugOfCurrentDocument model)
-        , Button.getTextSelection
+        , Button.testButton
         , dirtyDocumentDisplay model
         , wordCount model
         , row [ spacing 4 ] [ Button.totalWordCount, totalWordCountDisplay model ]

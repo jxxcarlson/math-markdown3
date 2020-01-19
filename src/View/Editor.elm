@@ -48,7 +48,7 @@ view viewInfo model =
             [ View.Widget.tabStrip newViewInfo model
             , View.Widget.toolsOrDocs newViewInfo model
             , column
-                [ Font.size (round <| (Editor.getFontSize model.editor / 0.85))
+                [ Font.size (round <| (Editor.getFontSize model.editor / 1.0))
                 , width (px (floor model.editorConfig.width + 5))
                 , alignTop
                 , Border.widthEach { top = 0, left = 0, bottom = 0, right = 1 }

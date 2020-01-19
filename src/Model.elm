@@ -329,3 +329,5 @@ type Msg
       -- Editor
     | EditorMsg EditorMsg
     | PasteClipboard
+    | Test
+    | GotViewport (Result Dom.Error Dom.Viewport)
