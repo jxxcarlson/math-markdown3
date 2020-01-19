@@ -1,5 +1,6 @@
 module Render exposing (RenderingData(..), RenderingOption(..), documentOption, get, load, loadFast, render, update)
 
+import Dict exposing (Dict)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
 import Html exposing (Html)
 import Html.Attributes as HA
@@ -62,6 +63,7 @@ type alias MDData msg =
     , renderedText : RenderedText msg
     , initialAst : Tree Parse.MDBlockWithId
     , fullAst : Tree Parse.MDBlockWithId
+    , sourceMap : Dict String String
     }
 
 
@@ -108,7 +110,12 @@ update version source rd =
                 newAst =
                     Render.Markdown.diffUpdateAst data.option version source data.fullAst
             in
-            MD { data | fullAst = newAst, renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" newAst }
+            MD
+                { data
+                    | fullAst = newAst
+                    , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" newAst
+                    , sourceMap = Parse.sourceMap newAst
+                }
 
         ML data ->
             ML { data | editRecord = MiniLatex.Edit.update NoDelay version source data.editRecord }
@@ -150,6 +157,7 @@ loadMarkdown counter option str =
         , initialAst = ast
         , fullAst = ast
         , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast
+        , sourceMap = Parse.sourceMap ast
         }
 
 
@@ -167,6 +175,7 @@ loadMarkdownFast counter option str =
         , initialAst = initialAst
         , fullAst = fullAst
         , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" initialAst
+        , sourceMap = Parse.sourceMap fullAst
         }
 
 
