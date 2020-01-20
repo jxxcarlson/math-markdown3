@@ -16,4 +16,4 @@ wordsPerPage =
 
 tick : Float
 tick =
-    100 * 1000
+    1 * 1000
