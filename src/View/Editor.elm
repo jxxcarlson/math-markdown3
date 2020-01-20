@@ -50,9 +50,8 @@ view viewInfo model =
             , column
                 [ Font.size (round <| Editor.getFontSize model.editor)
                 , width (px (floor model.editorConfig.width + 5))
-
-                -- , height (px <| round model.editorConfig.height - 40)
-                --, alignTop
+                , height (px <| round model.editorConfig.height - 35)
+                , alignTop
                 , Border.widthEach { top = 0, left = 0, bottom = 0, right = 1 }
                 , Border.solid
                 ]
