@@ -17,7 +17,7 @@ type alias Snapshot =
 
 type alias InternalState =
     { config : Config
-    , scrolledLine : Int
+    , topLine : Int
     , cursor : Position
     , selection : Maybe Position
     , selectedText : Maybe String

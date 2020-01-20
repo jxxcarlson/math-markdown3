@@ -168,7 +168,7 @@ linesContainer =
 
 view : List (Attribute Msg) -> List String -> InternalState -> Html Msg
 view attr lines state =
-    div (attr ++ [ style "position" "absolute" ])
+    div (attr ++ [ Attribute.class "flex-column" ])
         [ goToLinePanel state
         , searchPanel state
         , infoPanel state lines
@@ -267,7 +267,6 @@ infoPanelStyle =
     , style "border" "solid 0.5px #444"
     , style "background-color" Style.lightBlue
     , style "padding" "8px"
-    , style "z-index" "100"
     ]
 
 
@@ -282,15 +281,15 @@ searchPanel state =
 searchPanel_ state =
     div
         [ style "width" "595px"
-        , style "padding-top" "10px"
-        , style "height" "36px"
+        , style "padding-top" "5px"
+        , style "height" "30px"
         , style "padding-left" "8px"
         , style "background-color" "#bbb"
         , style "opacity" "0.8"
         , style "font-size" "14px"
         , style "position" "absolute"
-        , style "left" "0px"
-        , style "top" "0px"
+        , style "left" "40px"
+        , style "top" "10px"
         ]
         [ searchTextButton
         , acceptSearchText
@@ -314,17 +313,28 @@ goToLinePanel state =
 
 goToLinePanel_ =
     div
-        [ style "width" "140px"
+        [ style "width" "220px"
         , style "height" "36px"
-        , style "padding" "ipx"
+        , style "padding" "1px"
         , style "opacity" "0.8"
         , style "position" "absolute"
-        , style "left" "0px"
-        , style "top" "-10px"
+        , style "left" "40px"
+        , style "top" "10px"
         , style "background-color" "#aab"
+        , Attribute.class "flex-row"
         ]
         [ goToLineButton
         , acceptLineNumber
+        , dismissGoToLineButton
+        ]
+
+
+dismissGoToLineButton =
+    Widget.lightRowButton 25
+        ToggleGoToLinePanel
+        "X"
+        [ style "margin-left" "160px"
+        , style "margin-top" "5px"
         ]
 
 

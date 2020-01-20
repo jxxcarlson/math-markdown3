@@ -218,8 +218,8 @@ type alias EditorConfig a =
 
 {-| XXX: Changed
 -}
-smallConfig : EditorConfig a -> Config
-smallConfig c =
+transformConfig : EditorConfig a -> Config
+transformConfig c =
     { --- lines = floor <| c.height / c.lineHeight
       showInfoPanel = c.showInfoPanel
     , wrapParams = c.wrapParams
@@ -309,8 +309,8 @@ init editorConfig text =
     Editor
         { buffer = Buffer.init text
         , state =
-            { config = smallConfig editorConfig
-            , scrolledLine = 0
+            { config = transformConfig editorConfig
+            , topLine = 0
             , cursor = Position 0 0
             , selection = Nothing
             , selectedText = Nothing
@@ -373,7 +373,7 @@ setHeight h (Editor data) =
 
 
 initialState editorConfig =
-    { config = smallConfig editorConfig
+    { config = transformConfig editorConfig
     , scrolledLine = 0
     , cursor = Position 0 0
     , selection = Nothing
