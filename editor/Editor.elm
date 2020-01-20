@@ -313,6 +313,7 @@ init editorConfig text =
             , dragging = False
             , history = Editor.History.empty
             , searchTerm = ""
+            , searchHitIndex = 0
             , replacementText = ""
             , canReplace = False
             , searchResults = RollingList.fromList []

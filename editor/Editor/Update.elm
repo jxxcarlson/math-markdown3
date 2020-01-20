@@ -1017,7 +1017,7 @@ update buffer msg state =
                 --                    Debug.log "SendLine" state.cursor.line
                 y =
                     -- max 0 (state.config.lineHeight * toFloat state.cursor.line)
-                    max 0 (13 * (toFloat state.cursor.line - 10))
+                    max 0 (adjustedLineHeight state.config.lineHeight * (toFloat state.cursor.line - 10))
 
                 newCursor =
                     Position.setColumn 0 state.cursor
@@ -1156,17 +1156,17 @@ update buffer msg state =
 
         ToggleSearchPanel ->
             if state.showSearchPanel == True then
-                ( { state | showSearchPanel = False }, buffer, blur "search-box" )
+                ( { state | showSearchPanel = False }, buffer, blur "editor-search-box" )
 
             else
-                ( { state | showSearchPanel = True }, buffer, focus "search-box" )
+                ( { state | showSearchPanel = True }, buffer, focus "editor-search-box" )
 
         ToggleReplacePanel ->
             if state.showSearchPanel == True then
-                ( { state | showSearchPanel = False, canReplace = False }, buffer, blur "search-box" )
+                ( { state | showSearchPanel = False, canReplace = False }, buffer, blur "editor-search-box" )
 
             else
-                ( { state | showSearchPanel = True, canReplace = True }, buffer, focus "search-box" )
+                ( { state | showSearchPanel = True, canReplace = True }, buffer, focus "editor-search-box" )
 
         OpenReplaceField ->
             ( { state | canReplace = True }, buffer, Cmd.none )
@@ -1208,7 +1208,7 @@ setEditorViewportForLine lineHeight lineNumber =
     let
         y =
             toFloat lineNumber
-                * lineHeight
+                * adjustedLineHeight lineHeight
     in
     case y >= 0 of
         True ->
@@ -1297,9 +1297,10 @@ scrollToTextInternal str state buffer =
                 , selection = Just end
                 , searchResults = RollingList.fromList searchResults
                 , searchTerm = str
+                , searchHitIndex = 0
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , setEditorViewportForLine state.config.lineHeight (max 0 (cursor.line - 5))
             )
 
 
@@ -1331,6 +1332,19 @@ rollSearchSelectionForward state buffer =
     let
         searchResults_ =
             RollingList.roll state.searchResults
+
+        searchResultList =
+            RollingList.toList searchResults_
+
+        maxSearchHitIndex =
+            searchResultList |> List.length |> (\x -> x - 1)
+
+        newSearchHitIndex =
+            if state.searchHitIndex >= maxSearchHitIndex then
+                0
+
+            else
+                state.searchHitIndex + 1
     in
     case RollingList.current searchResults_ of
         Nothing ->
@@ -1341,9 +1355,10 @@ rollSearchSelectionForward state buffer =
                 | cursor = cursor
                 , selection = Just end
                 , searchResults = searchResults_
+                , searchHitIndex = newSearchHitIndex
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , setEditorViewportForLine state.config.lineHeight (max 0 (cursor.line - 5))
             )
 
 
@@ -1352,6 +1367,19 @@ rollSearchSelectionBackward state buffer =
     let
         searchResults_ =
             RollingList.rollBack state.searchResults
+
+        searchResultList =
+            RollingList.toList searchResults_
+
+        maxSearchHitIndex =
+            searchResultList |> List.length |> (\x -> x - 1)
+
+        newSearchHitIndex =
+            if state.searchHitIndex == 0 then
+                maxSearchHitIndex
+
+            else
+                state.searchHitIndex - 1
     in
     case RollingList.current searchResults_ of
         Nothing ->
@@ -1362,9 +1390,10 @@ rollSearchSelectionBackward state buffer =
                 | cursor = cursor
                 , selection = Just end
                 , searchResults = searchResults_
+                , searchHitIndex = newSearchHitIndex
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , setEditorViewportForLine state.config.lineHeight (max 0 (cursor.line - 5))
             )
 
 
@@ -1428,3 +1457,8 @@ the given id.
 blur : String -> Cmd Msg
 blur id =
     Task.attempt (\_ -> NoOp) (Dom.blur id)
+
+
+adjustedLineHeight : Float -> Float
+adjustedLineHeight lineHeight =
+    13
