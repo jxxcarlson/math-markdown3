@@ -213,7 +213,6 @@ type alias EditorConfig a =
     , showInfoPanel : Bool
     , wrapParams : { maximumWidth : Int, optimalWidth : Int, stringWidth : String -> Int }
     , wrapOption : WrapOption
-    , maxLines : Int
     }
 
 
@@ -228,14 +227,7 @@ transformConfig c =
     , height = c.height
     , width = c.width
     , lineHeight = c.lineHeight
-    , maxLines = c.maxLines
     }
-
-
-{-| XXX: Added
--}
-maxLines =
-    10000
 
 
 
