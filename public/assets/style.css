@@ -56,8 +56,8 @@
   width: 60%;
 }
 
-.mm-h1 {font-size: 24px;}
-.mm-h2 {font-size: 20px;}
+.mm-h1 {font-size: 24px; background-color: pink;}
+.mm-h2 {font-size: 20px;; background-color: pink;}
 .mm-h3 {font-size: 16px}
 .mm-h4 {font-size: 12px;}
 .mm-h5 {font-size: 12px;}
