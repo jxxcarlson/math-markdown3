@@ -182,7 +182,7 @@ view attr lines state =
             , onTripleClick SelectLine
             , Attribute.tabindex 0
             ]
-            [ gutter (List.length lines + 20)
+            [ gutter (max 100 (List.length lines + 20))
             , linesContainer <|
                 List.indexedMap (line state.cursor state.selection) lines
             ]
