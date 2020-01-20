@@ -1016,7 +1016,8 @@ update buffer msg state =
                 --                _ =
                 --                    Debug.log "SendLine" state.cursor.line
                 y =
-                    max 0 (state.config.lineHeight * toFloat state.cursor.line)
+                    -- max 0 (state.config.lineHeight * toFloat state.cursor.line)
+                    max 0 (13 * (toFloat state.cursor.line - 10))
 
                 newCursor =
                     Position.setColumn 0 state.cursor

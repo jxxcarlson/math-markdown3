@@ -20,6 +20,7 @@ type alias Config =
     , width : Float
     , height : Float
     , lineHeight : Float
+    , maxLines : Int
     }
 
 
@@ -46,6 +47,7 @@ default =
     , width = 400
     , height = 400
     , lineHeight = 14
+    , maxLines = 200
     }
 
 

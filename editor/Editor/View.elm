@@ -1,7 +1,7 @@
 module Editor.View exposing (view)
 
 import Char
-import Editor.Config exposing (WrapOption(..))
+import Editor.Config as Config exposing (WrapOption(..))
 import Editor.Keymap
 import Editor.Model exposing (InternalState)
 import Editor.Style as Style
@@ -154,11 +154,11 @@ lineNumber number =
         [ text <| String.fromInt (number + 0) ]
 
 
-gutter : Html Msg
-gutter =
+gutter : Int -> Html Msg
+gutter maxLines_ =
     -- XXX: Todo: rationalize maxlines
     div [ class <| name ++ "-gutter" ] <|
-        List.map lineNumber (List.range 1 1000)
+        List.map lineNumber (List.range 1 maxLines_)
 
 
 linesContainer : List (Html Msg) -> Html Msg
@@ -182,7 +182,7 @@ view attr lines state =
             , onTripleClick SelectLine
             , Attribute.tabindex 0
             ]
-            [ gutter
+            [ gutter state.config.maxLines
             , linesContainer <|
                 List.indexedMap (line state.cursor state.selection) lines
             ]
