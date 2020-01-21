@@ -111,12 +111,7 @@ viewSelf selectedTitle toggle t =
                     "mm-toc-root"
 
                 False ->
-                    case selectedTitle == l.title of
-                        True ->
-                            "mm-toc-item-selected"
-
-                        False ->
-                            "mm-toc-item"
+                    "mm-toc-item"
     in
     Html.li [ liClass selectedTitle l.title ]
         [ Html.span [] [ Html.text <| prefix l ++ l.title ]
@@ -132,13 +127,6 @@ liClass selectedTitle actualTitle =
 
         False ->
             Attr.class "mm-li-toc"
-
-
-
---    column []
---        [ el [ paddingEach { edges | bottom = 2, top = 2 }, Font.bold, Font.color color ] (text <| prefix l ++ l.title)
---        , column [ horizontalPadding ] (List.map (viewNode toggle) (Tree.children t))
---        ]
 
 
 edges =
@@ -161,12 +149,7 @@ viewNode selectedTitle showAll t =
                     "mm-toc-root"
 
                 False ->
-                    case selectedTitle == l.title of
-                        True ->
-                            "mm-toc-item-selected"
-
-                        False ->
-                            "mm-toc-item"
+                    "mm-toc-item"
 
         xs =
             if showAll then
@@ -219,24 +202,6 @@ inAncestors selectedTitle toggle zipper current =
 
         Nothing ->
             current
-
-
-
---            List.concat
---                [ viewBefore toggle parent
---                , [ column []
---                        [ Input.button [ buttonPadding, Font.color (buttonColor (Zipper.label parent)) ]
---                            { onPress = Just (Focus (Zipper.label parent).id), label = text <| prefix l ++ (Zipper.label parent).title }
---                        , current
---                        ]
---                  ]
---                , viewAfter toggle parent
---                ]
---                |> column []
---                |> inAncestors toggle parent
---
---        Nothing ->
---            current
 
 
 indexedMap : (Int -> a -> b) -> ( a, List a ) -> ( b, List b )
