@@ -221,9 +221,13 @@ type alias EditorConfig a =
 -}
 transformConfig : EditorConfig a -> Config
 transformConfig c =
+    let
+        fontWidth =
+            10
+    in
     { --- lines = floor <| c.height / c.lineHeight
       showInfoPanel = c.showInfoPanel
-    , wrapParams = c.wrapParams
+    , wrapParams = { maximumWidth = floor (c.width / fontWidth - 5), optimalWidth = floor (c.width / fontWidth - 10), stringWidth = String.length }
     , wrapOption = c.wrapOption
     , height = c.height
     , width = c.width

@@ -477,7 +477,7 @@ update buffer msg state =
                         nearWordChar =
                             Buffer.nearWordChar state.cursor buffer
 
-                        insertString =
+                        insertString_ =
                             if not nearWordChar then
                                 Maybe.map ((++) string) maybeClosing
                                     |> Maybe.withDefault string
@@ -485,12 +485,23 @@ update buffer msg state =
                             else
                                 string
 
+                        insertString =
+                            if insertString_ == " " then
+                                if (Buffer.lineAt state.cursor buffer |> Maybe.map String.length |> Maybe.withDefault -1) > state.config.wrapParams.optimalWidth then
+                                    "\n"
+
+                                else
+                                    insertString_
+
+                            else
+                                insertString_
+
                         ( debounce, debounceCmd ) =
                             Debounce.push debounceConfig insertString state.debounce
                     in
                     let
                         newCursor =
-                            if string == "\n" then
+                            if insertString == "\n" then
                                 { line = state.cursor.line + 1, column = 0 }
 
                             else
