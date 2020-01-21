@@ -22,21 +22,19 @@
 }
 
 #__RENDERED_TEXT__ {
-   font-size: 12px;
-   line-height: 18px;
+   font-size: 14px;
+   line-height: 22px;
    white-space: normal;
    }
 
 #__rt_scroll__ {
-   font-size: 12px;
-   line-height: 18px;
+   font-size: 14px;
+   line-height: 22px;
    white-space: normal;
    width: 500px;
    overflow-y: scroll;
 
    }
-
-
 
 .elmsh-line {
     padding : 8px;

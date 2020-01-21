@@ -6,28 +6,9 @@ import Element.Background as Background
 import Element.Font as Font
 import Html exposing (pre)
 import Html.Attributes as HA
-import Model
-    exposing
-        ( --                  AppMode(..)
-          --                 , DequeViewState(..)
-          --                 , DocumentDeleteState(..)
-          --                 , DocumentListDisplay
-          --                 , DocumentListType(..)
-          --                 , EditMode(..)
-          --                 , FocusedElement(..)
-          --                 , Message
-          --                 , MessageType(..)
-          Model
-        , Msg(..)
-          --                 , SearchMode(..)
-          --                 , SearchType(..)
-          --                 , SortMode(..)
-          --                 , UserState(..)
-          --                 , Visibility(..)
-        )
+import Model exposing (Model, Msg(..))
 import Render.Types exposing (RenderedText)
 import Style
-import Utility.View
 import View.Common exposing (ViewInfo)
 
 
