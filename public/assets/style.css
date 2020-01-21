@@ -32,6 +32,7 @@
    line-height: 18px;
    white-space: normal;
    width: 500px;
+   overflow-y: scroll;
 
    }
 
