@@ -126,10 +126,11 @@ defaultEditorConfig =
     { editorMsg = EditorMsg
     , width = 500
     , height = 650
-    , lineHeight = 16.0
+    , lineHeight = 28.0
     , showInfoPanel = False
     , wrapParams = { maximumWidth = 40, optimalWidth = 35, stringWidth = String.length }
     , wrapOption = DontWrap
+    , fontProportion = 0.55
     }
 
 

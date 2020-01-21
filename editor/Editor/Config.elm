@@ -20,6 +20,7 @@ type alias Config =
     , width : Float
     , height : Float
     , lineHeight : Float
+    , fontProportion : Float
     }
 
 
@@ -45,7 +46,8 @@ default =
     , wrapOption = DoWrap
     , width = 400
     , height = 400
-    , lineHeight = 14
+    , lineHeight = 18
+    , fontProportion = 0.7
     }
 
 

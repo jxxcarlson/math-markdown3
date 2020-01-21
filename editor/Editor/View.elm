@@ -267,6 +267,7 @@ infoPanelStyle =
     , style "border" "solid 0.5px #444"
     , style "background-color" Style.lightBlue
     , style "padding" "8px"
+    , style "z-index" "100"
     ]
 
 

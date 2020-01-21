@@ -505,6 +505,9 @@ update msg model =
                         ]
                     )
 
+                E.ReplaceCurrentSelection ->
+                    syncWithEditor model newEditor editorCmd
+
                 _ ->
                     updateEditor model newEditor editorCmd
 

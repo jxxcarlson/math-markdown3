@@ -121,7 +121,7 @@ getState (Editor data) =
 {-| -}
 getFontSize : Editor -> Float
 getFontSize (Editor data) =
-    0.8 * data.state.config.lineHeight
+    data.state.config.fontProportion * data.state.config.lineHeight
 
 
 {-| Get the options for wrapping text. See the example for `insert`.
@@ -214,6 +214,7 @@ type alias EditorConfig a =
     , showInfoPanel : Bool
     , wrapParams : { maximumWidth : Int, optimalWidth : Int, stringWidth : String -> Int }
     , wrapOption : WrapOption
+    , fontProportion : Float
     }
 
 
@@ -232,6 +233,7 @@ transformConfig c =
     , height = c.height
     , width = c.width
     , lineHeight = c.lineHeight
+    , fontProportion = c.fontProportion
     }
 
 
