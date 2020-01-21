@@ -2,6 +2,7 @@ module View.Widget exposing (footer, modeButtonStrip, searchRow, tabStrip, tools
 
 import BoundedDeque
 import Button
+import Color
 import Config
 import Document exposing (Document)
 import Element exposing (..)
@@ -106,7 +107,7 @@ shareUrlDisplay model =
             case doc.public of
                 True ->
                     -- el [] (Element.text <| Config.endpoint ++ "/#id/" ++ Uuid.toString doc.id)
-                    el [] (Element.text <| Config.endpoint ++ "/#doc/" ++ doc.slug)
+                    el [ Background.color (Element.rgb 1 1 1), Font.color (Element.rgb 0.2 0.2 0.2), padding 3 ] (Element.text <| Config.endpoint ++ "/#doc/" ++ doc.slug)
 
                 False ->
                     el [] (Element.text "Document is private, can't share")
