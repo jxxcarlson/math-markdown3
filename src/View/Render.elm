@@ -50,7 +50,12 @@ renderedSource viewInfo model footerText_ rt =
             View.Common.translate -viewInfo.vInset model.windowHeight
 
         outerSourceStyle =
-            [ View.Common.setElementId "__rt_scroll__", width (px w_), height (px h_), Element.paddingEach { left = 0, right = 20, top = 0, bottom = 30 }, clipX, Font.size 12 ]
+            [ View.Common.setElementId "__rt_scroll__"
+            , width (px w_)
+            , height (px h_)
+            , Element.paddingEach { left = 0, right = 20, top = 0, bottom = 30 }
+            , Font.size 12
+            ]
 
         innerSourceStyle =
             [ View.Common.setElementId Cmd.Document.masterId, height (px h_) ]

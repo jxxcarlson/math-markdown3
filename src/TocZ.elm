@@ -65,7 +65,7 @@ viewZ t z =
         , [ viewSelf t (Zipper.tree z) ]
         , viewAfter t z
         ]
-        |> Html.ul []
+        |> Html.ul [ Attr.class "mm-ul-toc" ]
         |> inAncestors t z
     )
         |> (\x ->
@@ -108,14 +108,14 @@ viewSelf toggle t =
         class =
             case l.isRoot of
                 True ->
-                    "current-root"
+                    "mm-toc-root"
 
                 False ->
-                    "current"
+                    "mm-toc-item"
     in
-    Html.li []
+    Html.li [ Attr.class "mm-li-toc" ]
         [ Html.span [ Attr.class class ] [ Html.text <| prefix l ++ l.title ]
-        , Html.ul [] (List.map (viewNode toggle) (Tree.children t))
+        , Html.ul [ Attr.class "mm-ul-toc" ] (List.map (viewNode toggle) (Tree.children t))
         ]
 
 
@@ -143,19 +143,19 @@ viewNode showAll t =
         class =
             case l.isRoot of
                 True ->
-                    "root"
+                    "mm-toc-root"
 
                 False ->
-                    ""
+                    "mm-toc-item"
 
         xs =
             if showAll then
-                [ Html.ul [] (List.map (viewNode showAll) (Tree.children t)) ]
+                [ Html.ul [ Attr.class "mm-ul-toc" ] (List.map (viewNode showAll) (Tree.children t)) ]
 
             else
                 []
     in
-    Html.li []
+    Html.li [ Attr.class "mm-li-toc" ]
         (Html.span
             [ Events.onClick (Focus l.id), Attr.class class ]
             [ Html.text <| prefix l ++ l.title ]
@@ -185,7 +185,7 @@ inAncestors toggle zipper current =
             in
             List.concat
                 [ viewBefore toggle parent
-                , [ Html.li []
+                , [ Html.li [ Attr.class "mm-li-toc" ]
                         [ Html.span
                             [ Events.onClick (Focus (Zipper.label parent).id), Attr.class class ]
                             [ Html.text <| prefix l ++ (Zipper.label parent).title ]
@@ -194,7 +194,7 @@ inAncestors toggle zipper current =
                   ]
                 , viewAfter toggle parent
                 ]
-                |> Html.ul []
+                |> Html.ul [ Attr.class "mm-ul-toc" ]
                 |> inAncestors toggle parent
 
         Nothing ->
