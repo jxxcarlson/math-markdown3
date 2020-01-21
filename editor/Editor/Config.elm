@@ -21,6 +21,7 @@ type alias Config =
     , height : Float
     , lineHeight : Float
     , fontProportion : Float
+    , lineHeightFactor : Float
     }
 
 
@@ -48,6 +49,7 @@ default =
     , height = 400
     , lineHeight = 18
     , fontProportion = 0.7
+    , lineHeightFactor = 1.0
     }
 
 

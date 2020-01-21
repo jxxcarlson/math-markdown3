@@ -18,6 +18,7 @@ type alias StyleConfig =
     { editorWidth : Float
     , editorHeight : Float
     , lineHeight : Float
+    , fontProportion : Float
     }
 
 
@@ -26,8 +27,6 @@ type alias StyleParams =
     , editorHeight : String
     , lineHeight : String
     , fontSize : String
-    , sliderXOffset : String
-    , sliderYOffset : String
     }
 
 
@@ -36,9 +35,7 @@ getStyleParams c =
     { editorWidth = String.fromFloat c.editorWidth
     , editorHeight = String.fromFloat c.editorHeight
     , lineHeight = String.fromFloat c.lineHeight
-    , fontSize = String.fromFloat (0.8 * c.lineHeight)
-    , sliderXOffset = String.fromFloat <| c.editorWidth + 50
-    , sliderYOffset = String.fromFloat <| 1.04348 * c.editorHeight - 90.87 - 20
+    , fontSize = String.fromFloat (c.fontProportion * c.lineHeight)
     }
 
 
@@ -50,34 +47,18 @@ styleText styleConfig =
     in
     interpolate styleTemplate
         [ s.editorWidth
-        , s.sliderXOffset
         , s.fontSize
         , s.lineHeight
-        , s.sliderYOffset -- String.fromFloat <| sliderOffsetY styleConfig.numberOfLines styleConfig.lineHeight -- {4}
-        , s.sliderXOffset -- String.fromFloat <| editorHeight -- {5}
-        , s.editorHeight -- {6}
+        , s.editorHeight
         ]
-
-
-
---sliderOffsetX : Int -> Float
---sliderOffsetX k =
---    (k + 50)
---        |> toFloat
---        |> (\x -> 1.0 * x)
---
---
---sliderOffsetY : Int -> Float -> Float
---sliderOffsetY numberOfLines lineHeight =
---    0.8 * toFloat numberOfLines * lineHeight
 
 
 styleTemplate : String
 styleTemplate =
     """
 
-body { font-size: {2}px;
-       line-height: {3}px;}
+body { font-size: {1}px;
+       line-height: {2}px;}
 
 .elm-editor-container {
   font-family: monospace;
@@ -87,7 +68,7 @@ body { font-size: {2}px;
   display: flex;
   // overflow-x : scroll;
   // overflow-y : scroll;
-  // height: {6}px;
+  // height: {3}px;
 }
 
 .elm-editor-container:focus {
@@ -168,15 +149,8 @@ body {
 
 #editor-container {
     text-align: left;
-9
     }
 
-.input-range-labels-container { visibility: hidden }
 
-
-
-.input-range-container {
-     transform: rotate(-270deg) translateY(-{1}px) translateX({4}px)
-}
 
 """

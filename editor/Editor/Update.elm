@@ -206,7 +206,7 @@ update buffer msg state =
                 cmd =
                     case state.cursor.line /= newCursor.line of
                         True ->
-                            setEditorViewportForLine state.config.lineHeight newCursor.line
+                            setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight newCursor.line
 
                         False ->
                             Cmd.none
@@ -238,7 +238,7 @@ update buffer msg state =
                 --                cmd =
                 --                    case state.cursor.line /= newCursor.line of
                 --                        True ->
-                --                            setEditorViewportForLine state.config.lineHeight newCursor.line
+                --                            setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight newCursor.line
                 --
                 --                        False ->
                 --                            Cmd.none
@@ -269,7 +269,7 @@ update buffer msg state =
 
                 scrollCmd =
                     if newCursor.line < state.topLine then
-                        setEditorViewportForLine state.config.lineHeight newCursor.line
+                        setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight newCursor.line
 
                     else
                         Cmd.none
@@ -300,8 +300,8 @@ update buffer msg state =
 
                 scrollCmd =
                     if newCursor.line > bottomLine state then
-                        -- setEditorViewportForLine state.config.lineHeight (newCursor.line - linesInWindow state - 1)
-                        setEditorViewportForLine state.config.lineHeight newCursor.line
+                        -- setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight (newCursor.line - linesInWindow state - 1)
+                        setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight newCursor.line
 
                     else
                         Cmd.none
@@ -386,7 +386,14 @@ update buffer msg state =
                     ( state, buffer, Cmd.none )
 
                 Just text ->
-                    ( state, Buffer.insert state.cursor text buffer, Cmd.none )
+                    let
+                        oldCursor =
+                            state.cursor
+
+                        newCursor =
+                            { oldCursor | column = oldCursor.column + String.length text }
+                    in
+                    ( { state | cursor = newCursor }, Buffer.insert state.cursor text buffer, Cmd.none )
 
         PasteFromClipboard ->
             ( state, Buffer.insert state.cursor state.clipboard buffer, Cmd.none )
@@ -521,7 +528,7 @@ update buffer msg state =
                 cursor =
                     { line = 0, column = 0 }
             in
-            ( { state | cursor = cursor, selection = Nothing }, buffer, setEditorViewportForLine state.config.lineHeight cursor.line ) |> recordHistory state buffer
+            ( { state | cursor = cursor, selection = Nothing }, buffer, setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight cursor.line ) |> recordHistory state buffer
 
         AcceptLineNumber nString ->
             case String.toInt nString of
@@ -544,7 +551,7 @@ update buffer msg state =
                                 Nothing ->
                                     Nothing
                     in
-                    ( { state | cursor = cursor, selection = selection }, buffer, setEditorViewportForLine state.config.lineHeight lineNumber ) |> recordHistory state buffer
+                    ( { state | cursor = cursor, selection = selection }, buffer, setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight lineNumber ) |> recordHistory state buffer
 
         AcceptSearchText str ->
             scrollToTextInternal str state buffer
@@ -579,7 +586,7 @@ update buffer msg state =
                 cursor =
                     { line = List.length (Buffer.lines buffer) - 1, column = 0 }
             in
-            ( { state | cursor = cursor, selection = Nothing }, buffer, setEditorViewportForLine state.config.lineHeight cursor.line ) |> recordHistory state buffer
+            ( { state | cursor = cursor, selection = Nothing }, buffer, setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight cursor.line ) |> recordHistory state buffer
 
         RemoveCharAfter ->
             case state.selection of
@@ -813,7 +820,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , Cmd.none
             )
 
         SelectDown ->
@@ -838,7 +845,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , Cmd.none
             )
 
         SelectLeft ->
@@ -863,7 +870,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , Cmd.none
             )
 
         SelectRight ->
@@ -888,7 +895,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , Cmd.none
             )
 
         SelectToLineStart ->
@@ -964,7 +971,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight cursor.line
             )
 
         SelectToGroupEnd ->
@@ -988,7 +995,7 @@ update buffer msg state =
                         state.selection
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight cursor.line
+            , setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight cursor.line
             )
 
         SelectAll ->
@@ -997,7 +1004,7 @@ update buffer msg state =
                 , selection = Just (Position 0 0)
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight 0
+            , setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight 0
             )
 
         SelectGroup ->
@@ -1033,7 +1040,7 @@ update buffer msg state =
         SendLine ->
             let
                 y =
-                    max 0 (adjustedLineHeight state.config.lineHeight * (toFloat state.cursor.line - 10))
+                    max 0 (adjustedLineHeight state.config.lineHeightFactor state.config.lineHeight * (toFloat state.cursor.line - 10))
 
                 newCursor =
                     Position.setColumn 0 state.cursor
@@ -1072,7 +1079,7 @@ update buffer msg state =
                         , history = history
                       }
                     , snapshot.buffer
-                    , setEditorViewportForLine state.config.lineHeight snapshot.cursor.line
+                    , Cmd.none
                     )
 
                 Nothing ->
@@ -1087,7 +1094,7 @@ update buffer msg state =
                         , history = history
                       }
                     , snapshot.buffer
-                    , setEditorViewportForLine state.config.lineHeight snapshot.cursor.line
+                    , Cmd.none
                     )
 
                 Nothing ->
@@ -1098,14 +1105,14 @@ update buffer msg state =
                 newCursor =
                     Position.shift -k state.cursor
             in
-            ( { state | cursor = newCursor, selection = Nothing }, buffer, setEditorViewportForLine state.config.lineHeight newCursor.line )
+            ( { state | cursor = newCursor, selection = Nothing }, buffer, setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight newCursor.line )
 
         ScrollDown k ->
             let
                 newCursor =
                     Position.shift k state.cursor
             in
-            ( { state | cursor = newCursor, selection = Nothing }, buffer, setEditorViewportForLine state.config.lineHeight newCursor.line )
+            ( { state | cursor = newCursor, selection = Nothing }, buffer, setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight newCursor.line )
 
         Clear ->
             ( clearState state, Buffer.init "", Cmd.none )
@@ -1219,12 +1226,12 @@ getElementWithViewPort vp id =
         |> Task.map (\el -> ( el, vp ))
 
 
-setEditorViewportForLine : Float -> Int -> Cmd Msg
-setEditorViewportForLine lineHeight lineNumber =
+setEditorViewportForLine : Float -> Float -> Int -> Cmd Msg
+setEditorViewportForLine lineHeightFactor lineHeight lineNumber =
     let
         y =
             toFloat lineNumber
-                * adjustedLineHeight lineHeight
+                * adjustedLineHeight lineHeightFactor lineHeight
     in
     case y >= 0 of
         True ->
@@ -1316,7 +1323,7 @@ scrollToTextInternal str state buffer =
                 , searchHitIndex = 0
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight (max 0 (cursor.line - 5))
+            , setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight (max 0 (cursor.line - 5))
             )
 
 
@@ -1374,7 +1381,7 @@ rollSearchSelectionForward state buffer =
                 , searchHitIndex = newSearchHitIndex
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight (max 0 (cursor.line - 5))
+            , setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight (max 0 (cursor.line - 5))
             )
 
 
@@ -1409,7 +1416,7 @@ rollSearchSelectionBackward state buffer =
                 , searchHitIndex = newSearchHitIndex
               }
             , buffer
-            , setEditorViewportForLine state.config.lineHeight (max 0 (cursor.line - 5))
+            , setEditorViewportForLine state.config.lineHeightFactor state.config.lineHeight (max 0 (cursor.line - 5))
             )
 
 
@@ -1475,6 +1482,6 @@ blur id =
     Task.attempt (\_ -> NoOp) (Dom.blur id)
 
 
-adjustedLineHeight : Float -> Float
-adjustedLineHeight lineHeight =
-    lineHeight
+adjustedLineHeight : Float -> Float -> Float
+adjustedLineHeight factor lineHeight =
+    factor * lineHeight
