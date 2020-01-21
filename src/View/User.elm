@@ -34,7 +34,6 @@ import Prng.Uuid as Uuid exposing (Uuid)
 import Search
 import String.Interpolate exposing (interpolate)
 import Style
-import TocZ exposing (TocMsg(..), viewZ)
 import User exposing (User)
 import Utility.View
 import View.Common exposing (ViewInfo)

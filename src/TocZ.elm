@@ -50,8 +50,8 @@ focus id zipper =
         |> Maybe.withDefault zipper
 
 
-viewZ : Bool -> Zipper Label -> Element TocMsg
-viewZ t z =
+viewZ : String -> Bool -> Zipper Label -> Element TocMsg
+viewZ selectedTitle t z =
     let
         offset =
             if (Zipper.label z).isRoot then
@@ -61,12 +61,12 @@ viewZ t z =
                 12
     in
     (List.concat
-        [ viewBefore t z
-        , [ viewSelf t (Zipper.tree z) ]
-        , viewAfter t z
+        [ viewBefore selectedTitle t z
+        , [ viewSelf selectedTitle t (Zipper.tree z) ]
+        , viewAfter selectedTitle t z
         ]
         |> Html.ul [ Attr.class "mm-ul-toc" ]
-        |> inAncestors t z
+        |> inAncestors selectedTitle t z
     )
         |> (\x ->
                 Html.div [ Attr.style "margin-left" "-24px" ] [ x ]
@@ -74,14 +74,14 @@ viewZ t z =
            )
 
 
-viewBefore : Bool -> Zipper Label -> List (Html TocMsg)
-viewBefore t z =
-    List.map (viewNode t) (Zipper.siblingsBeforeFocus z)
+viewBefore : String -> Bool -> Zipper Label -> List (Html TocMsg)
+viewBefore selectedTitle t z =
+    List.map (viewNode selectedTitle t) (Zipper.siblingsBeforeFocus z)
 
 
-viewAfter : Bool -> Zipper Label -> List (Html TocMsg)
-viewAfter t z =
-    List.map (viewNode t) (Zipper.siblingsAfterFocus z)
+viewAfter : String -> Bool -> Zipper Label -> List (Html TocMsg)
+viewAfter selectedTitle t z =
+    List.map (viewNode selectedTitle t) (Zipper.siblingsAfterFocus z)
 
 
 prefix l =
@@ -99,8 +99,8 @@ prefix l =
             "   "
 
 
-viewSelf : Bool -> Tree Label -> Html TocMsg
-viewSelf toggle t =
+viewSelf : String -> Bool -> Tree Label -> Html TocMsg
+viewSelf selectedTitle toggle t =
     let
         l =
             Tree.label t
@@ -111,12 +111,27 @@ viewSelf toggle t =
                     "mm-toc-root"
 
                 False ->
-                    "mm-toc-item"
+                    case selectedTitle == l.title of
+                        True ->
+                            "mm-toc-item-selected"
+
+                        False ->
+                            "mm-toc-item"
     in
-    Html.li [ Attr.class "mm-li-toc" ]
-        [ Html.span [ Attr.class class ] [ Html.text <| prefix l ++ l.title ]
-        , Html.ul [ Attr.class "mm-ul-toc" ] (List.map (viewNode toggle) (Tree.children t))
+    Html.li [ liClass selectedTitle l.title ]
+        [ Html.span [] [ Html.text <| prefix l ++ l.title ]
+        , Html.ul [ Attr.class "mm-ul-toc" ] (List.map (viewNode selectedTitle toggle) (Tree.children t))
         ]
+
+
+liClass : String -> String -> Html.Attribute msg
+liClass selectedTitle actualTitle =
+    case selectedTitle == actualTitle of
+        True ->
+            Attr.class "mm-li-toc-selected"
+
+        False ->
+            Attr.class "mm-li-toc"
 
 
 
@@ -134,8 +149,8 @@ edges =
     }
 
 
-viewNode : Bool -> Tree Label -> Html TocMsg
-viewNode showAll t =
+viewNode : String -> Bool -> Tree Label -> Html TocMsg
+viewNode selectedTitle showAll t =
     let
         l =
             Tree.label t
@@ -146,16 +161,21 @@ viewNode showAll t =
                     "mm-toc-root"
 
                 False ->
-                    "mm-toc-item"
+                    case selectedTitle == l.title of
+                        True ->
+                            "mm-toc-item-selected"
+
+                        False ->
+                            "mm-toc-item"
 
         xs =
             if showAll then
-                [ Html.ul [ Attr.class "mm-ul-toc" ] (List.map (viewNode showAll) (Tree.children t)) ]
+                [ Html.ul [ Attr.class "mm-ul-toc" ] (List.map (viewNode selectedTitle showAll) (Tree.children t)) ]
 
             else
                 []
     in
-    Html.li [ Attr.class "mm-li-toc" ]
+    Html.li [ liClass selectedTitle l.title ]
         (Html.span
             [ Events.onClick (Focus l.id), Attr.class class ]
             [ Html.text <| prefix l ++ l.title ]
@@ -167,8 +187,8 @@ viewNode showAll t =
 --XXXXX
 
 
-inAncestors : Bool -> Zipper Label -> Html TocMsg -> Html TocMsg
-inAncestors toggle zipper current =
+inAncestors : String -> Bool -> Zipper Label -> Html TocMsg -> Html TocMsg
+inAncestors selectedTitle toggle zipper current =
     case Zipper.parent zipper of
         Just parent ->
             let
@@ -184,18 +204,18 @@ inAncestors toggle zipper current =
                             ""
             in
             List.concat
-                [ viewBefore toggle parent
-                , [ Html.li [ Attr.class "mm-li-toc" ]
+                [ viewBefore selectedTitle toggle parent
+                , [ Html.li [ liClass selectedTitle l.title ]
                         [ Html.span
                             [ Events.onClick (Focus (Zipper.label parent).id), Attr.class class ]
                             [ Html.text <| prefix l ++ (Zipper.label parent).title ]
                         , current
                         ]
                   ]
-                , viewAfter toggle parent
+                , viewAfter selectedTitle toggle parent
                 ]
                 |> Html.ul [ Attr.class "mm-ul-toc" ]
-                |> inAncestors toggle parent
+                |> inAncestors selectedTitle toggle parent
 
         Nothing ->
             current

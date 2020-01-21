@@ -354,12 +354,15 @@ renderTocForDeque model =
 
 renderTocForMaster : Model -> List (Element Msg)
 renderTocForMaster model =
-    case model.tocData of
-        Nothing ->
+    case ( model.tocData, model.currentDocument ) of
+        ( Nothing, _ ) ->
             [ el [] (Element.text <| "Loading TOC ...") ]
 
-        Just zipper ->
-            [ viewZ model.toggleToc zipper |> Element.map TOC ]
+        ( Just zipper, Just doc ) ->
+            [ viewZ doc.title model.toggleToc zipper |> Element.map TOC ]
+
+        ( Just zipper, Nothing ) ->
+            [ viewZ "__undefined__" model.toggleToc zipper |> Element.map TOC ]
 
 
 tocEntry : Maybe Document -> Document -> Element Msg
