@@ -451,7 +451,7 @@ wrapSelection ((Editor data) as editor) =
                     Buffer.between start end data.buffer
 
                 wrappedText =
-                    Editor.Wrap.paragraphs data.state.config selectedText
+                    Editor.Wrap.paragraphs data.state.config.wrapParams selectedText
 
                 oldState =
                     data.state
@@ -491,7 +491,7 @@ insert wrapOption position string (Editor data) =
         textToInsert =
             case wrapOption of
                 DoWrap ->
-                    Editor.Wrap.paragraphs data.state.config string
+                    Editor.Wrap.paragraphs data.state.config.wrapParams string
 
                 DontWrap ->
                     string
@@ -552,7 +552,7 @@ load wrapOption content ((Editor data) as editor) =
 
         buffer =
             if wrapOption == DoWrap && maxLineLength > config.wrapParams.maximumWidth then
-                Buffer.fromString (Editor.Wrap.paragraphs config content)
+                Buffer.fromString (Editor.Wrap.paragraphs config.wrapParams content)
 
             else
                 Buffer.fromString content

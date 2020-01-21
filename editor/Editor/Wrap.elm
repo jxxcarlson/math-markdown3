@@ -4,32 +4,35 @@ module Editor.Wrap exposing (paragraphs, runFSM)
 -}
 
 import Dict exposing (Dict)
-import Editor.Config exposing (Config)
+import Editor.Config exposing (WrapParams)
 import Paragraph
 
 
 {-| Wrap text preserving paragraph structure and code blocks
 -}
-paragraphs : Config -> String -> String
-paragraphs config str =
+paragraphs : WrapParams -> String -> String
+paragraphs wrapParams str =
     str
         ++ "\n"
         |> runFSM
         |> List.filter (\( t, s ) -> s /= "")
-        |> List.map (wrapParagraph config >> String.trim)
+        |> List.map (wrapParagraph wrapParams >> String.trim)
         |> String.join "\n\n"
 
 
 {-| Wrap text in paragraph if it is of ParagraphType,
-but not if it is of codeType
+but not if it is code or block
 -}
-wrapParagraph : Config -> ( ParagraphType, String ) -> String
-wrapParagraph config ( paragraphType, str ) =
+wrapParagraph : WrapParams -> ( ParagraphType, String ) -> String
+wrapParagraph wrapParams ( paragraphType, str ) =
     case paragraphType of
         TextParagraph ->
-            Paragraph.lines config.wrapParams str |> String.join "\n"
+            Paragraph.lines wrapParams str |> String.join "\n"
 
         CodeParagraph ->
+            str
+
+        BlockParagraph ->
             str
 
 
@@ -71,14 +74,25 @@ opDict : Dict String (String -> Data -> Data)
 opDict =
     Dict.fromList
         [ ( "NoOp", \s d -> d )
+
+        --
+        , ( "StartParagraph", \s d -> { d | currentParagraph = [ s ], tick = d.tick + 1 } )
         , ( "AddToParagraph", \s d -> { d | currentParagraph = s :: d.currentParagraph, tick = d.tick + 1 } )
+        , ( "EndParagraph", \s d -> { d | currentParagraph = [], paragraphList = ( TextParagraph, joinLines d.currentParagraph ) :: d.paragraphList } )
+
+        --
+        , ( "StartCodeFromBlank", \s d -> { d | currentParagraph = [ s ], paragraphList = ( TextParagraph, joinLines d.currentParagraph ) :: d.paragraphList, tick = d.tick + 1 } )
+        , ( "StartCodeFromParagraph", \s d -> { d | currentParagraph = [ s ], paragraphList = ( TextParagraph, joinLines d.currentParagraph ) :: d.paragraphList, tick = d.tick + 1 } )
+        , ( "StartCode", \s d -> { d | currentParagraph = [ s ], tick = d.tick + 1 } )
         , ( "AddToCode", \s d -> { d | currentParagraph = s :: d.currentParagraph, tick = d.tick + 1 } )
         , ( "EndCode", \s d -> { d | currentParagraph = [], paragraphList = ( CodeParagraph, joinLinesForCode <| s :: d.currentParagraph ) :: d.paragraphList } )
-        , ( "EndParagraph", \s d -> { d | currentParagraph = [], paragraphList = ( TextParagraph, joinLines d.currentParagraph ) :: d.paragraphList } )
-        , ( "StartCode", \s d -> { d | currentParagraph = [ s ], tick = d.tick + 1 } )
-        , ( "StartCodeFromParagraph", \s d -> { d | currentParagraph = [ s ], paragraphList = ( TextParagraph, joinLines d.currentParagraph ) :: d.paragraphList, tick = d.tick + 1 } )
-        , ( "StartCodeFromBlank", \s d -> { d | currentParagraph = [ s ], paragraphList = ( TextParagraph, joinLines d.currentParagraph ) :: d.paragraphList, tick = d.tick + 1 } )
-        , ( "StartParagraph", \s d -> { d | currentParagraph = [ s ], tick = d.tick + 1 } )
+
+        --
+        , ( "StartBlockFromBlank", \s d -> { d | currentParagraph = [ s ], paragraphList = ( TextParagraph, joinLines d.currentParagraph ) :: d.paragraphList, tick = d.tick + 1 } )
+        , ( "StartBlockFromParagraph", \s d -> { d | currentParagraph = [ s ], paragraphList = ( TextParagraph, joinLines d.currentParagraph ) :: d.paragraphList, tick = d.tick + 1 } )
+        , ( "StartBlock", \s d -> { d | currentParagraph = [ s ], tick = d.tick + 1 } )
+        , ( "AddToBlock", \s d -> { d | currentParagraph = s :: d.currentParagraph, tick = d.tick + 1 } )
+        , ( "EndBlock", \s d -> { d | currentParagraph = [], paragraphList = ( BlockParagraph, joinLinesForCode <| s :: d.currentParagraph ) :: d.paragraphList } )
         ]
 
 
@@ -149,23 +163,48 @@ nextStateAndAction line state =
         ( InCode, Text ) ->
             ( InCode, op "AddToCode" )
 
+        ( InBlank, BeginBlock ) ->
+            ( InBlock, op "StartBlockFromBlank" )
+
+        ( InParagraph, BeginBlock ) ->
+            ( InBlock, op "StartBlockFromParagraph" )
+
+        ( Start, BeginBlock ) ->
+            ( InBlock, op "StartBlock" )
+
+        ( InBlock, EndBlock ) ->
+            ( Start, op "EndBlock" )
+
+        ( InBlock, Blank ) ->
+            ( InBlock, op "AddToBlock" )
+
+        ( InBlock, Text ) ->
+            ( InBlock, op "AddToBlock" )
+
+        ( _, _ ) ->
+            ( Start, op "NoOp" )
+
 
 type State
     = Start
     | InParagraph
     | InBlank
     | InCode
+    | InBlock
 
 
 type LineType
     = Blank
     | Text
     | CodeDelimiter
+    | BeginBlock
+    | EndBlock
 
 
 type ParagraphType
     = TextParagraph
     | CodeParagraph
+    | BlockParagraph
 
 
 {-| Classify a line as Blank | CodeDelimiter or Text
@@ -185,6 +224,12 @@ classifyLine str =
     else if String.left 2 prefix == "$$" then
         CodeDelimiter
         -- haha
+
+    else if String.left 6 prefix == "\\begin" then
+        BeginBlock
+
+    else if String.left 4 prefix == "\\end" then
+        EndBlock
 
     else
         Text

@@ -1100,7 +1100,7 @@ update buffer msg state =
             ( clearState state, Buffer.init "", Cmd.none )
 
         WrapAll ->
-            ( state, Buffer.init (Editor.Wrap.paragraphs state.config (Buffer.toString buffer)), Cmd.none )
+            ( state, Buffer.init (Editor.Wrap.paragraphs state.config.wrapParams (Buffer.toString buffer)), Cmd.none )
                 |> recordHistory state buffer
 
         WrapSelection ->
@@ -1117,7 +1117,7 @@ update buffer msg state =
                             Buffer.between start end buffer
 
                         wrappedText =
-                            Editor.Wrap.paragraphs state.config selectedText
+                            Editor.Wrap.paragraphs state.config.wrapParams selectedText
 
                         newState =
                             { state | selectedText = Just selectedText }
@@ -1276,7 +1276,7 @@ load wrapOption content state =
 
         buffer =
             if wrapOption == DoWrap then
-                Buffer.fromString (Editor.Wrap.paragraphs config content)
+                Buffer.fromString (Editor.Wrap.paragraphs config.wrapParams content)
 
             else
                 Buffer.fromString content
