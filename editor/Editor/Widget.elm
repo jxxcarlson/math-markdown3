@@ -1,6 +1,7 @@
 module Editor.Widget exposing
     ( columnButton
     , columnButtonStyle
+    , headingStyle
     , lightColumnButton
     , lightRowButton
     , rowButton
@@ -17,6 +18,12 @@ columnButtonStyle =
     , style "font-size" "12px"
     , style "border" "none"
     , style "margin-right" "8px"
+    ]
+
+
+headingStyle =
+    [ style "font-size" "14px"
+    , style "margin-right" "12px"
     ]
 
 

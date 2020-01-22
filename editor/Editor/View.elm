@@ -172,6 +172,7 @@ view attr lines state =
         [ goToLinePanel state
         , searchPanel state
         , infoPanel state lines
+        , headerPanel state lines
         , div
             [ class <| name ++ "-container"
             , Event.preventDefaultOn
@@ -204,8 +205,6 @@ infoPanel_ state lines =
         , cursorPosition state
         , currentLineLength state lines
         , displayLineHeight state lines
-        , lineCount lines
-        , wordCount lines
         , wrappingOption state
         , dismissInfoPanel
         ]
@@ -279,6 +278,27 @@ searchPanel state =
         div [] []
 
 
+headerPanel state lines =
+    div headerPanelStyle
+        [ wordCount lines, lineCount lines ]
+
+
+headerPanelStyle =
+    [ style "width" "470px"
+    , style "padding-top" "10px"
+    , style "height" "27px"
+    , style "padding-left" "40px"
+    , style "background-color" "#c3c6f7"
+    , style "opacity" "0.8"
+    , style "font-size" "14px"
+    , style "position" "absolute"
+    , style "left" "0px"
+    , style "top" "0px"
+    , style "z-index" "0"
+    , Attribute.class "flex-row"
+    ]
+
+
 searchPanel_ state =
     div
         [ style "width" "595px"
@@ -286,7 +306,7 @@ searchPanel_ state =
         , style "height" "30px"
         , style "padding-left" "8px"
         , style "background-color" "#bbb"
-        , style "opacity" "0.8"
+        , style "opacity" "0.9"
         , style "font-size" "14px"
         , style "position" "absolute"
         , style "left" "0px"
@@ -319,11 +339,12 @@ goToLinePanel_ =
         [ style "width" "220px"
         , style "height" "34px"
         , style "padding" "1px"
-        , style "opacity" "0.8"
+        , style "opacity" "0.9"
         , style "position" "absolute"
         , style "left" "0px"
         , style "top" "0px"
         , style "background-color" "#aab"
+        , style "z-index" "100"
         , Attribute.class "flex-row"
         ]
         [ goToLineButton
@@ -357,7 +378,7 @@ numberOfHitsDisplay state =
 
 lineCount : List String -> Html Msg
 lineCount lines =
-    div Widget.columnButtonStyle [ text ("Lines: " ++ String.fromInt (List.length lines)) ]
+    div Widget.headingStyle [ text ("Lines: " ++ String.fromInt (List.length lines)) ]
 
 
 wordCount : List String -> Html Msg
@@ -366,7 +387,7 @@ wordCount lines =
         words =
             List.map String.words lines |> List.concat
     in
-    div Widget.columnButtonStyle [ text ("Words: " ++ String.fromInt (List.length words)) ]
+    div Widget.headingStyle [ text ("Words: " ++ String.fromInt (List.length words)) ]
 
 
 cursorPosition : InternalState -> Html Msg
