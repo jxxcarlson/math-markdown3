@@ -625,21 +625,12 @@ update msg model =
             Search.do { model | sortMode = sortMode, sortTerm = sortTerm }
 
         SetDocType docType ->
-            let
-                currentDocument =
-                    case model.currentDocument of
-                        Nothing ->
-                            Nothing
+            case model.currentDocument of
+                Nothing ->
+                    ( model, Cmd.none )
 
-                        Just doc ->
-                            Just { doc | docType = docType }
-            in
-            ( { model
-                | docType = docType
-                , currentDocument = currentDocument
-              }
-            , Cmd.none
-            )
+                Just doc ->
+                    reloadDocument model { doc | docType = docType }
 
         SetToolPanelState visibility ->
             ( { model | visibilityOfTools = visibility }, Cmd.none )
@@ -1552,6 +1543,27 @@ loadDocument model document =
         , counter = model.counter + 2
         , renderingData = renderingData
         , appMode = Reading
+        , documentListDisplay = ( SearchResults, DequeViewOff )
+        , docType = Document.getDocType (Just document)
+        , message = ( UserMessage, "Success loading document" )
+      }
+        |> Update.Tool.setupToEdit
+    , cmd
+    )
+
+
+reloadDocument : Model -> Document -> ( Model, Cmd Msg )
+reloadDocument model document =
+    let
+        ( renderingData, cmd ) =
+            Update.Render.prepare model (Just document)
+    in
+    ( { model
+        | documentList = document :: List.filter (\doc -> doc.id /= document.id) model.documentList
+        , currentDocument = Just document
+        , tagString = getTagString (Just document)
+        , counter = model.counter + 2
+        , renderingData = renderingData
         , documentListDisplay = ( SearchResults, DequeViewOff )
         , docType = Document.getDocType (Just document)
         , message = ( UserMessage, "Success loading document" )
