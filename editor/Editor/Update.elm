@@ -1373,10 +1373,6 @@ scrollToText str state buffer =
             ( { state | searchResults = RollingList.fromList [], searchTerm = str }, buffer )
 
         Just ( cursor, end ) ->
-            let
-                _ =
-                    Debug.log "SEL" ( cursor, end )
-            in
             ( { state
                 | cursor = cursor
                 , selection = Just end
