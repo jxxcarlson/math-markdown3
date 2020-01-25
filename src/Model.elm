@@ -132,7 +132,7 @@ defaultEditorConfig =
     , wrapParams = { maximumWidth = 40, optimalWidth = 35, stringWidth = String.length }
     , wrapOption = DontWrap
     , fontProportion = 0.75
-    , lineHeightFactor = 0.8
+    , lineHeightFactor = 0.75
     }
 
 

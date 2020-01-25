@@ -125,7 +125,6 @@ resetViewportOfEditor =
 setViewportForElement : String -> Cmd Msg
 setViewportForElement id =
     Dom.getViewportOf idToScrollRenderedTxt
-        |> Debug.log "SCROLL VP"
         |> Task.andThen (\vp -> getElementWithViewPort vp id)
         |> Task.attempt SetViewPortForElement
 
@@ -140,20 +139,9 @@ setViewPortForSelectedLine : Dom.Element -> Dom.Viewport -> Cmd Msg
 setViewPortForSelectedLine element viewport =
     let
         y =
-            Debug.log "SCROLL TO y"
-                --- viewport.viewport.y + element.element.y - element.element.height - 150
-                (element.element.y - 160)
+            viewport.viewport.y + element.element.y - 230
     in
     Task.attempt (\_ -> NoOp) (Dom.setViewportOf "__rt_scroll__" 0 y)
-
-
-setViewPortForSelectedLine1 : Dom.Element -> Dom.Viewport -> Cmd Msg
-setViewPortForSelectedLine1 element viewport =
-    let
-        y =
-            Debug.log "y" <| 600
-    in
-    Task.attempt (\_ -> NoOp) (Dom.setViewportOf idToScrollRenderedTxt 0 y)
 
 
 
@@ -162,8 +150,7 @@ setViewPortForSelectedLine1 element viewport =
 
 idToScrollRenderedTxt : String
 idToScrollRenderedTxt =
-    -- "__rt_scroll__"
-    "__RENDERED_TEXT1__"
+    "__rt_scroll2__"
 
 
 
