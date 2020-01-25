@@ -563,6 +563,20 @@ update msg model =
                     , cmd
                     )
 
+                Outside.GotSelectionForSync selection ->
+                    let
+                        _ =
+                            Debug.log "GotSelectionForSync" selection
+                    in
+                    -- ( { model | selectedText = selection }, Cmd.none )
+                    syncAndHighlightRenderedText selection
+                        Cmd.none
+                        { model
+                            | selectedText = selection
+
+                            --, editor = Editor.scrollToString selection model.editor
+                        }
+
                 Outside.GotClipboard clipboard ->
                     pasteToEditorClipboard model clipboard
 
@@ -751,6 +765,9 @@ update msg model =
 
         GetTextSelection ->
             ( model, Outside.sendInfo (Outside.GetTextSelectionFromOutside E.null) )
+
+        GetSelectionForSync ->
+            ( model, Outside.sendInfo (Outside.GetSelectionForSyncOutside E.null) )
 
         DownloadArchive ->
             Update.Document.downloadArchive model

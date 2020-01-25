@@ -17,7 +17,7 @@ module Button exposing
     , extendedMathMarkdown
     , firstSubDocument
     , getClipboard
-    , getTextSelection
+    , getSelectionForSync
     , headingStyle
     , helpDocs
     , miniLaTeX
@@ -365,9 +365,9 @@ saveImportedArchive =
         }
 
 
-getTextSelection =
+getSelectionForSync =
     Input.button []
-        { onPress = Just GetTextSelection
+        { onPress = Just GetSelectionForSync
         , label = el [] (Element.text "Sync L <- R")
         }
 

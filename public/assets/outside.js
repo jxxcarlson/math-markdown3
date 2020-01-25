@@ -2,9 +2,11 @@
 
 app.ports.infoForOutside.subscribe(msg => {
 
-    console.log("app.ports.infoForOutside")
+    console.log("I am here!")
+    // console.log("infoForOutside:: ", msg.tag);
 
     switch(msg.tag) {
+
 
        case "AskToReconnectUser":
         console.log("AskToReconnectUser")
@@ -14,7 +16,7 @@ app.ports.infoForOutside.subscribe(msg => {
         break;
 
         case "AskForClipBoard":
-        console.log("AskForClipBoard")
+        console.log("I am logging this: AskForClipBoard")
         navigator.clipboard.readText()
           .then(text => {
             console.log('Clipboard (outside):', text);
@@ -61,6 +63,17 @@ app.ports.infoForOutside.subscribe(msg => {
            console.log ("json", jsonData)
            app.ports.infoForElm.send({tag: "GotSelection", data: jsonData})
        break;
+
+       case "GetSelectionForSyncOutside":
+            console.log("GetSelectionForSyncOutside (yay!)")
+            var value =  window.getSelection()
+            console.log ("value fo SYNCs: ", value)
+            console.log("NODE:", value.focusNode.data )
+            var jsonData = {selection: value.focusNode.data}
+            console.log ("json", jsonData)
+            app.ports.infoForElm.send({tag: "GotSelectionForSync", data: jsonData})
+       break;
+
 
       case "ScrollToLine":
          console.log("ScrollToLine", msg.data)  //, JSON.stringify(msg.data))

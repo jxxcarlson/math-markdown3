@@ -32,14 +32,22 @@ renderedSource viewInfo model footerText_ rt =
 
         outerSourceStyle =
             [ View.Common.setElementId "__rt_scroll__"
-            , width (px w_)
+            , width (px w2_)
             , height (px h_)
-            , Element.paddingEach { left = 0, right = 20, top = 0, bottom = 30 }
+            , clipX
             , Font.size 12
+            , paddingXY 5 20
             ]
 
         innerSourceStyle =
-            [ View.Common.setElementId Cmd.Document.idToScrollRenderedTxt, height (px h_) ]
+            let
+                padding =
+                    Element.paddingEach { left = 0, right = 10, top = 0, bottom = 30 }
+
+                w =
+                    width (px (w2_ - 80))
+            in
+            padding :: w :: [ View.Common.setElementId Cmd.Document.idToScrollRenderedTxt, height (px h_) ]
 
         outerTocStyle : List (Attribute msg)
         outerTocStyle =

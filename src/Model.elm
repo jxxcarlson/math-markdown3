@@ -276,6 +276,7 @@ type Msg
     | SyncEditorToLine Int
     | SetViewPortForElement (Result Dom.Error ( Dom.Element, Dom.Viewport ))
     | GetTextSelection
+    | GetSelectionForSync
     | AskForClipBoard
       -- Document
     | CreateDocument

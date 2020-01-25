@@ -31,6 +31,7 @@ type alias GenericOutsideData =
 type InfoForElm
     = UserDataFromOutside OutsideUser
     | GotSelection String
+    | GotSelectionForSync String
     | UuidList (List Uuid)
     | GotClipboard String
 
@@ -42,9 +43,44 @@ type InfoForOutside
     | AskForDequeData E.Value
     | DequeData E.Value
     | GetTextSelectionFromOutside E.Value
+    | GetSelectionForSyncOutside E.Value
     | ScrollToLine E.Value
     | AskForClipBoard E.Value
     | WriteToClipBoard String
+
+
+stringOfInfoForOutside : InfoForOutside -> String
+stringOfInfoForOutside info =
+    case info of
+        AskToReconnectUser _ ->
+            "AskToReconnectUser"
+
+        UserData _ ->
+            "UserData"
+
+        DestroyUserData _ ->
+            "DestroyUserData"
+
+        AskForDequeData _ ->
+            "AskForDequeData"
+
+        DequeData _ ->
+            "DequeData"
+
+        GetTextSelectionFromOutside _ ->
+            "GetTextSelectionFromOutside"
+
+        GetSelectionForSyncOutside _ ->
+            "GetSelectionForSyncOutside"
+
+        ScrollToLine _ ->
+            "ScrollToLine"
+
+        AskForClipBoard _ ->
+            "AskForClipBoard"
+
+        WriteToClipBoard _ ->
+            "WriteToClipBoard"
 
 
 getInfo : (InfoForElm -> msg) -> (String -> msg) -> Sub msg
@@ -64,6 +100,14 @@ getInfo tagger onError =
                     case D.decodeValue EditorTools.selectionDecoder outsideInfo.data of
                         Ok result ->
                             tagger <| GotSelection result
+
+                        Err e ->
+                            onError <| ""
+
+                "GotSelectionForSync" ->
+                    case D.decodeValue EditorTools.selectionDecoder outsideInfo.data of
+                        Ok result ->
+                            tagger <| GotSelectionForSync result
 
                         Err e ->
                             onError <| ""
@@ -91,6 +135,10 @@ getInfo tagger onError =
 
 sendInfo : InfoForOutside -> Cmd msg
 sendInfo info =
+    let
+        _ =
+            Debug.log "sendInfo" (stringOfInfoForOutside info)
+    in
     case info of
         UserData value ->
             infoForOutside { tag = "UserData", data = value }
@@ -109,6 +157,13 @@ sendInfo info =
 
         GetTextSelectionFromOutside value ->
             infoForOutside { tag = "GetSelection", data = E.null }
+
+        GetSelectionForSyncOutside value ->
+            let
+                _ =
+                    Debug.log "GetSelectionForSyncOutside" "HERE!"
+            in
+            infoForOutside { tag = "GetSelectionForSyncOutside", data = E.null }
 
         ScrollToLine value ->
             infoForOutside { tag = "ScrollToLine", data = value }
