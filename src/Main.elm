@@ -493,10 +493,6 @@ update msg model =
                     syncWithEditor model newEditor editorCmd
 
                 E.SendLine ->
-                    let
-                        _ =
-                            Debug.log "SL, counter" model.counter
-                    in
                     syncAndHighlightRenderedText (Editor.lineAtCursor newEditor) (editorCmd |> Cmd.map EditorMsg) { model | editor = newEditor }
 
                 E.CopyPasteClipboard ->
@@ -1331,14 +1327,7 @@ syncAndHighlightRenderedText : String -> Cmd Msg -> Model -> ( Model, Cmd Msg )
 syncAndHighlightRenderedText str cmd model =
     case model.renderingData of
         MD data ->
-            let
-                ( m, c ) =
-                    mdSyncAndHighlightRenderedText data str cmd model
-
-                _ =
-                    Debug.log "SAHRT" m.counter
-            in
-            ( m, c )
+            mdSyncAndHighlightRenderedText data str cmd model
 
         ML _ ->
             ( model, cmd )
@@ -1362,9 +1351,6 @@ mdSyncAndHighlightRenderedText mdData str cmd model =
         id3 =
             id2 |> (\( id_, _ ) -> ( id_, newCounter ))
 
-        _ =
-            Debug.log "(newCounter, id2)" ( newCounter, id3 )
-
         sourceText =
             Maybe.map .content model.currentDocument |> Maybe.withDefault "empty source"
     in
@@ -1376,17 +1362,8 @@ mdSyncAndHighlightRenderedText mdData str cmd model =
 mdProcessContentForHighlighting : MDData Msg -> String -> Model -> Model
 mdProcessContentForHighlighting mdData str model =
     let
-        currentCounter =
-            model.counter
-
-        newCounter =
-            model.counter
-
-        _ =
-            Debug.log "(cc, nc)" ( currentCounter, newCounter )
-
         newAst_ =
-            Parse.toMDBlockTree currentCounter ExtendedMath str
+            Parse.toMDBlockTree model.counter ExtendedMath str
 
         newAst =
             Diff.mergeWith Parse.equalIds mdData.fullAst newAst_
@@ -1397,7 +1374,7 @@ mdProcessContentForHighlighting mdData str model =
         newMDData =
             { mdData | renderedText = renderedText }
     in
-    { model | renderingData = MD newMDData, counter = newCounter }
+    { model | renderingData = MD newMDData }
 
 
 syncWithEditor : Model -> Editor.Editor -> Cmd EditorMsg -> ( Model, Cmd Msg )
