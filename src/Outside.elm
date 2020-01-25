@@ -135,10 +135,6 @@ getInfo tagger onError =
 
 sendInfo : InfoForOutside -> Cmd msg
 sendInfo info =
-    let
-        _ =
-            Debug.log "sendInfo" (stringOfInfoForOutside info)
-    in
     case info of
         UserData value ->
             infoForOutside { tag = "UserData", data = value }
@@ -159,10 +155,6 @@ sendInfo info =
             infoForOutside { tag = "GetSelection", data = E.null }
 
         GetSelectionForSyncOutside value ->
-            let
-                _ =
-                    Debug.log "GetSelectionForSyncOutside" "HERE!"
-            in
             infoForOutside { tag = "GetSelectionForSyncOutside", data = E.null }
 
         ScrollToLine value ->

@@ -563,19 +563,18 @@ update msg model =
                     , cmd
                     )
 
-                Outside.GotSelectionForSync selection ->
+                Outside.GotSelectionForSync selection_ ->
                     let
-                        _ =
-                            Debug.log "GotSelectionForSync" selection
-                    in
-                    -- ( { model | selectedText = selection }, Cmd.none )
-                    syncAndHighlightRenderedText selection
-                        Cmd.none
-                        { model
-                            | selectedText = selection
+                        selection =
+                            String.trim selection_
 
-                            --, editor = Editor.scrollToString selection model.editor
-                        }
+                        ( newEditor, editorCmd ) =
+                            Editor.scrollToString selection model.editor
+                    in
+                    syncAndHighlightRenderedText
+                        (Editor.lineAtCursor newEditor)
+                        (editorCmd |> Cmd.map EditorMsg)
+                        { model | selectedText = selection, editor = newEditor }
 
                 Outside.GotClipboard clipboard ->
                     pasteToEditorClipboard model clipboard
