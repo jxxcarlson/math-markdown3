@@ -8,6 +8,7 @@ module Editor.Widget exposing
     , textField
     )
 
+import Editor.Style as Style
 import Html exposing (Attribute, Html, button, div, input, text)
 import Html.Attributes exposing (placeholder, style, type_)
 import Html.Events exposing (onClick, onInput)
@@ -37,7 +38,7 @@ rowButtonStyle =
 
 buttonLabelStyle width =
     [ style "font-size" "12px"
-    , style "background-color" "#666"
+    , style "background-color" Style.darkGray
     , style "color" "#eee"
     , style "width" (String.fromInt width ++ "px")
     , style "height" "24px"
@@ -58,7 +59,7 @@ lightButtonLabelStyle width =
 
 rowButtonLabelStyle width =
     [ style "font-size" "12px"
-    , style "background-color" "#666"
+    , style "background-color" Style.darkGray
     , style "color" "#eee"
     , style "width" (String.fromInt width ++ "px")
     , style "height" "24px"

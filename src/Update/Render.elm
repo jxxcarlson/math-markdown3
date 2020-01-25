@@ -11,7 +11,7 @@ prepare : Model -> Maybe Document -> ( RenderingData Msg, Cmd Msg )
 prepare model currentDoc =
     case currentDoc of
         Nothing ->
-            ( Render.load model.counter (OMarkdown Extended) "empty", Cmd.none )
+            ( Render.load model.selectedId model.counter (OMarkdown Extended) "empty", Cmd.none )
 
         Just doc ->
             let
@@ -20,11 +20,11 @@ prepare model currentDoc =
             in
             case String.length doc.content < 4000 of
                 True ->
-                    ( Render.load model.counter option doc.content, Cmd.none )
+                    ( Render.load model.selectedId model.counter option doc.content, Cmd.none )
 
                 False ->
                     let
                         rd =
-                            Render.loadFast model.counter option doc.content
+                            Render.loadFast model.selectedId model.counter option doc.content
                     in
-                    ( rd, Cmd.Document.renderAstFor rd )
+                    ( rd, Cmd.Document.renderAstFor model.selectedId rd )

@@ -161,12 +161,12 @@ getUserDocumentsAtSignIn user =
 -- RENDER
 
 
-renderAstFor : RenderingData Msg -> Cmd Msg
-renderAstFor rd =
+renderAstFor : ( Int, Int ) -> RenderingData Msg -> Cmd Msg
+renderAstFor selectedId rd =
     Process.sleep 10
         |> Task.andThen
             (\_ ->
                 Process.sleep 100
-                    |> Task.andThen (\_ -> Task.succeed (Render.render rd))
+                    |> Task.andThen (\_ -> Task.succeed (Render.render selectedId rd))
             )
         |> Task.perform GotSecondPart

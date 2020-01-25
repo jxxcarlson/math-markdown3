@@ -22,6 +22,7 @@ import Interchange
 import Json.Encode as E
 import Keyboard exposing (Key(..))
 import KeyboardManager
+import Markdown.ElmWithId
 import Markdown.Option as MDOption exposing (Option(..))
 import Markdown.Parse as Parse
 import Model
@@ -49,7 +50,7 @@ import Prng.Uuid as Uuid exposing (Uuid)
 import Random
 import Random.Pcg.Extended exposing (Seed, initialSeed, step)
 import RemoteData exposing (RemoteData(..))
-import Render exposing (RenderingData(..), RenderingOption(..))
+import Render exposing (MDData, MLData, RenderingData(..), RenderingOption(..))
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..), orderByMostRecentFirst, orderByTitleAsc)
 import Search
 import Sync
@@ -57,6 +58,7 @@ import Task exposing (Task)
 import Time exposing (Posix)
 import TocManager
 import TocZ exposing (TocMsg(..))
+import Tree.Diff as Diff
 import Update.Document
 import Update.Master
 import Update.Render
@@ -276,11 +278,12 @@ init flags url key =
 
             -- EDITOR
             , selectedText = ""
+            , selectedId = ( 0, 0 )
             , editorTargetLineNumber = Nothing
             , clipboard = ""
 
             -- documents
-            , counter = 0
+            , counter = 1
             , documentDeleteState = SafetyOn
             , documentList = [ Data.loadingPage ]
             , tableOfContents = []
@@ -294,7 +297,7 @@ init flags url key =
             , currentDocument = Just Data.loadingPage
             , currentDocumentDirty = False
             , secondsWhileDirty = 0
-            , renderingData = Render.load -1 (OMarkdown MDOption.Standard) "Empty document"
+            , renderingData = Render.load ( 0, 0 ) 0 (OMarkdown MDOption.Standard) "Empty document"
             , tagString = ""
             , searchTerms = ""
             , sortTerm = orderByMostRecentFirst
@@ -368,7 +371,7 @@ bareModel model =
         , currentDocument = Just Data.loadingPage
         , currentDocumentDirty = False
         , secondsWhileDirty = 0
-        , renderingData = Render.load -1 (OMarkdown MDOption.Standard) "Empty document"
+        , renderingData = Render.load ( 0, 0 ) 0 (OMarkdown MDOption.Standard) "Empty document"
         , tagString = ""
         , searchTerms = ""
         , sortTerm = orderByMostRecentFirst
@@ -490,12 +493,11 @@ update msg model =
                     syncWithEditor model newEditor editorCmd
 
                 E.SendLine ->
-                    ( { model | editor = newEditor }
-                    , Cmd.batch
-                        [ syncRenderedText (Editor.lineAtCursor newEditor) model
-                        , editorCmd |> Cmd.map EditorMsg
-                        ]
-                    )
+                    let
+                        _ =
+                            Debug.log "SL, counter" model.counter
+                    in
+                    syncAndHighlightRenderedText (Editor.lineAtCursor newEditor) (editorCmd |> Cmd.map EditorMsg) { model | editor = newEditor }
 
                 E.CopyPasteClipboard ->
                     ( { model | editor = newEditor }
@@ -1323,6 +1325,79 @@ pasteToEditorClipboard model str =
 
 
 -- UPDATE HELPERS
+
+
+syncAndHighlightRenderedText : String -> Cmd Msg -> Model -> ( Model, Cmd Msg )
+syncAndHighlightRenderedText str cmd model =
+    case model.renderingData of
+        MD data ->
+            let
+                ( m, c ) =
+                    mdSyncAndHighlightRenderedText data str cmd model
+
+                _ =
+                    Debug.log "SAHRT" m.counter
+            in
+            ( m, c )
+
+        ML _ ->
+            ( model, cmd )
+
+
+mdSyncAndHighlightRenderedText : MDData Msg -> String -> Cmd Msg -> Model -> ( Model, Cmd Msg )
+mdSyncAndHighlightRenderedText mdData str cmd model =
+    let
+        ( _, id0 ) =
+            Parse.getId (String.trim str) (Parse.sourceMap mdData.fullAst)
+
+        id1 =
+            Maybe.withDefault "i0v0" id0
+
+        id2 =
+            Parse.idFromString id1 |> (\( id_, version ) -> ( id_, version + 1 ))
+
+        newCounter =
+            model.counter + 1
+
+        id3 =
+            id2 |> (\( id_, _ ) -> ( id_, newCounter ))
+
+        _ =
+            Debug.log "(newCounter, id2)" ( newCounter, id3 )
+
+        sourceText =
+            Maybe.map .content model.currentDocument |> Maybe.withDefault "empty source"
+    in
+    ( mdProcessContentForHighlighting mdData sourceText { model | selectedId = id3, counter = newCounter }
+    , Cmd.batch [ cmd, setViewportForElement (Parse.stringFromId id3) ]
+    )
+
+
+mdProcessContentForHighlighting : MDData Msg -> String -> Model -> Model
+mdProcessContentForHighlighting mdData str model =
+    let
+        currentCounter =
+            model.counter
+
+        newCounter =
+            model.counter
+
+        _ =
+            Debug.log "(cc, nc)" ( currentCounter, newCounter )
+
+        newAst_ =
+            Parse.toMDBlockTree currentCounter ExtendedMath str
+
+        newAst =
+            Diff.mergeWith Parse.equalIds mdData.fullAst newAst_
+
+        renderedText =
+            Markdown.ElmWithId.renderHtmlWithExternaTOC model.selectedId "Contents" newAst
+
+        newMDData =
+            { mdData | renderedText = renderedText }
+    in
+    { model | renderingData = MD newMDData, counter = newCounter }
 
 
 syncWithEditor : Model -> Editor.Editor -> Cmd EditorMsg -> ( Model, Cmd Msg )

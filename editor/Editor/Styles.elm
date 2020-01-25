@@ -108,7 +108,7 @@ body { font-size: {1}px;
 }
 
 .elm-editor-line__character--selected {
-  background-color: cornflowerblue;
+  background-color: #8d9ffe;
   color: white;
 }
 

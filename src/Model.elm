@@ -87,6 +87,7 @@ type alias Model =
 
     -- EDITOR
     , selectedText : String
+    , selectedId : ( Int, Int )
     , editorTargetLineNumber : Maybe Int
     , clipboard : String
 

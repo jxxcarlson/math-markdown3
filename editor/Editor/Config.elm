@@ -49,7 +49,7 @@ default =
     , height = 400
     , lineHeight = 18
     , fontProportion = 0.7
-    , lineHeightFactor = 1.0
+    , lineHeightFactor = 0.8
     }
 
 

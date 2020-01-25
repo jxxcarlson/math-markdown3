@@ -6,7 +6,7 @@ module Editor exposing
     , setSelectedText, setHeight, setWidth
     , placeInClipboard
     , scrollToLine, scrollToString
-    , transformConfig
+    , getWidth, transformConfig
     )
 
 {-| Use this module to embed a text editor in an Elm app.
@@ -246,9 +246,7 @@ transformConfig c =
 -- EMBEDDED EDITOR --
 
 
-{-| XXX: Changed
-
-Embed the editor in the host app:
+{-| Embed the editor in the host app:
 
     view : Model -> Html Msg
     view model =
@@ -270,15 +268,12 @@ embedded editorConfig editor =
             }
 
         height_ =
-            editorConfig.height
+            editorConfig.height - 37
     in
     div []
         [ Editor.Styles.editorStyles styleConfig
         , view (innerStyle height_) editor
             |> Html.map editorConfig.editorMsg
-
-        --        , div [ HA.style "position" "absolute" ]
-        --            [ sliderView editor |> Html.map editorConfig.sliderMsg ]
         ]
 
 
@@ -338,6 +333,11 @@ init editorConfig text =
             , debounce = Debounce.init
             }
         }
+
+
+getWidth : Editor -> Float
+getWidth (Editor data) =
+    data.state.config.width
 
 
 {-| Set width of editor in pixels

@@ -55,8 +55,7 @@ view viewInfo model =
                 , Border.widthEach { top = 0, left = 0, bottom = 0, right = 1 }
                 , Border.solid
                 ]
-                [ row [ height (px 35) ] []
-                , Editor.embedded model.editorConfig model.editor |> Element.html
+                [ Editor.embedded model.editorConfig model.editor |> Element.html
                 ]
             , Element.Lazy.lazy (View.Render.renderedSourceForEditing newViewInfo model footerText) rt
             ]

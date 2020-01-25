@@ -124,7 +124,7 @@ keymaps =
             [ ( "ArrowUp", FirstLine )
             , ( "ArrowDown", LastLine )
             , ( "w", ToggleWrapping )
-            , ( "C", Clear )
+            , ( "c", Clear )
             ]
     , control =
         Dict.fromList

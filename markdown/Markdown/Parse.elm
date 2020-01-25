@@ -1,7 +1,8 @@
 module Markdown.Parse exposing
     ( toMDBlockTree, searchAST, sourceMap, getLeadingTextFromAST
     , MDBlock(..), MDBlockWithId(..), BlockContent(..), Id
-    , equal, project, stringOfId, idOfBlock, projectedStringOfBlockContent, stringOfMDBlockTree
+    , project, stringOfId, idOfBlock, projectedStringOfBlockContent, stringOfMDBlockTree
+    , equalContent, equalIds, getId, idFromString, stringFromId
     )
 
 {-| The purpose of this module is to parse a Document,
@@ -35,6 +36,7 @@ import Dict exposing (Dict)
 import HTree
 import MDInline exposing (MDInline(..))
 import Markdown.Option exposing (Option(..))
+import Parser exposing ((|.), (|=), Parser, int, succeed, symbol)
 import Prefix
 import Tree exposing (Tree)
 
@@ -135,6 +137,13 @@ idOfBlock (MDBlockWithId id _ _ _) =
     id
 
 
+{-| Return true of the blocks have the same id
+-}
+equalIds : MDBlockWithId -> MDBlockWithId -> Bool
+equalIds a b =
+    idOfBlock a == idOfBlock b
+
+
 
 --{-| Check for equality of
 --
@@ -159,8 +168,8 @@ idOfBlock (MDBlockWithId id _ _ _) =
 ignoring the id.
 
 -}
-equal : MDBlockWithId -> MDBlockWithId -> Bool
-equal (MDBlockWithId _ bt1 l1 c1) (MDBlockWithId _ bt2 l2 c2) =
+equalContent : MDBlockWithId -> MDBlockWithId -> Bool
+equalContent (MDBlockWithId _ bt1 l1 c1) (MDBlockWithId _ bt2 l2 c2) =
     if (l1 - l2) == 0 then
         -- && bt1 == bt2 && c1 == c2
         case bt1 of
@@ -1072,11 +1081,11 @@ stringOfBlockTree tree =
         |> String.join "\n"
 
 
-{-| Return a string value of and Id
+{-| Return a string value of an Id
 -}
 stringOfId : Id -> String
 stringOfId id =
-    "[" ++ (String.fromInt <| Tuple.first id) ++ ", " ++ (String.fromInt <| Tuple.second id) ++ "]"
+    "i" ++ (String.fromInt <| Tuple.first id) ++ "v" ++ (String.fromInt <| Tuple.second id)
 
 
 stringOfBlock : Block -> String
@@ -1182,32 +1191,53 @@ sourceMap ast =
         list =
             ast
                 |> Tree.flatten
-                |> List.map (\b -> ( (String.trim << stringContentFromBlock) b, (stringifyTuple << idOfBlock) b ))
+                |> List.map (\b -> ( (String.trim << stringContentFromBlock) b, (stringOfId << idOfBlock) b ))
     in
     Dict.fromList list
 
 
-stringifyTuple : ( Int, Int ) -> String
-stringifyTuple ( a, b ) =
-    "[" ++ String.fromInt a ++ ", " ++ String.fromInt b ++ "]"
+getId : String -> Dict String String -> ( String, Maybe String )
+getId str_ sourceMapDict =
+    let
+        str =
+            toMDBlockTree 0 ExtendedMath str_ |> getLeadingTextFromAST |> String.trim
+
+        id =
+            List.filter (\( k, _ ) -> String.contains str k) (Dict.toList sourceMapDict)
+                |> List.map (\( _, id_ ) -> id_)
+                |> List.head
+    in
+    ( str, id )
 
 
-
---  searchAST2 : String -> Tree MDBlockWithId -> Maybe Id
-
-
-searchAST2 str ast =
-    ast
-        |> Tree.flatten
+type alias IdRecord =
+    { id : Int, version : Int }
 
 
-searchAST1 : String -> Tree MDBlockWithId -> Maybe Id
-searchAST1 str ast =
-    ast
-        |> Tree.flatten
-        |> List.filter (\block -> String.contains (Prefix.truncate str) (stringContentFromBlock block))
-        |> List.head
-        |> Maybe.map idOfBlock
+idParser : Parser ( Int, Int )
+idParser =
+    (succeed IdRecord
+        |. symbol "i"
+        |= int
+        |. symbol "v"
+        |= int
+    )
+        |> Parser.map (\r -> ( r.id, r.version ))
+
+
+idFromString : String -> ( Int, Int )
+idFromString str =
+    case Parser.run idParser str of
+        Ok result ->
+            result
+
+        Err _ ->
+            ( 0, 0 )
+
+
+stringFromId : ( Int, Int ) -> String
+stringFromId ( id, version ) =
+    "i" ++ String.fromInt id ++ "v" ++ String.fromInt version
 
 
 stringContentFromBlock : MDBlockWithId -> String

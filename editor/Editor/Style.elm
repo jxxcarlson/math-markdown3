@@ -1,5 +1,17 @@
-module Editor.Style exposing (lightBlue)
+module Editor.Style exposing (darkBlue, darkGray, lightBlue, lightGray)
 
 
 lightBlue =
-    "#ebeffa"
+    "#8d9ffe"
+
+
+darkBlue =
+    "#172da3"
+
+
+lightGray =
+    "#a5a6ab"
+
+
+darkGray =
+    "#444548"

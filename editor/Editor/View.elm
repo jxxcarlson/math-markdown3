@@ -168,12 +168,26 @@ linesContainer =
 
 view : List (Attribute Msg) -> List String -> InternalState -> Html Msg
 view attr lines state =
+    div []
+        [ div []
+            [ showIf state.showGoToLinePanel (goToLinePanel state)
+            , showIf state.showSearchPanel (searchPanel state)
+            , infoPanel state lines
+            , showIf (not (state.showSearchPanel || state.showGoToLinePanel)) (headerPanel state lines)
+            ]
+        , innerView attr lines state
+        ]
+
+
+px : Float -> String
+px p =
+    String.fromFloat p ++ "px"
+
+
+innerView : List (Attribute Msg) -> List String -> InternalState -> Html Msg
+innerView attr lines state =
     div (attr ++ [ Attribute.class "flex-column" ])
-        [ goToLinePanel state
-        , searchPanel state
-        , infoPanel state lines
-        , headerPanel state lines
-        , div
+        [ div
             [ class <| name ++ "-container"
             , Event.preventDefaultOn
                 "keydown"
@@ -264,7 +278,7 @@ infoPanelStyle =
     , style "top" "8px"
     , style "opacity" "1.0"
     , style "border" "solid 0.5px #444"
-    , style "background-color" Style.lightBlue
+    , style "background-color" Style.lightGray
     , style "padding" "8px"
     , style "z-index" "100"
     ]
@@ -279,22 +293,18 @@ searchPanel state =
 
 
 headerPanel state lines =
-    div headerPanelStyle
+    div (headerPanelStyle state.config.width)
         [ wordCount lines, lineCount lines ]
 
 
-headerPanelStyle =
-    [ style "width" "470px"
+headerPanelStyle width =
+    [ style "width" (px (width - 40))
     , style "padding-top" "10px"
     , style "height" "27px"
-    , style "padding-left" "40px"
-    , style "background-color" "#c3c6f7"
+    , style "background-color" Style.lightGray
     , style "opacity" "0.8"
     , style "font-size" "14px"
-    , style "position" "absolute"
-    , style "left" "0px"
-    , style "top" "0px"
-    , style "z-index" "0"
+    , style "padding-left" "40px"
     , Attribute.class "flex-row"
     ]
 
@@ -305,18 +315,15 @@ searchPanel_ state =
         , style "padding-top" "5px"
         , style "height" "30px"
         , style "padding-left" "8px"
-        , style "background-color" "#bbb"
+        , style "background-color" Style.lightGray
         , style "opacity" "0.9"
         , style "font-size" "14px"
-        , style "position" "absolute"
-        , style "left" "0px"
-        , style "top" "0px"
-        , style "z-index" "100"
         , Attribute.class "flex-row"
         ]
         [ searchTextButton
         , acceptSearchText
         , numberOfHitsDisplay state
+        , syncButton
         , showIf (not state.canReplace) openReplaceField
         , showIf state.canReplace replaceTextButton
         , showIf state.canReplace acceptReplaceText
@@ -328,23 +335,19 @@ searchPanel_ state =
 
 goToLinePanel state =
     if state.showGoToLinePanel == True then
-        goToLinePanel_
+        goToLinePanel_ state.config.width
 
     else
         div [] []
 
 
-goToLinePanel_ =
+goToLinePanel_ width =
     div
-        [ style "width" "220px"
+        [ style "width" (px width)
         , style "height" "34px"
         , style "padding" "1px"
         , style "opacity" "0.9"
-        , style "position" "absolute"
-        , style "left" "0px"
-        , style "top" "0px"
-        , style "background-color" "#aab"
-        , style "z-index" "100"
+        , style "background-color" Style.lightGray
         , Attribute.class "flex-row"
         ]
         [ goToLineButton
@@ -357,8 +360,7 @@ dismissGoToLineButton =
     Widget.lightRowButton 25
         ToggleGoToLinePanel
         "X"
-        [ style "margin-left" "160px"
-        , style "margin-top" "5px"
+        [ style "margin-top" "5px"
         ]
 
 
@@ -415,10 +417,7 @@ goToLineButton =
     Widget.rowButton 80
         NoOp
         "Go to line"
-        [ style "position" "absolute"
-        , style "left" "8px"
-        , style "top" "6px"
-        ]
+        [ style "margin-top" "5px", style "margin-left" "5px" ]
 
 
 dismissInfoPanel =
@@ -442,6 +441,10 @@ openReplaceField =
         []
 
 
+syncButton =
+    Widget.rowButton 25 SyncToSearchHit "S" [ style "float" "left" ]
+
+
 searchForwardButton =
     Widget.rowButton 30 RollSearchSelectionForward ">" [ style "float" "left" ]
 
@@ -462,10 +465,7 @@ acceptLineNumber =
     Widget.textField 30
         AcceptLineNumber
         ""
-        [ style "position" "absolute"
-        , style "left" "98px"
-        , style "top" "6px"
-        ]
+        [ style "margin-top" "5px" ]
         [ setHtmlId "line-number-input" ]
 
 

@@ -303,7 +303,7 @@ firstSubdocument_ model user document =
 
         -- Prepare AST and udpate uuid
         renderingData =
-            Render.load model.counter (Render.documentOption newDocument) newDocument.content
+            Render.load model.selectedId model.counter (Render.documentOption newDocument) newDocument.content
 
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed
@@ -373,7 +373,7 @@ newSubdocumentAtHead model user masterDocument =
 
         -- Prepare AST and udpate uuid
         renderingData =
-            Render.load model.counter (Render.documentOption newDocument) newDocument.content
+            Render.load model.selectedId model.counter (Render.documentOption newDocument) newDocument.content
 
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed
@@ -434,7 +434,7 @@ newSubdocumentWithChildren model user masterDocument targetDocument =
 
         -- Prepare AST and udpate uuid
         renderingData =
-            Render.load model.counter (Render.documentOption newDocument) newDocument.content
+            Render.load model.selectedId model.counter (Render.documentOption newDocument) newDocument.content
 
         ( newUuid, newSeed ) =
             step Uuid.generator model.currentSeed

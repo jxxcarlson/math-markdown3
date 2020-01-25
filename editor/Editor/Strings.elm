@@ -51,7 +51,8 @@ Select word       Double-click
 Select line       Triple-click
 Select group      ctrl-d
 
-Extend selection  shift-arrow: up | down | left | right
+Extend selection  shift-arrow
+(up | down | left | right)
 
 Copy selection    ctrl-c
 Cut selection     ctrl-x

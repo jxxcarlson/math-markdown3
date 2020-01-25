@@ -1,4 +1,4 @@
-module Render exposing (RenderingData(..), RenderingOption(..), documentOption, get, load, loadFast, render, update)
+module Render exposing (MDData, MLData, RenderingData(..), RenderingOption(..), documentOption, get, load, loadFast, render, update)
 
 import Dict exposing (Dict)
 import Document exposing (DocType(..), Document, MarkdownFlavor(..))
@@ -35,6 +35,15 @@ type alias MLData msg =
     }
 
 
+type alias MDData msg =
+    { option : MDOption.Option
+    , renderedText : RenderedText msg
+    , initialAst : Tree Parse.MDBlockWithId
+    , fullAst : Tree Parse.MDBlockWithId
+    , sourceMap : Dict String String
+    }
+
+
 type RenderingOption
     = OMarkdown MDOption.Option
     | OMiniLatex
@@ -58,40 +67,31 @@ documentOption doc =
             OMiniLatex
 
 
-type alias MDData msg =
-    { option : MDOption.Option
-    , renderedText : RenderedText msg
-    , initialAst : Tree Parse.MDBlockWithId
-    , fullAst : Tree Parse.MDBlockWithId
-    , sourceMap : Dict String String
-    }
-
-
-load : Int -> RenderingOption -> String -> RenderingData msg
-load counter option source =
+load : ( Int, Int ) -> Int -> RenderingOption -> String -> RenderingData msg
+load selectedId counter option source =
     case option of
         OMarkdown opt ->
-            loadMarkdown counter opt source
+            loadMarkdown selectedId counter opt source
 
         OMiniLatex ->
             loadMiniLatex counter source
 
 
-loadFast : Int -> RenderingOption -> String -> RenderingData msg
-loadFast counter option source =
+loadFast : ( Int, Int ) -> Int -> RenderingOption -> String -> RenderingData msg
+loadFast selectedId counter option source =
     case option of
         OMarkdown opt ->
-            loadMarkdownFast counter opt source
+            loadMarkdownFast selectedId counter opt source
 
         OMiniLatex ->
             loadMiniLatexFast counter source
 
 
-render : RenderingData msg -> RenderingData msg
-render rd =
+render : ( Int, Int ) -> RenderingData msg -> RenderingData msg
+render selectedId rd =
     case rd of
         MD data ->
-            MD { data | renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" data.fullAst }
+            MD { data | renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC selectedId "Topics" data.fullAst }
 
         ML data ->
             case data.fullText of
@@ -102,8 +102,8 @@ render rd =
                     loadMiniLatex -2 fullText
 
 
-update : Int -> String -> RenderingData msg -> RenderingData msg
-update version source rd =
+update : ( Int, Int ) -> Int -> String -> RenderingData msg -> RenderingData msg
+update selectedId version source rd =
     case rd of
         MD data ->
             let
@@ -113,7 +113,7 @@ update version source rd =
             MD
                 { data
                     | fullAst = newAst
-                    , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" newAst
+                    , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC selectedId "Topics" newAst
                     , sourceMap = Parse.sourceMap newAst
                 }
 
@@ -146,8 +146,8 @@ getTitle data =
 {- HIDDEN, MARKDOWN -}
 
 
-loadMarkdown : Int -> MDOption.Option -> String -> RenderingData msg
-loadMarkdown counter option str =
+loadMarkdown : ( Int, Int ) -> Int -> MDOption.Option -> String -> RenderingData msg
+loadMarkdown selectedId counter option str =
     let
         ast =
             Parse.toMDBlockTree counter MDOption.ExtendedMath str
@@ -156,13 +156,13 @@ loadMarkdown counter option str =
         { option = option
         , initialAst = ast
         , fullAst = ast
-        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast
+        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC selectedId "Topics" ast
         , sourceMap = Parse.sourceMap ast
         }
 
 
-loadMarkdownFast : Int -> MDOption.Option -> String -> RenderingData msg
-loadMarkdownFast counter option str =
+loadMarkdownFast : ( Int, Int ) -> Int -> MDOption.Option -> String -> RenderingData msg
+loadMarkdownFast selectedId counter option str =
     let
         fullAst =
             Parse.toMDBlockTree (counter + 1) MDOption.ExtendedMath str
@@ -174,7 +174,7 @@ loadMarkdownFast counter option str =
         { option = option
         , initialAst = initialAst
         , fullAst = fullAst
-        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" initialAst
+        , renderedText = Markdown.ElmWithId.renderHtmlWithExternaTOC selectedId "Topics" initialAst
         , sourceMap = Parse.sourceMap fullAst
         }
 

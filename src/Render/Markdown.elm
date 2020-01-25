@@ -18,7 +18,7 @@ emptyAst =
 
 emptyRenderedText : RenderedText msg
 emptyRenderedText =
-    render (Markdown MDExtendedMath) emptyAst
+    render ( 0, 0 ) (Markdown MDExtendedMath) emptyAst
 
 
 parse : Option -> Int -> String -> Tree Parse.MDBlockWithId
@@ -36,12 +36,12 @@ diffUpdateAst option counter text lastAst =
         newAst =
             parse option counter text
     in
-    Diff.mergeWith Parse.equal lastAst newAst
+    Diff.mergeWith Parse.equalIds lastAst newAst
 
 
-render : DocType -> Tree Parse.MDBlockWithId -> RenderedText msg
-render docType ast =
-    Markdown.ElmWithId.renderHtmlWithExternaTOC "Topics" ast
+render : ( Int, Int ) -> DocType -> Tree Parse.MDBlockWithId -> RenderedText msg
+render selectedId docType ast =
+    Markdown.ElmWithId.renderHtmlWithExternaTOC selectedId "Topics" ast
 
 
 markdownOptionOfFlavor : MarkdownFlavor -> Markdown.Option.Option

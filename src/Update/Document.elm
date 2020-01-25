@@ -88,7 +88,7 @@ text model str =
                 , tocCursor = Just updatedDoc.id
 
                 -- rendering
-                , renderingData = Render.update model.counter updatedDoc.content model.renderingData
+                , renderingData = Render.update model.selectedId model.counter updatedDoc.content model.renderingData
                 , counter = model.counter + 1
               }
             , Cmd.none
@@ -340,7 +340,7 @@ makeNewDocument model =
                 , tagString = ""
                 , currentUuid = newUuid
                 , currentSeed = newSeed
-                , renderingData = Render.load model.counter (Render.documentOption newDocument) newDocument.content
+                , renderingData = Render.load model.selectedId model.counter (Render.documentOption newDocument) newDocument.content
                 , deque = newDeque
               }
                 |> Update.Tool.setupToEdit

@@ -22,6 +22,10 @@ import Task exposing (Task)
 import Window
 
 
+verticalOffsetInSourceText =
+    160
+
+
 
 -- MSG
 
@@ -79,6 +83,7 @@ type Msg
     | ScrollToSelection ( Position, Position )
     | RollSearchSelectionForward
     | RollSearchSelectionBackward
+    | SyncToSearchHit
     | Clear
     | WrapSelection
     | WrapAll
@@ -92,6 +97,7 @@ type Msg
     | DebounceMsg Debounce.Msg
     | Unload String
     | GotViewport (Result Dom.Error Dom.Viewport)
+    | GotViewportForSync Position (Maybe Position) (Result Dom.Error Dom.Viewport)
 
 
 debounceConfig : Debounce.Config Msg
@@ -1037,23 +1043,11 @@ update buffer msg state =
             , Cmd.none
             )
 
+        SyncToSearchHit ->
+            sendLine state buffer
+
         SendLine ->
-            let
-                y =
-                    max 0 (adjustedLineHeight state.config.lineHeightFactor state.config.lineHeight * (toFloat state.cursor.line - 10))
-
-                newCursor =
-                    Position.setColumn 0 state.cursor
-
-                selection =
-                    case Buffer.lineEnd newCursor.line buffer of
-                        Just n ->
-                            Just (Position newCursor.line n)
-
-                        Nothing ->
-                            Nothing
-            in
-            ( { state | cursor = newCursor, selection = selection }, buffer, jumpToHeight y )
+            sendLine state buffer
 
         GotViewport result ->
             case result of
@@ -1066,6 +1060,21 @@ update buffer msg state =
                             round (y / state.config.lineHeight)
                     in
                     ( { state | topLine = lineNumber }, buffer, Cmd.none )
+
+                Err _ ->
+                    ( state, buffer, Cmd.none )
+
+        GotViewportForSync cursor selection result ->
+            case result of
+                Ok vp ->
+                    let
+                        y =
+                            vp.viewport.y
+
+                        lineNumber =
+                            round (y / state.config.lineHeight)
+                    in
+                    ( { state | topLine = lineNumber, cursor = cursor, selection = selection }, buffer, Cmd.none )
 
                 Err _ ->
                     ( state, buffer, Cmd.none )
@@ -1213,6 +1222,27 @@ update buffer msg state =
 -- HELPERS --
 
 
+sendLine state buffer =
+    let
+        y =
+            -- max 0 (adjustedLineHeight state.config.lineHeightFactor state.config.lineHeight * toFloat state.cursor.line - 50)
+            -- max 0 (state.config.lineHeight * toFloat state.cursor.line - verticalOffsetInSourceText)
+            max 0 (adjustedLineHeight state.config.lineHeightFactor state.config.lineHeight * toFloat state.cursor.line - verticalOffsetInSourceText)
+
+        newCursor =
+            Position.setColumn 0 state.cursor
+
+        selection =
+            case Buffer.lineEnd newCursor.line buffer of
+                Just n ->
+                    Just (Position newCursor.line n)
+
+                Nothing ->
+                    Nothing
+    in
+    ( { state | cursor = newCursor, selection = selection }, buffer, jumpToHeightForSync newCursor selection y )
+
+
 setViewportForElement : (Result Dom.Error ( Dom.Element, Dom.Viewport ) -> msg) -> String -> String -> Cmd msg
 setViewportForElement msg vpId id =
     Dom.getViewportOf vpId
@@ -1243,11 +1273,11 @@ setEditorViewportForLine lineHeightFactor lineHeight lineNumber =
             Cmd.none
 
 
-jumpToHeight : Float -> Cmd Msg
-jumpToHeight y =
+jumpToHeightForSync : Position -> Maybe Position -> Float -> Cmd Msg
+jumpToHeightForSync cursor selection y =
     Dom.setViewportOf "__inner_editor__" 0 y
         |> Task.andThen (\_ -> Dom.getViewportOf "__inner_editor__")
-        |> Task.attempt (\info -> GotViewport info)
+        |> Task.attempt (\info -> GotViewportForSync cursor selection info)
 
 
 unload : String -> Cmd Msg
