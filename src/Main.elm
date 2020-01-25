@@ -1349,7 +1349,8 @@ mdSyncAndHighlightRenderedText mdData str cmd model =
             model.counter + 1
 
         id3 =
-            id2 |> (\( id_, _ ) -> ( id_, newCounter ))
+            Debug.log "id3"
+                (id2 |> (\( id_, _ ) -> ( id_, newCounter )))
 
         sourceText =
             Maybe.map .content model.currentDocument |> Maybe.withDefault "empty source"
@@ -1409,6 +1410,10 @@ syncRenderedText str model =
 
 setViewportForElement : String -> Cmd Msg
 setViewportForElement id =
+    let
+        _ =
+            Debug.log "sVFE" id
+    in
     Dom.getViewportOf "__rt_scroll__"
         |> Task.andThen (\vp -> getElementWithViewPort vp id)
         |> Task.attempt SetViewPortForElement

@@ -2,7 +2,7 @@ module Cmd.Document exposing
     ( getById
     , getBySlug
     , getUserDocumentsAtSignIn
-    , masterId
+    , idToScrollRenderedTxt
     , processUrl
     , pushDocument
     , renderAstFor
@@ -108,13 +108,13 @@ scrollIfNeeded : String -> Cmd Msg
 scrollIfNeeded tag =
     Task.attempt ScrollAttempted
         (Dom.getElement tag
-            |> Task.andThen (\info -> Dom.setViewportOf "__rt_scroll__" 0 (info.element.y - info.element.height - 40))
+            |> Task.andThen (\info -> Dom.setViewportOf idToScrollRenderedTxt 0 (info.element.y - info.element.height - 40))
         )
 
 
 resetViewportOfRenderedText : Cmd Msg
 resetViewportOfRenderedText =
-    Task.attempt (\_ -> NoOp) (Dom.setViewportOf masterId -100 0)
+    Task.attempt (\_ -> NoOp) (Dom.setViewportOf idToScrollRenderedTxt -100 0)
 
 
 resetViewportOfEditor : Cmd Msg
@@ -124,7 +124,8 @@ resetViewportOfEditor =
 
 setViewportForElement : String -> Cmd Msg
 setViewportForElement id =
-    Dom.getViewportOf masterId
+    Dom.getViewportOf idToScrollRenderedTxt
+        |> Debug.log "SCROLL VP"
         |> Task.andThen (\vp -> getElementWithViewPort vp id)
         |> Task.attempt SetViewPortForElement
 
@@ -139,13 +140,30 @@ setViewPortForSelectedLine : Dom.Element -> Dom.Viewport -> Cmd Msg
 setViewPortForSelectedLine element viewport =
     let
         y =
-            viewport.viewport.y + element.element.y - element.element.height - 150
+            Debug.log "SCROLL TO y"
+                --- viewport.viewport.y + element.element.y - element.element.height - 150
+                (element.element.y - 160)
     in
     Task.attempt (\_ -> NoOp) (Dom.setViewportOf "__rt_scroll__" 0 y)
 
 
-masterId =
-    "__rt_scroll__"
+setViewPortForSelectedLine1 : Dom.Element -> Dom.Viewport -> Cmd Msg
+setViewPortForSelectedLine1 element viewport =
+    let
+        y =
+            Debug.log "y" <| 600
+    in
+    Task.attempt (\_ -> NoOp) (Dom.setViewportOf idToScrollRenderedTxt 0 y)
+
+
+
+-- SCROLL RENDERED TEXT
+
+
+idToScrollRenderedTxt : String
+idToScrollRenderedTxt =
+    -- "__rt_scroll__"
+    "__RENDERED_TEXT1__"
 
 
 
