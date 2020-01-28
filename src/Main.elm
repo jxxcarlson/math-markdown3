@@ -7,6 +7,7 @@ import Browser.Dom as Dom
 import Browser.Events
 import Browser.Navigation as Nav
 import Cmd.Document
+import Cmd.Extra exposing (withCmd, withCmds)
 import Config
 import Data
 import Debounce
@@ -18,7 +19,6 @@ import Element exposing (..)
 import File exposing (File)
 import File.Select as Select
 import Html exposing (..)
-import Cmd.Extra
 import Interchange
 import Json.Encode as E
 import Keyboard exposing (Key(..))
@@ -446,6 +446,9 @@ update msg model =
             )
 
         -- EDITOR II
+        Rerender _ ->
+            model |> withCmd Cmd.none
+
         EditorMsg editorMsg ->
             let
                 ( newEditor, editorCmd ) =

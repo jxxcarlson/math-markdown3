@@ -277,6 +277,7 @@ type Msg
     | GetTextSelection
     | GetSelectionForSync
     | AskForClipBoard
+    | Rerender Time.Posix
       -- Document
     | CreateDocument
     | SaveDocument
