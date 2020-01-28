@@ -575,6 +575,18 @@ load wrapOption content ((Editor data) as editor) =
     Editor { newData | buffer = buffer }
 
 
+--{-| Scroll the editor to the first occurrence of a given string
+---}
+--scrollToString : String -> Editor -> Editor
+--scrollToString str (Editor data) =
+--    let
+--        ( is, b ) =
+--            Editor.Update.scrollToText str data.state data.buffer
+--    in
+--    Editor { state = is, buffer = b }
+
+
+
 {-| Scroll the editor to the first occurrence of a given string
 -}
 scrollToString : String -> Editor -> ( Editor, Cmd EditorMsg )

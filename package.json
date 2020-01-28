@@ -21,7 +21,7 @@
     "make": "elm make src/Main.elm --output=main.js",
     "publish": "git push",
     "build": "yarn run parcel build public/index.html",
-    "start": "elm-live -d public/ src/Main.elm -- --output main.js",
+    "start": "elm-live -d public/ src/Main.elm -- --output public/main.js",
     "test": "elm-test",
     "ff": "open -a /Applications/Firefox.app/ public/index.html",
     "chrome": "open -a /Applications/GoogleChrome.app/ public/index.html" ,

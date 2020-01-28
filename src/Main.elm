@@ -578,12 +578,15 @@ update msg model =
                         selection =
                             String.trim selection_
 
-                        ( newEditor, editorCmd ) =
+                        newEditor =
                             Editor.scrollToString selection model.editor
+
+                        editorCmd =
+                            scrollToStringCmd newEditor
                     in
                     syncAndHighlightRenderedText
                         (Editor.lineAtCursor newEditor)
-                        (editorCmd |> Cmd.map EditorMsg)
+                        editorCmd
                         { model | selectedText = selection, editor = newEditor }
 
                 Outside.GotClipboard clipboard ->
@@ -1355,6 +1358,47 @@ rerender =
 
 
 -- UPDATE HELPERS
+-- FOR EDITOR SYNC
+
+
+{-| -}
+scrollToStringCmd : Editor -> Cmd Msg
+scrollToStringCmd editor =
+    let
+        state =
+            Editor.getState editor
+    in
+    setEditorViewportForLine
+        state.config.lineHeightFactor
+        state.config.lineHeight
+        (max 0 (state.cursor.line - 5))
+
+
+{-| -}
+setEditorViewportForLine : Float -> Float -> Int -> Cmd Msg
+setEditorViewportForLine lineHeightFactor lineHeight lineNumber =
+    let
+        y =
+            toFloat lineNumber
+                * adjustedLineHeight lineHeightFactor lineHeight
+    in
+    case y >= 0 of
+        True ->
+            Dom.setViewportOf "__inner_editor__" 0 y
+                |> Task.andThen (\_ -> Dom.getViewportOf "__inner_editor__")
+                |> Task.attempt (\info -> GotViewport info)
+
+        False ->
+            Cmd.none
+
+
+adjustedLineHeight : Float -> Float -> Float
+adjustedLineHeight factor lineHeight =
+    factor * lineHeight
+
+
+
+-- /FOR EDITOR
 
 
 syncAndHighlightRenderedText : String -> Cmd Msg -> Model -> ( Model, Cmd Msg )
