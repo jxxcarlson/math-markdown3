@@ -1,7 +1,7 @@
 module Markdown.Parse exposing
     ( toMDBlockTree, searchAST, sourceMap, getLeadingTextFromAST
     , MDBlock(..), MDBlockWithId(..), BlockContent(..), Id
-    , project, stringOfId, idOfBlock, projectedStringOfBlockContent, stringOfMDBlockTree
+    , project, stringFromId, idOfBlock, projectedStringOfBlockContent, stringOfMDBlockTree
     , equalContent, equalIds, getId, idFromString, stringFromId
     )
 
@@ -27,7 +27,7 @@ the rationale for this module.
 
 ## Tools
 
-@docs equal, project, stringOfId, idOfBlock, projectedStringOfBlockContent, stringOfMDBlockTree
+@docs equal, project, stringFromId, idOfBlock, projectedStringOfBlockContent, stringOfMDBlockTree
 
 -}
 
@@ -1083,8 +1083,8 @@ stringOfBlockTree tree =
 
 {-| Return a string value of an Id
 -}
-stringOfId : Id -> String
-stringOfId id =
+stringFromId : Id -> String
+stringFromId id =
     "i" ++ (String.fromInt <| Tuple.first id) ++ "v" ++ (String.fromInt <| Tuple.second id)
 
 
@@ -1092,7 +1092,7 @@ stringOfBlock : Block -> String
 stringOfBlock (Block id bt lev_ content_) =
     String.repeat (2 * lev_) " "
         ++ BlockType.stringOfBlockType bt
-        ++ stringOfId id
+        ++ stringFromId id
         ++ " ("
         ++ String.fromInt lev_
         ++ ") "
@@ -1123,7 +1123,7 @@ stringOfMDBlock : MDBlockWithId -> String
 stringOfMDBlock (MDBlockWithId id bt lev_ content_) =
     String.repeat (2 * lev_) " "
         ++ BlockType.stringOfBlockType bt
-        ++ stringOfId id
+        ++ stringFromId id
         ++ " ("
         ++ String.fromInt lev_
         ++ ") "
@@ -1191,7 +1191,7 @@ sourceMap ast =
         list =
             ast
                 |> Tree.flatten
-                |> List.map (\b -> ( (String.trim << stringContentFromBlock) b, (stringOfId << idOfBlock) b ))
+                |> List.map (\b -> ( (String.trim << stringContentFromBlock) b, (stringFromId << idOfBlock) b ))
     in
     Dict.fromList list
 

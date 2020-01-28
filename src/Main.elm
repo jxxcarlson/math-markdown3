@@ -758,7 +758,7 @@ update msg model =
                             "??"
 
                         Just id_ ->
-                            id_ |> Parse.stringOfId
+                            id_ |> Parse.stringFromId
             in
             ( { model | message = ( UserMessage, "str = " ++ String.left 20 str ++ " -- Clicked on id: " ++ id ) }
             , Cmd.Document.setViewportForElement id
