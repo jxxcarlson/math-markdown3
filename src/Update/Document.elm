@@ -58,11 +58,11 @@ The document will not be saved to the backend until the current document save cy
 or the user intervenes to save manually.
 
 -}
-text : Model -> String -> ( Model, Cmd Msg )
-text model str =
+text : String -> Model -> Model
+text str model =
     case model.currentDocument of
         Nothing ->
-            ( model, Cmd.none )
+            model
 
         Just doc ->
             let
@@ -77,7 +77,7 @@ text model str =
                 tableOfContents =
                     Document.replaceInList updatedDoc model.tableOfContents
             in
-            ( { model
+            { model
                 | -- document
                   currentDocument = Just updatedDoc
                 , documentList = Document.replaceInList updatedDoc model.documentList
@@ -90,9 +90,7 @@ text model str =
                 -- rendering
                 , renderingData = Render.update model.selectedId model.counter updatedDoc.content model.renderingData
                 , counter = model.counter + 1
-              }
-            , Cmd.none
-            )
+            }
 
 
 setCurrent : Model -> Document -> Cmd Msg -> ( Model, Cmd Msg )

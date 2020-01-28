@@ -447,6 +447,16 @@ update msg model =
 
         -- EDITOR II
         Rerender _ ->
+            --let
+            --    newSource =
+            --                    Editor.getSource model.editor
+            --in
+            --    { model
+            --        | sourceText = newSource
+            --        , ast = Parse.toMDBlockTree model.counter ExtendedMath newSource
+            --        , renderedText = Markdown.ElmWithId.toHtml model.selectedId model.counter ExtendedMath newSource
+            --    }
+            --        |> withNoCmd
             model |> withCmd Cmd.none
 
         EditorMsg editorMsg ->
@@ -873,7 +883,9 @@ update msg model =
             ( { model | documentOutline = str }, Cmd.none )
 
         UpdateDocumentText str ->
-            Update.Document.text model (Preprocessor.apply str)
+            model
+                |> Update.Document.text (Preprocessor.apply str)
+                |> withCmd Cmd.none
 
         SetCurrentDocument document ->
             Update.Document.setCurrent model document (Cmd.Document.sendDequeOutside model.deque)
@@ -1404,8 +1416,9 @@ mdProcessContentForHighlighting mdData str model =
 
 syncWithEditor : Model -> Editor.Editor -> Cmd EditorMsg -> ( Model, Cmd Msg )
 syncWithEditor model newEditor editorCmd =
-    Update.Document.text { model | editor = newEditor } (Preprocessor.apply (Editor.getSource newEditor))
-        |> (\( m, _ ) -> ( m, editorCmd |> Cmd.map EditorMsg ))
+    { model | editor = newEditor }
+        |> Update.Document.text (Preprocessor.apply (Editor.getSource newEditor))
+        |> withCmd (editorCmd |> Cmd.map EditorMsg)
 
 
 updateEditor : Model -> Editor.Editor -> Cmd EditorMsg -> ( Model, Cmd Msg )
