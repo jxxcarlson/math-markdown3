@@ -447,17 +447,13 @@ update msg model =
 
         -- EDITOR II
         Rerender _ ->
-            --let
-            --    newSource =
-            --                    Editor.getSource model.editor
-            --in
-            --    { model
-            --        | sourceText = newSource
-            --        , ast = Parse.toMDBlockTree model.counter ExtendedMath newSource
-            --        , renderedText = Markdown.ElmWithId.toHtml model.selectedId model.counter ExtendedMath newSource
-            --    }
-            --        |> withNoCmd
-            model |> withCmd Cmd.none
+            let
+                newSource =
+                    Editor.getSource model.editor
+            in
+            model
+                |> Update.Document.text newSource
+                |> withCmd Cmd.none
 
         EditorMsg editorMsg ->
             let
@@ -1339,7 +1335,7 @@ pasteToClipboard model =
     ( { model | editor = newEditor }, Cmd.none )
 
 
-pasteToEditorClipboard : Model -> String -> ( Model, Cmd msg )
+pasteToEditorClipboard : Model -> String -> ( Model, Cmd Msg )
 pasteToEditorClipboard model str =
     let
         cursor =
@@ -1348,7 +1344,8 @@ pasteToEditorClipboard model str =
         editor2 =
             Editor.placeInClipboard str model.editor
     in
-    ( { model | editor = Editor.insert (Editor.getWrapOption model.editor) cursor str editor2 }, Cmd.none )
+    { model | editor = Editor.insert (Editor.getWrapOption model.editor) cursor str editor2 }
+        |> withCmd rerender
 
 
 rerender : Cmd Msg
