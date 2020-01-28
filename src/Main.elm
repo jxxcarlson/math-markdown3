@@ -18,6 +18,7 @@ import Element exposing (..)
 import File exposing (File)
 import File.Select as Select
 import Html exposing (..)
+import Cmd.Extra
 import Interchange
 import Json.Encode as E
 import Keyboard exposing (Key(..))

@@ -39,7 +39,6 @@ import Prng.Uuid as Uuid exposing (Uuid)
 import Random.Pcg.Extended exposing (Seed)
 import Render exposing (RenderingData)
 import Request exposing (AuthReply(..), GraphQLResponse(..), RequestMsg(..))
-import SingleSlider as Slider
 import Time exposing (Posix)
 import Toc exposing (TocItem)
 import TocZ exposing (TocMsg(..))
