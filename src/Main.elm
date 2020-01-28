@@ -1339,6 +1339,11 @@ pasteToEditorClipboard model str =
     ( { model | editor = Editor.insert (Editor.getWrapOption model.editor) cursor str editor2 }, Cmd.none )
 
 
+rerender : Cmd Msg
+rerender =
+    Task.perform Rerender Time.now
+
+
 
 -- UPDATE HELPERS
 
